@@ -1,0 +1,14 @@
+# Canonical MCP server registry. Not synced yet (see docs/roadmap.md).
+#
+# Secrets: NEVER put values here. `env_from` names environment variables that
+# must exist on the machine; adapters will pass them through at render time.
+
+# [servers.github]
+# command = "npx"
+# args = ["-y", "@modelcontextprotocol/server-github"]
+# env_from = ["GITHUB_PERSONAL_ACCESS_TOKEN"]
+# harnesses = ["claude", "codex", "cursor", "gemini", "opencode"]
+
+# [servers.example-http]
+# url = "https://example.com/mcp"
+# transport = "http"

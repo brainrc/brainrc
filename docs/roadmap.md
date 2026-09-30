@@ -1,0 +1,17 @@
+# Roadmap
+
+Done: spec-agent workflow, 9 agents, domain skills for the DevOps stack, ticket connectors
+(local, GitHub), Claude guard hooks + settings merge, validation with cross-references, tests.
+
+Next:
+- [ ] **E2E runs**: sandbox ticket in Claude Code, then Codex/OpenCode fallback; record retros.
+- [ ] **ticket-jira** connector (Atlassian MCP or Jira CLI).
+- [ ] **OpenCode agent adapter**: render `agents/*.md` into OpenCode's agent format so it gets real subagents.
+- [ ] **Hooks for other tools** where pre-execution hooks exist (port `guard_outward`/`guard_secrets`).
+- [ ] **MCP registry sync**: render `mcp/servers.toml` into each tool's config (merge, like settings).
+- [ ] **Gemini command adapter**: markdown commands → TOML.
+- [ ] **Living specs** (OpenSpec-style): archive completed specs into per-domain `specs/` truth with deltas.
+- [ ] **Metrics rollup**: `scripts/retro_report.py` aggregating `retro.md`/`state.json` across projects, plus ccusage cost.
+- [ ] **Parallel tasks**: run independent tasks (disjoint `files`, no deps) concurrently in subagent mode.
+- [ ] **Profiles**: work vs personal subsets per machine.
+- [ ] **Plugin packaging**: publish as a Claude Code plugin/marketplace.

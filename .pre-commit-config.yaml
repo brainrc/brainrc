@@ -1,0 +1,22 @@
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.2
+    hooks:
+      - id: gitleaks
+  - repo: local
+    hooks:
+      - id: aicfg-validate
+        name: aicfg validate
+        entry: python3 scripts/aicfg.py validate
+        language: system
+        pass_filenames: false
+      - id: unit-tests
+        name: unit tests
+        entry: python3 -m unittest discover -s tests -q
+        language: system
+        pass_filenames: false
+      - id: no-home-paths
+        name: no absolute home paths
+        entry: '(/Users/|/home/)[A-Za-z0-9_.-]+'
+        language: pygrep
+        exclude: ^\.pre-commit-config\.yaml$

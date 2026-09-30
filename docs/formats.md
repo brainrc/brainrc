@@ -1,0 +1,60 @@
+# Canonical formats
+
+Every source uses the most widely adopted format so most harnesses consume it
+as-is. Adapters (see [roadmap](roadmap.md)) translate only where needed.
+
+## Skills: `skills/<name>/SKILL.md`
+
+[Agent Skills](https://agentskills.io) open format.
+
+```markdown
+---
+name: my-skill            # lowercase-hyphenated, equals directory name
+description: What it does and when to use it. This is what triggers the skill.
+---
+Instructions...
+```
+
+Optional siblings: `scripts/`, `references/`, `assets/`. Reference them with
+relative paths from SKILL.md.
+
+## Agents: `agents/<name>.md`
+
+Claude Code subagent format.
+
+```markdown
+---
+name: my-agent
+description: When to delegate to this agent.
+tools: Read, Grep, Glob   # optional; omit to inherit all tools
+model: sonnet             # optional: haiku | sonnet | opus | inherit
+---
+System prompt...
+```
+
+## Commands: `commands/<name>.md`
+
+```markdown
+---
+description: One line shown in the command picker
+---
+Prompt body. $ARGUMENTS is replaced with whatever follows the command.
+```
+
+## Rules: `rules/NN-topic.md`
+
+Plain markdown, concatenated in filename order into one instructions file per
+harness. Keep them tool-neutral.
+
+## Harness support
+
+| | Claude Code | Codex | OpenCode | Gemini CLI | Cursor |
+|---|---|---|---|---|---|
+| Skills | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Rules | ✅ CLAUDE.md | ✅ AGENTS.md | ✅ AGENTS.md | ✅ GEMINI.md | ❌ Settings UI only |
+| Commands | ✅ | ✅ prompts | ✅ | ⏳ needs TOML adapter | ⏳ |
+| Agents | ✅ subagents | ↪ role-switch fallback | ↪ fallback (adapter ⏳) | ↪ fallback | ↪ fallback |
+| Guard hooks | ✅ | ❌ rules only | ❌ | ❌ | ❌ |
+| MCP | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ |
+
+Harness paths change often. If one moves, update `harnesses.toml`.

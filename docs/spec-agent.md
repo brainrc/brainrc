@@ -15,7 +15,7 @@ on its own.
 
 | Command | Does |
 |---|---|
-| `/work <gh:42 \| issue URL \| local:path.md \| free text>` | Start, or resume if a spec for it exists |
+| `/work <gh:42 \| issue URL \| local:path.md \| free text> [--local]` | Start, or resume if a spec for it exists. `--local`: drafts only, never push/PR/comment |
 | `/spec-status [ref]` | Stage, gates, tasks, blocker, next action |
 | `/spec-approve [notes]` | Approve the pending gate |
 | `/spec-resume [ref]` | Continue an interrupted run (any tool) |

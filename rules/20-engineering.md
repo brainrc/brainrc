@@ -6,3 +6,5 @@
 - Never weaken, skip, or delete tests, or suppress lint/type errors, to make checks pass.
 - Search before reading (`rg`, globs), read line ranges, and keep long command output out of
   context (save to a file, read the summary).
+- Shell: never run a command stored in a string variable (`$K get pods`): zsh doesn't word-split
+  it. Use env vars (`KUBECONFIG=…`), arrays (`"${cmd[@]}"`), or functions.

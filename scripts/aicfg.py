@@ -24,11 +24,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-DIST = REPO / "dist"
-RENDERED_INSTRUCTIONS = DIST / "instructions.md"
 
-# Hook commands containing this marker are owned by this repo and replaced on merge.
+# Hook commands containing this marker (or the harness's hooks_dir) are owned by this repo
+# and replaced on merge.
 OWNED_HOOK_MARKER = "/hooks/ai-config/"
+# Placeholder in settings fragments, replaced with the harness's hooks_dir.
+HOOKS_DIR_PLACEHOLDER = "{{hooks_dir}}"
+BACKUPS_KEPT = 5
 
 KNOWN_TOOLS = {
     "Read", "Write", "Edit", "MultiEdit", "Grep", "Glob", "Bash",
@@ -55,6 +57,15 @@ def expand(path: str) -> Path:
 
 def tilde(path: Path) -> str:
     return str(path).replace(str(Path.home()), "~", 1)
+
+
+def rendered_instructions() -> Path:
+    return REPO / "dist" / "instructions.md"
+
+
+def hook_command_dir(hooks_dir: str) -> str:
+    """hooks_dir as written into hook commands: `~` becomes `$HOME` so the shell expands it."""
+    return "$HOME" + hooks_dir[1:] if hooks_dir.startswith("~") else hooks_dir
 
 
 # ---------- sources ----------
@@ -89,8 +100,8 @@ class Link:
 
     def state(self) -> str:
         if self.dest.is_symlink():
-            target = Path(os.readlink(self.dest))
-            if target == self.source:
+            target = link_target(self.dest)
+            if os.path.normpath(target) == os.path.normpath(self.source):
                 return "ok"
             return "update" if _inside_repo(target) else "conflict"
         return "conflict" if self.dest.exists() else "create"
@@ -101,11 +112,30 @@ class SettingsMerge:
     harness: str
     dest: Path
     fragment: Path
+    hooks_dir: str | None = None
+
+    def wanted(self) -> dict:
+        text = self.fragment.read_text()
+        if self.hooks_dir:
+            text = text.replace(HOOKS_DIR_PLACEHOLDER, hook_command_dir(self.hooks_dir))
+        return json.loads(text)
+
+    def markers(self) -> set[str]:
+        markers = {OWNED_HOOK_MARKER}
+        if self.hooks_dir:
+            markers.add(hook_command_dir(self.hooks_dir).rstrip("/") + "/")
+        return markers
+
+
+def link_target(link: Path) -> Path:
+    """Where a symlink points, with relative targets resolved against the link's directory."""
+    target = Path(os.readlink(link))
+    return target if target.is_absolute() else link.parent / target
 
 
 def _inside_repo(path: Path) -> bool:
     try:
-        path.resolve().relative_to(REPO)
+        path.resolve().relative_to(REPO.resolve())
         return True
     except ValueError:
         return False
@@ -126,12 +156,12 @@ def plan() -> tuple[list[Link], list[Path], list[SettingsMerge]]:
                 managed_dirs.add(d)
                 links += [Link(name, d / f.name, f) for f in markdown_files(kind)]
         if "instructions" in h:
-            links.append(Link(name, expand(h["instructions"]), RENDERED_INSTRUCTIONS))
+            links.append(Link(name, expand(h["instructions"]), rendered_instructions()))
         if "hooks_dir" in h:
             links.append(Link(name, expand(h["hooks_dir"]), REPO / "overrides" / name / "hooks"))
         fragment = REPO / "overrides" / name / "settings.fragment.json"
         if "settings" in h and fragment.is_file():
-            merges.append(SettingsMerge(name, expand(h["settings"]), fragment))
+            merges.append(SettingsMerge(name, expand(h["settings"]), fragment, h.get("hooks_dir")))
 
     # Stale: dangling symlinks in managed dirs that point into this repo.
     wanted = {link.dest for link in links}
@@ -140,18 +170,19 @@ def plan() -> tuple[list[Link], list[Path], list[SettingsMerge]]:
         for d in managed_dirs if d.is_dir()
         for p in d.iterdir()
         if p.is_symlink() and p not in wanted and not p.exists()
-        and _inside_repo(Path(os.readlink(p)))
+        and _inside_repo(link_target(p))
     ]
     return links, stale, merges
 
 
 # ---------- settings merge ----------
 
-def _owned(group: dict) -> bool:
-    return any(OWNED_HOOK_MARKER in str(h.get("command", "")) for h in group.get("hooks", []))
+def _owned(group: dict, markers: set[str] = frozenset({OWNED_HOOK_MARKER})) -> bool:
+    return any(m in str(h.get("command", "")) for h in group.get("hooks", []) for m in markers)
 
 
-def merge_settings(current: dict, fragment: dict) -> dict:
+def merge_settings(current: dict, fragment: dict,
+                   markers: set[str] = frozenset({OWNED_HOOK_MARKER})) -> dict:
     """Return current with this repo's hook groups replaced by the fragment's.
 
     Hook groups owned by other tools/plugins are kept in place and order. Only the
@@ -161,7 +192,7 @@ def merge_settings(current: dict, fragment: dict) -> dict:
     hooks = merged.setdefault("hooks", {})
     wanted = fragment.get("hooks", {})
     for event in set(hooks) | set(wanted):
-        kept = [g for g in hooks.get(event, []) if not _owned(g)]
+        kept = [g for g in hooks.get(event, []) if not _owned(g, markers)]
         groups = kept + copy.deepcopy(wanted.get(event, []))
         if groups:
             hooks[event] = groups
@@ -178,16 +209,31 @@ def settings_change(m: SettingsMerge) -> tuple[str, dict | None]:
         current = json.loads(m.dest.read_text()) if m.dest.exists() else {}
     except json.JSONDecodeError:
         return "conflict", None
-    merged = merge_settings(current, json.loads(m.fragment.read_text()))
+    merged = merge_settings(current, m.wanted(), m.markers())
     return ("ok" if merged == current else "merge"), merged
+
+
+def write_settings(dest: Path, merged: dict) -> None:
+    """Back up, prune old backups, then replace atomically so a crash never leaves half a file."""
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if dest.exists():
+        stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        shutil.copy2(dest, dest.with_name(f"{dest.name}.bak-aicfg-{stamp}"))
+        backups = sorted(dest.parent.glob(f"{dest.name}.bak-aicfg-*"))
+        for old in backups[:-BACKUPS_KEPT]:
+            old.unlink()
+    tmp = dest.with_name(f".{dest.name}.aicfg-tmp")
+    tmp.write_text(json.dumps(merged, indent=2) + "\n")
+    os.replace(tmp, dest)
 
 
 # ---------- commands ----------
 
 def cmd_sync(apply: bool) -> int:
     if apply:
-        DIST.mkdir(exist_ok=True)
-        RENDERED_INSTRUCTIONS.write_text(render_instructions())
+        rendered = rendered_instructions()
+        rendered.parent.mkdir(exist_ok=True)
+        rendered.write_text(render_instructions())
 
     links, stale, merges = plan()
     conflicts = changes = 0
@@ -221,11 +267,7 @@ def cmd_sync(apply: bool) -> int:
             continue
         changes += 1
         if apply:
-            m.dest.parent.mkdir(parents=True, exist_ok=True)
-            if m.dest.exists():
-                stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-                shutil.copy2(m.dest, m.dest.with_name(f"{m.dest.name}.bak-aicfg-{stamp}"))
-            m.dest.write_text(json.dumps(merged, indent=2) + "\n")
+            write_settings(m.dest, merged)
 
     if not changes and not conflicts:
         print("Everything in sync.")
@@ -322,11 +364,17 @@ def cmd_validate() -> int:
             errors.append(f"commands/{f.name}: missing `description`")
         errors += _check_references(f, agent_names, skill_names)
 
+    harnesses = tomllib.loads((REPO / "harnesses.toml").read_text())
     for fragment in sorted((REPO / "overrides").glob("*/settings.fragment.json")):
+        rel = fragment.relative_to(REPO)
         try:
             json.loads(fragment.read_text())
         except json.JSONDecodeError as e:
-            errors.append(f"{fragment.relative_to(REPO)}: invalid JSON ({e})")
+            errors.append(f"{rel}: invalid JSON ({e})")
+        harness = harnesses.get(fragment.parent.name, {})
+        if HOOKS_DIR_PLACEHOLDER in fragment.read_text() and "hooks_dir" not in harness:
+            errors.append(f"{rel}: uses {HOOKS_DIR_PLACEHOLDER} but harnesses.toml "
+                          f"[{fragment.parent.name}] has no hooks_dir")
 
     for e in errors:
         print(f"ERROR {e}")

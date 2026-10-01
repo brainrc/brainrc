@@ -77,6 +77,37 @@ class GuardOutwardTest(unittest.TestCase):
             "qm destroy 105",
             "talosctl -n 10.0.0.2 upgrade --image x",
             "sudo reboot",
+            # git global options before the subcommand
+            "git -C ../other push origin main",
+            "git -c user.name=x push",
+            "git --no-pager -C repo reset --hard",
+            # hidden inside wrappers
+            "sh -c 'kubectl delete pod api-0'",
+            "bash -lc \"terraform apply -auto-approve\"",
+            "zsh --login -c 'helm uninstall api'",
+            "eval kubectl delete ns app",
+            "echo $(kubectl delete pod api-0)",
+            "echo `gh api -X DELETE repos/o/r`",
+            # operators without spaces
+            "ls;kubectl delete pod api-0",
+            "true&&helm upgrade api ./chart",
+            # --dry-run=none is a real run
+            "kubectl apply --dry-run=none -f deploy.yaml",
+            # previously untested rules
+            "gh workflow run deploy.yml",
+            "gh secret set TOKEN",
+            "gh release create v1.0.0",
+            "gh repo delete o/r --yes",
+            "argocd cluster rm prod",
+            "pct stop 200",
+            "sudo halt",
+            "helm rollback api 3",
+            "kubectl rollout undo deploy/api",
+            "aws s3 sync ./site s3://bucket",
+            "alembic upgrade head",
+            "atlas migrate apply --url postgres://db.prod.internal/app",
+            "gh api graphql -f query='mutation { addStar(input: {}) { clientMutationId } }'",
+            "gh api graphql --input body.json",
         ]:
             with self.subTest(command=command):
                 self.assertEqual(bash(command), "ask")
@@ -120,9 +151,57 @@ class GuardOutwardTest(unittest.TestCase):
             "psql -h db.prod.internal -c 'select 1'",
             "qm list",
             "talosctl -n 10.0.0.2 dashboard",
+            # near misses for the rules above
+            "git -C ../other status",
+            "git -c core.pager=cat log -3",
+            "sh -c 'kubectl get pods'",
+            "bash -lc 'terraform validate'",
+            "bash scripts/build.sh",
+            "eval \"$(mise activate zsh)\"",
+            "echo $(git rev-parse HEAD)",
+            "ls;kubectl get pods",
+            "kubectl apply --dry-run=server -f deploy.yaml",
+            "terraform plan -out=apply.tfplan",
+            "terraform plan -out apply.tfplan",
+            "gh workflow list",
+            "gh secret list",
+            "gh release view v1.0.0",
+            "argocd cluster list",
+            "pct list",
+            "helm history api",
+            "kubectl rollout history deploy/api",
+            "aws s3 ls s3://bucket/site/",
+            "alembic history",
+            "gh api graphql -f query='query { viewer { login } }'",
         ]:
             with self.subTest(command=command):
                 self.assertIsNone(bash(command))
+
+    def test_asks_for_mcp_writes_only(self):
+        def mcp(name: str) -> str | None:
+            return run_hook("guard_outward.py", {"tool_name": name, "tool_input": {}})
+
+        for name in [
+            "mcp__github__create_pull_request",
+            "mcp__plugin_ecc_github__merge_pull_request",
+            "mcp__claude_ai_Slack__slack_send_message",
+            "mcp__claude_ai_Atlassian__addCommentToJiraIssue",
+            "mcp__claude_ai_Atlassian__transitionJiraIssue",
+            "mcp__claude_ai_Atlassian__updateConfluencePage",
+        ]:
+            with self.subTest(name=name):
+                self.assertEqual(mcp(name), "ask")
+        for name in [
+            "mcp__github__get_pull_request",
+            "mcp__claude_ai_Atlassian__getTransitionsForJiraIssue",
+            "mcp__claude_ai_Atlassian__searchJiraIssuesUsingJql",
+            "mcp__claude_ai_Slack__slack_read_thread",
+            "mcp__plugin_ecc_memory__create_entities",
+            "mcp__unblocked__context_research",
+            "mcp__notaserver",
+        ]:
+            with self.subTest(name=name):
+                self.assertIsNone(mcp(name))
 
     def test_ignores_other_tools_and_bad_input(self):
         self.assertIsNone(run_hook("guard_outward.py", {"tool_name": "Read", "tool_input": {}}))
@@ -135,6 +214,9 @@ class GuardOutwardTest(unittest.TestCase):
 FAKE_AWS = "AKIA" + "Q" * 16
 FAKE_GH = "ghp_" + "a1" * 18
 FAKE_PEM = "-----BEGIN " + "RSA PRIVATE KEY-----\nMIIE..."
+FAKE_AWS_SECRET = "aws_secret_access_key = " + "wJalr" + "Q" * 35
+FAKE_GITLAB = "glpat-" + "x" * 20
+FAKE_JWT = "eyJ" + "a" * 12 + ".eyJ" + "b" * 12 + "." + "c" * 12
 
 
 def write(path: str, content: str, tool: str = "Write") -> str | None:
@@ -151,23 +233,55 @@ def write(path: str, content: str, tool: str = "Write") -> str | None:
 class GuardSecretsTest(unittest.TestCase):
     def test_denies_secret_content(self):
         for tool in ("Write", "Edit", "MultiEdit"):
-            for secret in (FAKE_AWS, FAKE_GH, FAKE_PEM):
+            for secret in (FAKE_AWS, FAKE_GH, FAKE_PEM, FAKE_AWS_SECRET, FAKE_GITLAB, FAKE_JWT):
                 with self.subTest(tool=tool, secret=secret[:8]):
                     self.assertEqual(write("src/config.py", f"KEY = '{secret}'", tool), "deny")
 
-    def test_denies_env_writes_but_allows_examples(self):
-        self.assertEqual(write("app/.env", "A=1"), "deny")
-        self.assertEqual(write(".env.production", "A=1"), "deny")
-        self.assertIsNone(write(".env.example", "API_KEY=changeme"))
+    def test_denies_secret_file_writes_but_allows_examples(self):
+        for path in ("app/.env", ".env.production", ".envrc", "home/.aws/credentials"):
+            with self.subTest(path=path):
+                self.assertEqual(write(path, "A=1"), "deny")
+        for path in (".env.example", ".env.dist", "docs/credentials.md", "aws/config"):
+            with self.subTest(path=path):
+                self.assertIsNone(write(path, "API_KEY=changeme"))
 
-    def test_asks_before_reading_env(self):
-        read = {"tool_name": "Read", "tool_input": {"file_path": "/repo/.env"}}
-        self.assertEqual(run_hook("guard_secrets.py", read), "ask")
-        read["tool_input"]["file_path"] = "/repo/README.md"
-        self.assertIsNone(run_hook("guard_secrets.py", read))
+    def test_asks_before_reading_secret_files(self):
+        def read(path: str) -> str | None:
+            return run_hook("guard_secrets.py", {"tool_name": "Read", "tool_input": {"file_path": path}})
+
+        for path in ("/repo/.env", "/repo/.envrc", "/u/.aws/credentials", "/u/.netrc"):
+            with self.subTest(path=path):
+                self.assertEqual(read(path), "ask")
+        for path in ("/repo/README.md", "/repo/.env.example", "/u/.aws/config"):
+            with self.subTest(path=path):
+                self.assertIsNone(read(path))
+
+    def test_asks_before_grepping_secret_files(self):
+        def grep(**tool_input: str) -> str | None:
+            return run_hook("guard_secrets.py", {"tool_name": "Grep", "tool_input": {"pattern": "KEY", **tool_input}})
+
+        self.assertEqual(grep(path="/repo/.env"), "ask")
+        self.assertEqual(grep(glob=".env*"), "ask")
+        self.assertEqual(grep(glob="**/.envrc"), "ask")
+        self.assertIsNone(grep(path="/repo/src", glob="*.py"))
+        self.assertIsNone(grep())
+
+    def test_asks_before_bash_reads_of_secret_files(self):
+        def sh(command: str) -> str | None:
+            return run_hook("guard_secrets.py", {"tool_name": "Bash", "tool_input": {"command": command}})
+
+        for command in ("cat .env", "grep TOKEN app/.env.local", "source .envrc",
+                        "docker run --env-file=.env img", "cat ~/.aws/credentials", "head <.env"):
+            with self.subTest(command=command):
+                self.assertEqual(sh(command), "ask")
+        for command in ("cat .env.example", "ls -la", "grep env README.md",
+                        "cat ~/.aws/config", "echo credentials"):
+            with self.subTest(command=command):
+                self.assertIsNone(sh(command))
 
     def test_allows_normal_code(self):
         self.assertIsNone(write("src/app.py", "token = os.environ['GITHUB_TOKEN']\n"))
+        self.assertIsNone(write("src/app.py", "aws_secret_access_key = os.environ['AWS_SECRET']\n"))
 
     def test_never_echoes_secret(self):
         out = subprocess.run(

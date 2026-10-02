@@ -45,10 +45,12 @@ python3 scripts/aicfg.py status   # dry run: shows what would be linked
 python3 scripts/aicfg.py apply    # render rules + create symlinks
 ```
 
-Files are **symlinked** from each harness back into this repo, so `git pull`
-updates every harness at once. Re-run `apply` only after you add or remove
-skills, agents, commands, or rules. For Claude Code, `apply` also merges the guard hooks into
-`~/.claude/settings.json` (your other hooks are kept; a backup is written first).
+Skills, agents, commands, and hooks are **symlinked** from each harness back into this repo,
+so `git pull` updates them in every harness at once. Rules are different: they are rendered
+into `dist/instructions.md`, so re-run `apply` after any change to `rules/` (edits included),
+and after you add or remove skills, agents, or commands. For Claude Code, `apply` also merges
+the guard hooks into `~/.claude/settings.json` (your other hooks are kept; a backup is written
+first, and the last 5 backups are kept).
 
 `aicfg` never overwrites a file it doesn't manage. Pre-existing files show up as
 `CONFLICT` for you to move into the repo or delete.

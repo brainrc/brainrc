@@ -2,21 +2,21 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Bash",
+        "matcher": "Bash|mcp__.*",
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$HOME/.claude/hooks/ai-config/guard_outward.py\"",
+            "command": "python3 \"{{hooks_dir}}/guard_outward.py\"",
             "timeout": 5
           }
         ]
       },
       {
-        "matcher": "Read|Write|Edit|MultiEdit",
+        "matcher": "Read|Write|Edit|MultiEdit|Grep|Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$HOME/.claude/hooks/ai-config/guard_secrets.py\"",
+            "command": "python3 \"{{hooks_dir}}/guard_secrets.py\"",
             "timeout": 5
           }
         ]

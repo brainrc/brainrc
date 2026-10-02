@@ -18,6 +18,8 @@ spec.loader.exec_module(aicfg)
 
 FOREIGN = {"hooks": [{"type": "command", "command": "node /opt/other/hook.js"}]}
 OURS_OLD = {"matcher": "Bash", "hooks": [{"type": "command", "command": "python3 ~/.claude/hooks/ai-config/old.py"}]}
+SOURCES = ("skills", "agents", "commands", "overrides", "rules")
+FRAGMENT = REPO / "overrides/claude/settings.fragment.json"
 
 
 def quiet(fn, *args):
@@ -27,9 +29,42 @@ def quiet(fn, *args):
     return code, buf.getvalue()
 
 
+def copy_repo(dest: Path) -> None:
+    """Sources plus the committed harnesses.toml only: never the developer's *.local.* files."""
+    for name in SOURCES:
+        shutil.copytree(REPO / name, dest / name, symlinks=True,
+                        ignore=shutil.ignore_patterns("*.local.md", "__pycache__"))
+    shutil.copy2(REPO / "harnesses.toml", dest / "harnesses.toml")
+
+
+class TempRepoCase(unittest.TestCase):
+    """Point aicfg at a throwaway copy of the repo, so tests never read local config or write dist/."""
+
+    def setUp(self):
+        self.repo = Path(tempfile.mkdtemp())
+        copy_repo(self.repo)
+        self.old_repo = aicfg.REPO
+        aicfg.REPO = self.repo
+
+    def tearDown(self):
+        aicfg.REPO = self.old_repo
+        shutil.rmtree(self.repo)
+
+
 class MergeSettingsTest(unittest.TestCase):
     def setUp(self):
-        self.fragment = json.loads((REPO / "overrides/claude/settings.fragment.json").read_text())
+        self.fragment = aicfg.SettingsMerge("claude", Path("unused"), FRAGMENT, "~/.claude/hooks/ai-config").wanted()
+
+    def test_renders_hooks_dir_placeholder(self):
+        commands = [h["command"] for g in self.fragment["hooks"]["PreToolUse"] for h in g["hooks"]]
+        self.assertIn('python3 "$HOME/.claude/hooks/ai-config/guard_outward.py"', commands)
+        self.assertFalse(any(aicfg.HOOKS_DIR_PLACEHOLDER in c for c in commands))
+
+    def test_custom_hooks_dir_is_owned(self):
+        m = aicfg.SettingsMerge("claude", Path("unused"), FRAGMENT, "/opt/hooks/mine")
+        once = aicfg.merge_settings({"hooks": {"PreToolUse": [FOREIGN]}}, m.wanted(), m.markers())
+        self.assertEqual(aicfg.merge_settings(once, m.wanted(), m.markers()), once)
+        self.assertIn("/opt/hooks/mine/guard_outward.py", json.dumps(once))
 
     def test_preserves_foreign_hooks_and_other_keys(self):
         current = {"tui": "fullscreen", "hooks": {"SessionStart": [FOREIGN], "PreToolUse": [FOREIGN]}}
@@ -54,8 +89,9 @@ class MergeSettingsTest(unittest.TestCase):
         self.assertEqual(current, {"hooks": {"PreToolUse": [FOREIGN]}})
 
 
-class SyncFakeHomeTest(unittest.TestCase):
+class SyncFakeHomeTest(TempRepoCase):
     def setUp(self):
+        super().setUp()
         self.home = Path(tempfile.mkdtemp())
         self.old_home = os.environ["HOME"]
         os.environ["HOME"] = str(self.home)
@@ -63,6 +99,53 @@ class SyncFakeHomeTest(unittest.TestCase):
     def tearDown(self):
         os.environ["HOME"] = self.old_home
         shutil.rmtree(self.home)
+        super().tearDown()
+
+    def test_status_writes_nothing(self):
+        code, out = quiet(aicfg.cmd_sync, False)
+        self.assertEqual(code, 0)
+        self.assertIn("Dry run", out)
+        self.assertEqual(list(self.home.iterdir()), [])
+        self.assertFalse((self.repo / "dist").exists())
+
+    def test_relative_symlink_into_repo_is_ok(self):
+        quiet(aicfg.cmd_sync, True)
+        link = self.home / ".claude/skills/spec-agent"
+        link.unlink()
+        link.symlink_to(os.path.relpath(self.repo / "skills/spec-agent", link.parent))
+        self.assertEqual(aicfg.Link("claude", link, self.repo / "skills/spec-agent").state(), "ok")
+
+    def test_updates_moved_links_and_prunes_dangling(self):
+        quiet(aicfg.cmd_sync, True)
+        skills_dir = self.home / ".claude/skills"
+        (skills_dir / "spec-agent").unlink()
+        (skills_dir / "spec-agent").symlink_to(self.repo / "skills/terraform")  # points at wrong skill
+        (skills_dir / "gone").symlink_to(self.repo / "skills/gone")  # removed from the repo
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0)
+        self.assertIn("UPDATE", out)
+        self.assertIn("PRUNE", out)
+        self.assertEqual(aicfg.link_target(skills_dir / "spec-agent"), self.repo / "skills/spec-agent")
+        self.assertFalse((skills_dir / "gone").is_symlink())
+
+    def test_invalid_settings_json_is_a_conflict(self):
+        (self.home / ".claude").mkdir()
+        settings = self.home / ".claude/settings.json"
+        settings.write_text("{ not json")
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 1)
+        self.assertIn("invalid JSON", out)
+        self.assertEqual(settings.read_text(), "{ not json")
+
+    def test_backups_are_capped(self):
+        (self.home / ".claude").mkdir()
+        settings = self.home / ".claude/settings.json"
+        for n in range(aicfg.BACKUPS_KEPT + 3):
+            (settings.parent / f"settings.json.bak-aicfg-2026010{n}T000000Z").write_text("{}")
+        settings.write_text("{}")
+        quiet(aicfg.cmd_sync, True)
+        self.assertEqual(len(list(settings.parent.glob("settings.json.bak-aicfg-*"))), aicfg.BACKUPS_KEPT)
+        self.assertEqual(list(settings.parent.glob(".settings.json.aicfg-tmp")), [])
 
     def test_apply_then_in_sync_and_conflicts_respected(self):
         (self.home / ".claude").mkdir()
@@ -97,11 +180,27 @@ class ValidateTest(unittest.TestCase):
         code, out = quiet(aicfg.cmd_validate)
         self.assertEqual(code, 0, out)
 
+    def test_catches_placeholder_without_hooks_dir(self):
+        tmp = Path(tempfile.mkdtemp())
+        try:
+            copy_repo(tmp)
+            toml = tmp / "harnesses.toml"
+            toml.write_text(toml.read_text().replace('hooks_dir = "~/.claude/hooks/ai-config"\n', ""))
+            old = aicfg.REPO
+            aicfg.REPO = tmp
+            try:
+                code, out = quiet(aicfg.cmd_validate)
+            finally:
+                aicfg.REPO = old
+            self.assertEqual(code, 1)
+            self.assertIn("has no hooks_dir", out)
+        finally:
+            shutil.rmtree(tmp)
+
     def test_catches_broken_references(self):
         tmp = Path(tempfile.mkdtemp())
         try:
-            for name in ("skills", "agents", "commands", "overrides", "rules"):
-                shutil.copytree(REPO / name, tmp / name, symlinks=True)
+            copy_repo(tmp)
             skill = tmp / "skills/spec-agent/SKILL.md"
             skill.write_text(skill.read_text() + "\n[agent: ghost] [x](missing.md) the `nope` skill\n")
             (tmp / "agents/verifier.md").write_text(

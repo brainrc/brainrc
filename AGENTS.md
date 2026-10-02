@@ -4,6 +4,8 @@ This repo is **public** and is the source of truth for the owner's AI harness co
 
 - Never add secrets, tokens, personal emails, internal hostnames, or absolute
   paths like `/Users/<name>`. Use `~` and environment variable *names*.
+- Keep it generic: no employer or client names, internal tools, project keys, or account
+  details. That content belongs in a pack (`docs/packs.md`); examples here use "acme".
 - Skills: `skills/<name>/SKILL.md` with frontmatter `name` (must equal the directory
   name) and `description` (what it does and *when* to use it).
 - Agents: `agents/<name>.md` with frontmatter `name` (must equal the file stem),

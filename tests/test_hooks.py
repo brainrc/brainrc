@@ -197,7 +197,7 @@ class GuardOutwardTest(unittest.TestCase):
             "mcp__claude_ai_Atlassian__searchJiraIssuesUsingJql",
             "mcp__claude_ai_Slack__slack_read_thread",
             "mcp__plugin_ecc_memory__create_entities",
-            "mcp__unblocked__context_research",
+            "mcp__docs__search_documentation",
             "mcp__notaserver",
         ]:
             with self.subTest(name=name):

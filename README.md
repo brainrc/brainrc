@@ -29,7 +29,8 @@ commands/       Slash commands / prompts (markdown + frontmatter, $ARGUMENTS pla
 mcp/            Canonical MCP server registry. Env var names only, never secret values.
 overrides/      Harness-specific config (Claude guard hooks + settings fragment).
 harnesses.toml  Where each harness reads each content type.
-scripts/        aicfg.py: sync + validate (Python 3.11+, stdlib only).
+packs.toml      Extra source repos ("packs") layered on top; usually set in packs.local.toml.
+scripts/        aicfg.py: sync, validate, tokens (Python 3.11+, stdlib only).
 docs/           spec-agent, guardrails, efficiency, formats, roadmap.
 tests/          stdlib unittest for aicfg and hooks.
 examples/       Sandbox project + tickets for trying spec-agent.
@@ -60,7 +61,12 @@ first, and the last 5 backups are kept).
 | File | Purpose |
 |---|---|
 | `harnesses.local.toml` | Disable a harness or change paths (`[cursor]` / `enabled = false`) |
-| `rules/*.local.md` | Private rules appended after the shared ones (e.g. employer conventions) |
+| `packs.local.toml` | Layer extra repos on top: skills, agents, rules, hooks, spec-agent extensions ([docs/packs.md](docs/packs.md)) |
+| `rules/*.local.md` | Private rules appended after the shared ones |
+
+Content that must never live in this repo (an employer's facts and skills, for example) goes
+in a **pack**: a separate repo with the same layout. See [docs/packs.md](docs/packs.md).
+`python3 scripts/aicfg.py tokens` shows what each skill, agent, and rule costs in context.
 
 ## Adding content
 

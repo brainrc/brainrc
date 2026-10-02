@@ -1,7 +1,8 @@
 # Roadmap
 
 Done: spec-agent workflow, 9 agents, domain skills for the DevOps stack, ticket connectors
-(local, GitHub), Claude guard hooks + settings merge, validation with cross-references, tests.
+(local, GitHub), Claude guard hooks + settings merge, validation with cross-references, tests,
+[packs](packs.md) (per-machine layered repos with spec-agent extensions), `aicfg tokens`.
 
 Next:
 - [ ] **E2E runs**: sandbox ticket in Claude Code, then Codex/OpenCode fallback; record retros.
@@ -13,5 +14,4 @@ Next:
 - [ ] **Living specs** (OpenSpec-style): archive completed specs into per-domain `specs/` truth with deltas.
 - [ ] **Metrics rollup**: `scripts/retro_report.py` aggregating `retro.md`/`state.json` across projects, plus ccusage cost.
 - [ ] **Parallel tasks**: run independent tasks (disjoint `files`, no deps) concurrently in subagent mode.
-- [ ] **Profiles**: work vs personal subsets per machine.
 - [ ] **Plugin packaging**: publish as a Claude Code plugin/marketplace.

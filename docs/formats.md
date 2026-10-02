@@ -46,6 +46,11 @@ Prompt body. $ARGUMENTS is replaced with whatever follows the command.
 Plain markdown, concatenated in filename order into one instructions file per
 harness. Keep them tool-neutral.
 
+## Packs: `pack.toml`
+
+A separate repo with the same layout plus a `pack.toml`, layered on top of this one per
+machine. Format and extension points: [packs.md](packs.md).
+
 ## Harness support
 
 | | Claude Code | Codex | OpenCode | Gemini CLI | Cursor |

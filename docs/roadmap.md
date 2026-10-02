@@ -2,11 +2,11 @@
 
 Done: spec-agent workflow, 9 agents, domain skills for the DevOps stack, ticket connectors
 (local, GitHub), Claude guard hooks + settings merge, validation with cross-references, tests,
-[packs](packs.md) (per-machine layered repos with spec-agent extensions), `aicfg tokens`.
+[packs](packs.md) (per-machine layered repos with spec-agent extensions), `aicfg tokens`,
+ticket-jira connector, campaign mode, unslop and runbook skills.
 
 Next:
 - [ ] **E2E runs**: sandbox ticket in Claude Code, then Codex/OpenCode fallback; record retros.
-- [ ] **ticket-jira** connector (Atlassian MCP or Jira CLI).
 - [ ] **OpenCode agent adapter**: render `agents/*.md` into OpenCode's agent format so it gets real subagents.
 - [ ] **Hooks for other tools** where pre-execution hooks exist (port `guard_outward`/`guard_secrets`).
 - [ ] **MCP registry sync**: render `mcp/servers.toml` into each tool's config (merge, like settings).

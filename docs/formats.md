@@ -43,8 +43,10 @@ Prompt body. $ARGUMENTS is replaced with whatever follows the command.
 
 ## Rules: `rules/NN-topic.md`
 
-Plain markdown, concatenated in filename order into one instructions file per
-harness. Keep them tool-neutral.
+Plain markdown, rendered into one instructions file per harness in this order: core rules,
+then each enabled pack's rules as a labelled block (in `packs.toml` order), then
+`*.local.md` rules. Filename order applies within each group. Later rules refine earlier ones
+and must not contradict them. Keep them tool-neutral.
 
 ## Packs: `pack.toml`
 

@@ -31,7 +31,7 @@ acme-ai-pack/
   skills/acme-*/         linked next to the core skills
   agents/acme-*.md       linked next to the core agents
   commands/acme-*.md
-  rules/NN-*.md          rendered into the same instructions file as the core rules, by filename
+  rules/NN-*.md          rendered after all core rules, as one labelled block (see Rules)
   overrides/claude/hooks/                 linked to <hooks_dir>-acme (e.g. ~/.claude/hooks/ai-config-acme)
   overrides/claude/settings.fragment.json merged after the core fragment; {{hooks_dir}} = the pack's hooks dir
   tripwires.toml         patterns that must not appear in the pack (checked by validate)
@@ -45,7 +45,7 @@ two sources. `apply` refuses to write anything if one does.
 ```toml
 name = "acme"
 prefix = "acme-"          # default: "<name>-"
-requires_core = ">=0.1, <0.2"   # core versions this pack works with (see Compatibility)
+requires_core = ">=0.2, <0.3"   # core versions this pack works with (see Compatibility)
 
 [[extensions.domains]]    # extra rows for spec-agent's Domains table
 files = "`deploy/*.yaml`, `charts/acme-*`"
@@ -70,6 +70,20 @@ deliver_checks = [        # listed in the Deliver gate as done / not applicable 
 `apply` renders every enabled pack's extensions into
 `skills/spec-agent/references/extensions.md` (gitignored). spec-agent reads it at intake.
 With no packs enabled, the file says so and spec-agent runs as before.
+
+## Rules
+
+The rendered instructions file has three parts, in this order:
+
+1. Core rules, in filename order.
+2. Each enabled pack's rules, one block per pack in `packs.toml` order, filename order inside.
+   Each block starts with `<!-- pack: <name> -->` and a line telling the model the rules refine
+   the ones above.
+3. `*.local.md` rules from any source, under `<!-- local -->`.
+
+Pack rule numbers only order rules within the pack. Later rules refine earlier ones and must
+not contradict them: a pack rule that contradicts core is a bug in the pack. Write it as a
+narrower case ("in Acme repos, also ...") instead.
 
 ## Compatibility
 

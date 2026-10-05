@@ -1,0 +1,142 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:9",
+    "id": "9",
+    "title": "Make rule precedence across core, packs, and local rules explicit",
+    "url": "https://github.com/bxker/ai-config/issues/9",
+    "pr": "https://github.com/bxker/ai-config/pull/31"
+  },
+  "slug": "009-rule-precedence",
+  "branch": "009-rule-precedence",
+  "base": "main",
+  "size": "standard",
+  "mode": "fallback",
+  "delivery": "normal",
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate",
+      "python3 scripts/aicfg.py validate --pack examples/pack-acme"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Contract tests for render order and labels",
+      "agent": "test-writer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4"
+      ],
+      "review": "each",
+      "red": "assertion",
+      "commit": "d7c04fb"
+    },
+    {
+      "id": "T2",
+      "title": "New render_instructions",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "scripts/aicfg.py",
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4"
+      ],
+      "review": "each",
+      "red": "assertion",
+      "commit": "8402b57"
+    },
+    {
+      "id": "T3",
+      "title": "_check_changelog in validate, with tests",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "scripts/aicfg.py",
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC7"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "2e9c086"
+    },
+    {
+      "id": "T4",
+      "title": "Docs, example pin, 0.2.0 release",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "docs/packs.md",
+        "docs/formats.md",
+        "examples/pack-acme/pack.toml",
+        "VERSION",
+        "CHANGELOG.md"
+      ],
+      "criteria": [
+        "AC5",
+        "AC6",
+        "AC8"
+      ],
+      "review": "batch",
+      "commit": "4d01a90"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-05T13:45:55Z",
+    "stage_started_at": {
+      "intake": "2026-10-05T13:45:55Z",
+      "spec": "2026-10-05T13:45:55Z",
+      "plan": "2026-10-05T14:29:56Z",
+      "implement": "2026-10-05T15:19:46Z",
+      "verify": "2026-10-05T15:22:32Z",
+      "document": "2026-10-05T15:23:14Z",
+      "deliver": "2026-10-05T15:23:14Z",
+      "done": "2026-10-05T15:24:51Z"
+    },
+    "gate_rework": {
+      "spec": 1,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 3,
+      "first_pass": 3
+    },
+    "retries": 0,
+    "interventions": 0
+  }
+}

@@ -8,6 +8,15 @@ extensions, the rendered `extensions.md`, naming and layout rules. While the ver
 a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everything else
 (new skills, fixes, docs) bumps PATCH.
 
+## 0.2.0 (2026-10-05)
+
+- **[pack contract]** Rule order: core rules first, then each pack's rules as a labelled block
+  in `packs.toml` order, then `*.local.md` rules under their own label. Pack rules no longer
+  interleave with core rules by filename. Packs: re-check your rules read correctly after
+  core's, and update `requires_core` to `">=0.2, <0.3"`.
+- `validate` fails when the newest CHANGELOG heading doesn't match `VERSION`, or when an
+  `## Unreleased` section exists.
+
 ## 0.1.1 (2026-10-05)
 
 - `doc-types` skill: classify a doc as one Divio type (tutorial, how-to, reference,

@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:13",
+    "id": "13",
+    "title": "Docs: tutorial for building your first domain skill and your first pack",
+    "url": "https://github.com/bxker/ai-config/issues/13",
+    "pr": null
+  },
+  "slug": "013-tutorial",
+  "branch": "013-tutorial",
+  "base": "main",
+  "size": "standard",
+  "mode": "fallback",
+  "delivery": "normal",
+  "stage": "spec",
+  "gates": {
+    "spec": "pending",
+    "plan": "pending",
+    "deliver": "pending"
+  },
+  "domains": [],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-05T21:04:16Z",
+    "stage_started_at": {
+      "intake": "2026-10-05T21:04:16Z",
+      "spec": "2026-10-05T21:04:16Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": null,
+        "approved_at": null
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  }
+}

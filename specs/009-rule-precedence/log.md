@@ -39,3 +39,33 @@
 **Open issues:** 4 tasks; callouts: 0.2.0 contract change, new validate rule for every PR, conflict with #30 expected
 
 **Next:** Plan gate
+
+## test-writer · T1 · done
+2026-10-05T15:20:16Z
+
+**Did:** RenderInstructionsTest: core-only render byte-identical (guard), pack 15-acme.md after every core rule, labelled pack blocks in source order (acme then beta), local rules last under a label sorted by filename.
+
+**Evidence:**
+- `python3 -m unittest tests.test_aicfg.RenderInstructionsTest` → 1 failure (interleaving assertion), 2 errors (label substring not found: missing behavior); core-only guard passes
+
+**Changed files:** `tests/test_aicfg.py`
+
+**Open issues:** none
+
+**Next:** review T1
+
+## code-reviewer · T1 · done
+2026-10-05T15:20:16Z
+
+**Did:** Reviewed T1 tests against AC1–AC4.
+
+**Evidence:**
+- last core rule read from the real rules dir at runtime, so adding a core rule won't break the tests
+
+**Changed files:** none
+
+**Findings:** none
+
+**Open issues:** none
+
+**Next:** commit T1, then T2

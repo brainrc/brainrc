@@ -1,6 +1,6 @@
 # Plan: Explicit rule precedence across core, packs, and local rules
 
-Spec: [spec.md](spec.md) · Status: draft
+Spec: [spec.md](spec.md) · Status: approved
 
 ## Callouts
 - **New dependencies:** none

@@ -14,10 +14,10 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "plan",
+  "stage": "implement",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [
@@ -40,8 +40,8 @@
       "id": "T1",
       "title": "Contract tests for render order and labels",
       "agent": "test-writer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "files": [
         "tests/test_aicfg.py"
       ],
@@ -51,14 +51,15 @@
         "AC3",
         "AC4"
       ],
-      "review": "each"
+      "review": "each",
+      "red": "assertion"
     },
     {
       "id": "T2",
       "title": "New render_instructions",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "scripts/aicfg.py",
         "tests/test_aicfg.py"
@@ -113,7 +114,8 @@
     "stage_started_at": {
       "intake": "2026-10-05T13:45:55Z",
       "spec": "2026-10-05T13:45:55Z",
-      "plan": "2026-10-05T14:29:56Z"
+      "plan": "2026-10-05T14:29:56Z",
+      "implement": "2026-10-05T15:19:46Z"
     },
     "gate_rework": {
       "spec": 1,
@@ -121,8 +123,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
-      "first_pass": 0
+      "total": 1,
+      "first_pass": 1
     },
     "retries": 0,
     "interventions": 0

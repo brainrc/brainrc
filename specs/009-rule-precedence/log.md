@@ -99,3 +99,18 @@
 **Open issues:** none
 
 **Next:** commit T2, then T3
+
+## implementer · T3 · done
+2026-10-05T15:21:42Z
+
+**Did:** check_changelog(core) in cmd_validate: errors on an Unreleased heading, a missing X.Y.Z heading, or newest heading != VERSION. Tests: ChangelogCheckTest; copy_repo copies CHANGELOG.md; set_core_version writes VERSION + matching CHANGELOG for pack tests.
+
+**Evidence:**
+- red: 3 assertion failures before the code
+- ChangelogCheckTest OK; full suite 55 OK; validate OK; example pack OK
+
+**Changed files:** `scripts/aicfg.py`, `tests/test_aicfg.py`
+
+**Open issues:** none
+
+**Next:** T4

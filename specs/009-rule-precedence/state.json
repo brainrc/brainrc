@@ -72,13 +72,14 @@
         "AC4"
       ],
       "review": "each",
-      "red": "assertion"
+      "red": "assertion",
+      "commit": "8402b57"
     },
     {
       "id": "T3",
       "title": "_check_changelog in validate, with tests",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "scripts/aicfg.py",
@@ -87,14 +88,15 @@
       "criteria": [
         "AC7"
       ],
-      "review": "batch"
+      "review": "batch",
+      "red": "assertion"
     },
     {
       "id": "T4",
       "title": "Docs, example pin, 0.2.0 release",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "docs/packs.md",
         "docs/formats.md",

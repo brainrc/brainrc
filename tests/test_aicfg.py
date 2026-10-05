@@ -36,6 +36,13 @@ def copy_repo(dest: Path) -> None:
                         ignore=shutil.ignore_patterns("*.local.md", "__pycache__"))
     shutil.copy2(REPO / "harnesses.toml", dest / "harnesses.toml")
     shutil.copy2(REPO / "VERSION", dest / "VERSION")
+    shutil.copy2(REPO / "CHANGELOG.md", dest / "CHANGELOG.md")
+
+
+def set_core_version(repo: Path, version: str) -> None:
+    """VERSION plus a CHANGELOG whose newest entry matches, as validate requires."""
+    (repo / "VERSION").write_text(version + "\n")
+    (repo / "CHANGELOG.md").write_text(f"# Changelog\n\n## {version} (2026-01-01)\n\n- Change.\n")
 
 
 class TempRepoCase(unittest.TestCase):
@@ -231,7 +238,7 @@ class PackSyncTest(TempRepoCase):
         self.old_home = os.environ["HOME"]
         os.environ["HOME"] = str(self.home)
         self.pack = make_pack(Path(tempfile.mkdtemp()).resolve() / "acme-pack")
-        (self.repo / "VERSION").write_text("1.2.3\n")
+        set_core_version(self.repo, "1.2.3")
         self.enable_pack()
 
     def tearDown(self):
@@ -437,7 +444,7 @@ class PackValidateTest(TempRepoCase):
     def setUp(self):
         super().setUp()
         self.pack = make_pack(Path(tempfile.mkdtemp()).resolve() / "acme-pack")
-        (self.repo / "VERSION").write_text("1.2.3\n")
+        set_core_version(self.repo, "1.2.3")
 
     def tearDown(self):
         shutil.rmtree(self.pack.parent)
@@ -486,7 +493,7 @@ class PackValidateTest(TempRepoCase):
         code, out = quiet(aicfg.cmd_validate, str(self.pack))
         self.assertEqual(code, 0, out)
         self.assertIn("WARN acme:pack.toml: no `requires_core`", out)
-        (self.repo / "VERSION").write_text("0.3.1\n")
+        set_core_version(self.repo, "0.3.1")
         code, out = quiet(aicfg.cmd_validate, str(self.pack))
         self.assertIn('requires_core = ">=0.3, <0.4"', out)  # 0.x: breaking changes bump MINOR
 
@@ -509,6 +516,37 @@ class PackValidateTest(TempRepoCase):
             '[[tripwire]]\nid = "T1"\npattern = "Acme rule"\nallow = "(?i)never"\n')
         code, out = quiet(aicfg.cmd_validate, str(self.pack))
         self.assertEqual(code, 0, out)
+
+
+class ChangelogCheckTest(TempRepoCase):
+    """validate keeps VERSION and the newest CHANGELOG entry in step, with no Unreleased section."""
+
+    def setUp(self):
+        super().setUp()
+        set_core_version(self.repo, "1.2.3")
+
+    def test_matching_changelog_passes(self):
+        code, out = quiet(aicfg.cmd_validate)
+        self.assertEqual(code, 0, out)
+
+    def test_version_without_changelog_entry_fails(self):
+        (self.repo / "VERSION").write_text("1.2.4\n")
+        code, out = quiet(aicfg.cmd_validate)
+        self.assertEqual(code, 1)
+        self.assertIn("CHANGELOG.md: newest version 1.2.3 doesn't match VERSION 1.2.4", out)
+
+    def test_unreleased_section_fails(self):
+        (self.repo / "CHANGELOG.md").write_text(
+            "# Changelog\n\n## Unreleased\n\n- New.\n\n## 1.2.3 (2026-01-01)\n\n- Change.\n")
+        code, out = quiet(aicfg.cmd_validate)
+        self.assertEqual(code, 1)
+        self.assertIn("CHANGELOG.md: has an `## Unreleased` section", out)
+
+    def test_changelog_without_version_heading_fails(self):
+        (self.repo / "CHANGELOG.md").write_text("# Changelog\n")
+        code, out = quiet(aicfg.cmd_validate)
+        self.assertEqual(code, 1)
+        self.assertIn("CHANGELOG.md: no `## X.Y.Z` heading", out)
 
 
 class ExamplePackTest(unittest.TestCase):

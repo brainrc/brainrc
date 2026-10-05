@@ -54,6 +54,8 @@ KINDS = ("skills", "agents", "commands")
 CORE_VERSION = re.compile(r"^([0-9]+)\.([0-9]+)\.([0-9]+)$")
 CONSTRAINT_CLAUSE = re.compile(r"^(>=|<=|==|!=|>|<)? *([0-9]+(?:\.[0-9]+){0,2})$")
 CONSTRAINT_SYNTAX = 'comma-separated clauses of >=, >, <=, <, ==, != and a version, e.g. ">=0.1, <0.2"'
+CHANGELOG_VERSION = re.compile(r"^## ([0-9]+\.[0-9]+\.[0-9]+)\b", re.M)
+CHANGELOG_UNRELEASED = re.compile(r"^## +unreleased\b", re.M | re.I)
 COMPARE = {">=": operator.ge, ">": operator.gt, "<=": operator.le, "<": operator.lt,
            "==": operator.eq, "!=": operator.ne}
 
@@ -144,6 +146,25 @@ def core_version() -> tuple[int, ...]:
     if not m:
         raise ConfigError(f"VERSION: `{text}` is not MAJOR.MINOR.PATCH")
     return tuple(int(n) for n in m.groups())
+
+
+def check_changelog(core: tuple[int, ...]) -> list[str]:
+    """Every PR bumps VERSION and adds its entries under it: no Unreleased, newest entry = VERSION."""
+    version = ".".join(map(str, core))
+    path = REPO / "CHANGELOG.md"
+    if not path.is_file():
+        return [f"CHANGELOG.md: missing (add your entries under `## {version}`)"]
+    text = path.read_text()
+    errors = []
+    if CHANGELOG_UNRELEASED.search(text):
+        errors.append(f"CHANGELOG.md: has an `## Unreleased` section. Put its entries under `## {version}`.")
+    m = CHANGELOG_VERSION.search(text)
+    if not m:
+        errors.append(f"CHANGELOG.md: no `## X.Y.Z` heading (expected `## {version}`)")
+    elif m.group(1) != version:
+        errors.append(f"CHANGELOG.md: newest version {m.group(1)} doesn't match VERSION {version}. "
+                      "Every PR bumps both.")
+    return errors
 
 
 def parse_constraint(text: str) -> list[tuple[str, tuple[int, ...]]]:
@@ -762,7 +783,7 @@ def cmd_validate(pack: str | None = None) -> int:
         errors += _validate_source(src, agent_names, skill_names)
     warnings = []
     try:
-        core_version()
+        errors += check_changelog(core_version())
         compat_errors, warnings = check_packs(srcs)
         errors += compat_errors
     except ConfigError as e:

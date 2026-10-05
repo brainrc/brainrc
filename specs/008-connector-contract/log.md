@@ -55,3 +55,34 @@
 **Open issues:** none
 
 **Next:** commit T1, then T2
+
+## implementer · T2 · done
+2026-10-05T17:09:34Z
+
+**Did:** check_connectors(srcs): core ticket-* plus pack [extensions.ticket].connector (resolved across sources); whole-word match of each required op in the skill's ## headings; wired into cmd_validate.
+
+**Evidence:**
+- ConnectorCheckTest OK; suite 59 OK; validate OK; example OK
+
+**Changed files:** `scripts/aicfg.py`
+
+**Open issues:** none
+
+**Next:** review T2
+
+## code-reviewer · T2 · done
+2026-10-05T17:09:34Z
+
+**Did:** Reviewed T2 against AC3, AC4.
+
+**Evidence:**
+- unknown connector names are skipped here (already reported by _validate_pack); \b handles link_pr
+
+**Changed files:** none
+
+**Findings:**
+- LOW scripts/aicfg.py check_connectors: a "## fetch" line inside a code fence counts as a heading → follow-up; the check is documented as shallow.
+
+**Open issues:** none
+
+**Next:** commit T2, then T3

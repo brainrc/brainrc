@@ -50,13 +50,14 @@
         "AC4"
       ],
       "review": "each",
-      "red": "assertion"
+      "red": "assertion",
+      "commit": "c495dd5"
     },
     {
       "id": "T2",
       "title": "check_connectors in validate",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "scripts/aicfg.py",
@@ -66,14 +67,15 @@
         "AC3",
         "AC4"
       ],
-      "review": "each"
+      "review": "each",
+      "red": "assertion"
     },
     {
       "id": "T3",
       "title": "Contract doc, MCP equivalents, links",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "skills/spec-agent/references/connectors.md",
         "skills/spec-agent/SKILL.md",
@@ -121,8 +123,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 1,
-      "first_pass": 1
+      "total": 2,
+      "first_pass": 2
     },
     "retries": 0,
     "interventions": 0

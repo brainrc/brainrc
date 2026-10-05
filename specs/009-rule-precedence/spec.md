@@ -1,6 +1,6 @@
 # Spec: Explicit rule precedence across core, packs, and local rules
 
-Ticket: gh:9 · Size: standard · Status: draft
+Ticket: gh:9 · Size: standard · Status: approved
 
 ## Problem
 `aicfg` renders rules from core and every enabled pack into one instructions file, interleaved

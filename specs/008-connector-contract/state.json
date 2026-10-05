@@ -6,7 +6,7 @@
     "id": "8",
     "title": "Formalise the ticket-connector interface and validate connectors against it",
     "url": "https://github.com/bxker/ai-config/issues/8",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/32"
   },
   "slug": "008-connector-contract",
   "branch": "008-connector-contract",
@@ -14,11 +14,11 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [
     "scripting"
@@ -121,7 +121,8 @@
       "implement": "2026-10-05T17:08:54Z",
       "verify": "2026-10-05T17:11:17Z",
       "document": "2026-10-05T17:11:17Z",
-      "deliver": "2026-10-05T17:11:17Z"
+      "deliver": "2026-10-05T17:11:17Z",
+      "done": "2026-10-05T17:14:28Z"
     },
     "gate_rework": {
       "spec": 0,

@@ -94,14 +94,15 @@
         "AC7"
       ],
       "review": "batch",
-      "red": "assertion"
+      "red": "assertion",
+      "commit": "7a70bfc"
     },
     {
       "id": "T4",
       "title": "CHANGELOG, roadmap, packs docs, README layout",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "files": [
         "CHANGELOG.md",
         "docs/roadmap.md",

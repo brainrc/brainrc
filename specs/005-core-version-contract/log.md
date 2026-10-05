@@ -106,3 +106,17 @@
 **Open issues:** none
 
 **Next:** T4
+
+## implementer · T4 · done
+2026-10-05T12:53:29Z
+
+**Did:** CHANGELOG.md (0.1.0, history from roadmap Done + git log, [pack contract] marker and bump policy); roadmap links to it; docs/packs.md example + Compatibility section; README layout lists VERSION.
+
+**Evidence:**
+- `python3 scripts/aicfg.py validate` → OK; no home paths in changed files
+
+**Changed files:** `CHANGELOG.md`, `docs/roadmap.md`, `docs/packs.md`, `README.md`
+
+**Open issues:** none
+
+**Next:** batched review of T3+T4

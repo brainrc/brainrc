@@ -1,9 +1,6 @@
 # Roadmap
 
-Done: spec-agent workflow, 9 agents, domain skills for the DevOps stack, ticket connectors
-(local, GitHub), Claude guard hooks + settings merge, validation with cross-references, tests,
-[packs](packs.md) (per-machine layered repos with spec-agent extensions), `aicfg tokens`,
-ticket-jira connector, campaign mode, unslop and runbook skills.
+Shipped work is in the [CHANGELOG](../CHANGELOG.md).
 
 Next:
 - [ ] **E2E runs**: sandbox ticket in Claude Code, then Codex/OpenCode fallback; record retros.

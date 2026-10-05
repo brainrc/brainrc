@@ -167,7 +167,10 @@ def pack_compat(src: Source, core: tuple[int, ...]) -> tuple[list[str], list[str
     where = f"{src.name}:pack.toml"
     text = src.meta.get("requires_core")
     if text is None:
-        return [], [f'{where}: no `requires_core`; add e.g. requires_core = ">={core[0]}.{core[1]}" '
+        # Suggest the pin docs/packs.md recommends: breaking changes bump MINOR in 0.x, MAJOR after.
+        major, minor = core[0], core[1]
+        pin = f">=0.{minor}, <0.{minor + 1}" if major == 0 else f">={major}.{minor}, <{major + 1}"
+        return [], [f'{where}: no `requires_core`; add e.g. requires_core = "{pin}" '
                     "so incompatible core changes are caught (docs/packs.md)"]
     try:
         clauses = parse_constraint(str(text))

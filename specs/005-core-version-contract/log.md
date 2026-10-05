@@ -120,3 +120,35 @@
 **Open issues:** none
 
 **Next:** batched review of T3+T4
+
+## code-reviewer · batch (T3, T4) · done
+2026-10-05T12:54:29Z
+
+**Did:** Reviewed `git diff 516d0c6..2f60862` against AC4, AC7, AC8, AC9.
+
+**Evidence:**
+- diff read; suite OK
+
+**Changed files:** none
+
+**Findings:**
+- LOW scripts/aicfg.py cmd_sync: with packs enabled and VERSION missing, the "Update the pack or core" hint is slightly off → follow-up.
+
+**Open issues:** none
+
+**Next:** verify
+
+## implementer · F1 · done
+2026-10-05T12:54:29Z
+
+**Did:** Found at verify: the missing-requires_core warning suggested ">=0.1", contradicting the documented pin. It now suggests ">=0.N, <0.N+1" in 0.x and ">=M.N, <M+1" after 1.0.
+
+**Evidence:**
+- mutation check: new assertions fail against the previous aicfg.py (2 failures)
+- `python3 -m unittest discover -s tests -q` → 46 OK; `aicfg.py validate` → OK
+
+**Changed files:** `scripts/aicfg.py`, `tests/test_aicfg.py`
+
+**Open issues:** none
+
+**Next:** verify

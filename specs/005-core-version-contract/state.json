@@ -113,7 +113,25 @@
         "AC8",
         "AC9"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": "2f60862"
+    },
+    {
+      "id": "F1",
+      "title": "Missing-requires_core warning suggests the documented pin",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "scripts/aicfg.py",
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC5",
+        "AC9"
+      ],
+      "review": "batch",
+      "red": "assertion"
     }
   ],
   "blocked": null,
@@ -131,10 +149,10 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 2,
-      "first_pass": 2
+      "total": 3,
+      "first_pass": 3
     },
-    "retries": 0,
+    "retries": 1,
     "interventions": 0
   }
 }

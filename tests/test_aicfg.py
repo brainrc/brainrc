@@ -336,6 +336,7 @@ class PackSyncTest(TempRepoCase):
         code, out = quiet(aicfg.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertIn("WARN acme:pack.toml: no `requires_core`", out)
+        self.assertIn('requires_core = ">=1.2, <2"', out)  # suggests the documented pin
         self.assertTrue((self.home / ".claude/skills/acme-deploy").is_symlink())
 
     def test_tokens_lists_pack_items(self):
@@ -431,6 +432,9 @@ class PackValidateTest(TempRepoCase):
         code, out = quiet(aicfg.cmd_validate, str(self.pack))
         self.assertEqual(code, 0, out)
         self.assertIn("WARN acme:pack.toml: no `requires_core`", out)
+        (self.repo / "VERSION").write_text("0.3.1\n")
+        code, out = quiet(aicfg.cmd_validate, str(self.pack))
+        self.assertIn('requires_core = ">=0.3, <0.4"', out)  # 0.x: breaking changes bump MINOR
 
     def test_malformed_requires_core_fails(self):
         set_requires_core(self.pack, 'requires_core = "latest"')

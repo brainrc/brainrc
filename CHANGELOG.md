@@ -8,8 +8,15 @@ extensions, the rendered `extensions.md`, naming and layout rules. While the ver
 a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everything else
 (new skills, fixes, docs) bumps PATCH.
 
-## Unreleased
+Every merged PR bumps `VERSION` and adds its entries under that version. There is no Unreleased
+section: `main` is what users pull, so `VERSION` must always describe it exactly.
 
+## 0.1.2 (2026-10-05)
+
+- **[pack contract]** `ticket-jira`: `review_status`, `in_progress_status`, and `blocked_status`
+  accept a table keyed by project key, with an optional `"*"` fallback (#4). Non-breaking: a
+  plain status name still works.
+- `ticket-jira`: task-list checkboxes post to Jira as escaped text, so use ✅ / ⬜ bullets (#4).
 - Docs: README states per-harness support, stale Jira and machine-specific notes removed.
 
 ## 0.1.1 (2026-10-05)

@@ -21,4 +21,6 @@ This repo is **public** and is the source of truth for the owner's AI harness co
   for both the risky command and a safe near-miss in `tests/test_hooks.py`.
 - Keep files short: they are loaded into model context. Rules load every session.
 - After changes, run `python3 scripts/aicfg.py validate` and `python3 -m unittest discover -s tests`.
+- Every PR bumps `VERSION` (semver, policy in `CHANGELOG.md`) and adds its entries under that
+  version in `CHANGELOG.md`. No Unreleased section.
 - Don't edit `dist/`; it's generated.

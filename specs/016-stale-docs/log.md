@@ -39,3 +39,17 @@
 **Open issues:** none
 
 **Next:** Deliver gate
+
+## engine · release 0.1.2 · done
+2026-10-05T13:52:25Z
+
+**Did:** At the user's request: merged main (brings #4), turned Unreleased into 0.1.2 covering #4 and this PR, VERSION 0.1.2, wrote the every-PR-bumps rule in the CHANGELOG intro and AGENTS.md.
+
+**Evidence:**
+- tests OK; validate OK; example pack validate OK (0.1.2 inside ">=0.1, <0.2")
+
+**Changed files:** `VERSION`, `CHANGELOG.md`, `AGENTS.md`
+
+**Open issues:** validate check for VERSION/CHANGELOG agreement goes into #9
+
+**Next:** push; CI

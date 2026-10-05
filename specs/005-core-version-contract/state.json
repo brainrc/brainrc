@@ -14,10 +14,10 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "plan",
+  "stage": "implement",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [
@@ -39,8 +39,8 @@
       "id": "T1",
       "title": "Contract tests for version parsing and pack compatibility",
       "agent": "test-writer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "files": [
         "tests/test_aicfg.py"
       ],
@@ -53,7 +53,8 @@
         "AC7",
         "AC10"
       ],
-      "review": "each"
+      "review": "each",
+      "red": "compile-only"
     },
     {
       "id": "T2",
@@ -116,7 +117,8 @@
     "stage_started_at": {
       "intake": "2026-10-05T05:44:49Z",
       "spec": "2026-10-05T05:45:08Z",
-      "plan": "2026-10-05T12:47:09Z"
+      "plan": "2026-10-05T12:47:09Z",
+      "implement": "2026-10-05T12:50:20Z"
     },
     "gate_rework": {
       "spec": 0,
@@ -124,8 +126,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
-      "first_pass": 0
+      "total": 1,
+      "first_pass": 1
     },
     "retries": 0,
     "interventions": 0

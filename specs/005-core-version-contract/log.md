@@ -25,3 +25,34 @@
 **Open issues:** 4 tasks; callout: new optional pack.toml key `requires_core` and root `VERSION` file (public contract)
 
 **Next:** Plan gate
+
+## test-writer · T1 · done
+2026-10-05T12:51:07Z
+
+**Did:** Added contract tests: constraint parse/satisfy table, malformed constraints, validate (compatible, incompatible via --pack and plain validate, missing → WARN, malformed, invalid VERSION), sync (incompatible writes nothing for status and apply, disabled pack skipped, missing → WARN). Fixture pins requires_core and a temp VERSION 1.2.3.
+
+**Evidence:**
+- `python3 -m unittest discover -s tests -q` → 46 run, 7 failed (assertions on missing behavior), 20 errors (AttributeError: parse_constraint, compile-only); 35 pre-existing pass
+
+**Changed files:** `tests/test_aicfg.py`
+
+**Open issues:** red is compile-only for VersionConstraintTest
+
+**Next:** review T1
+
+## code-reviewer · T1 · done
+2026-10-05T12:51:07Z
+
+**Did:** Reviewed T1 test diff against AC2–AC7, AC10.
+
+**Evidence:**
+- `git diff tests/test_aicfg.py` read; ran suite (above)
+
+**Changed files:** none
+
+**Findings:**
+- LOW tests/test_aicfg.py set_requires_core: silently no-ops if the fixture line changes, which would make the "compatible" and "disabled" guard tests pass vacuously → assert the line was present.
+
+**Open issues:** none
+
+**Next:** commit T1; fold the LOW fix into T2 (same file in scope)

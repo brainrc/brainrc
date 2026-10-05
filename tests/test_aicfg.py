@@ -178,6 +178,7 @@ class SyncFakeHomeTest(TempRepoCase):
 PACK_TOML = '''\
 name = "acme"
 prefix = "acme-"
+requires_core = ">=1.0, <2"
 
 [[extensions.domains]]
 files = "`deploy/*.yaml`"
@@ -229,6 +230,7 @@ class PackSyncTest(TempRepoCase):
         self.old_home = os.environ["HOME"]
         os.environ["HOME"] = str(self.home)
         self.pack = make_pack(Path(tempfile.mkdtemp()).resolve() / "acme-pack")
+        (self.repo / "VERSION").write_text("1.2.3\n")
         self.enable_pack()
 
     def tearDown(self):
@@ -309,6 +311,32 @@ class PackSyncTest(TempRepoCase):
         self.assertEqual(code, 1)
         self.assertIn("no pack.toml", out)
 
+    def set_requires_core(self, line: str) -> None:
+        set_requires_core(self.pack, line)
+
+    def test_incompatible_pack_writes_nothing(self):
+        self.set_requires_core('requires_core = ">=2.0"')
+        for apply in (False, True):
+            code, out = quiet(aicfg.cmd_sync, apply)
+            self.assertEqual(code, 1, out)
+            self.assertIn("acme:pack.toml: requires_core `>=2.0` is not satisfied by core 1.2.3", out)
+            self.assertIn("Nothing written", out)
+        self.assertEqual(list(self.home.iterdir()), [])
+
+    def test_disabled_incompatible_pack_is_not_checked(self):
+        self.set_requires_core('requires_core = ">=2.0"')
+        self.enable_pack(False)
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("requires_core", out)
+
+    def test_pack_without_requires_core_applies_with_warning(self):
+        self.set_requires_core("")
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        self.assertIn("WARN acme:pack.toml: no `requires_core`", out)
+        self.assertTrue((self.home / ".claude/skills/acme-deploy").is_symlink())
+
     def test_tokens_lists_pack_items(self):
         code, out = quiet(aicfg.cmd_tokens)
         self.assertEqual(code, 0)
@@ -316,10 +344,42 @@ class PackSyncTest(TempRepoCase):
         self.assertIn("Always loaded:", out)
 
 
+def set_requires_core(pack: Path, line: str) -> None:
+    """Replace the fixture's requires_core line (an empty line removes it)."""
+    toml = pack / "pack.toml"
+    toml.write_text(toml.read_text().replace('requires_core = ">=1.0, <2"\n', line + "\n" if line else ""))
+
+
+class VersionConstraintTest(unittest.TestCase):
+    def test_satisfies(self):
+        cases = [
+            ((1, 2, 3), ">=1.0", True),
+            ((1, 2, 3), ">=1.0, <2", True),
+            ((2, 0, 0), ">=1.0, <2", False),
+            ((1, 2, 3), "1.2", True),          # bare version means >=
+            ((1, 1, 9), "1.2", False),
+            ((1, 2, 0), "==1.2", True),        # missing parts are zero
+            ((1, 2, 3), "==1.2.3", True),
+            ((1, 2, 3), "!=1.2.3", False),
+            ((1, 2, 0), ">1.2", False),
+            ((1, 2, 0), "<=1.2.0", True),
+            ((0, 9, 0), " >= 0.1 ,< 1 ", True),
+        ]
+        for version, text, expected in cases:
+            with self.subTest(text=text, version=version):
+                self.assertEqual(aicfg.satisfies(version, aicfg.parse_constraint(text)), expected)
+
+    def test_rejects_malformed(self):
+        for text in ("latest", ">>1", "", ">=0.1,", "=>0.1", "1.2.3.4", ">=1.x", "^1.2", "~=1.2"):
+            with self.subTest(text=text), self.assertRaises(ValueError):
+                aicfg.parse_constraint(text)
+
+
 class PackValidateTest(TempRepoCase):
     def setUp(self):
         super().setUp()
         self.pack = make_pack(Path(tempfile.mkdtemp()).resolve() / "acme-pack")
+        (self.repo / "VERSION").write_text("1.2.3\n")
 
     def tearDown(self):
         shutil.rmtree(self.pack.parent)
@@ -344,6 +404,43 @@ class PackValidateTest(TempRepoCase):
                          "ticket.connector names unknown skill `ticket-ghost`",
                          "acme:rules/50-acme.md:3: tripwire T1: stale rule"):
             self.assertIn(expected, out)
+
+    def test_compatible_pack_has_no_version_message(self):
+        code, out = quiet(aicfg.cmd_validate, str(self.pack))
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("requires_core", out)
+
+    def test_incompatible_pack_fails(self):
+        set_requires_core(self.pack, 'requires_core = ">=1.3"')
+        code, out = quiet(aicfg.cmd_validate, str(self.pack))
+        self.assertEqual(code, 1)
+        self.assertIn("acme:pack.toml: requires_core `>=1.3` is not satisfied by core 1.2.3", out)
+
+    def test_incompatible_enabled_pack_fails_plain_validate(self):
+        set_requires_core(self.pack, 'requires_core = "<1"')
+        (self.repo / "packs.local.toml").write_text(f'[acme]\npath = "{self.pack}"\n')
+        code, out = quiet(aicfg.cmd_validate)
+        self.assertEqual(code, 1)
+        self.assertIn("requires_core `<1` is not satisfied by core 1.2.3", out)
+
+    def test_missing_requires_core_warns(self):
+        set_requires_core(self.pack, "")
+        code, out = quiet(aicfg.cmd_validate, str(self.pack))
+        self.assertEqual(code, 0, out)
+        self.assertIn("WARN acme:pack.toml: no `requires_core`", out)
+
+    def test_malformed_requires_core_fails(self):
+        set_requires_core(self.pack, 'requires_core = "latest"')
+        code, out = quiet(aicfg.cmd_validate, str(self.pack))
+        self.assertEqual(code, 1)
+        self.assertIn("acme:pack.toml: invalid requires_core `latest`", out)
+        self.assertIn('">=0.1, <0.2"', out)  # shows the accepted syntax
+
+    def test_invalid_core_version_fails(self):
+        (self.repo / "VERSION").write_text("one\n")
+        code, out = quiet(aicfg.cmd_validate, str(self.pack))
+        self.assertEqual(code, 1)
+        self.assertIn("VERSION: `one` is not MAJOR.MINOR.PATCH", out)
 
     def test_tripwire_allow_pattern_passes_line(self):
         (self.pack / "rules/50-acme.md").write_text("- Never use the old Acme rule.\n")

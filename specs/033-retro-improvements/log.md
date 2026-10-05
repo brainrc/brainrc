@@ -39,3 +39,17 @@
 **Open issues:** none
 
 **Next:** T2
+
+## implementer · T2 · done
+2026-10-05T17:27:21Z
+
+**Did:** lifecycle.md: intake step 3 lists open PRs touching VERSION/CHANGELOG and recommends waiting; step 8 states the mode and calls out fallback with the aicfg apply fix; deliver re-runs the VERSION check; Deliver gate adds a Changes: diff-stat line before Artifacts.
+
+**Evidence:**
+- validate OK; no external references to intake step numbers (only "§ 0")
+
+**Changed files:** `skills/spec-agent/references/lifecycle.md`
+
+**Open issues:** none
+
+**Next:** T3

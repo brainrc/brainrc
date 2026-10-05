@@ -46,13 +46,14 @@
       "criteria": [
         "AC1"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": "346d3c8"
     },
     {
       "id": "T2",
       "title": "Intake VERSION check, fallback notice, Deliver gate changes line",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "skills/spec-agent/references/lifecycle.md"
@@ -68,8 +69,8 @@
       "id": "T3",
       "title": "Gate timestamps and retro timing",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "skills/spec-agent/references/state.md",
         "skills/spec-agent/SKILL.md",

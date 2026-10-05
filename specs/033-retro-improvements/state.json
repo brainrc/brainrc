@@ -80,13 +80,14 @@
       "criteria": [
         "AC4"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": "4e9e8ba"
     },
     {
       "id": "T4",
       "title": "Reviewer messages-vs-docs check, 0.3.1 release",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "agents/code-reviewer.md",
@@ -115,8 +116,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
-      "first_pass": 0
+      "total": 1,
+      "first_pass": 1
     },
     "retries": 0,
     "interventions": 0

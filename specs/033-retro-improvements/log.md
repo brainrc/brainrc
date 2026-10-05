@@ -67,3 +67,33 @@
 **Open issues:** none
 
 **Next:** T4
+
+## implementer · T4 · done
+2026-10-05T17:28:27Z
+
+**Did:** code-reviewer item 2 checks new user-facing text against the docs; VERSION 0.3.1; CHANGELOG entry.
+
+**Evidence:**
+- tests 59 OK; validate OK; example OK; sandbox OK
+
+**Changed files:** `agents/code-reviewer.md`, `VERSION`, `CHANGELOG.md`
+
+**Open issues:** none
+
+**Next:** batched review
+
+## code-reviewer · batch (T1–T4) · done
+2026-10-05T17:28:27Z
+
+**Did:** Read each changed section against AC1–AC7.
+
+**Evidence:**
+- sizing note scoped to the Files column (no clash with "highest tier wins"); intake renumbering has no external references; gate timestamps optional with "missing = unknown"; spec-agent +434 tokens on use, always-loaded unchanged
+
+**Changed files:** none
+
+**Findings:** none
+
+**Open issues:** none
+
+**Next:** verify

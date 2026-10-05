@@ -11,6 +11,14 @@ a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everyt
 Every merged PR bumps `VERSION` and adds its entries under that version. There is no Unreleased
 section: `main` is what users pull, so `VERSION` must always describe it exactly.
 
+## 0.3.1 (2026-10-05)
+
+- spec-agent, from the first five run retros (#33): sizing counts changed lines, not just
+  files; intake warns about other open PRs that bump `VERSION`; intake names `fallback` mode
+  and how to install the agents; the Deliver gate lists code changes before spec artifacts;
+  gates record when they were presented and approved so retros split agent time from waits;
+  `code-reviewer` checks user-facing text against the docs.
+
 ## 0.3.0 (2026-10-05)
 
 - **[pack contract]** Ticket connector contract in `skills/spec-agent/references/connectors.md`.

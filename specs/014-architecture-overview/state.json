@@ -1,0 +1,93 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:14",
+    "id": "14",
+    "title": "Docs: architecture overview with one diagram",
+    "url": "https://github.com/bxker/ai-config/issues/14",
+    "pr": "https://github.com/bxker/ai-config/pull/35"
+  },
+  "slug": "014-architecture-overview",
+  "branch": "014-architecture-overview",
+  "base": "main",
+  "size": "small",
+  "mode": "inline",
+  "delivery": "normal",
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "skipped",
+    "deliver": "approved"
+  },
+  "domains": [],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "docs/architecture.md, README link, 0.3.2",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "docs/architecture.md",
+        "README.md",
+        "VERSION",
+        "CHANGELOG.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5"
+      ],
+      "review": "batch",
+      "commit": "028f017"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-05T18:04:01Z",
+    "stage_started_at": {
+      "intake": "2026-10-05T18:04:01Z",
+      "spec": "2026-10-05T18:04:01Z",
+      "implement": "2026-10-05T18:07:17Z",
+      "verify": "2026-10-05T18:08:44Z",
+      "document": "2026-10-05T18:08:44Z",
+      "deliver": "2026-10-05T18:08:44Z",
+      "done": "2026-10-05T18:14:21Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-05T18:04:08Z",
+        "approved_at": "2026-10-05T18:07:17Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-05T18:08:44Z",
+        "approved_at": "2026-10-05T18:13:42Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 1,
+      "first_pass": 1
+    },
+    "retries": 0,
+    "interventions": 0
+  }
+}

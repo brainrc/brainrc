@@ -10,6 +10,8 @@ It includes **spec-agent**, a spec-driven agent team that takes a ticket to a re
 across application code *and* infrastructure: Go, Terraform/Terragrunt, AWS, Kubernetes/Helm,
 GitOps, CI pipelines, containers, migrations, and observability.
 
+New here? Start with the [architecture overview](docs/architecture.md): one diagram and a glossary.
+
 ## Complete a ticket
 
 ```

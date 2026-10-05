@@ -68,13 +68,14 @@
         "AC4"
       ],
       "review": "each",
-      "red": "assertion"
+      "red": "assertion",
+      "commit": "9b21ba3"
     },
     {
       "id": "T3",
       "title": "Contract doc, MCP equivalents, links",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "skills/spec-agent/references/connectors.md",
@@ -93,8 +94,8 @@
       "id": "T4",
       "title": "One-per-pack doc, example pin, 0.3.0 release",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "docs/packs.md",
         "examples/pack-acme/pack.toml",

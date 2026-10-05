@@ -86,3 +86,17 @@
 **Open issues:** none
 
 **Next:** commit T2, then T3
+
+## implementer · T3 · done
+2026-10-05T17:10:13Z
+
+**Did:** New references/connectors.md (operations table, local-only delivery, CLI or MCP, shallow-check note); spec-agent SKILL.md links it; ticket-github gains an MCP equivalents table and its description names the MCP server; docs/spec-agent.md Extending links the contract.
+
+**Evidence:**
+- suite OK; validate OK (links resolve); spec-agent refs +~500 tokens on use, always-loaded +~5
+
+**Changed files:** `skills/spec-agent/references/connectors.md`, `skills/spec-agent/SKILL.md`, `skills/ticket-github/SKILL.md`, `docs/spec-agent.md`
+
+**Open issues:** none
+
+**Next:** T4

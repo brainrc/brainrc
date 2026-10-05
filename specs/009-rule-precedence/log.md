@@ -128,3 +128,33 @@
 **Open issues:** none
 
 **Next:** batched review (T3, T4)
+
+## code-reviewer · batch (T3, T4) · done
+2026-10-05T15:23:14Z
+
+**Did:** Reviewed 8402b57..4d01a90 against AC5–AC8.
+
+**Evidence:**
+- pre-release headings (## 0.2.0-rc) still parse; pack CI clones core main, which always passes
+
+**Changed files:** none
+
+**Findings:** none
+
+**Open issues:** none
+
+**Next:** verify
+
+## verifier + doc-writer · verify, document · done
+2026-10-05T15:23:14Z
+
+**Did:** Mapped AC1–AC8 in verify.md; manual apply showed core → acme block → local; core-only render equals main's. Drafted pr-body.md and ticket-comment.md.
+
+**Evidence:**
+- tests 55 OK; validate OK; example OK; sandbox OK
+
+**Changed files:** `specs/009-rule-precedence/verify.md`, `specs/009-rule-precedence/pr-body.md`, `specs/009-rule-precedence/ticket-comment.md`
+
+**Open issues:** merge order with #30
+
+**Next:** Deliver gate

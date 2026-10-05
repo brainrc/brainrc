@@ -6,7 +6,7 @@
     "id": "5",
     "title": "Packs: add a core version contract (requires_core) and CHANGELOG",
     "url": "https://github.com/bxker/ai-config/issues/5",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/27"
   },
   "slug": "005-core-version-contract",
   "branch": "005-core-version-contract",
@@ -14,11 +14,11 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [
     "scripting"
@@ -145,7 +145,8 @@
       "implement": "2026-10-05T12:50:20Z",
       "verify": "2026-10-05T12:53:55Z",
       "document": "2026-10-05T12:54:42Z",
-      "deliver": "2026-10-05T12:55:31Z"
+      "deliver": "2026-10-05T12:55:31Z",
+      "done": "2026-10-05T12:59:37Z"
     },
     "gate_rework": {
       "spec": 0,

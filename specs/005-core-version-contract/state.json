@@ -54,14 +54,15 @@
         "AC10"
       ],
       "review": "each",
-      "red": "compile-only"
+      "red": "compile-only",
+      "commit": "ed02fec"
     },
     {
       "id": "T2",
       "title": "VERSION, helpers, and validate checks",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "files": [
         "VERSION",
         "scripts/aicfg.py",
@@ -74,7 +75,8 @@
         "AC5",
         "AC6"
       ],
-      "review": "each"
+      "review": "each",
+      "red": "compile-only"
     },
     {
       "id": "T3",
@@ -126,8 +128,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 1,
-      "first_pass": 1
+      "total": 2,
+      "first_pass": 2
     },
     "retries": 0,
     "interventions": 0

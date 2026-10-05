@@ -35,6 +35,7 @@ def copy_repo(dest: Path) -> None:
         shutil.copytree(REPO / name, dest / name, symlinks=True,
                         ignore=shutil.ignore_patterns("*.local.md", "__pycache__"))
     shutil.copy2(REPO / "harnesses.toml", dest / "harnesses.toml")
+    shutil.copy2(REPO / "VERSION", dest / "VERSION")
 
 
 class TempRepoCase(unittest.TestCase):
@@ -347,7 +348,9 @@ class PackSyncTest(TempRepoCase):
 def set_requires_core(pack: Path, line: str) -> None:
     """Replace the fixture's requires_core line (an empty line removes it)."""
     toml = pack / "pack.toml"
-    toml.write_text(toml.read_text().replace('requires_core = ">=1.0, <2"\n', line + "\n" if line else ""))
+    old = 'requires_core = ">=1.0, <2"\n'
+    assert old in toml.read_text(), "fixture no longer pins requires_core"
+    toml.write_text(toml.read_text().replace(old, line + "\n" if line else ""))
 
 
 class VersionConstraintTest(unittest.TestCase):

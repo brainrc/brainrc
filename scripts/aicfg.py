@@ -9,8 +9,9 @@ Usage:
                                  (used in CI); --pack checks core plus that pack only
   aicfg.py tokens                estimate the context cost of every skill, agent, and command
 
-Sources: this repo ("core") plus any packs listed in packs.toml / packs.local.toml. A pack is
-a repo with the same layout and a pack.toml (see docs/packs.md).
+Sources: this repo ("core", versioned by VERSION) plus any packs listed in packs.toml /
+packs.local.toml. A pack is a repo with the same layout and a pack.toml (see docs/packs.md);
+its `requires_core` must match VERSION, or validate fails and apply writes nothing.
 
 Safety: never overwrites a real file or a symlink pointing outside this repo or a pack.
 Those are reported as CONFLICT and left alone for you to resolve. Settings files
@@ -21,6 +22,7 @@ from __future__ import annotations
 import copy
 import fnmatch
 import json
+import operator
 import os
 import re
 import shutil
@@ -49,6 +51,11 @@ KNOWN_MODELS = {"haiku", "sonnet", "opus", "inherit"}
 SKILL_NAME = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 EXTENSION_KEYS = {"domains", "intake_context", "ticket", "deliver_checks"}
 KINDS = ("skills", "agents", "commands")
+CORE_VERSION = re.compile(r"^([0-9]+)\.([0-9]+)\.([0-9]+)$")
+CONSTRAINT_CLAUSE = re.compile(r"^(>=|<=|==|!=|>|<)? *([0-9]+(?:\.[0-9]+){0,2})$")
+CONSTRAINT_SYNTAX = 'comma-separated clauses of >=, >, <=, <, ==, != and a version, e.g. ">=0.1, <0.2"'
+COMPARE = {">=": operator.ge, ">": operator.gt, "<=": operator.le, "<": operator.lt,
+           "==": operator.eq, "!=": operator.ne}
 
 
 class ConfigError(Exception):
@@ -125,6 +132,65 @@ def load_pack(root: Path, name: str | None = None) -> Source:
     meta = tomllib.loads(pack_toml.read_text())
     pack_name = str(meta.get("name", name or root.name))
     return Source(pack_name, root, str(meta.get("prefix", f"{pack_name}-")), meta)
+
+
+def core_version() -> tuple[int, ...]:
+    """The core version from VERSION: the contract packs pin with `requires_core`."""
+    path = REPO / "VERSION"
+    if not path.is_file():
+        raise ConfigError("VERSION: missing (expected MAJOR.MINOR.PATCH)")
+    text = path.read_text().strip()
+    m = CORE_VERSION.match(text)
+    if not m:
+        raise ConfigError(f"VERSION: `{text}` is not MAJOR.MINOR.PATCH")
+    return tuple(int(n) for n in m.groups())
+
+
+def parse_constraint(text: str) -> list[tuple[str, tuple[int, ...]]]:
+    """'>=0.1, <0.2' -> [('>=', (0, 1, 0)), ('<', (0, 2, 0))]. A bare version means >=."""
+    clauses = []
+    for part in text.split(","):
+        m = CONSTRAINT_CLAUSE.match(part.strip())
+        if not m:
+            raise ValueError(f"expected {CONSTRAINT_SYNTAX}")
+        parts = [int(n) for n in m.group(2).split(".")]
+        clauses.append((m.group(1) or ">=", tuple(parts + [0] * (3 - len(parts)))))
+    return clauses
+
+
+def satisfies(version: tuple[int, ...], clauses: list[tuple[str, tuple[int, ...]]]) -> bool:
+    return all(COMPARE[op](version, bound) for op, bound in clauses)
+
+
+def pack_compat(src: Source, core: tuple[int, ...]) -> tuple[list[str], list[str]]:
+    """(errors, warnings) for one pack's `requires_core` against the core version."""
+    where = f"{src.name}:pack.toml"
+    text = src.meta.get("requires_core")
+    if text is None:
+        return [], [f'{where}: no `requires_core`; add e.g. requires_core = ">={core[0]}.{core[1]}" '
+                    "so incompatible core changes are caught (docs/packs.md)"]
+    try:
+        clauses = parse_constraint(str(text))
+    except ValueError as e:
+        return [f"{where}: invalid requires_core `{text}`: {e}"], []
+    if not satisfies(core, clauses):
+        return [f"{where}: requires_core `{text}` is not satisfied by core "
+                f"{'.'.join(map(str, core))}"], []
+    return [], []
+
+
+def check_packs(srcs: list[Source]) -> tuple[list[str], list[str]]:
+    """(errors, warnings) for every pack in srcs. Reads VERSION only when there are packs."""
+    packs = [s for s in srcs if not s.is_core]
+    if not packs:
+        return [], []
+    core = core_version()
+    errors, warnings = [], []
+    for src in packs:
+        e, w = pack_compat(src, core)
+        errors += e
+        warnings += w
+    return errors, warnings
 
 
 def _pack_root(cfg: dict, key: str) -> Path:
@@ -668,7 +734,16 @@ def cmd_validate(pack: str | None = None) -> int:
     errors = collisions(srcs)
     for src in srcs:
         errors += _validate_source(src, agent_names, skill_names)
+    warnings = []
+    try:
+        core_version()
+        compat_errors, warnings = check_packs(srcs)
+        errors += compat_errors
+    except ConfigError as e:
+        errors.append(str(e))
 
+    for w in warnings:
+        print(f"WARN {w}")
     for e in errors:
         print(f"ERROR {e}")
     commands = sum(len(markdown_files("commands", s)) for s in srcs)

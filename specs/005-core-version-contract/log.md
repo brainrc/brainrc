@@ -56,3 +56,37 @@
 **Open issues:** none
 
 **Next:** commit T1; fold the LOW fix into T2 (same file in scope)
+
+## implementer · T2 · done
+2026-10-05T12:52:34Z
+
+**Did:** Added VERSION (0.1.0); core_version, parse_constraint, satisfies, pack_compat, check_packs in aicfg.py; validate reports VERSION errors, requires_core errors, and WARN for missing. copy_repo copies VERSION; set_requires_core asserts the fixture line (T1 LOW).
+
+**Evidence:**
+- stub red: VersionConstraintTest → 16 failures on assertions (stub discarded)
+- `python3 -m unittest VersionConstraintTest PackValidateTest ValidateTest` → OK
+- full suite → 46 run, 2 failed (T3 sync tests, expected)
+- `python3 scripts/aicfg.py validate` → OK
+
+**Changed files:** `VERSION`, `scripts/aicfg.py`, `tests/test_aicfg.py`
+
+**Open issues:** none
+
+**Next:** review T2
+
+## code-reviewer · T2 · done
+2026-10-05T12:52:34Z
+
+**Did:** Reviewed T2 diff against AC1, AC2, AC3, AC5, AC6.
+
+**Evidence:**
+- `git diff scripts/aicfg.py` read; targeted tests OK
+
+**Changed files:** none
+
+**Findings:**
+- LOW scripts/aicfg.py:54-55: `\d` matches non-ASCII digits (`VERSION` = "١.٢.٣" accepted) → use [0-9]. Fixed in the same attempt; verified rejected.
+
+**Open issues:** none
+
+**Next:** commit T2, then T3

@@ -1,26 +1,132 @@
 {
   "version": 1,
-  "ticket": { "source": "github", "ref": "gh:5", "id": "5", "title": "Packs: add a core version contract (requires_core) and CHANGELOG",
-              "url": "https://github.com/bxker/ai-config/issues/5", "pr": null },
+  "ticket": {
+    "source": "github",
+    "ref": "gh:5",
+    "id": "5",
+    "title": "Packs: add a core version contract (requires_core) and CHANGELOG",
+    "url": "https://github.com/bxker/ai-config/issues/5",
+    "pr": null
+  },
   "slug": "005-core-version-contract",
   "branch": "005-core-version-contract",
   "base": "main",
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "spec",
-  "gates": { "spec": "pending", "plan": "pending", "deliver": "pending" },
-  "domains": ["scripting"],
+  "stage": "plan",
+  "gates": {
+    "spec": "approved",
+    "plan": "pending",
+    "deliver": "pending"
+  },
+  "domains": [
+    "scripting"
+  ],
   "targets": {},
-  "commands": { "test": "python3 -m unittest discover -s tests -q", "lint": null, "build": null,
-                "validate": ["python3 scripts/aicfg.py validate"], "plan": null, "baseline_failures": [] },
-  "tasks": [],
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Contract tests for version parsing and pack compatibility",
+      "agent": "test-writer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC6",
+        "AC7",
+        "AC10"
+      ],
+      "review": "each"
+    },
+    {
+      "id": "T2",
+      "title": "VERSION, helpers, and validate checks",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "VERSION",
+        "scripts/aicfg.py",
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC5",
+        "AC6"
+      ],
+      "review": "each"
+    },
+    {
+      "id": "T3",
+      "title": "Refuse incompatible packs in status/apply",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "scripts/aicfg.py",
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC4",
+        "AC7"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T4",
+      "title": "CHANGELOG, roadmap, packs docs, README layout",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "CHANGELOG.md",
+        "docs/roadmap.md",
+        "docs/packs.md",
+        "README.md"
+      ],
+      "criteria": [
+        "AC8",
+        "AC9"
+      ],
+      "review": "batch"
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-05T05:44:49Z",
-    "stage_started_at": { "intake": "2026-10-05T05:44:49Z", "spec": "2026-10-05T05:45:08Z" },
-    "gate_rework": { "spec": 0, "plan": 0, "deliver": 0 },
-    "reviews": { "total": 0, "first_pass": 0 },
+    "stage_started_at": {
+      "intake": "2026-10-05T05:44:49Z",
+      "spec": "2026-10-05T05:45:08Z",
+      "plan": "2026-10-05T12:47:09Z"
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
     "retries": 0,
     "interventions": 0
   }

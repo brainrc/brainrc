@@ -1,6 +1,6 @@
 # Spec: Core version contract for packs, and a CHANGELOG
 
-Ticket: gh:5 · Size: standard · Status: draft
+Ticket: gh:5 · Size: standard · Status: approved
 
 ## Problem
 Packs depend on core's extension API (`pack.toml` `[extensions]`, the rendered `extensions.md`

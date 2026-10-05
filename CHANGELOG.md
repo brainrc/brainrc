@@ -11,6 +11,15 @@ a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everyt
 Every merged PR bumps `VERSION` and adds its entries under that version. There is no Unreleased
 section: `main` is what users pull, so `VERSION` must always describe it exactly.
 
+## 0.3.0 (2026-10-05)
+
+- **[pack contract]** Ticket connector contract in `skills/spec-agent/references/connectors.md`.
+  `validate` fails when a connector (a core `ticket-*` skill or a pack's
+  `[extensions.ticket].connector`) has no `##` heading for `fetch`, `comment`, `transition`,
+  or `link_pr`. Packs: check your connector, and update `requires_core` to `">=0.3, <0.4"`.
+- Packs keep one ticket connector each, now documented.
+- `ticket-github` works through the GitHub MCP server when `gh` isn't available.
+
 ## 0.2.1 (2026-10-05)
 
 - **[pack contract]** `ticket-jira`: `review_status`, `in_progress_status`, and `blocked_status`

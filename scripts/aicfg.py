@@ -51,6 +51,8 @@ KNOWN_MODELS = {"haiku", "sonnet", "opus", "inherit"}
 SKILL_NAME = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 EXTENSION_KEYS = {"domains", "intake_context", "ticket", "deliver_checks"}
 KINDS = ("skills", "agents", "commands")
+REQUIRED_CONNECTOR_OPS = ("fetch", "comment", "transition", "link_pr")  # references/connectors.md
+H2 = re.compile(r"^## +(.+)$", re.M)
 CORE_VERSION = re.compile(r"^([0-9]+)\.([0-9]+)\.([0-9]+)$")
 CONSTRAINT_CLAUSE = re.compile(r"^(>=|<=|==|!=|>|<)? *([0-9]+(?:\.[0-9]+){0,2})$")
 CONSTRAINT_SYNTAX = 'comma-separated clauses of >=, >, <=, <, ==, != and a version, e.g. ">=0.1, <0.2"'
@@ -770,6 +772,23 @@ def _check_tripwires(src: Source) -> list[str]:
     return errors
 
 
+def check_connectors(srcs: list[Source]) -> list[str]:
+    """Core `ticket-*` skills and pack `[extensions.ticket]` connectors need a `##` heading naming
+    each required operation. One heading may name several (`## comment / transition / link_pr`)."""
+    found = {s.name: (src, s) for src in srcs for s in skills(src)}
+    names = {n for n, (src, _) in found.items() if src.is_core and n.startswith("ticket-")}
+    names |= {src.meta.get("extensions", {}).get("ticket", {}).get("connector") for src in srcs}
+    errors = []
+    for name in sorted(n for n in names if n in found):
+        src, skill = found[name]
+        headings = " ".join(H2.findall((skill / "SKILL.md").read_text()))
+        missing = [op for op in REQUIRED_CONNECTOR_OPS if not re.search(rf"\b{op}\b", headings)]
+        if missing:
+            errors.append(f"{src.rel(skill)}/SKILL.md: connector missing `##` sections for "
+                          f"{', '.join(missing)} (see skills/spec-agent/references/connectors.md)")
+    return errors
+
+
 def cmd_validate(pack: str | None = None) -> int:
     try:
         srcs = [Source("core", REPO), load_pack(expand(pack).resolve())] if pack else sources()
@@ -781,6 +800,7 @@ def cmd_validate(pack: str | None = None) -> int:
     errors = collisions(srcs)
     for src in srcs:
         errors += _validate_source(src, agent_names, skill_names)
+    errors += check_connectors(srcs)
     warnings = []
     try:
         errors += check_changelog(core_version())

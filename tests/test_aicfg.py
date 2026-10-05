@@ -549,6 +549,45 @@ class ChangelogCheckTest(TempRepoCase):
         self.assertIn("CHANGELOG.md: no `## X.Y.Z` heading", out)
 
 
+def write_skill(root: Path, name: str, body: str) -> None:
+    (root / "skills" / name).mkdir(parents=True, exist_ok=True)
+    (root / "skills" / name / "SKILL.md").write_text(
+        f"---\nname: {name}\ndescription: Test connector {name}.\n---\n# {name}\n\n{body}")
+
+
+class ConnectorCheckTest(TempRepoCase):
+    """Connector skills need a heading for every required operation (references/connectors.md)."""
+
+    def setUp(self):
+        super().setUp()
+        set_core_version(self.repo, "1.2.3")
+
+    def test_core_connectors_pass(self):
+        code, out = quiet(aicfg.cmd_validate)
+        self.assertEqual(code, 0, out)
+
+    def test_core_connector_missing_an_operation_fails(self):
+        write_skill(self.repo, "ticket-x", "## fetch\n\n## comment\n\n## transition\n")
+        code, out = quiet(aicfg.cmd_validate)
+        self.assertEqual(code, 1)
+        self.assertIn("skills/ticket-x/SKILL.md: connector missing `##` sections for link_pr", out)
+
+    def test_one_heading_may_name_several_operations(self):
+        write_skill(self.repo, "ticket-y", "## fetch (read-only)\n\n## comment / transition / link_pr\n")
+        code, out = quiet(aicfg.cmd_validate)
+        self.assertEqual(code, 0, out)
+
+    def test_pack_connector_missing_operations_fails(self):
+        pack = make_pack(Path(tempfile.mkdtemp()).resolve() / "acme-pack",
+                         PACK_TOML.replace('connector = "ticket-github"', 'connector = "acme-tickets"'))
+        self.addCleanup(shutil.rmtree, pack.parent)
+        write_skill(pack, "acme-tickets", "## fetch\n")
+        code, out = quiet(aicfg.cmd_validate, str(pack))
+        self.assertEqual(code, 1)
+        self.assertIn("acme:skills/acme-tickets/SKILL.md: connector missing `##` sections for "
+                      "comment, transition, link_pr", out)
+
+
 class ExamplePackTest(unittest.TestCase):
     """examples/pack-acme is the copyable template: it must pass against the real core VERSION."""
 

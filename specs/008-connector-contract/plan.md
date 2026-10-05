@@ -1,6 +1,6 @@
 # Plan: Ticket-connector contract, validated
 
-Spec: [spec.md](spec.md) · Status: draft
+Spec: [spec.md](spec.md) · Status: approved
 
 ## Callouts
 - **New dependencies:** none

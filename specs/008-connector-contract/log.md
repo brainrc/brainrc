@@ -25,3 +25,33 @@
 **Open issues:** 4 tasks; callout: 0.3.0 contract change
 
 **Next:** Plan gate
+
+## test-writer · T1 · done
+2026-10-05T17:09:04Z
+
+**Did:** ConnectorCheckTest: core connectors pass (guard), core ticket-x missing link_pr fails, combined heading passes (guard), pack connector named in [extensions.ticket] missing three ops fails under validate --pack.
+
+**Evidence:**
+- `python3 -m unittest tests.test_aicfg.ConnectorCheckTest` → 2 failures (assertions on missing behavior), 2 guards pass
+
+**Changed files:** `tests/test_aicfg.py`
+
+**Open issues:** none
+
+**Next:** review T1
+
+## code-reviewer · T1 · done
+2026-10-05T17:09:04Z
+
+**Did:** Reviewed T1 against AC3, AC4.
+
+**Evidence:**
+- pack fixture cleaned up via addCleanup; core version pinned via set_core_version
+
+**Changed files:** none
+
+**Findings:** none
+
+**Open issues:** none
+
+**Next:** commit T1, then T2

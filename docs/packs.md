@@ -71,10 +71,10 @@ With no packs enabled, the file says so and spec-agent runs as before.
 
 ## Compatibility
 
-Core's version is in `VERSION`; [CHANGELOG.md](../CHANGELOG.md) tags changes that affect packs
+Core's version is in `VERSION`. [CHANGELOG.md](../CHANGELOG.md) tags changes that affect packs
 with **[pack contract]**. Declare the versions your pack supports with `requires_core`:
 comma-separated clauses of `>=`, `>`, `<=`, `<`, `==`, `!=` and a version (missing parts
-are zero; a bare version means `>=`).
+are zero, and a bare version means `>=`).
 
 - Not satisfied → `validate` fails and `apply`/`status` write nothing, naming the pack.
 - Missing → allowed, with a warning.

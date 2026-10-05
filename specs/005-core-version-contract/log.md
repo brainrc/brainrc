@@ -152,3 +152,31 @@
 **Open issues:** none
 
 **Next:** verify
+
+## verifier · verify · done
+2026-10-05T12:53:55Z
+
+**Did:** Ran tests, validate, sandbox tests; mapped AC1–AC10 to evidence in verify.md; manual CLI checks in a temp HOME.
+
+**Evidence:**
+- tests → 46 OK; validate → OK; sandbox → OK
+
+**Changed files:** `specs/005-core-version-contract/verify.md`
+
+**Open issues:** led to F1 (warning pin), since fixed
+
+**Next:** document
+
+## doc-writer · document · done
+2026-10-05T12:55:31Z
+
+**Did:** Drafted pr-body.md and ticket-comment.md; unslop pass removed semicolons from new CHANGELOG and packs prose and fixed the CHANGELOG intro line.
+
+**Evidence:**
+- tests → OK; validate → OK
+
+**Changed files:** `CHANGELOG.md`, `docs/packs.md`, `specs/005-core-version-contract/pr-body.md`, `specs/005-core-version-contract/ticket-comment.md`
+
+**Open issues:** none
+
+**Next:** Deliver gate

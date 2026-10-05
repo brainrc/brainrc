@@ -89,13 +89,14 @@
         "AC7"
       ],
       "review": "batch",
-      "red": "assertion"
+      "red": "assertion",
+      "commit": "2e9c086"
     },
     {
       "id": "T4",
       "title": "Docs, example pin, 0.2.0 release",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "docs/packs.md",

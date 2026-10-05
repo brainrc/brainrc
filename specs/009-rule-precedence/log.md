@@ -114,3 +114,17 @@
 **Open issues:** none
 
 **Next:** T4
+
+## implementer · T4 · done
+2026-10-05T15:22:12Z
+
+**Did:** docs/formats.md and docs/packs.md (new Rules section) state the order and refine-don't-contradict policy; example pack and docs pin >=0.2, <0.3; VERSION 0.2.0; CHANGELOG 0.2.0 entry tagged [pack contract].
+
+**Evidence:**
+- old pin at 0.2.0 → ExamplePackTest fails naming requires_core (reverted); suite 55 OK; validate OK; example OK
+
+**Changed files:** `docs/formats.md`, `docs/packs.md`, `examples/pack-acme/pack.toml`, `VERSION`, `CHANGELOG.md`
+
+**Open issues:** none
+
+**Next:** batched review (T3, T4)

@@ -6,7 +6,7 @@
     "id": "9",
     "title": "Make rule precedence across core, packs, and local rules explicit",
     "url": "https://github.com/bxker/ai-config/issues/9",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/31"
   },
   "slug": "009-rule-precedence",
   "branch": "009-rule-precedence",
@@ -14,11 +14,11 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [
     "scripting"
@@ -124,7 +124,8 @@
       "implement": "2026-10-05T15:19:46Z",
       "verify": "2026-10-05T15:22:32Z",
       "document": "2026-10-05T15:23:14Z",
-      "deliver": "2026-10-05T15:23:14Z"
+      "deliver": "2026-10-05T15:23:14Z",
+      "done": "2026-10-05T15:24:51Z"
     },
     "gate_rework": {
       "spec": 1,

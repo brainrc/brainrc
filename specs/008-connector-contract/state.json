@@ -88,13 +88,14 @@
         "AC2",
         "AC5"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": "ccee6e9"
     },
     {
       "id": "T4",
       "title": "One-per-pack doc, example pin, 0.3.0 release",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "docs/packs.md",
@@ -124,8 +125,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 2,
-      "first_pass": 2
+      "total": 3,
+      "first_pass": 3
     },
     "retries": 0,
     "interventions": 0

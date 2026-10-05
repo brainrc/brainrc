@@ -100,3 +100,33 @@
 **Open issues:** none
 
 **Next:** T4
+
+## implementer · T4 · done
+2026-10-05T17:10:47Z
+
+**Did:** docs/packs.md documents one ticket connector per pack and links the contract; example and docs pin >=0.3, <0.4; VERSION 0.3.0; CHANGELOG 0.3.0 tagged [pack contract].
+
+**Evidence:**
+- suite 59 OK; validate OK; example OK; old pin at 0.3.0 fails ExamplePackTest (reverted)
+
+**Changed files:** `docs/packs.md`, `examples/pack-acme/pack.toml`, `VERSION`, `CHANGELOG.md`
+
+**Open issues:** none
+
+**Next:** batched review (T3, T4)
+
+## code-reviewer · batch (T3, T4) · done
+2026-10-05T17:10:47Z
+
+**Did:** Reviewed ccee6e9 and T4 against AC1, AC2, AC5–AC7.
+
+**Evidence:**
+- MCP tool names match the GitHub MCP server used in this repo's own runs (issue_read, list_issues, search_issues, add_issue_comment, issue_write, create_pull_request); connectors.md ~40 lines
+
+**Changed files:** none
+
+**Findings:** none
+
+**Open issues:** none
+
+**Next:** verify

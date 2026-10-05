@@ -45,7 +45,7 @@ two sources. `apply` refuses to write anything if one does.
 ```toml
 name = "acme"
 prefix = "acme-"          # default: "<name>-"
-requires_core = ">=0.2, <0.3"   # core versions this pack works with (see Compatibility)
+requires_core = ">=0.3, <0.4"   # core versions this pack works with (see Compatibility)
 
 [[extensions.domains]]    # extra rows for spec-agent's Domains table
 files = "`deploy/*.yaml`, `charts/acme-*`"
@@ -70,6 +70,11 @@ deliver_checks = [        # listed in the Deliver gate as done / not applicable 
 `apply` renders every enabled pack's extensions into
 `skills/spec-agent/references/extensions.md` (gitignored). spec-agent reads it at intake.
 With no packs enabled, the file says so and spec-agent runs as before.
+
+A pack has at most one `[extensions.ticket]`: one connector and the refs it handles. A team
+with two ticket systems splits them into two packs. The connector, core or the pack's own,
+must follow the [connector contract](../skills/spec-agent/references/connectors.md), which
+`validate` checks.
 
 ## Rules
 

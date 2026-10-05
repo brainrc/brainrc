@@ -11,3 +11,33 @@
 **Open issues:** 5 criteria, 1 open question with default
 
 **Next:** Spec gate
+
+## implementer · T1 · done
+2026-10-05T18:08:44Z
+
+**Did:** docs/architecture.md (Mermaid diagram, install vs run table, glossary of 9 terms with links); README link near the top; VERSION 0.3.2; CHANGELOG entry.
+
+**Evidence:**
+- 54 lines; no semicolons/dashes in prose; 5 heading anchors match GitHub slugs; all relative links exist; validate OK; tests 59 OK
+
+**Changed files:** `docs/architecture.md`, `README.md`, `VERSION`, `CHANGELOG.md`
+
+**Open issues:** none
+
+**Next:** review
+
+## code-reviewer · batch (T1) · done
+2026-10-05T18:08:44Z
+
+**Did:** Checked every factual claim against the code and docs (render order core → packs → local per 0.2.0; validate writes nothing; hooks Claude Code only; symlinks vs rendered files).
+
+**Evidence:**
+- render_instructions, cmd_sync, harnesses.toml, docs/formats.md support table
+
+**Changed files:** none
+
+**Findings:** none
+
+**Open issues:** none
+
+**Next:** commit, verify

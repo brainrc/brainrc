@@ -1,6 +1,6 @@
 # Spec: Architecture overview with one diagram
 
-Ticket: gh:14 · Size: small · Status: draft
+Ticket: gh:14 · Size: small · Status: approved
 
 ## Problem
 A newcomer has to piece together how `aicfg`, `harnesses.toml`, packs, the spec-agent engine,

@@ -14,9 +14,9 @@
   "size": "small",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "spec",
+  "stage": "implement",
   "gates": {
-    "spec": "pending",
+    "spec": "approved",
     "plan": "skipped",
     "deliver": "pending"
   },
@@ -32,18 +32,41 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "docs/architecture.md, README link, 0.3.2",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "docs/architecture.md",
+        "README.md",
+        "VERSION",
+        "CHANGELOG.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5"
+      ],
+      "review": "batch"
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-05T18:04:01Z",
     "stage_started_at": {
       "intake": "2026-10-05T18:04:01Z",
-      "spec": "2026-10-05T18:04:01Z"
+      "spec": "2026-10-05T18:04:01Z",
+      "implement": "2026-10-05T18:07:17Z"
     },
     "gates": {
       "spec": {
         "presented_at": "2026-10-05T18:04:08Z",
-        "approved_at": null
+        "approved_at": "2026-10-05T18:07:17Z"
       }
     },
     "gate_rework": {
@@ -52,8 +75,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
-      "first_pass": 0
+      "total": 1,
+      "first_pass": 1
     },
     "retries": 0,
     "interventions": 0

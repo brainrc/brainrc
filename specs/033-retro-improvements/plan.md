@@ -1,6 +1,6 @@
 # Plan: Apply the first five retros to spec-agent
 
-Spec: [spec.md](spec.md) · Status: draft
+Spec: [spec.md](spec.md) · Status: approved
 
 ## Callouts
 - **New dependencies:** none

@@ -25,3 +25,17 @@
 **Open issues:** callout: optional state.json gate timestamps (resume tolerates absence)
 
 **Next:** Plan gate
+
+## implementer · T1 · done
+2026-10-05T17:26:52Z
+
+**Did:** sizing.md: changed lines temper the Files column (~30 lines caps it at small; self-contained example/doc files count about half); other columns and floors unchanged.
+
+**Evidence:**
+- validate OK
+
+**Changed files:** `skills/spec-agent/references/sizing.md`
+
+**Open issues:** none
+
+**Next:** T2

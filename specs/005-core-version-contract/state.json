@@ -1,0 +1,163 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:5",
+    "id": "5",
+    "title": "Packs: add a core version contract (requires_core) and CHANGELOG",
+    "url": "https://github.com/bxker/ai-config/issues/5",
+    "pr": "https://github.com/bxker/ai-config/pull/27"
+  },
+  "slug": "005-core-version-contract",
+  "branch": "005-core-version-contract",
+  "base": "main",
+  "size": "standard",
+  "mode": "fallback",
+  "delivery": "normal",
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Contract tests for version parsing and pack compatibility",
+      "agent": "test-writer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC6",
+        "AC7",
+        "AC10"
+      ],
+      "review": "each",
+      "red": "compile-only",
+      "commit": "ed02fec"
+    },
+    {
+      "id": "T2",
+      "title": "VERSION, helpers, and validate checks",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "VERSION",
+        "scripts/aicfg.py",
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC5",
+        "AC6"
+      ],
+      "review": "each",
+      "red": "compile-only",
+      "commit": "516d0c6"
+    },
+    {
+      "id": "T3",
+      "title": "Refuse incompatible packs in status/apply",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "scripts/aicfg.py",
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC4",
+        "AC7"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "7a70bfc"
+    },
+    {
+      "id": "T4",
+      "title": "CHANGELOG, roadmap, packs docs, README layout",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "CHANGELOG.md",
+        "docs/roadmap.md",
+        "docs/packs.md",
+        "README.md"
+      ],
+      "criteria": [
+        "AC8",
+        "AC9"
+      ],
+      "review": "batch",
+      "commit": "2f60862"
+    },
+    {
+      "id": "F1",
+      "title": "Missing-requires_core warning suggests the documented pin",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "scripts/aicfg.py",
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC5",
+        "AC9"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "690a473"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-05T05:44:49Z",
+    "stage_started_at": {
+      "intake": "2026-10-05T05:44:49Z",
+      "spec": "2026-10-05T05:45:08Z",
+      "plan": "2026-10-05T12:47:09Z",
+      "implement": "2026-10-05T12:50:20Z",
+      "verify": "2026-10-05T12:53:55Z",
+      "document": "2026-10-05T12:54:42Z",
+      "deliver": "2026-10-05T12:55:31Z",
+      "done": "2026-10-05T12:59:37Z"
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 3,
+      "first_pass": 3
+    },
+    "retries": 1,
+    "interventions": 0
+  }
+}

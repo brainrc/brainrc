@@ -1,0 +1,182 @@
+## analyst · spec · done
+2026-10-05T05:45:35Z
+
+**Did:** Wrote spec.md from ticket gh:5: version source of truth, requires_core checks in validate and apply, CHANGELOG, docs.
+
+**Evidence:**
+- read `scripts/aicfg.py` (load_pack, sources, cmd_sync, cmd_validate) to confirm current behaviour
+
+**Changed files:** `specs/005-core-version-contract/spec.md`
+
+**Open issues:** 10 criteria, 5 open questions (each with a recommended default)
+
+**Next:** Spec gate
+
+## architect · plan · done
+2026-10-05T12:47:34Z
+
+**Did:** Wrote plan.md: VERSION file as source of truth, three helpers in aicfg.py shared by validate and sync, docs and CHANGELOG.
+
+**Evidence:**
+- read `scripts/aicfg.py` (load_pack, cmd_sync, cmd_validate, _validate_pack) and `tests/test_aicfg.py` fixtures
+
+**Changed files:** `specs/005-core-version-contract/plan.md`
+
+**Open issues:** 4 tasks; callout: new optional pack.toml key `requires_core` and root `VERSION` file (public contract)
+
+**Next:** Plan gate
+
+## test-writer · T1 · done
+2026-10-05T12:51:07Z
+
+**Did:** Added contract tests: constraint parse/satisfy table, malformed constraints, validate (compatible, incompatible via --pack and plain validate, missing → WARN, malformed, invalid VERSION), sync (incompatible writes nothing for status and apply, disabled pack skipped, missing → WARN). Fixture pins requires_core and a temp VERSION 1.2.3.
+
+**Evidence:**
+- `python3 -m unittest discover -s tests -q` → 46 run, 7 failed (assertions on missing behavior), 20 errors (AttributeError: parse_constraint, compile-only); 35 pre-existing pass
+
+**Changed files:** `tests/test_aicfg.py`
+
+**Open issues:** red is compile-only for VersionConstraintTest
+
+**Next:** review T1
+
+## code-reviewer · T1 · done
+2026-10-05T12:51:07Z
+
+**Did:** Reviewed T1 test diff against AC2–AC7, AC10.
+
+**Evidence:**
+- `git diff tests/test_aicfg.py` read; ran suite (above)
+
+**Changed files:** none
+
+**Findings:**
+- LOW tests/test_aicfg.py set_requires_core: silently no-ops if the fixture line changes, which would make the "compatible" and "disabled" guard tests pass vacuously → assert the line was present.
+
+**Open issues:** none
+
+**Next:** commit T1; fold the LOW fix into T2 (same file in scope)
+
+## implementer · T2 · done
+2026-10-05T12:52:34Z
+
+**Did:** Added VERSION (0.1.0); core_version, parse_constraint, satisfies, pack_compat, check_packs in aicfg.py; validate reports VERSION errors, requires_core errors, and WARN for missing. copy_repo copies VERSION; set_requires_core asserts the fixture line (T1 LOW).
+
+**Evidence:**
+- stub red: VersionConstraintTest → 16 failures on assertions (stub discarded)
+- `python3 -m unittest VersionConstraintTest PackValidateTest ValidateTest` → OK
+- full suite → 46 run, 2 failed (T3 sync tests, expected)
+- `python3 scripts/aicfg.py validate` → OK
+
+**Changed files:** `VERSION`, `scripts/aicfg.py`, `tests/test_aicfg.py`
+
+**Open issues:** none
+
+**Next:** review T2
+
+## code-reviewer · T2 · done
+2026-10-05T12:52:34Z
+
+**Did:** Reviewed T2 diff against AC1, AC2, AC3, AC5, AC6.
+
+**Evidence:**
+- `git diff scripts/aicfg.py` read; targeted tests OK
+
+**Changed files:** none
+
+**Findings:**
+- LOW scripts/aicfg.py:54-55: `\d` matches non-ASCII digits (`VERSION` = "١.٢.٣" accepted) → use [0-9]. Fixed in the same attempt; verified rejected.
+
+**Open issues:** none
+
+**Next:** commit T2, then T3
+
+## implementer · T3 · done
+2026-10-05T12:52:58Z
+
+**Did:** cmd_sync runs check_packs after the collision check: WARN lines for missing requires_core; any incompatibility (or a bad VERSION with packs enabled) prints errors and returns 1 before anything is written. Covers status and apply; disabled packs aren't loaded so aren't checked.
+
+**Evidence:**
+- red (from T1): test_incompatible_pack_writes_nothing, test_pack_without_requires_core_applies_with_warning failed on assertions
+- `python3 -m unittest discover -s tests -q` → 46 tests OK
+- `python3 scripts/aicfg.py validate` → OK
+
+**Changed files:** `scripts/aicfg.py`
+
+**Open issues:** none
+
+**Next:** T4
+
+## implementer · T4 · done
+2026-10-05T12:53:29Z
+
+**Did:** CHANGELOG.md (0.1.0, history from roadmap Done + git log, [pack contract] marker and bump policy); roadmap links to it; docs/packs.md example + Compatibility section; README layout lists VERSION.
+
+**Evidence:**
+- `python3 scripts/aicfg.py validate` → OK; no home paths in changed files
+
+**Changed files:** `CHANGELOG.md`, `docs/roadmap.md`, `docs/packs.md`, `README.md`
+
+**Open issues:** none
+
+**Next:** batched review of T3+T4
+
+## code-reviewer · batch (T3, T4) · done
+2026-10-05T12:54:29Z
+
+**Did:** Reviewed `git diff 516d0c6..2f60862` against AC4, AC7, AC8, AC9.
+
+**Evidence:**
+- diff read; suite OK
+
+**Changed files:** none
+
+**Findings:**
+- LOW scripts/aicfg.py cmd_sync: with packs enabled and VERSION missing, the "Update the pack or core" hint is slightly off → follow-up.
+
+**Open issues:** none
+
+**Next:** verify
+
+## implementer · F1 · done
+2026-10-05T12:54:29Z
+
+**Did:** Found at verify: the missing-requires_core warning suggested ">=0.1", contradicting the documented pin. It now suggests ">=0.N, <0.N+1" in 0.x and ">=M.N, <M+1" after 1.0.
+
+**Evidence:**
+- mutation check: new assertions fail against the previous aicfg.py (2 failures)
+- `python3 -m unittest discover -s tests -q` → 46 OK; `aicfg.py validate` → OK
+
+**Changed files:** `scripts/aicfg.py`, `tests/test_aicfg.py`
+
+**Open issues:** none
+
+**Next:** verify
+
+## verifier · verify · done
+2026-10-05T12:53:55Z
+
+**Did:** Ran tests, validate, sandbox tests; mapped AC1–AC10 to evidence in verify.md; manual CLI checks in a temp HOME.
+
+**Evidence:**
+- tests → 46 OK; validate → OK; sandbox → OK
+
+**Changed files:** `specs/005-core-version-contract/verify.md`
+
+**Open issues:** led to F1 (warning pin), since fixed
+
+**Next:** document
+
+## doc-writer · document · done
+2026-10-05T12:55:31Z
+
+**Did:** Drafted pr-body.md and ticket-comment.md; unslop pass removed semicolons from new CHANGELOG and packs prose and fixed the CHANGELOG intro line.
+
+**Evidence:**
+- tests → OK; validate → OK
+
+**Changed files:** `CHANGELOG.md`, `docs/packs.md`, `specs/005-core-version-contract/pr-body.md`, `specs/005-core-version-contract/ticket-comment.md`
+
+**Open issues:** none
+
+**Next:** Deliver gate

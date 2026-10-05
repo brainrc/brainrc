@@ -30,6 +30,7 @@ mcp/            Canonical MCP server registry. Env var names only, never secret 
 overrides/      Harness-specific config (Claude guard hooks + settings fragment).
 harnesses.toml  Where each harness reads each content type.
 packs.toml      Extra source repos ("packs") layered on top; usually set in packs.local.toml.
+VERSION         Core version that packs pin with `requires_core`; changes in CHANGELOG.md.
 scripts/        aicfg.py: sync, validate, tokens (Python 3.11+, stdlib only).
 docs/           spec-agent, guardrails, efficiency, formats, roadmap.
 tests/          stdlib unittest for aicfg and hooks.

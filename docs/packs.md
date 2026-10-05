@@ -43,6 +43,7 @@ two sources. `apply` refuses to write anything if one does.
 ```toml
 name = "acme"
 prefix = "acme-"          # default: "<name>-"
+requires_core = ">=0.1, <0.2"   # core versions this pack works with (see Compatibility)
 
 [[extensions.domains]]    # extra rows for spec-agent's Domains table
 files = "`deploy/*.yaml`, `charts/acme-*`"
@@ -68,6 +69,18 @@ deliver_checks = [        # listed in the Deliver gate as done / not applicable 
 `skills/spec-agent/references/extensions.md` (gitignored). spec-agent reads it at intake.
 With no packs enabled, the file says so and spec-agent runs as before.
 
+## Compatibility
+
+Core's version is in `VERSION`. [CHANGELOG.md](../CHANGELOG.md) tags changes that affect packs
+with **[pack contract]**. Declare the versions your pack supports with `requires_core`:
+comma-separated clauses of `>=`, `>`, `<=`, `<`, `==`, `!=` and a version (missing parts
+are zero, and a bare version means `>=`).
+
+- Not satisfied → `validate` fails and `apply`/`status` write nothing, naming the pack.
+- Missing → allowed, with a warning.
+- Policy: semver. While core is `0.x`, a breaking pack-contract change bumps MINOR, so pin
+  `">=0.N, <0.N+1"`. After `1.0`, breaking changes bump MAJOR: pin `">=1.N, <2"`.
+
 ## tripwires.toml
 
 Stale facts that must not come back, checked by `validate`:
@@ -90,7 +103,7 @@ python3 core/scripts/aicfg.py validate --pack .
 
 This checks the core plus that pack only, whatever is in `packs.toml`: frontmatter,
 cross-references (pack files may reference core skills and agents), name prefixes and
-collisions, `pack.toml` extension references, and tripwires.
+collisions, `pack.toml` extension references, `requires_core`, and tripwires.
 
 ## Context cost
 

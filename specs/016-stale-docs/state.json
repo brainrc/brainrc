@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "ticket": { "source": "github", "ref": "gh:16", "id": "16", "title": "Docs: fix stale and machine-specific content; align README pitch with harness support",
+              "url": "https://github.com/bxker/ai-config/issues/16", "pr": null },
+  "slug": "016-stale-docs",
+  "branch": "016-stale-docs",
+  "base": "main",
+  "size": "standard",
+  "mode": "fallback",
+  "delivery": "normal",
+  "stage": "spec",
+  "gates": { "spec": "pending", "plan": "pending", "deliver": "pending" },
+  "domains": [],
+  "targets": {},
+  "commands": { "test": "python3 -m unittest discover -s tests -q", "lint": null, "build": null,
+                "validate": ["python3 scripts/aicfg.py validate"], "plan": null, "baseline_failures": [] },
+  "tasks": [],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-05T13:27:12Z",
+    "stage_started_at": { "intake": "2026-10-05T13:27:12Z", "spec": "2026-10-05T13:27:12Z" },
+    "gate_rework": { "spec": 0, "plan": 0, "deliver": 0 },
+    "reviews": { "total": 0, "first_pass": 0 },
+    "retries": 0,
+    "interventions": 0
+  }
+}

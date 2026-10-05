@@ -1,6 +1,6 @@
 # Spec: Ticket-connector contract, validated
 
-Ticket: gh:8 · Size: standard · Status: draft
+Ticket: gh:8 · Size: standard · Status: approved
 
 ## Problem
 spec-agent talks to tickets only through connector skills (`ticket-local`, `ticket-github`,

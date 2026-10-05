@@ -6,7 +6,7 @@
     "id": "14",
     "title": "Docs: architecture overview with one diagram",
     "url": "https://github.com/bxker/ai-config/issues/14",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/35"
   },
   "slug": "014-architecture-overview",
   "branch": "014-architecture-overview",
@@ -14,7 +14,7 @@
   "size": "small",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "skipped",
@@ -65,7 +65,8 @@
       "implement": "2026-10-05T18:07:17Z",
       "verify": "2026-10-05T18:08:44Z",
       "document": "2026-10-05T18:08:44Z",
-      "deliver": "2026-10-05T18:08:44Z"
+      "deliver": "2026-10-05T18:08:44Z",
+      "done": "2026-10-05T18:14:21Z"
     },
     "gates": {
       "spec": {

@@ -9,6 +9,9 @@ a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR.
 
 ## Unreleased
 
+- `doc-types` skill: classify a doc as one Divio type (tutorial, how-to, reference,
+  explanation), write to that type's shape, and split mixed docs. `doc-writer` and `runbook`
+  use it.
 - Example pack in `examples/pack-acme`, validated by a test and in CI.
 
 ## 0.1.0 (2026-10-05)

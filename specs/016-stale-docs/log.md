@@ -25,3 +25,17 @@
 **Open issues:** none
 
 **Next:** verify
+
+## verifier · verify · done
+2026-10-05T13:43:27Z
+
+**Did:** Mapped AC1–AC5 in verify.md. Drafted pr-body.md and ticket-comment.md (small: no separate document stage needed beyond drafts).
+
+**Evidence:**
+- tests 47 OK; validate OK; no stale wording
+
+**Changed files:** `specs/016-stale-docs/verify.md`, `specs/016-stale-docs/pr-body.md`, `specs/016-stale-docs/ticket-comment.md`
+
+**Open issues:** none
+
+**Next:** Deliver gate

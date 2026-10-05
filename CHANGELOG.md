@@ -7,6 +7,12 @@ Entries tagged **[pack contract]** change what packs can rely on: `pack.toml` ke
 extensions, the rendered `extensions.md`, naming and layout rules. While the version is `0.x`,
 a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR.
 
+## Unreleased
+
+- `doc-types` skill: classify a doc as one Divio type (tutorial, how-to, reference,
+  explanation), write to that type's shape, and split mixed docs. `doc-writer` and `runbook`
+  use it.
+
 ## 0.1.0 (2026-10-05)
 
 First versioned release. All entries but the first shipped before versioning began.

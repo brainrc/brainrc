@@ -11,13 +11,22 @@ a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everyt
 Every merged PR bumps `VERSION` and adds its entries under that version. There is no Unreleased
 section: `main` is what users pull, so `VERSION` must always describe it exactly.
 
-## 0.1.2 (2026-10-05)
+## 0.2.1 (2026-10-05)
 
 - **[pack contract]** `ticket-jira`: `review_status`, `in_progress_status`, and `blocked_status`
   accept a table keyed by project key, with an optional `"*"` fallback (#4). Non-breaking: a
   plain status name still works.
 - `ticket-jira`: task-list checkboxes post to Jira as escaped text, so use ✅ / ⬜ bullets (#4).
 - Docs: README states per-harness support, stale Jira and machine-specific notes removed.
+
+## 0.2.0 (2026-10-05)
+
+- **[pack contract]** Rule order: core rules first, then each pack's rules as a labelled block
+  in `packs.toml` order, then `*.local.md` rules under their own label. Pack rules no longer
+  interleave with core rules by filename. Packs: re-check your rules read correctly after
+  core's, and update `requires_core` to `">=0.2, <0.3"`.
+- `validate` fails when the newest CHANGELOG heading doesn't match `VERSION`, or when an
+  `## Unreleased` section exists.
 
 ## 0.1.1 (2026-10-05)
 

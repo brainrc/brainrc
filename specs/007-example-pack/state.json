@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:7",
+    "id": "7",
+    "title": "Add an example pack (examples/pack-acme) validated in CI",
+    "url": "https://github.com/bxker/ai-config/issues/7",
+    "pr": "https://github.com/bxker/ai-config/pull/28"
+  },
+  "slug": "007-example-pack",
+  "branch": "007-example-pack",
+  "base": "main",
+  "size": "standard",
+  "mode": "fallback",
+  "delivery": "normal",
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [
+    "ci-pipelines"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate",
+      "python3 scripts/aicfg.py validate --pack examples/pack-acme"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Example pack plus ExamplePackTest",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "examples/pack-acme/**",
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC7"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "d576cb5"
+    },
+    {
+      "id": "T2",
+      "title": "CI step, docs link, CHANGELOG entry",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        ".github/workflows/validate.yml",
+        "docs/packs.md",
+        "CHANGELOG.md"
+      ],
+      "criteria": [
+        "AC5",
+        "AC6"
+      ],
+      "review": "batch",
+      "commit": "1ad5d4a"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-05T13:11:04Z",
+    "stage_started_at": {
+      "intake": "2026-10-05T13:11:04Z",
+      "spec": "2026-10-05T13:11:11Z",
+      "plan": "2026-10-05T13:16:45Z",
+      "implement": "2026-10-05T13:18:45Z",
+      "verify": "2026-10-05T13:20:37Z",
+      "document": "2026-10-05T13:21:01Z",
+      "deliver": "2026-10-05T13:21:01Z",
+      "done": "2026-10-05T13:26:07Z"
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 1,
+      "first_pass": 1
+    },
+    "retries": 0,
+    "interventions": 2
+  }
+}

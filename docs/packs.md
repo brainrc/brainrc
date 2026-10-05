@@ -4,6 +4,8 @@ A pack is a separate repo layered on top of this one. Use it for content that mu
 here: an employer's facts, internal skills, private review rules. This repo stays generic,
 and each machine picks the packs it needs.
 
+To start one, copy the working example in [examples/pack-acme](../examples/pack-acme/README.md).
+
 ## Enable a pack
 
 List it in `packs.local.toml` (gitignored), then apply:

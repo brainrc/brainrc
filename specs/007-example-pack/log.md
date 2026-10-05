@@ -43,3 +43,34 @@
 **Open issues:** none
 
 **Next:** T2
+
+## implementer · T2 · done
+2026-10-05T13:20:23Z
+
+**Did:** Added a named "Validate example pack" step to the validate workflow, a link from docs/packs.md, and an Unreleased CHANGELOG entry.
+
+**Evidence:**
+- suite → 47 OK; core validate → OK; step indentation matches neighbours (actionlint not installed: verify after push)
+
+**Changed files:** `.github/workflows/validate.yml`, `docs/packs.md`, `CHANGELOG.md`
+
+**Open issues:** none
+
+**Next:** batched review
+
+## code-reviewer + infra-reviewer · batch (T1, T2) · done
+2026-10-05T13:20:23Z
+
+**Did:** Reviewed `git diff main...HEAD` (excluding specs/) against AC1–AC7 and the ci-pipelines checklist.
+
+**Evidence:**
+- no plan: offline validation only. New step is a static command: no `${{ }}` interpolation, no new permissions, actions still SHA-pinned, job timeout kept.
+
+**Changed files:** none
+
+**Findings:**
+- LOW examples/pack-acme/rules/50-acme.md:4: `Refs: ACME-123` uses a colon while spec-agent writes `Refs <ref>`. Both are valid trailers; left as the example team's own convention.
+
+**Open issues:** none
+
+**Next:** verify

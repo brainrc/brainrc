@@ -7,6 +7,10 @@ Entries tagged **[pack contract]** change what packs can rely on: `pack.toml` ke
 extensions, the rendered `extensions.md`, naming and layout rules. While the version is `0.x`,
 a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR.
 
+## Unreleased
+
+- Example pack in `examples/pack-acme`, validated by a test and in CI.
+
 ## 0.1.0 (2026-10-05)
 
 First versioned release. All entries but the first shipped before versioning began.

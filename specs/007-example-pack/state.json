@@ -54,14 +54,15 @@
         "AC7"
       ],
       "review": "batch",
-      "red": "assertion"
+      "red": "assertion",
+      "commit": "d576cb5"
     },
     {
       "id": "T2",
       "title": "CI step, docs link, CHANGELOG entry",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "files": [
         ".github/workflows/validate.yml",
         "docs/packs.md",
@@ -89,8 +90,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
-      "first_pass": 0
+      "total": 1,
+      "first_pass": 1
     },
     "retries": 0,
     "interventions": 0

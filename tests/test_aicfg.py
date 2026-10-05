@@ -457,6 +457,16 @@ class PackValidateTest(TempRepoCase):
         self.assertEqual(code, 0, out)
 
 
+class ExamplePackTest(unittest.TestCase):
+    """examples/pack-acme is the copyable template: it must pass against the real core VERSION."""
+
+    def test_example_pack_is_valid_without_warnings(self):
+        code, out = quiet(aicfg.cmd_validate, str(REPO / "examples/pack-acme"))
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("WARN", out)
+        self.assertIn("(packs: acme)", out)
+
+
 class ValidateTest(unittest.TestCase):
     def test_repo_is_valid(self):
         code, out = quiet(aicfg.cmd_validate)

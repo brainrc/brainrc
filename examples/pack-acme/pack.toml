@@ -1,0 +1,28 @@
+# Example pack: copy this directory to start your own (see README.md).
+name = "acme"
+prefix = "acme-"                  # skills, agents, and commands must start with this
+requires_core = ">=0.1, <0.2"     # core versions this pack works with (docs/packs.md#compatibility)
+
+# Extra row for spec-agent's Domains table: files that load acme-deploy and get infra review.
+[[extensions.domains]]
+files = "`deploy/*.yaml`, `charts/acme-*`"
+skills = ["acme-deploy"]
+reviewer = "infra-reviewer"
+
+# Skills spec-agent runs right after fetching a ticket.
+[[extensions.intake_context]]
+skill = "acme-context"
+when = "every ticket"
+
+# Ticket connector for ACME-* refs, with its config (keys: skills/ticket-jira/SKILL.md § Config).
+[extensions.ticket]
+connector = "ticket-jira"
+refs = ["ACME-*"]
+host = "acme.example.net"
+review_status = "In Review"
+
+[extensions]
+# Listed at the Deliver gate as done / not applicable / not run.
+deliver_checks = [
+  "Deploy plan reviewed by the owning team",
+]

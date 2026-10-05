@@ -4,6 +4,8 @@ A pack is a separate repo layered on top of this one. Use it for content that mu
 here: an employer's facts, internal skills, private review rules. This repo stays generic,
 and each machine picks the packs it needs.
 
+To start one, copy the working example in [examples/pack-acme](../examples/pack-acme/README.md).
+
 ## Enable a pack
 
 List it in `packs.local.toml` (gitignored), then apply:
@@ -80,6 +82,7 @@ are zero, and a bare version means `>=`).
 - Missing → allowed, with a warning.
 - Policy: semver. While core is `0.x`, a breaking pack-contract change bumps MINOR, so pin
   `">=0.N, <0.N+1"`. After `1.0`, breaking changes bump MAJOR: pin `">=1.N, <2"`.
+  Other changes (new skills, fixes, docs) bump PATCH and never break a pin.
 
 ## tripwires.toml
 

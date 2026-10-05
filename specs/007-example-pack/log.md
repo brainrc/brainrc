@@ -102,3 +102,17 @@
 **Open issues:** none
 
 **Next:** Deliver gate
+
+## engine · release 0.1.1 · done
+2026-10-05T13:39:42Z
+
+**Did:** At the user's request, cut 0.1.1 in this PR: VERSION 0.1.1, CHANGELOG Unreleased → 0.1.1 (doc-types from #29 + example pack), PATCH rule documented in CHANGELOG intro and docs/packs.md.
+
+**Evidence:**
+- tests OK; core validate OK; example validate OK (0.1.1 inside ">=0.1, <0.2")
+
+**Changed files:** `VERSION`, `CHANGELOG.md`, `docs/packs.md`
+
+**Open issues:** none
+
+**Next:** push; CI

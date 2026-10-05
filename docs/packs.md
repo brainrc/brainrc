@@ -82,6 +82,7 @@ are zero, and a bare version means `>=`).
 - Missing → allowed, with a warning.
 - Policy: semver. While core is `0.x`, a breaking pack-contract change bumps MINOR, so pin
   `">=0.N, <0.N+1"`. After `1.0`, breaking changes bump MAJOR: pin `">=1.N, <2"`.
+  Other changes (new skills, fixes, docs) bump PATCH and never break a pin.
 
 ## tripwires.toml
 

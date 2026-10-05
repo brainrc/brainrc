@@ -1,7 +1,13 @@
 {
   "version": 1,
-  "ticket": { "source": "github", "ref": "gh:9", "id": "9", "title": "Make rule precedence across core, packs, and local rules explicit",
-              "url": "https://github.com/bxker/ai-config/issues/9", "pr": null },
+  "ticket": {
+    "source": "github",
+    "ref": "gh:9",
+    "id": "9",
+    "title": "Make rule precedence across core, packs, and local rules explicit",
+    "url": "https://github.com/bxker/ai-config/issues/9",
+    "pr": null
+  },
   "slug": "009-rule-precedence",
   "branch": "009-rule-precedence",
   "base": "main",
@@ -9,19 +15,43 @@
   "mode": "fallback",
   "delivery": "normal",
   "stage": "spec",
-  "gates": { "spec": "pending", "plan": "pending", "deliver": "pending" },
-  "domains": ["scripting"],
+  "gates": {
+    "spec": "pending",
+    "plan": "pending",
+    "deliver": "pending"
+  },
+  "domains": [
+    "scripting"
+  ],
   "targets": {},
-  "commands": { "test": "python3 -m unittest discover -s tests -q", "lint": null, "build": null,
-                "validate": ["python3 scripts/aicfg.py validate", "python3 scripts/aicfg.py validate --pack examples/pack-acme"],
-                "plan": null, "baseline_failures": [] },
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate",
+      "python3 scripts/aicfg.py validate --pack examples/pack-acme"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
   "tasks": [],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-05T13:45:55Z",
-    "stage_started_at": { "intake": "2026-10-05T13:45:55Z", "spec": "2026-10-05T13:45:55Z" },
-    "gate_rework": { "spec": 0, "plan": 0, "deliver": 0 },
-    "reviews": { "total": 0, "first_pass": 0 },
+    "stage_started_at": {
+      "intake": "2026-10-05T13:45:55Z",
+      "spec": "2026-10-05T13:45:55Z"
+    },
+    "gate_rework": {
+      "spec": 1,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
     "retries": 0,
     "interventions": 0
   }

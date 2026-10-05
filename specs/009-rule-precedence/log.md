@@ -11,3 +11,17 @@
 **Open issues:** 7 criteria, 3 open questions with defaults
 
 **Next:** Spec gate
+
+## analyst · spec (revision 1) · done
+2026-10-05T13:52:52Z
+
+**Did:** Per the user at the Spec gate: added AC7 (validate fails when the newest CHANGELOG heading isn't VERSION, or an Unreleased heading exists); AC6 now writes 0.2.0 directly.
+
+**Evidence:**
+- spec reread; 8 criteria
+
+**Changed files:** `specs/009-rule-precedence/spec.md`
+
+**Open issues:** same 3 open questions with defaults
+
+**Next:** Spec gate

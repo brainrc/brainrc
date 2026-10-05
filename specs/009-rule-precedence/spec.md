@@ -13,6 +13,7 @@ rule disagrees with a core rule.
 - A predictable order that doesn't depend on numbering discipline across repos.
 - The rendered file shows which source each block of rules came from.
 - One documented policy for conflicts.
+- `validate` keeps `VERSION` and `CHANGELOG.md` in step, so the every-PR-bumps rule (#30) holds.
 
 ## Non-goals
 - Detecting contradictions between rules automatically.
@@ -32,9 +33,13 @@ rule disagrees with a core rule.
 - **AC5**: `docs/packs.md` and `docs/formats.md` state the order and the policy: later rules
   refine earlier ones and must not contradict them. A pack rule that contradicts core is a bug in
   the pack.
-- **AC6**: This changes the pack contract: CHANGELOG entry tagged **[pack contract]**, `VERSION`
-  bumped to `0.2.0`, and the example pack's `requires_core` updated so its test still passes.
-- **AC7**: Full suite, `validate`, and `validate --pack examples/pack-acme` pass.
+- **AC6**: This changes the pack contract: a `## 0.2.0` CHANGELOG entry tagged
+  **[pack contract]** (no Unreleased section), `VERSION` bumped to `0.2.0`, and the example
+  pack's `requires_core` updated so its test still passes.
+- **AC7**: Given a CHANGELOG whose newest `## X.Y.Z` heading differs from `VERSION`, or that
+  has an `## Unreleased` heading, when `validate` runs, then it fails with a message naming both
+  values (or the Unreleased heading). A matching CHANGELOG passes.
+- **AC8**: Full suite, `validate`, and `validate --pack examples/pack-acme` pass.
 
 ## Constraints
 - Stdlib only. No new config keys.

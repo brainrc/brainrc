@@ -1,27 +1,120 @@
 {
   "version": 1,
-  "ticket": { "source": "github", "ref": "gh:33", "id": "33", "title": "spec-agent: apply improvements from the first five run retros",
-              "url": "https://github.com/bxker/ai-config/issues/33", "pr": null },
+  "ticket": {
+    "source": "github",
+    "ref": "gh:33",
+    "id": "33",
+    "title": "spec-agent: apply improvements from the first five run retros",
+    "url": "https://github.com/bxker/ai-config/issues/33",
+    "pr": null
+  },
   "slug": "033-retro-improvements",
   "branch": "033-retro-improvements",
   "base": "main",
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "spec",
-  "gates": { "spec": "pending", "plan": "pending", "deliver": "pending" },
+  "stage": "plan",
+  "gates": {
+    "spec": "approved",
+    "plan": "pending",
+    "deliver": "pending"
+  },
   "domains": [],
   "targets": {},
-  "commands": { "test": "python3 -m unittest discover -s tests -q", "lint": null, "build": null,
-                "validate": ["python3 scripts/aicfg.py validate", "python3 scripts/aicfg.py validate --pack examples/pack-acme"],
-                "plan": null, "baseline_failures": [] },
-  "tasks": [],
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate",
+      "python3 scripts/aicfg.py validate --pack examples/pack-acme"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Sizing by changed lines",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "skills/spec-agent/references/sizing.md"
+      ],
+      "criteria": [
+        "AC1"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T2",
+      "title": "Intake VERSION check, fallback notice, Deliver gate changes line",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "skills/spec-agent/references/lifecycle.md"
+      ],
+      "criteria": [
+        "AC2",
+        "AC3",
+        "AC6"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T3",
+      "title": "Gate timestamps and retro timing",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "skills/spec-agent/references/state.md",
+        "skills/spec-agent/SKILL.md",
+        "skills/spec-agent/templates/retro.md"
+      ],
+      "criteria": [
+        "AC4"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T4",
+      "title": "Reviewer messages-vs-docs check, 0.3.1 release",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "agents/code-reviewer.md",
+        "VERSION",
+        "CHANGELOG.md"
+      ],
+      "criteria": [
+        "AC5",
+        "AC7"
+      ],
+      "review": "batch"
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-05T17:21:24Z",
-    "stage_started_at": { "intake": "2026-10-05T17:21:24Z", "spec": "2026-10-05T17:21:24Z" },
-    "gate_rework": { "spec": 0, "plan": 0, "deliver": 0 },
-    "reviews": { "total": 0, "first_pass": 0 },
+    "stage_started_at": {
+      "intake": "2026-10-05T17:21:24Z",
+      "spec": "2026-10-05T17:21:24Z",
+      "plan": "2026-10-05T17:23:19Z"
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
     "retries": 0,
     "interventions": 0
   }

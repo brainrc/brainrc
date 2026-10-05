@@ -1,6 +1,6 @@
 # Spec: Apply the first five retros to spec-agent
 
-Ticket: gh:33 · Size: standard · Status: draft
+Ticket: gh:33 · Size: standard · Status: approved
 
 ## Problem
 Five runs on this repo hit the same friction: small docs tickets scored `standard` and got an

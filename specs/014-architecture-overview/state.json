@@ -14,7 +14,7 @@
   "size": "small",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "implement",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
     "plan": "skipped",
@@ -52,7 +52,8 @@
         "AC4",
         "AC5"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": "028f017"
     }
   ],
   "blocked": null,
@@ -61,12 +62,19 @@
     "stage_started_at": {
       "intake": "2026-10-05T18:04:01Z",
       "spec": "2026-10-05T18:04:01Z",
-      "implement": "2026-10-05T18:07:17Z"
+      "implement": "2026-10-05T18:07:17Z",
+      "verify": "2026-10-05T18:08:44Z",
+      "document": "2026-10-05T18:08:44Z",
+      "deliver": "2026-10-05T18:08:44Z"
     },
     "gates": {
       "spec": {
         "presented_at": "2026-10-05T18:04:08Z",
         "approved_at": "2026-10-05T18:07:17Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-05T18:08:44Z",
+        "approved_at": null
       }
     },
     "gate_rework": {

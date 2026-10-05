@@ -41,3 +41,17 @@
 **Open issues:** none
 
 **Next:** commit, verify
+
+## verifier + doc-writer · verify, document · done
+2026-10-05T18:08:44Z
+
+**Did:** Mapped AC1–AC5 in verify.md; drafted pr-body.md and ticket-comment.md.
+
+**Evidence:**
+- tests OK; validate OK; links OK
+
+**Changed files:** `specs/014-architecture-overview/verify.md`, `specs/014-architecture-overview/pr-body.md`, `specs/014-architecture-overview/ticket-comment.md`
+
+**Open issues:** none
+
+**Next:** Deliver gate (intake VERSION check re-run: no open PRs)

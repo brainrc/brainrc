@@ -130,3 +130,17 @@
 **Open issues:** none
 
 **Next:** verify
+
+## verifier + doc-writer · verify, document · done
+2026-10-05T17:11:17Z
+
+**Did:** Mapped AC1–AC7 in verify.md; manual break of ticket-local named the missing op. Drafted pr-body.md and ticket-comment.md.
+
+**Evidence:**
+- tests 59 OK; validate OK; example OK; sandbox OK
+
+**Changed files:** `specs/008-connector-contract/verify.md`, `specs/008-connector-contract/pr-body.md`, `specs/008-connector-contract/ticket-comment.md`
+
+**Open issues:** none
+
+**Next:** Deliver gate

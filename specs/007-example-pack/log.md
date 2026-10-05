@@ -74,3 +74,31 @@
 **Open issues:** none
 
 **Next:** verify
+
+## verifier · verify · done
+2026-10-05T13:20:37Z
+
+**Did:** Mapped AC1–AC7 in verify.md; applied the example in a temp HOME.
+
+**Evidence:**
+- tests 47 OK; core and example validate OK; sandbox OK; AC5 verify after push
+
+**Changed files:** `specs/007-example-pack/verify.md`
+
+**Open issues:** AC5 pending CI
+
+**Next:** document
+
+## doc-writer · document · done
+2026-10-05T13:21:01Z
+
+**Did:** Drafted pr-body.md and ticket-comment.md (docs already updated in T2).
+
+**Evidence:**
+- drafts checked for semicolons and dashes in prose
+
+**Changed files:** `specs/007-example-pack/pr-body.md`, `specs/007-example-pack/ticket-comment.md`
+
+**Open issues:** none
+
+**Next:** Deliver gate

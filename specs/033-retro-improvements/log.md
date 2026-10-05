@@ -97,3 +97,17 @@
 **Open issues:** none
 
 **Next:** verify
+
+## verifier + doc-writer · verify, document · done
+2026-10-05T17:28:27Z
+
+**Did:** Mapped AC1–AC7 in verify.md; drafted pr-body.md and ticket-comment.md.
+
+**Evidence:**
+- tests 59 OK; validate OK; example OK; token delta recorded
+
+**Changed files:** `specs/033-retro-improvements/verify.md`, `specs/033-retro-improvements/pr-body.md`, `specs/033-retro-improvements/ticket-comment.md`
+
+**Open issues:** none
+
+**Next:** Deliver gate

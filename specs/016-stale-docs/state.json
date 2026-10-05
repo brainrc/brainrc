@@ -1,26 +1,77 @@
 {
   "version": 1,
-  "ticket": { "source": "github", "ref": "gh:16", "id": "16", "title": "Docs: fix stale and machine-specific content; align README pitch with harness support",
-              "url": "https://github.com/bxker/ai-config/issues/16", "pr": null },
+  "ticket": {
+    "source": "github",
+    "ref": "gh:16",
+    "id": "16",
+    "title": "Docs: fix stale and machine-specific content; align README pitch with harness support",
+    "url": "https://github.com/bxker/ai-config/issues/16",
+    "pr": null
+  },
   "slug": "016-stale-docs",
   "branch": "016-stale-docs",
   "base": "main",
-  "size": "standard",
-  "mode": "fallback",
+  "size": "small",
+  "mode": "inline",
   "delivery": "normal",
-  "stage": "spec",
-  "gates": { "spec": "pending", "plan": "pending", "deliver": "pending" },
+  "stage": "implement",
+  "gates": {
+    "spec": "approved",
+    "plan": "skipped",
+    "deliver": "pending"
+  },
   "domains": [],
   "targets": {},
-  "commands": { "test": "python3 -m unittest discover -s tests -q", "lint": null, "build": null,
-                "validate": ["python3 scripts/aicfg.py validate"], "plan": null, "baseline_failures": [] },
-  "tasks": [],
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Fix stale docs and README pitch",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "docs/spec-agent.md",
+        "docs/efficiency.md",
+        "README.md",
+        "CHANGELOG.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5"
+      ],
+      "review": "batch"
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-05T13:27:12Z",
-    "stage_started_at": { "intake": "2026-10-05T13:27:12Z", "spec": "2026-10-05T13:27:12Z" },
-    "gate_rework": { "spec": 0, "plan": 0, "deliver": 0 },
-    "reviews": { "total": 0, "first_pass": 0 },
+    "stage_started_at": {
+      "intake": "2026-10-05T13:27:12Z",
+      "spec": "2026-10-05T13:27:12Z",
+      "implement": "2026-10-05T13:42:33Z"
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
     "retries": 0,
     "interventions": 0
   }

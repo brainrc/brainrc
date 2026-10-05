@@ -8,6 +8,10 @@ extensions, the rendered `extensions.md`, naming and layout rules. While the ver
 a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everything else
 (new skills, fixes, docs) bumps PATCH.
 
+## Unreleased
+
+- Docs: README states per-harness support, stale Jira and machine-specific notes removed.
+
 ## 0.1.1 (2026-10-05)
 
 - `doc-types` skill: classify a doc as one Divio type (tutorial, how-to, reference,

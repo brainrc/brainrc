@@ -1,6 +1,6 @@
 # Spec: Fix stale docs and align the README pitch with harness support
 
-Ticket: gh:16 · Size: standard · Status: draft
+Ticket: gh:16 · Size: small · Status: approved
 
 ## Problem
 Three docs say things that are no longer true or describe one person's machine. A new reader of

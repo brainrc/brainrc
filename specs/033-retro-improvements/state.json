@@ -63,13 +63,14 @@
         "AC3",
         "AC6"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": "3e45503"
     },
     {
       "id": "T3",
       "title": "Gate timestamps and retro timing",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "skills/spec-agent/references/state.md",
@@ -85,8 +86,8 @@
       "id": "T4",
       "title": "Reviewer messages-vs-docs check, 0.3.1 release",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "agents/code-reviewer.md",
         "VERSION",

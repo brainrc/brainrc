@@ -53,3 +53,17 @@
 **Open issues:** none
 
 **Next:** T3
+
+## implementer · T3 · done
+2026-10-05T17:27:43Z
+
+**Did:** state.md schema and rules gain metrics.gates.<gate>.presented_at/approved_at (missing = unknown); SKILL.md Run steps 3–4 record them; retro template splits agent time from gate waits.
+
+**Evidence:**
+- validate OK; tests OK
+
+**Changed files:** `skills/spec-agent/references/state.md`, `skills/spec-agent/SKILL.md`, `skills/spec-agent/templates/retro.md`
+
+**Open issues:** none
+
+**Next:** T4

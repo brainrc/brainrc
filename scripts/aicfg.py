@@ -502,6 +502,17 @@ def cmd_sync(apply: bool) -> int:
             print(f"ERROR {c}")
         print("\nNothing written. Rename one of each pair, then re-run.")
         return 1
+    try:
+        incompatible, warnings = check_packs(srcs)
+    except ConfigError as e:
+        incompatible, warnings = [str(e)], []
+    for w in warnings:
+        print(f"WARN {w}")
+    if incompatible:
+        for e in incompatible:
+            print(f"ERROR {e}")
+        print("\nNothing written. Update the pack or core (see CHANGELOG.md), or disable the pack.")
+        return 1
 
     if apply:
         rendered = rendered_instructions()

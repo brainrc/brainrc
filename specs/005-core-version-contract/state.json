@@ -76,14 +76,15 @@
         "AC6"
       ],
       "review": "each",
-      "red": "compile-only"
+      "red": "compile-only",
+      "commit": "516d0c6"
     },
     {
       "id": "T3",
       "title": "Refuse incompatible packs in status/apply",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "files": [
         "scripts/aicfg.py",
         "tests/test_aicfg.py"
@@ -92,7 +93,8 @@
         "AC4",
         "AC7"
       ],
-      "review": "batch"
+      "review": "batch",
+      "red": "assertion"
     },
     {
       "id": "T4",

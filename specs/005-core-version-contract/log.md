@@ -90,3 +90,19 @@
 **Open issues:** none
 
 **Next:** commit T2, then T3
+
+## implementer · T3 · done
+2026-10-05T12:52:58Z
+
+**Did:** cmd_sync runs check_packs after the collision check: WARN lines for missing requires_core; any incompatibility (or a bad VERSION with packs enabled) prints errors and returns 1 before anything is written. Covers status and apply; disabled packs aren't loaded so aren't checked.
+
+**Evidence:**
+- red (from T1): test_incompatible_pack_writes_nothing, test_pack_without_requires_core_applies_with_warning failed on assertions
+- `python3 -m unittest discover -s tests -q` → 46 tests OK
+- `python3 scripts/aicfg.py validate` → OK
+
+**Changed files:** `scripts/aicfg.py`
+
+**Open issues:** none
+
+**Next:** T4

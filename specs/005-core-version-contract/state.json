@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "ticket": { "source": "github", "ref": "gh:5", "id": "5", "title": "Packs: add a core version contract (requires_core) and CHANGELOG",
+              "url": "https://github.com/bxker/ai-config/issues/5", "pr": null },
+  "slug": "005-core-version-contract",
+  "branch": "005-core-version-contract",
+  "base": "main",
+  "size": "standard",
+  "mode": "fallback",
+  "delivery": "normal",
+  "stage": "spec",
+  "gates": { "spec": "pending", "plan": "pending", "deliver": "pending" },
+  "domains": ["scripting"],
+  "targets": {},
+  "commands": { "test": "python3 -m unittest discover -s tests -q", "lint": null, "build": null,
+                "validate": ["python3 scripts/aicfg.py validate"], "plan": null, "baseline_failures": [] },
+  "tasks": [],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-05T05:44:49Z",
+    "stage_started_at": { "intake": "2026-10-05T05:44:49Z", "spec": "2026-10-05T05:45:08Z" },
+    "gate_rework": { "spec": 0, "plan": 0, "deliver": 0 },
+    "reviews": { "total": 0, "first_pass": 0 },
+    "retries": 0,
+    "interventions": 0
+  }
+}

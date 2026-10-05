@@ -69,3 +69,33 @@
 **Open issues:** none
 
 **Next:** commit T1, then T2
+
+## implementer · T2 · done
+2026-10-05T15:20:45Z
+
+**Did:** render_instructions walks sources in order: core unlabelled, each pack under "<!-- pack: name -->" + one sentence, then local rules under "<!-- local -->". Filename order within each group.
+
+**Evidence:**
+- RenderInstructionsTest → OK; full suite → 51 OK; validate → OK
+
+**Changed files:** `scripts/aicfg.py`
+
+**Open issues:** none
+
+**Next:** review T2
+
+## code-reviewer · T2 · done
+2026-10-05T15:20:45Z
+
+**Did:** Reviewed T2 diff against AC1–AC4.
+
+**Evidence:**
+- pack with only local rules gets no empty pack label; README.md and *.local.md still excluded from shared rules; core-only output unchanged (guard test)
+
+**Changed files:** none
+
+**Findings:** none
+
+**Open issues:** none
+
+**Next:** commit T2, then T3

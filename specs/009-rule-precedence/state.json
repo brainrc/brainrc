@@ -52,13 +52,14 @@
         "AC4"
       ],
       "review": "each",
-      "red": "assertion"
+      "red": "assertion",
+      "commit": "d7c04fb"
     },
     {
       "id": "T2",
       "title": "New render_instructions",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "scripts/aicfg.py",
@@ -70,14 +71,15 @@
         "AC3",
         "AC4"
       ],
-      "review": "each"
+      "review": "each",
+      "red": "assertion"
     },
     {
       "id": "T3",
       "title": "_check_changelog in validate, with tests",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "scripts/aicfg.py",
         "tests/test_aicfg.py"
@@ -123,8 +125,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 1,
-      "first_pass": 1
+      "total": 2,
+      "first_pass": 2
     },
     "retries": 0,
     "interventions": 0

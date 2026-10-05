@@ -6,7 +6,7 @@
     "id": "7",
     "title": "Add an example pack (examples/pack-acme) validated in CI",
     "url": "https://github.com/bxker/ai-config/issues/7",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/28"
   },
   "slug": "007-example-pack",
   "branch": "007-example-pack",
@@ -14,11 +14,11 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [
     "ci-pipelines"
@@ -86,7 +86,8 @@
       "implement": "2026-10-05T13:18:45Z",
       "verify": "2026-10-05T13:20:37Z",
       "document": "2026-10-05T13:21:01Z",
-      "deliver": "2026-10-05T13:21:01Z"
+      "deliver": "2026-10-05T13:21:01Z",
+      "done": "2026-10-05T13:26:07Z"
     },
     "gate_rework": {
       "spec": 0,
@@ -98,6 +99,6 @@
       "first_pass": 1
     },
     "retries": 0,
-    "interventions": 0
+    "interventions": 1
   }
 }

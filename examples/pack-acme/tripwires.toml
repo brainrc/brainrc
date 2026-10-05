@@ -1,0 +1,6 @@
+# Stale facts that must not come back. `validate` fails on a matching line unless `allow` matches.
+[[tripwire]]
+id = "retired-deploy-tool"
+pattern = '(?i)\bshipit\b'
+message = "shipit was retired. Deploys go through the acme-deploy skill."
+allow = '(?i)retired|never'       # lines that warn against it pass

@@ -1,6 +1,6 @@
 # Plan: Example pack validated in CI
 
-Spec: [spec.md](spec.md) · Status: draft
+Spec: [spec.md](spec.md) · Status: approved
 
 ## Callouts
 - **New dependencies:** none

@@ -6,7 +6,7 @@
     "id": "33",
     "title": "spec-agent: apply improvements from the first five run retros",
     "url": "https://github.com/bxker/ai-config/issues/33",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/34"
   },
   "slug": "033-retro-improvements",
   "branch": "033-retro-improvements",
@@ -14,11 +14,11 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [],
   "targets": {},
@@ -112,7 +112,8 @@
       "implement": "2026-10-05T17:26:40Z",
       "verify": "2026-10-05T17:28:27Z",
       "document": "2026-10-05T17:28:27Z",
-      "deliver": "2026-10-05T17:28:27Z"
+      "deliver": "2026-10-05T17:28:27Z",
+      "done": "2026-10-05T17:51:48Z"
     },
     "gate_rework": {
       "spec": 0,

@@ -30,7 +30,7 @@ figures are as reported by the linked sources, not measured here.
 | [rtk-ai/rtk](https://github.com/rtk-ai/rtk) | CLI proxy that compresses noisy command output | 60–90% on log-heavy output | Overlaps our `.runs/` discipline; helps in ad-hoc sessions |
 | [oraios/serena](https://github.com/oraios/serena) | LSP-backed symbol-level code navigation/editing (MCP) | fewer full-file reads | Strong fit for large Go codebases |
 | [Mibayy/token-savior](https://github.com/Mibayy/token-savior) | Symbol-level navigation MCP | ~43% in one comparison | Best on typed languages |
-| [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) | Terse-output skill/hooks | ~38% on prose output | Already installed here; little effect on tool-heavy runs |
+| [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) | Terse-output skill/hooks | ~38% on prose output | Little effect on tool-heavy runs |
 | [musistudio/claude-code-router](https://github.com/musistudio/claude-code-router) | Routes requests to cheaper models/providers | cost, not tokens | Our `model:` tiers cover the Claude-only case |
 | [mksglu/context-mode](https://github.com/mksglu/context-mode) | Offloads large tool outputs to a searchable store | 20–98% on big outputs | Elastic License v2 (not OSI) |
 | [Fission-AI/OpenSpec](https://github.com/Fission-AI/OpenSpec) | Lightweight SDD with delta specs | ~250 vs ~800 lines per change vs spec-kit | Idea source; see roadmap for delta/living specs |

@@ -79,7 +79,7 @@ is never part of a run. It happens after merge, by you, Atlantis/Spacelift, or G
 - **Domain skill:** add `skills/<name>/SKILL.md` with Validate / Conventions / Review checklist /
   Never-without-approval, then add a row to the Domains table in `skills/spec-agent/SKILL.md`.
 - **Ticket connector:** add `skills/ticket-<system>/SKILL.md` implementing `fetch`, `comment`,
-  `transition`, `link_pr`. Jira is the planned next one.
+  `transition`, `link_pr`. Existing ones: `ticket-local`, `ticket-github`, `ticket-jira`.
 
 `python3 scripts/aicfg.py validate` checks that every agent, skill, and link referenced exists.
 

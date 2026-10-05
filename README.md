@@ -1,8 +1,10 @@
 # ai-config
 
 One Git repo for AI coding-assistant configuration (skills, agents, slash
-commands, rules, hooks, and MCP servers), written once and synced into every harness:
-Claude Code, Codex CLI, OpenCode, Gemini CLI, and Cursor.
+commands, rules, and hooks), written once and synced into Claude Code, Codex CLI, OpenCode,
+Gemini CLI, and Cursor. Skills reach every harness. Rules, commands, and agents reach only
+some so far. Guard hooks are Claude Code only, and MCP servers aren't synced yet.
+Details per harness: [harness support](docs/formats.md#harness-support).
 
 It includes **spec-agent**, a spec-driven agent team that takes a ticket to a reviewed PR
 across application code *and* infrastructure: Go, Terraform/Terragrunt, AWS, Kubernetes/Helm,

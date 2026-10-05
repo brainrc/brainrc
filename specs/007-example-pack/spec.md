@@ -1,6 +1,6 @@
 # Spec: Example pack validated in CI
 
-Ticket: gh:7 · Size: standard · Status: draft
+Ticket: gh:7 · Size: standard · Status: approved
 
 ## Problem
 Someone starting a pack has `docs/packs.md` as reference, but nothing to copy. The only working

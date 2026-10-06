@@ -14,7 +14,7 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "implement",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -108,7 +108,8 @@
       "criteria": [
         "AC7"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": "a15a3c6"
     }
   ],
   "blocked": null,
@@ -118,7 +119,10 @@
       "intake": "2026-10-06T02:43:51Z",
       "spec": "2026-10-06T02:43:51Z",
       "plan": "2026-10-06T02:50:45Z",
-      "implement": "2026-10-06T02:51:48Z"
+      "implement": "2026-10-06T02:51:48Z",
+      "verify": "2026-10-06T02:56:06Z",
+      "document": "2026-10-06T02:56:06Z",
+      "deliver": "2026-10-06T02:56:06Z"
     },
     "gates": {
       "spec": {
@@ -128,6 +132,10 @@
       "plan": {
         "presented_at": "2026-10-06T02:50:45Z",
         "approved_at": "2026-10-06T02:51:48Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-06T02:56:06Z",
+        "approved_at": null
       }
     },
     "gate_rework": {
@@ -136,8 +144,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 2,
-      "first_pass": 2
+      "total": 3,
+      "first_pass": 3
     },
     "retries": 0,
     "interventions": 0

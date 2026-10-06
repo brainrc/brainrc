@@ -114,3 +114,33 @@
 **Open issues:** none
 
 **Next:** batched review
+
+## code-reviewer · batch (T3, T4) · done
+2026-10-06T02:56:06Z
+
+**Did:** Reviewed triggers code, triggers.toml, docs against AC4, AC5, AC7.
+
+**Evidence:**
+- --cmd uses shlex.split, no shell, 600s timeout; chatty replies parse; docs commands match the CLI
+
+**Changed files:** none
+
+**Findings:** none
+
+**Open issues:** sandbox cases unproven on a real run (#18)
+
+**Next:** verify
+
+## verifier + doc-writer · verify, document · done
+2026-10-06T02:56:06Z
+
+**Did:** Mapped AC1–AC7; drafted pr-body.md and ticket-comment.md.
+
+**Evidence:**
+- tests 76 OK; validate OK; tutorial OK
+
+**Changed files:** `specs/006-evals/verify.md`, `specs/006-evals/pr-body.md`, `specs/006-evals/ticket-comment.md`
+
+**Open issues:** none
+
+**Next:** Deliver gate

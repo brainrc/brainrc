@@ -27,7 +27,11 @@ import os
 import re
 import shutil
 import sys
-import tomllib
+
+try:
+    import tomllib
+except ImportError:  # Python < 3.11; say so instead of a traceback
+    sys.exit(f"aicfg needs Python 3.11+ (this is {sys.version.split()[0]}).")
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path

@@ -5,6 +5,7 @@ import io
 import json
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -359,6 +360,17 @@ def set_requires_core(pack: Path, line: str) -> None:
     old = 'requires_core = ">=1.0, <2"\n'
     assert old in toml.read_text(), "fixture no longer pins requires_core"
     toml.write_text(toml.read_text().replace(old, line + "\n" if line else ""))
+
+
+class PythonVersionTest(unittest.TestCase):
+    def test_old_python_gets_a_message_not_a_traceback(self):
+        # Hiding tomllib is what Python 3.10 looks like to the script.
+        code = ("import runpy, sys; sys.modules['tomllib'] = None; sys.argv = ['aicfg.py', 'status']; "
+                f"runpy.run_path({str(REPO / 'scripts/aicfg.py')!r}, run_name='__main__')")
+        result = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertIn("needs Python 3.11+", result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
 
 
 class VersionConstraintTest(unittest.TestCase):

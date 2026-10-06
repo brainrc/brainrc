@@ -13,3 +13,17 @@
 **Open issues:** none
 
 **Next:** Spec gate
+
+## planner · plan · done
+2026-10-06T11:59:56Z
+
+**Did:** 3 tasks, tests first; T2 reuses plan(), settings_change(), renderers, validate.
+
+**Evidence:**
+- spec approved 2026-10-06T11:59:56Z
+
+**Changed files:** `specs/012-aicfg-doctor/plan.md`
+
+**Open issues:** none
+
+**Next:** Plan gate

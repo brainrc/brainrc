@@ -14,10 +14,10 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "plan",
+  "stage": "implement",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [],
@@ -37,8 +37,8 @@
       "id": "T1",
       "title": "Write docs/tutorial.md",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "docs/tutorial.md"
       ],
@@ -86,7 +86,8 @@
     "stage_started_at": {
       "intake": "2026-10-05T21:04:16Z",
       "spec": "2026-10-05T21:04:16Z",
-      "plan": "2026-10-06T01:57:00Z"
+      "plan": "2026-10-06T01:57:00Z",
+      "implement": "2026-10-06T01:59:05Z"
     },
     "gates": {
       "spec": {
@@ -95,7 +96,7 @@
       },
       "plan": {
         "presented_at": "2026-10-06T01:57:00Z",
-        "approved_at": null
+        "approved_at": "2026-10-06T01:59:05Z"
       }
     },
     "gate_rework": {

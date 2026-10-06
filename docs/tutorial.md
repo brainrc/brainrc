@@ -79,7 +79,7 @@ python3 scripts/aicfg.py validate --pack ~/src/myteam-ai-pack
 
 You should see `OK:` with `(packs: myteam)` at the end. A common mistake is a skill without
 the prefix. `validate` then names it, for example
-`myteam:skills/protobuf: pack skills must start with myteam-`.
+``myteam:skills/protobuf: pack skills must start with `myteam-` ``.
 
 ## 5. Enable and install it
 
@@ -93,10 +93,11 @@ path = "~/src/myteam-ai-pack"
 EOF
 python3 scripts/aicfg.py status
 python3 scripts/aicfg.py apply
+python3 scripts/aicfg.py status | grep 'Everything in sync.'
 ```
 
-`status` lists `CREATE` lines, including one for `myteam-protobuf` in each harness's skills
-directory. After `apply`, running `status` again says `Everything in sync.`
+The first `status` lists `CREATE` lines, including one for `myteam-protobuf` in each
+harness's skills directory. After `apply`, `status` prints `Everything in sync.`
 
 ## 6. Check what your AI tools now see
 

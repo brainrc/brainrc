@@ -1,6 +1,6 @@
 # Plan: Tutorial for your first domain skill and your first pack
 
-Spec: [spec.md](spec.md) · Status: draft
+Spec: [spec.md](spec.md) · Status: approved
 
 ## Callouts
 - **New dependencies:** none

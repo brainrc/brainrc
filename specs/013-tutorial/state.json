@@ -6,7 +6,7 @@
     "id": "13",
     "title": "Docs: tutorial for building your first domain skill and your first pack",
     "url": "https://github.com/bxker/ai-config/issues/13",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/36"
   },
   "slug": "013-tutorial",
   "branch": "013-tutorial",
@@ -14,7 +14,7 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -93,7 +93,8 @@
       "implement": "2026-10-06T01:59:05Z",
       "verify": "2026-10-06T02:00:49Z",
       "document": "2026-10-06T02:00:49Z",
-      "deliver": "2026-10-06T02:00:49Z"
+      "deliver": "2026-10-06T02:00:49Z",
+      "done": "2026-10-06T02:02:47Z"
     },
     "gates": {
       "spec": {

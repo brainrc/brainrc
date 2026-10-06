@@ -14,7 +14,7 @@
   "size": "small",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "implement",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
     "plan": "skipped",
@@ -37,7 +37,7 @@
       "id": "T1",
       "title": "CONTRIBUTING.md, AGENTS.md back-link, README link, 0.3.4",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "CONTRIBUTING.md",
@@ -51,7 +51,8 @@
         "AC2",
         "AC3"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": "5674cdc"
     }
   ],
   "blocked": null,
@@ -60,12 +61,19 @@
     "stage_started_at": {
       "intake": "2026-10-06T02:06:51Z",
       "spec": "2026-10-06T02:06:51Z",
-      "implement": "2026-10-06T02:35:54Z"
+      "implement": "2026-10-06T02:35:54Z",
+      "verify": "2026-10-06T02:37:02Z",
+      "document": "2026-10-06T02:37:02Z",
+      "deliver": "2026-10-06T02:37:02Z"
     },
     "gates": {
       "spec": {
         "presented_at": "2026-10-06T02:06:57Z",
         "approved_at": "2026-10-06T02:35:54Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-06T02:37:02Z",
+        "approved_at": null
       }
     },
     "gate_rework": {
@@ -74,8 +82,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
-      "first_pass": 0
+      "total": 1,
+      "first_pass": 1
     },
     "retries": 0,
     "interventions": 0

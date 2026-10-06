@@ -1,0 +1,154 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:6",
+    "id": "6",
+    "title": "Add behavioural evals for skills and agents (sandbox fixtures + trigger tests)",
+    "url": "https://github.com/bxker/ai-config/issues/6",
+    "pr": "https://github.com/bxker/ai-config/pull/38"
+  },
+  "slug": "006-evals",
+  "branch": "006-evals",
+  "base": "main",
+  "size": "standard",
+  "mode": "fallback",
+  "delivery": "normal",
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Contract tests for check kinds, run lookup, trigger scoring",
+      "agent": "test-writer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "tests/test_evals.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC4",
+        "AC6"
+      ],
+      "review": "each",
+      "red": "compile-only",
+      "commit": "b78dae1"
+    },
+    {
+      "id": "T2",
+      "title": "evals.py check and the two sandbox cases",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "scripts/evals.py",
+        "evals/cases/sandbox-001.toml",
+        "evals/cases/sandbox-002.toml",
+        "tests/test_evals.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC5"
+      ],
+      "review": "each",
+      "red": "compile-only",
+      "commit": "77ba102"
+    },
+    {
+      "id": "T3",
+      "title": "evals.py triggers and evals/triggers.toml",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "scripts/evals.py",
+        "evals/triggers.toml",
+        "tests/test_evals.py"
+      ],
+      "criteria": [
+        "AC4",
+        "AC5"
+      ],
+      "review": "batch",
+      "commit": "5f90673"
+    },
+    {
+      "id": "T4",
+      "title": "Docs, README link, 0.3.5",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "docs/evals.md",
+        "README.md",
+        "VERSION",
+        "CHANGELOG.md"
+      ],
+      "criteria": [
+        "AC7"
+      ],
+      "review": "batch",
+      "commit": "a15a3c6"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-06T02:43:51Z",
+    "stage_started_at": {
+      "intake": "2026-10-06T02:43:51Z",
+      "spec": "2026-10-06T02:43:51Z",
+      "plan": "2026-10-06T02:50:45Z",
+      "implement": "2026-10-06T02:51:48Z",
+      "verify": "2026-10-06T02:56:06Z",
+      "document": "2026-10-06T02:56:06Z",
+      "deliver": "2026-10-06T02:56:06Z",
+      "done": "2026-10-06T02:59:05Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-06T02:43:57Z",
+        "approved_at": "2026-10-06T02:50:45Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-06T02:50:45Z",
+        "approved_at": "2026-10-06T02:51:48Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-06T02:56:06Z",
+        "approved_at": "2026-10-06T02:58:28Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 3,
+      "first_pass": 3
+    },
+    "retries": 0,
+    "interventions": 0
+  }
+}

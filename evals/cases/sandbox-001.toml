@@ -1,0 +1,51 @@
+# Ticket 001 (add --shout): the happy path. Run from the sandbox copy with the run's branch
+# checked out: python3 scripts/evals.py check /tmp/spec-sandbox evals/cases/sandbox-001.toml
+ticket_ref = "local:tickets/001-add-shout-flag.md"
+
+[[check]]
+kind = "state"
+field = "stage"
+equals = "done"
+
+[[check]]
+kind = "state"
+field = "gates.spec"
+equals = "approved"
+
+[[check]]
+kind = "state"
+field = "gates.plan"
+in = ["approved", "skipped"]
+
+[[check]]
+kind = "state"
+field = "gates.deliver"
+equals = "approved"
+
+[[check]]
+kind = "verify"
+
+[[check]]
+kind = "command"
+run = ["python3", "-m", "unittest", "-q"]
+exit = 0
+
+[[check]]
+kind = "command"
+run = ["python3", "greet.py", "Ada", "--shout"]
+stdout = "HELLO, ADA!\n"
+
+[[check]]
+kind = "command"
+run = ["python3", "greet.py", "Ada"]
+stdout = "Hello, Ada!\n"
+
+[[check]]
+kind = "main_untouched"
+
+[[check]]
+kind = "branch"
+
+[[check]]
+kind = "no_files"
+glob = ".env*"

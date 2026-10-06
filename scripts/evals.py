@@ -1,0 +1,244 @@
+#!/usr/bin/env python3
+"""evals: behavioural checks for spec-agent runs and skill descriptions (docs/evals.md).
+
+Usage:
+  evals.py check <project-dir> <case.toml>   grade a finished spec-agent run against a case
+  evals.py triggers [--cmd CMD] [--answer FILE] [--file TOML ...]
+                                             without flags, print the skill-selection prompt;
+                                             --cmd pipes it to a model CLI and scores the reply;
+                                             --answer scores a saved reply
+
+Stdlib only. Nothing here calls a model unless you pass --cmd.
+"""
+from __future__ import annotations
+
+import fnmatch
+import json
+import re
+import shlex
+import subprocess
+import sys
+import tomllib
+from pathlib import Path
+
+REPO = Path(__file__).resolve().parent.parent
+KINDS = ("state", "verify", "file", "command", "main_untouched", "branch", "no_files")
+
+
+class EvalError(Exception):
+    pass
+
+
+# ---------- check ----------
+
+def _git(project: Path, *args: str) -> str:
+    result = subprocess.run(["git", *args], cwd=project, capture_output=True, text=True)
+    if result.returncode != 0:
+        raise EvalError(f"git {' '.join(args)}: {result.stderr.strip()}")
+    return result.stdout
+
+
+def find_run(project: Path, ref: str) -> Path:
+    """The specs/<slug>/ folder whose state.json names this ticket ref."""
+    for state in sorted(project.glob("specs/*/state.json")):
+        if json.loads(state.read_text()).get("ticket", {}).get("ref") == ref:
+            return state.parent
+    raise EvalError(f"no run found for ticket_ref {ref!r} under {project}/specs/")
+
+
+def _field(data: dict, dotted: str):
+    for key in dotted.split("."):
+        data = data.get(key) if isinstance(data, dict) else None
+    return data
+
+
+def _criteria(verify: str) -> list[tuple[str, str]]:
+    """(criterion, result) rows from verify.md's Acceptance criteria table."""
+    section = verify.split("## Acceptance criteria", 1)[-1].split("\n## ", 1)[0]
+    rows = []
+    for line in section.splitlines():
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if len(cells) >= 2 and re.fullmatch(r"AC\d+", cells[0]):
+            rows.append((cells[0], cells[-1]))
+    return rows
+
+
+def run_check(check: dict, project: Path, run: Path, state: dict) -> tuple[bool, str]:
+    kind = check.get("kind")
+    if kind == "state":
+        value, field = _field(state, check["field"]), check["field"]
+        allowed = check["in"] if "in" in check else [check["equals"]]
+        return value in allowed, f"state {field} = {value!r}" + ("" if value in allowed else f", expected {allowed}")
+    if kind == "verify":
+        if not (run / "verify.md").is_file():
+            return False, "verify: no verify.md in the run"
+        rows = _criteria((run / "verify.md").read_text())
+        bad = [ac for ac, result in rows if not result.lower().startswith("pass")]
+        if not rows:
+            return False, "verify: no criteria rows in verify.md"
+        return not bad, f"verify: {len(rows)} criteria" + (f", not passed: {', '.join(bad)}" if bad else " all pass")
+    if kind == "file":
+        rel = check["path"].replace("{spec}", str(run.relative_to(project)))
+        path = project / rel
+        text = path.read_text() if path.is_file() else ""
+        if "matches" in check:
+            ok = bool(re.search(check["matches"], text, re.M))
+            return ok, f"file {rel} {'matches' if ok else 'does not match'} {check['matches']!r}"
+        ok = not re.search(check["absent"], text, re.M)
+        return ok, f"file {rel} {'has no' if ok else 'contains'} {check['absent']!r}"
+    if kind == "command":
+        result = subprocess.run(check["run"], cwd=project, capture_output=True, text=True, timeout=120)
+        want = check.get("exit", 0)
+        if result.returncode != want:
+            return False, f"command {' '.join(check['run'])}: exit {result.returncode}, expected {want}"
+        if "stdout" in check and result.stdout != check["stdout"]:
+            return False, f"command {' '.join(check['run'])}: stdout {result.stdout!r}, expected {check['stdout']!r}"
+        return True, f"command {' '.join(check['run'])}: exit {want}"
+    if kind == "main_untouched":
+        branch = check.get("branch", "main")
+        count = int(_git(project, "rev-list", "--count", branch).strip())
+        return count == 1, f"{branch} has {count} commit(s), expected only the initial one"
+    if kind == "branch":
+        name = state.get("branch", "")
+        ok = bool(name) and bool(_git(project, "branch", "--list", name).strip())
+        return ok, f"branch {name!r} {'exists' if ok else 'missing'}"
+    if kind == "no_files":
+        names = set(_git(project, "log", "--all", "--name-only", "--format=").split())
+        hits = sorted(n for n in names if fnmatch.fnmatch(Path(n).name, check["glob"]))
+        return not hits, f"no_files {check['glob']!r}" + (f": committed {', '.join(hits)}" if hits else ": none committed")
+    return False, f"unknown check kind {kind!r} (known: {', '.join(KINDS)})"
+
+
+def cmd_check(project: str, case: str) -> int:
+    root = Path(project).resolve()
+    spec = tomllib.loads(Path(case).read_text())
+    try:
+        run = find_run(root, spec["ticket_ref"])
+        state = json.loads((run / "state.json").read_text())
+        results = [run_check(c, root, run, state) for c in spec.get("check", [])]
+    except (EvalError, OSError, KeyError, subprocess.TimeoutExpired) as e:
+        print(f"ERROR {e}")
+        return 1
+    for ok, detail in results:
+        print(f"{'PASS' if ok else 'FAIL'} {detail}")
+    failed = sum(not ok for ok, _ in results)
+    print(f"\n{len(results) - failed} passed, {failed} failed ({Path(case).name} on {run.relative_to(root)})")
+    return 1 if failed else 0
+
+
+# ---------- triggers ----------
+
+def _aicfg():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("aicfg", REPO / "scripts" / "aicfg.py")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules.setdefault("aicfg", module)
+    spec.loader.exec_module(module)
+    return module
+
+
+def load_skills() -> dict[str, str]:
+    """name -> description for core and every enabled pack: what a harness sees."""
+    aicfg = _aicfg()
+    return {s.name: aicfg.frontmatter(s / "SKILL.md").get("description", "")
+            for src in aicfg.sources() for s in aicfg.skills(src)}
+
+
+def default_trigger_files() -> list[Path]:
+    aicfg = _aicfg()
+    return [p for src in aicfg.sources() if (p := src.root / "evals" / "triggers.toml").is_file()]
+
+
+def load_cases(files: list[Path]) -> list[dict]:
+    cases = []
+    for f in files:
+        for case in tomllib.loads(Path(f).read_text()).get("case", []):
+            cases.append({**case, "id": str(len(cases) + 1)})
+    return cases
+
+
+def build_prompt(skills: dict[str, str], cases: list[dict]) -> str:
+    lines = ["You choose which skills an AI coding assistant loads for a request. Each skill has a",
+             "name and a description. Load a skill only when its description fits the request.", "",
+             "Skills:"]
+    lines += [f"- {name}: {desc}" for name, desc in sorted(skills.items())]
+    lines += ["", "Requests:"]
+    lines += [f"{c['id']}. {c['prompt']}" for c in cases]
+    lines += ["", "Answer with only a JSON object that maps each request number to the list of skill",
+              'names you would load, for example {"1": ["skill-a"], "2": []}.']
+    return "\n".join(lines) + "\n"
+
+
+def parse_answer(text: str) -> dict:
+    """The first JSON object in the text, so a chatty reply still scores."""
+    decoder = json.JSONDecoder()
+    for i, ch in enumerate(text):
+        if ch == "{":
+            try:
+                value, _ = decoder.raw_decode(text[i:])
+            except json.JSONDecodeError:
+                continue
+            if isinstance(value, dict):
+                return {str(k): [str(s) for s in v] for k, v in value.items() if isinstance(v, list)}
+    return {}
+
+
+def score(cases: list[dict], answer: dict) -> list[tuple[str, bool, str]]:
+    results = []
+    for c in cases:
+        chosen = set(answer.get(c["id"], []))
+        missing = sorted(set(c.get("expect", [])) - chosen)
+        extra = sorted(set(c.get("forbid", [])) & chosen)
+        detail = f"{c['id']}. {c['prompt']!r} -> {sorted(chosen) or 'none'}"
+        if missing:
+            detail += f"; missing {missing}"
+        if extra:
+            detail += f"; should not load {extra}"
+        results.append((c["id"], not missing and not extra, detail))
+    return results
+
+
+def cmd_triggers(cmd: str | None = None, answer: str | None = None, files: list | None = None) -> int:
+    cases = load_cases([Path(f) for f in files] if files else default_trigger_files())
+    prompt = build_prompt(load_skills(), cases)
+    if not cmd and not answer:
+        print(prompt, end="")
+        return 0
+    if cmd:
+        result = subprocess.run(shlex.split(cmd), input=prompt, capture_output=True, text=True, timeout=600)
+        if result.returncode != 0:
+            print(f"ERROR {cmd}: exit {result.returncode}: {result.stderr.strip()[:500]}")
+            return 1
+        text = result.stdout
+    else:
+        text = Path(answer).read_text()
+    parsed = parse_answer(text)
+    if not parsed:
+        print("ERROR no JSON object in the model's reply")
+        return 1
+    results = score(cases, parsed)
+    for _, ok, detail in results:
+        print(f"{'PASS' if ok else 'FAIL'} {detail}")
+    failed = sum(not ok for _, ok, _ in results)
+    print(f"\n{len(results) - failed} passed, {failed} failed ({len(cases)} cases)")
+    return 1 if failed else 0
+
+
+def main(argv: list[str]) -> int:
+    if len(argv) == 4 and argv[1] == "check":
+        return cmd_check(argv[2], argv[3])
+    if len(argv) >= 2 and argv[1] == "triggers":
+        opts: dict[str, list[str]] = {"--cmd": [], "--answer": [], "--file": []}
+        rest = argv[2:]
+        while len(rest) >= 2 and rest[0] in opts:
+            opts[rest[0]].append(rest[1])
+            rest = rest[2:]
+        if not rest and len(opts["--cmd"]) <= 1 and len(opts["--answer"]) <= 1:
+            return cmd_triggers(cmd=(opts["--cmd"] or [None])[0], answer=(opts["--answer"] or [None])[0],
+                                files=opts["--file"] or None)
+    print(__doc__)
+    return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

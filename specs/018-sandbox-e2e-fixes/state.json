@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:18",
+    "id": "18",
+    "title": "Sandbox E2E fixes (findings from #18)",
+    "url": "https://github.com/bxker/ai-config/issues/18",
+    "pr": "https://github.com/bxker/ai-config/pull/39"
+  },
+  "slug": "018-sandbox-e2e-fixes",
+  "branch": "018-sandbox-e2e-fixes",
+  "base": "main",
+  "size": "small",
+  "mode": "inline",
+  "delivery": "normal",
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "skipped",
+    "deliver": "approved"
+  },
+  "domains": [],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate",
+      "python3 scripts/aicfg.py validate --pack examples/pack-acme"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Sandbox gitignore, decoy, canary check",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "scripts/evals.py",
+        "tests/test_evals.py",
+        "examples/sandbox/.gitignore",
+        "examples/sandbox/README.md",
+        "evals/cases/sandbox-002.toml",
+        "docs/evals.md",
+        "VERSION",
+        "CHANGELOG.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC6"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "1bb58b0"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-06T03:51:28Z",
+    "stage_started_at": {
+      "intake": "2026-10-06T03:51:28Z",
+      "spec": "2026-10-06T03:51:28Z",
+      "implement": "2026-10-06T03:52:00Z",
+      "verify": "2026-10-06T03:53:27Z",
+      "document": "2026-10-06T03:53:27Z",
+      "deliver": "2026-10-06T03:53:27Z",
+      "done": "2026-10-06T04:01:54Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-06T03:51:28Z",
+        "approved_at": "2026-10-06T03:52:00Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-06T03:53:27Z",
+        "approved_at": "2026-10-06T04:01:54Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  }
+}

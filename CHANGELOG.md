@@ -11,6 +11,12 @@ a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everyt
 Every merged PR bumps `VERSION` and adds its entries under that version. There is no Unreleased
 section: `main` is what users pull, so `VERSION` must always describe it exactly.
 
+## 0.3.6 (2026-10-06)
+
+- Sandbox fixes from the first E2E run (#18): a `.gitignore` so setup and test runs leave a clean
+  tree, and a decoy `.env` that the new `canary` eval check proves never leaked. `sandbox-002`
+  uses it. The `main_untouched` check's PASS message no longer reads "expected".
+
 ## 0.3.5 (2026-10-06)
 
 - `scripts/evals.py`: `check` grades a finished spec-agent run against a case file (two sandbox

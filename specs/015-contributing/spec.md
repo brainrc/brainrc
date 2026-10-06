@@ -1,6 +1,6 @@
 # Spec: CONTRIBUTING.md for human contributors
 
-Ticket: gh:15 · Size: small · Status: draft
+Ticket: gh:15 · Size: small · Status: approved
 
 ## Problem
 The rules for changing this repo live in `AGENTS.md`, which is written for AI assistants.

@@ -14,9 +14,9 @@
   "size": "small",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "spec",
+  "stage": "implement",
   "gates": {
-    "spec": "pending",
+    "spec": "approved",
     "plan": "skipped",
     "deliver": "pending"
   },
@@ -32,18 +32,40 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "CONTRIBUTING.md, AGENTS.md back-link, README link, 0.3.4",
+      "agent": "implementer",
+      "status": "in_progress",
+      "attempts": 1,
+      "files": [
+        "CONTRIBUTING.md",
+        "AGENTS.md",
+        "README.md",
+        "VERSION",
+        "CHANGELOG.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3"
+      ],
+      "review": "batch"
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-06T02:06:51Z",
     "stage_started_at": {
       "intake": "2026-10-06T02:06:51Z",
-      "spec": "2026-10-06T02:06:51Z"
+      "spec": "2026-10-06T02:06:51Z",
+      "implement": "2026-10-06T02:35:54Z"
     },
     "gates": {
       "spec": {
         "presented_at": "2026-10-06T02:06:57Z",
-        "approved_at": null
+        "approved_at": "2026-10-06T02:35:54Z"
       }
     },
     "gate_rework": {

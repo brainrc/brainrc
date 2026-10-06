@@ -1,6 +1,7 @@
 # Instructions for AI assistants editing this repo
 
 This repo is **public** and is the source of truth for the owner's AI harness config.
+These rules apply to human contributors too. Setup and PR workflow: [CONTRIBUTING.md](CONTRIBUTING.md).
 
 - Never add secrets, tokens, personal emails, internal hostnames, or absolute
   paths like `/Users/<name>`. Use `~` and environment variable *names*.

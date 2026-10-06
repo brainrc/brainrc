@@ -76,7 +76,8 @@ in a **pack**: a separate repo with the same layout. See [docs/packs.md](docs/pa
 ## Adding content
 
 New to it? Follow the [tutorial](docs/tutorial.md): build a pack with one domain skill in
-about 15 minutes. Formats are in [docs/formats.md](docs/formats.md). Before committing:
+about 15 minutes. Formats are in [docs/formats.md](docs/formats.md). To contribute to this
+repo, see [CONTRIBUTING.md](CONTRIBUTING.md). Before committing:
 
 ```bash
 python3 scripts/aicfg.py validate

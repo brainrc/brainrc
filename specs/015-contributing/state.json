@@ -6,7 +6,7 @@
     "id": "15",
     "title": "Docs: add CONTRIBUTING.md for human contributors",
     "url": "https://github.com/bxker/ai-config/issues/15",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/37"
   },
   "slug": "015-contributing",
   "branch": "015-contributing",
@@ -14,7 +14,7 @@
   "size": "small",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "skipped",
@@ -64,7 +64,8 @@
       "implement": "2026-10-06T02:35:54Z",
       "verify": "2026-10-06T02:37:02Z",
       "document": "2026-10-06T02:37:02Z",
-      "deliver": "2026-10-06T02:37:02Z"
+      "deliver": "2026-10-06T02:37:02Z",
+      "done": "2026-10-06T02:38:36Z"
     },
     "gates": {
       "spec": {

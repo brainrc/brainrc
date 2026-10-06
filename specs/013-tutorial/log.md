@@ -25,3 +25,45 @@
 **Open issues:** callout: start from a minimal pack instead of copy-and-rename (portability)
 
 **Next:** Plan gate
+
+## implementer · T1 · done
+2026-10-06T02:00:23Z
+
+**Did:** docs/tutorial.md: 7 steps plus next steps, every command in a bash block with a "you should see" line; fixed a nested fence, the error example's backticks, and made the in-sync claim an executed command.
+
+**Evidence:**
+- run-tutorial.sh → exit 0; error example matches real validate output
+
+**Changed files:** `docs/tutorial.md`
+
+**Open issues:** none
+
+**Next:** T2
+
+## implementer · T2 · done
+2026-10-06T02:00:23Z
+
+**Did:** run-tutorial.sh extracts every bash block from the doc, swaps <this-repo> for the checkout, runs them in one shell with a temp HOME.
+
+**Evidence:**
+- 61 lines extracted; validate, validate --pack, status, apply, in-sync, ls, grep extensions.md, tokens, git commit all ran; exit 0
+
+**Changed files:** `specs/013-tutorial/run-tutorial.sh`
+
+**Open issues:** none
+
+**Next:** T3
+
+## implementer · T3 · done
+2026-10-06T02:00:23Z
+
+**Did:** README Adding content links the tutorial; VERSION 0.3.3; CHANGELOG entry.
+
+**Evidence:**
+- validate OK; tests OK; tutorial links resolve
+
+**Changed files:** `README.md`, `VERSION`, `CHANGELOG.md`
+
+**Open issues:** none
+
+**Next:** batched review

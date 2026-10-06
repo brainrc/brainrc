@@ -37,7 +37,7 @@
       "id": "T1",
       "title": "Write docs/tutorial.md",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "docs/tutorial.md"
@@ -53,8 +53,8 @@
       "id": "T2",
       "title": "run-tutorial.sh and a green run",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "files": [
         "specs/013-tutorial/run-tutorial.sh"
       ],
@@ -67,8 +67,8 @@
       "id": "T3",
       "title": "README link, 0.3.3",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "files": [
         "README.md",
         "VERSION",

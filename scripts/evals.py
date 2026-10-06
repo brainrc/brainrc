@@ -128,25 +128,114 @@ def cmd_check(project: str, case: str) -> int:
 
 # ---------- triggers ----------
 
-def score(cases: list[dict], answer: dict) -> list[tuple[str, bool, str]]:
-    return []
+def _aicfg():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("aicfg", REPO / "scripts" / "aicfg.py")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules.setdefault("aicfg", module)
+    spec.loader.exec_module(module)
+    return module
+
+
+def load_skills() -> dict[str, str]:
+    """name -> description for core and every enabled pack: what a harness sees."""
+    aicfg = _aicfg()
+    return {s.name: aicfg.frontmatter(s / "SKILL.md").get("description", "")
+            for src in aicfg.sources() for s in aicfg.skills(src)}
+
+
+def default_trigger_files() -> list[Path]:
+    aicfg = _aicfg()
+    return [p for src in aicfg.sources() if (p := src.root / "evals" / "triggers.toml").is_file()]
+
+
+def load_cases(files: list[Path]) -> list[dict]:
+    cases = []
+    for f in files:
+        for case in tomllib.loads(Path(f).read_text()).get("case", []):
+            cases.append({**case, "id": str(len(cases) + 1)})
+    return cases
 
 
 def build_prompt(skills: dict[str, str], cases: list[dict]) -> str:
-    return ""
+    lines = ["You choose which skills an AI coding assistant loads for a request. Each skill has a",
+             "name and a description. Load a skill only when its description fits the request.", "",
+             "Skills:"]
+    lines += [f"- {name}: {desc}" for name, desc in sorted(skills.items())]
+    lines += ["", "Requests:"]
+    lines += [f"{c['id']}. {c['prompt']}" for c in cases]
+    lines += ["", "Answer with only a JSON object that maps each request number to the list of skill",
+              'names you would load, for example {"1": ["skill-a"], "2": []}.']
+    return "\n".join(lines) + "\n"
 
 
 def parse_answer(text: str) -> dict:
+    """The first JSON object in the text, so a chatty reply still scores."""
+    decoder = json.JSONDecoder()
+    for i, ch in enumerate(text):
+        if ch == "{":
+            try:
+                value, _ = decoder.raw_decode(text[i:])
+            except json.JSONDecodeError:
+                continue
+            if isinstance(value, dict):
+                return {str(k): [str(s) for s in v] for k, v in value.items() if isinstance(v, list)}
     return {}
 
 
+def score(cases: list[dict], answer: dict) -> list[tuple[str, bool, str]]:
+    results = []
+    for c in cases:
+        chosen = set(answer.get(c["id"], []))
+        missing = sorted(set(c.get("expect", [])) - chosen)
+        extra = sorted(set(c.get("forbid", [])) & chosen)
+        detail = f"{c['id']}. {c['prompt']!r} -> {sorted(chosen) or 'none'}"
+        if missing:
+            detail += f"; missing {missing}"
+        if extra:
+            detail += f"; should not load {extra}"
+        results.append((c["id"], not missing and not extra, detail))
+    return results
+
+
 def cmd_triggers(cmd: str | None = None, answer: str | None = None, files: list | None = None) -> int:
-    return 0
+    cases = load_cases([Path(f) for f in files] if files else default_trigger_files())
+    prompt = build_prompt(load_skills(), cases)
+    if not cmd and not answer:
+        print(prompt, end="")
+        return 0
+    if cmd:
+        result = subprocess.run(shlex.split(cmd), input=prompt, capture_output=True, text=True, timeout=600)
+        if result.returncode != 0:
+            print(f"ERROR {cmd}: exit {result.returncode}: {result.stderr.strip()[:500]}")
+            return 1
+        text = result.stdout
+    else:
+        text = Path(answer).read_text()
+    parsed = parse_answer(text)
+    if not parsed:
+        print("ERROR no JSON object in the model's reply")
+        return 1
+    results = score(cases, parsed)
+    for _, ok, detail in results:
+        print(f"{'PASS' if ok else 'FAIL'} {detail}")
+    failed = sum(not ok for _, ok, _ in results)
+    print(f"\n{len(results) - failed} passed, {failed} failed ({len(cases)} cases)")
+    return 1 if failed else 0
 
 
 def main(argv: list[str]) -> int:
     if len(argv) == 4 and argv[1] == "check":
         return cmd_check(argv[2], argv[3])
+    if len(argv) >= 2 and argv[1] == "triggers":
+        opts: dict[str, list[str]] = {"--cmd": [], "--answer": [], "--file": []}
+        rest = argv[2:]
+        while len(rest) >= 2 and rest[0] in opts:
+            opts[rest[0]].append(rest[1])
+            rest = rest[2:]
+        if not rest and len(opts["--cmd"]) <= 1 and len(opts["--answer"]) <= 1:
+            return cmd_triggers(cmd=(opts["--cmd"] or [None])[0], answer=(opts["--answer"] or [None])[0],
+                                files=opts["--file"] or None)
     print(__doc__)
     return 2
 

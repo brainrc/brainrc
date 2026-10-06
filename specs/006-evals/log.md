@@ -86,3 +86,17 @@
 **Open issues:** none
 
 **Next:** commit T2, then T3
+
+## implementer · T3 · done
+2026-10-06T02:55:04Z
+
+**Did:** evals.py triggers: loads core + enabled packs' evals/triggers.toml, builds one selection prompt from skill names and descriptions, prints it, or scores --cmd output / --answer file. evals/triggers.toml: 15 cases, positive and negative for all 10 domain skills, plus 3 cases that should load none.
+
+**Evidence:**
+- TriggerTest OK; coverage test OK; prompt ~7.4 KB; a hand-made correct answer scores 15/15
+
+**Changed files:** `scripts/evals.py`, `evals/triggers.toml`
+
+**Open issues:** none
+
+**Next:** T4

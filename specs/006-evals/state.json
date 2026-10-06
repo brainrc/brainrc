@@ -72,13 +72,14 @@
         "AC5"
       ],
       "review": "each",
-      "red": "compile-only"
+      "red": "compile-only",
+      "commit": "77ba102"
     },
     {
       "id": "T3",
       "title": "evals.py triggers and evals/triggers.toml",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "scripts/evals.py",
@@ -95,8 +96,8 @@
       "id": "T4",
       "title": "Docs, README link, 0.3.5",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "docs/evals.md",
         "README.md",

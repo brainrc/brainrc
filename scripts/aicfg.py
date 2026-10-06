@@ -7,6 +7,9 @@ Usage:
                                  merge settings
   aicfg.py validate [--pack DIR] check frontmatter, cross-references, packs, and tripwires
                                  (used in CI); --pack checks core plus that pack only
+  aicfg.py doctor                diagnose this machine's install (read-only): stale renders,
+                                 missing/broken links, broken packs, unmerged hooks; exits 1
+                                 on any problem, each with its fix
   aicfg.py tokens                estimate the context cost of every skill, agent, and command
 
 Sources: this repo ("core", versioned by VERSION) plus any packs listed in packs.toml /

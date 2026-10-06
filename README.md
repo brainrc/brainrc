@@ -36,7 +36,7 @@ overrides/      Harness-specific config (Claude guard hooks + settings fragment)
 harnesses.toml  Where each harness reads each content type.
 packs.toml      Extra source repos ("packs") layered on top; usually set in packs.local.toml.
 VERSION         Core version that packs pin with `requires_core`; changes in CHANGELOG.md.
-scripts/        aicfg.py: sync, validate, tokens (Python 3.11+, stdlib only).
+scripts/        aicfg.py: sync, validate, doctor, tokens (Python 3.11+, stdlib only).
 docs/           spec-agent, guardrails, efficiency, formats, roadmap.
 tests/          stdlib unittest for aicfg and hooks.
 examples/       Sandbox project + tickets for trying spec-agent.
@@ -61,6 +61,10 @@ first, and the last 5 backups are kept).
 
 `aicfg` never overwrites a file it doesn't manage. Pre-existing files show up as
 `CONFLICT` for you to move into the repo or delete.
+
+Something missing in a harness? `python3 scripts/aicfg.py doctor` checks the install without
+changing anything: stale rules, missing or broken links (after moving the repo, say), broken
+packs, unmerged hooks, and harnesses that aren't installed. Each problem comes with its fix.
 
 ## Per-machine customization (never committed)
 

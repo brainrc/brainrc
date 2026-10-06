@@ -11,6 +11,13 @@ a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everyt
 Every merged PR bumps `VERSION` and adds its entries under that version. There is no Unreleased
 section: `main` is what users pull, so `VERSION` must always describe it exactly.
 
+## 0.3.7 (2026-10-06)
+
+- `aicfg doctor`: a read-only check of this machine's install. It reports stale renders,
+  missing, wrong, stale, or broken links, broken or incompatible packs, unmerged hooks, and
+  harnesses that aren't installed, each with its fix, and exits 1 on any problem (#12).
+- `aicfg` on Python older than 3.11 prints one line saying so instead of a traceback.
+
 ## 0.3.6 (2026-10-06)
 
 - Sandbox fixes from the first E2E run (#18): a `.gitignore` so setup and test runs leave a clean

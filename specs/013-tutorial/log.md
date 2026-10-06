@@ -67,3 +67,34 @@
 **Open issues:** none
 
 **Next:** batched review
+
+## code-reviewer · batch (T1–T3) · done
+2026-10-06T02:00:49Z
+
+**Did:** Checked every tutorial claim against real output (validate, status, extensions.md row, error text).
+
+**Evidence:**
+- runner exit 0; error example re-run against validate
+
+**Changed files:** none
+
+**Findings:**
+- LOW: run-tutorial.sh isn't in CI; the requires_core pin ages at the next MINOR bump → follow-up.
+
+**Open issues:** none
+
+**Next:** verify
+
+## verifier + doc-writer · verify, document · done
+2026-10-06T02:00:49Z
+
+**Did:** Re-ran tests, validate, and the tutorial on the final commit; mapped AC1–AC5; drafted pr-body.md and ticket-comment.md.
+
+**Evidence:**
+- tests 59 OK; validate OK; tutorial ran clean
+
+**Changed files:** `specs/013-tutorial/verify.md`, `specs/013-tutorial/pr-body.md`, `specs/013-tutorial/ticket-comment.md`
+
+**Open issues:** none
+
+**Next:** Deliver gate

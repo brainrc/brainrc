@@ -20,7 +20,8 @@ New here? Start with the [architecture overview](docs/architecture.md): one diag
 
 You approve the **spec**, the **plan**, and **delivery** (push, PR, ticket update). Everything
 between runs on its own, with evidence at every step. Details: [docs/spec-agent.md](docs/spec-agent.md).
-Try it safely first with [examples/sandbox](examples/sandbox/README.md).
+Try it safely first with [examples/sandbox](examples/sandbox/README.md), and grade the run with
+[evals](docs/evals.md).
 
 ## Layout
 

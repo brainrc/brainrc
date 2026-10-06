@@ -90,13 +90,14 @@
         "AC4",
         "AC5"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": "5f90673"
     },
     {
       "id": "T4",
       "title": "Docs, README link, 0.3.5",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "docs/evals.md",

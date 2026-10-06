@@ -100,3 +100,17 @@
 **Open issues:** none
 
 **Next:** T4
+
+## implementer · T4 · done
+2026-10-06T02:55:30Z
+
+**Did:** docs/evals.md (run check, kinds table, triggers three ways, proxy caveat, cost, pack cases); README links evals after the sandbox line; VERSION 0.3.5; CHANGELOG entry.
+
+**Evidence:**
+- validate OK; suite OK; usage paths exit 2 on bad args
+
+**Changed files:** `docs/evals.md`, `README.md`, `VERSION`, `CHANGELOG.md`
+
+**Open issues:** none
+
+**Next:** batched review

@@ -11,6 +11,12 @@ a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everyt
 Every merged PR bumps `VERSION` and adds its entries under that version. There is no Unreleased
 section: `main` is what users pull, so `VERSION` must always describe it exactly.
 
+## 0.3.5 (2026-10-06)
+
+- `scripts/evals.py`: `check` grades a finished spec-agent run against a case file (two sandbox
+  cases included), and `triggers` scores skill selection from descriptions with any model CLI.
+  Packs can add their own cases. Offline tests run in CI (#6).
+
 ## 0.3.4 (2026-10-06)
 
 - Docs: `CONTRIBUTING.md` covers setup, the change workflow, and spec-agent use. The rules stay

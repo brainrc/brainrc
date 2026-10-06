@@ -27,3 +27,18 @@
 **Open issues:** none
 
 **Next:** Deliver gate
+
+## orchestrator · deliver · done
+2026-10-06T04:01:54Z
+
+**Did:** Pushed, opened PR #39 (refs #18), posted ticket comment, subscribed to PR activity.
+
+**Evidence:**
+- https://github.com/bxker/ai-config/pull/39
+- https://github.com/bxker/ai-config/issues/18#issuecomment-6009068127
+
+**Changed files:** `specs/018-sandbox-e2e-fixes/retro.md`
+
+**Open issues:** CI pending
+
+**Next:** none

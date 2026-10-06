@@ -6,7 +6,7 @@
     "id": "18",
     "title": "Sandbox E2E fixes (findings from #18)",
     "url": "https://github.com/bxker/ai-config/issues/18",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/39"
   },
   "slug": "018-sandbox-e2e-fixes",
   "branch": "018-sandbox-e2e-fixes",
@@ -14,11 +14,11 @@
   "size": "small",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "skipped",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [],
   "targets": {},
@@ -72,7 +72,8 @@
       "implement": "2026-10-06T03:52:00Z",
       "verify": "2026-10-06T03:53:27Z",
       "document": "2026-10-06T03:53:27Z",
-      "deliver": "2026-10-06T03:53:27Z"
+      "deliver": "2026-10-06T03:53:27Z",
+      "done": "2026-10-06T04:01:54Z"
     },
     "gates": {
       "spec": {
@@ -80,7 +81,8 @@
         "approved_at": "2026-10-06T03:52:00Z"
       },
       "deliver": {
-        "presented_at": "2026-10-06T03:53:27Z"
+        "presented_at": "2026-10-06T03:53:27Z",
+        "approved_at": "2026-10-06T04:01:54Z"
       }
     },
     "gate_rework": {

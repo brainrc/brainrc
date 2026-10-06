@@ -1,6 +1,6 @@
 # Spec: Behavioural evals for spec-agent runs and skill triggers
 
-Ticket: gh:6 · Size: standard · Status: draft
+Ticket: gh:6 · Size: standard · Status: approved
 
 ## Problem
 `validate` checks structure only. Nothing tells us whether a spec-agent run on the sandbox still

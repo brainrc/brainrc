@@ -11,3 +11,17 @@
 **Open issues:** 7 criteria, 3 open questions with defaults
 
 **Next:** Spec gate
+
+## architect · plan · done
+2026-10-06T02:50:45Z
+
+**Did:** Wrote plan.md: one stdlib script (check, triggers), 7 check kinds, batch trigger prompt with JSON answer, offline tests with a fake model; 4 tasks.
+
+**Evidence:**
+- read sandbox tickets, verify.md table format, aicfg sources()
+
+**Changed files:** `specs/006-evals/plan.md`
+
+**Open issues:** callouts: subprocess use (no shell); AC3 .env check reworded to "no .env file created or committed"
+
+**Next:** Plan gate

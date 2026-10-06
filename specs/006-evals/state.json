@@ -14,10 +14,10 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "plan",
+  "stage": "implement",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [
@@ -39,8 +39,8 @@
       "id": "T1",
       "title": "Contract tests for check kinds, run lookup, trigger scoring",
       "agent": "test-writer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "files": [
         "tests/test_evals.py"
       ],
@@ -49,14 +49,15 @@
         "AC4",
         "AC6"
       ],
-      "review": "each"
+      "review": "each",
+      "red": "compile-only"
     },
     {
       "id": "T2",
       "title": "evals.py check and the two sandbox cases",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "scripts/evals.py",
         "evals/cases/sandbox-001.toml",
@@ -112,7 +113,8 @@
     "stage_started_at": {
       "intake": "2026-10-06T02:43:51Z",
       "spec": "2026-10-06T02:43:51Z",
-      "plan": "2026-10-06T02:50:45Z"
+      "plan": "2026-10-06T02:50:45Z",
+      "implement": "2026-10-06T02:51:48Z"
     },
     "gates": {
       "spec": {
@@ -121,7 +123,7 @@
       },
       "plan": {
         "presented_at": "2026-10-06T02:50:45Z",
-        "approved_at": null
+        "approved_at": "2026-10-06T02:51:48Z"
       }
     },
     "gate_rework": {
@@ -130,8 +132,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
-      "first_pass": 0
+      "total": 1,
+      "first_pass": 1
     },
     "retries": 0,
     "interventions": 0

@@ -1,6 +1,6 @@
 # Plan: Behavioural evals for spec-agent runs and skill triggers
 
-Spec: [spec.md](spec.md) · Status: draft
+Spec: [spec.md](spec.md) · Status: approved
 
 ## Callouts
 - **New dependencies:** none (stdlib: `tomllib`, `subprocess`, `shlex`, `json`)

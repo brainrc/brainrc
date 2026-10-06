@@ -25,3 +25,33 @@
 **Open issues:** callouts: subprocess use (no shell); AC3 .env check reworded to "no .env file created or committed"
 
 **Next:** Plan gate
+
+## test-writer · T1 · done
+2026-10-06T02:52:32Z
+
+**Did:** tests/test_evals.py: all 9 checks pass on a good fake run; each kind fails on its broken variant (state, verify row, missing/forbidden pattern, command exit/stdout, commit on main, missing branch, committed .env); unknown ticket; trigger scoring, prompt contents, chatty-JSON extraction, --cmd with a fake model, print mode; coverage of every Domains skill and known kinds in case files.
+
+**Evidence:**
+- `python3 -m unittest tests.test_evals` → FileNotFoundError scripts/evals.py (compile-only red)
+
+**Changed files:** `tests/test_evals.py`
+
+**Open issues:** red is compile-only
+
+**Next:** review T1
+
+## code-reviewer · T1 · done
+2026-10-06T02:52:32Z
+
+**Did:** Reviewed T1 against AC1, AC4, AC6.
+
+**Evidence:**
+- each kind has a pass and a fail path; fixtures are throwaway git repos
+
+**Changed files:** none
+
+**Findings:** none
+
+**Open issues:** none
+
+**Next:** commit T1, then T2 (stub first)

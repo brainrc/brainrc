@@ -11,3 +11,17 @@
 **Open issues:** 5 criteria, 3 open questions with defaults
 
 **Next:** Spec gate
+
+## architect · plan · done
+2026-10-06T01:57:00Z
+
+**Did:** Wrote plan.md: executable tutorial (bash blocks only), run-tutorial.sh runs the doc's own blocks in a temp HOME; 3 tasks.
+
+**Evidence:**
+- read examples/pack-acme, docs/packs.md, README Adding content
+
+**Changed files:** `specs/013-tutorial/plan.md`
+
+**Open issues:** callout: start from a minimal pack instead of copy-and-rename (portability)
+
+**Next:** Plan gate

@@ -1,6 +1,6 @@
 # Spec: Tutorial for your first domain skill and your first pack
 
-Ticket: gh:13 · Size: standard · Status: draft
+Ticket: gh:13 · Size: standard · Status: approved
 
 ## Problem
 `docs/formats.md` shows the file formats and `docs/packs.md` the pack reference, but nothing

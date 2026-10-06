@@ -14,9 +14,9 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "spec",
+  "stage": "plan",
   "gates": {
-    "spec": "pending",
+    "spec": "approved",
     "plan": "pending",
     "deliver": "pending"
   },
@@ -32,17 +32,69 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Write docs/tutorial.md",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "docs/tutorial.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T2",
+      "title": "run-tutorial.sh and a green run",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "specs/013-tutorial/run-tutorial.sh"
+      ],
+      "criteria": [
+        "AC4"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T3",
+      "title": "README link, 0.3.3",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "README.md",
+        "VERSION",
+        "CHANGELOG.md"
+      ],
+      "criteria": [
+        "AC5"
+      ],
+      "review": "batch"
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-05T21:04:16Z",
     "stage_started_at": {
       "intake": "2026-10-05T21:04:16Z",
-      "spec": "2026-10-05T21:04:16Z"
+      "spec": "2026-10-05T21:04:16Z",
+      "plan": "2026-10-06T01:57:00Z"
     },
     "gates": {
       "spec": {
         "presented_at": "2026-10-05T21:04:23Z",
+        "approved_at": "2026-10-06T01:57:00Z"
+      },
+      "plan": {
+        "presented_at": null,
         "approved_at": null
       }
     },

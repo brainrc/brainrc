@@ -55,3 +55,34 @@
 **Open issues:** none
 
 **Next:** commit T1, then T2 (stub first)
+
+## implementer · T2 · done
+2026-10-06T02:53:57Z
+
+**Did:** scripts/evals.py check: run lookup by ticket_ref, 7 check kinds, PASS/FAIL lines and summary, ERROR on setup problems. Cases sandbox-001 (11 checks) and sandbox-002 (10 checks). Test fix: commit-on-main test now grades from the run's branch, as after a real run.
+
+**Evidence:**
+- stub red: 15 assertion failures; CheckTest 10/10 OK; case files use known kinds; no-run sandbox → clean ERROR, exit 1
+
+**Changed files:** `scripts/evals.py`, `evals/cases/sandbox-001.toml`, `evals/cases/sandbox-002.toml`, `tests/test_evals.py`
+
+**Open issues:** none
+
+**Next:** review T2
+
+## code-reviewer · T2 · done
+2026-10-06T02:53:57Z
+
+**Did:** Reviewed T2 against AC1, AC2, AC3, AC5.
+
+**Evidence:**
+- subprocess calls use argument lists, no shell; missing check fields surface as ERROR
+
+**Changed files:** none
+
+**Findings:**
+- LOW scripts/evals.py verify: missing verify.md raised instead of FAIL → fixed in the same attempt.
+
+**Open issues:** none
+
+**Next:** commit T2, then T3

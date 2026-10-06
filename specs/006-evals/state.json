@@ -50,13 +50,14 @@
         "AC6"
       ],
       "review": "each",
-      "red": "compile-only"
+      "red": "compile-only",
+      "commit": "b78dae1"
     },
     {
       "id": "T2",
       "title": "evals.py check and the two sandbox cases",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "scripts/evals.py",
@@ -70,14 +71,15 @@
         "AC3",
         "AC5"
       ],
-      "review": "each"
+      "review": "each",
+      "red": "compile-only"
     },
     {
       "id": "T3",
       "title": "evals.py triggers and evals/triggers.toml",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "scripts/evals.py",
         "evals/triggers.toml",
@@ -132,8 +134,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 1,
-      "first_pass": 1
+      "total": 2,
+      "first_pass": 2
     },
     "retries": 0,
     "interventions": 0

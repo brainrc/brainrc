@@ -151,6 +151,7 @@ class CheckTest(unittest.TestCase):
         (self.project / "x.txt").write_text("x\n")
         git(self.project, "add", "-A")
         git(self.project, "commit", "-qm", "Direct to main")
+        git(self.project, "checkout", "-q", "001-demo")  # grade from the run's branch, as after a real run
         self.assert_fails(ALL_KINDS, "main")
 
     def test_missing_branch_fails(self):

@@ -6,7 +6,7 @@
     "id": "6",
     "title": "Add behavioural evals for skills and agents (sandbox fixtures + trigger tests)",
     "url": "https://github.com/bxker/ai-config/issues/6",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/38"
   },
   "slug": "006-evals",
   "branch": "006-evals",
@@ -14,7 +14,7 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -122,7 +122,8 @@
       "implement": "2026-10-06T02:51:48Z",
       "verify": "2026-10-06T02:56:06Z",
       "document": "2026-10-06T02:56:06Z",
-      "deliver": "2026-10-06T02:56:06Z"
+      "deliver": "2026-10-06T02:56:06Z",
+      "done": "2026-10-06T02:59:05Z"
     },
     "gates": {
       "spec": {

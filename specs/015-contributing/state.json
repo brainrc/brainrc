@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:15",
+    "id": "15",
+    "title": "Docs: add CONTRIBUTING.md for human contributors",
+    "url": "https://github.com/bxker/ai-config/issues/15",
+    "pr": "https://github.com/bxker/ai-config/pull/37"
+  },
+  "slug": "015-contributing",
+  "branch": "015-contributing",
+  "base": "main",
+  "size": "small",
+  "mode": "inline",
+  "delivery": "normal",
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "skipped",
+    "deliver": "approved"
+  },
+  "domains": [],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "CONTRIBUTING.md, AGENTS.md back-link, README link, 0.3.4",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "CONTRIBUTING.md",
+        "AGENTS.md",
+        "README.md",
+        "VERSION",
+        "CHANGELOG.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3"
+      ],
+      "review": "batch",
+      "commit": "5674cdc"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-06T02:06:51Z",
+    "stage_started_at": {
+      "intake": "2026-10-06T02:06:51Z",
+      "spec": "2026-10-06T02:06:51Z",
+      "implement": "2026-10-06T02:35:54Z",
+      "verify": "2026-10-06T02:37:02Z",
+      "document": "2026-10-06T02:37:02Z",
+      "deliver": "2026-10-06T02:37:02Z",
+      "done": "2026-10-06T02:38:36Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-06T02:06:57Z",
+        "approved_at": "2026-10-06T02:35:54Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-06T02:37:02Z",
+        "approved_at": "2026-10-06T02:38:00Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 1,
+      "first_pass": 1
+    },
+    "retries": 0,
+    "interventions": 0
+  }
+}

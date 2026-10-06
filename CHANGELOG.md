@@ -11,6 +11,11 @@ a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everyt
 Every merged PR bumps `VERSION` and adds its entries under that version. There is no Unreleased
 section: `main` is what users pull, so `VERSION` must always describe it exactly.
 
+## 0.3.4 (2026-10-06)
+
+- Docs: `CONTRIBUTING.md` covers setup, the change workflow, and spec-agent use. The rules stay
+  in `AGENTS.md`, linked both ways (#15).
+
 ## 0.3.3 (2026-10-06)
 
 - Docs: `docs/tutorial.md` builds a pack with one domain skill from a fresh clone, linked from

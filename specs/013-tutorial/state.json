@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:13",
+    "id": "13",
+    "title": "Docs: tutorial for building your first domain skill and your first pack",
+    "url": "https://github.com/bxker/ai-config/issues/13",
+    "pr": "https://github.com/bxker/ai-config/pull/36"
+  },
+  "slug": "013-tutorial",
+  "branch": "013-tutorial",
+  "base": "main",
+  "size": "standard",
+  "mode": "fallback",
+  "delivery": "normal",
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Write docs/tutorial.md",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "docs/tutorial.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3"
+      ],
+      "review": "batch",
+      "commit": "aaa0957"
+    },
+    {
+      "id": "T2",
+      "title": "run-tutorial.sh and a green run",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "specs/013-tutorial/run-tutorial.sh"
+      ],
+      "criteria": [
+        "AC4"
+      ],
+      "review": "batch",
+      "commit": "25393db"
+    },
+    {
+      "id": "T3",
+      "title": "README link, 0.3.3",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "README.md",
+        "VERSION",
+        "CHANGELOG.md"
+      ],
+      "criteria": [
+        "AC5"
+      ],
+      "review": "batch",
+      "commit": "25393db"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-05T21:04:16Z",
+    "stage_started_at": {
+      "intake": "2026-10-05T21:04:16Z",
+      "spec": "2026-10-05T21:04:16Z",
+      "plan": "2026-10-06T01:57:00Z",
+      "implement": "2026-10-06T01:59:05Z",
+      "verify": "2026-10-06T02:00:49Z",
+      "document": "2026-10-06T02:00:49Z",
+      "deliver": "2026-10-06T02:00:49Z",
+      "done": "2026-10-06T02:02:47Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-05T21:04:23Z",
+        "approved_at": "2026-10-06T01:57:00Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-06T01:57:00Z",
+        "approved_at": "2026-10-06T01:59:05Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-06T02:00:49Z",
+        "approved_at": "2026-10-06T02:02:05Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 1,
+      "first_pass": 1
+    },
+    "retries": 0,
+    "interventions": 0
+  }
+}

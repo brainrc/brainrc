@@ -11,6 +11,11 @@ a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everyt
 Every merged PR bumps `VERSION` and adds its entries under that version. There is no Unreleased
 section: `main` is what users pull, so `VERSION` must always describe it exactly.
 
+## 0.3.3 (2026-10-06)
+
+- Docs: `docs/tutorial.md` builds a pack with one domain skill from a fresh clone, linked from
+  the README. Every command in it is checked by running the tutorial itself (#13).
+
 ## 0.3.2 (2026-10-05)
 
 - Docs: `docs/architecture.md` with one diagram, an install-time vs run-time table, and a

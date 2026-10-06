@@ -6,7 +6,7 @@
     "id": "12",
     "title": "Add `aicfg doctor` to diagnose installs",
     "url": "https://github.com/bxker/ai-config/issues/12",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/40"
   },
   "slug": "012-aicfg-doctor",
   "branch": "012-aicfg-doctor",
@@ -14,11 +14,11 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [],
   "targets": {},
@@ -104,7 +104,8 @@
       "implement": "2026-10-06T05:05:00Z",
       "verify": "2026-10-06T12:06:53Z",
       "document": "2026-10-06T12:06:53Z",
-      "deliver": "2026-10-06T12:06:53Z"
+      "deliver": "2026-10-06T12:06:53Z",
+      "done": "2026-10-06T13:21:37Z"
     },
     "gates": {
       "spec": {
@@ -116,7 +117,8 @@
         "approved_at": "2026-10-06T05:05:00Z"
       },
       "deliver": {
-        "presented_at": "2026-10-06T12:06:53Z"
+        "presented_at": "2026-10-06T12:06:53Z",
+        "approved_at": "2026-10-06T13:21:37Z"
       }
     },
     "gate_rework": {

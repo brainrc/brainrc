@@ -14,10 +14,10 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "plan",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [],
@@ -38,19 +38,25 @@
       "id": "T1",
       "title": "Python 3.11 import guard",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC7"
       ],
-      "review": "batch"
+      "review": "batch",
+      "red": "assertion",
+      "commit": "c3a0052",
+      "files": [
+        "scripts/aicfg.py",
+        "tests/test_aicfg.py"
+      ]
     },
     {
       "id": "T2",
       "title": "doctor checks and command",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC1",
         "AC2",
@@ -60,18 +66,32 @@
         "AC6",
         "AC8"
       ],
-      "review": "batch"
+      "review": "batch",
+      "red": "assertion",
+      "commit": "461913b",
+      "files": [
+        "scripts/aicfg.py",
+        "tests/test_aicfg.py"
+      ]
     },
     {
       "id": "T3",
       "title": "docs and release",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC9"
       ],
-      "review": "batch"
+      "review": "batch",
+      "red": "n/a (docs)",
+      "commit": "7854fa1",
+      "files": [
+        "scripts/aicfg.py",
+        "README.md",
+        "VERSION",
+        "CHANGELOG.md"
+      ]
     }
   ],
   "blocked": null,
@@ -80,7 +100,11 @@
     "stage_started_at": {
       "intake": "2026-10-06T04:59:04Z",
       "spec": "2026-10-06T04:59:04Z",
-      "plan": "2026-10-06T11:59:56Z"
+      "plan": "2026-10-06T11:59:56Z",
+      "implement": "2026-10-06T05:05:00Z",
+      "verify": "2026-10-06T12:06:53Z",
+      "document": "2026-10-06T12:06:53Z",
+      "deliver": "2026-10-06T12:06:53Z"
     },
     "gates": {
       "spec": {
@@ -88,7 +112,11 @@
         "approved_at": "2026-10-06T11:59:56Z"
       },
       "plan": {
-        "presented_at": "2026-10-06T11:59:56Z"
+        "presented_at": "2026-10-06T11:59:56Z",
+        "approved_at": "2026-10-06T05:05:00Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-06T12:06:53Z"
       }
     },
     "gate_rework": {
@@ -97,7 +125,7 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
+      "total": 1,
       "first_pass": 0
     },
     "retries": 0,

@@ -860,12 +860,14 @@ def _doctor_sources() -> tuple[list[Source], list[Source], list[Finding]]:
             src = load_pack(root, key)
         except ConfigError as e:
             every_src.append(Source(key, root))
-            found.append(("FAIL", str(e), f"fix `path` for [{key}] in packs.toml / packs.local.toml, {disable}"))
+            found.append(("FAIL", str(e),
+                          f"fix `path` for [{key}] in packs.toml / packs.local.toml, {disable}"))
             continue
         every_src.append(src)
         errors, _ = pack_compat(src, core)
         if errors:
-            found += [("FAIL", e, f"update the pack or core (see CHANGELOG.md), {disable}") for e in errors]
+            fix = f"update the pack or core (see CHANGELOG.md), {disable}"
+            found += [("FAIL", e, fix) for e in errors]
             continue
         with contextlib.redirect_stdout(io.StringIO()):
             failed = cmd_validate(str(root))
@@ -935,7 +937,8 @@ def doctor_findings() -> list[Finding]:
             found.append(f)
     for name, group in missing.items():  # a never-applied harness is one line, not dozens
         if len(group) > 3:
-            found.append(("FAIL", f"{name}: {len(group)} links are missing, e.g. {tilde(group[0].dest)}", APPLY))
+            found.append(("FAIL", f"{name}: {len(group)} links are missing, e.g. {tilde(group[0].dest)}",
+                          APPLY))
         else:
             found += [_link_finding(link, roots) for link in group]
     found += [("FAIL", f"{tilde(p)} is a stale link ai-config no longer makes", f"{APPLY} (prunes it)")
@@ -958,7 +961,8 @@ def doctor_findings() -> list[Finding]:
         if state == "merge":
             found.append(("FAIL", f"{m.harness}: {tilde(m.dest)} is missing ai-config's hooks", APPLY))
         elif state == "conflict":
-            found.append(("FAIL", f"{m.harness}: {tilde(m.dest)} is invalid JSON", f"fix it by hand, then {APPLY}"))
+            found.append(("FAIL", f"{m.harness}: {tilde(m.dest)} is invalid JSON",
+                          f"fix it by hand, then {APPLY}"))
     return found
 
 

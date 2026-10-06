@@ -5,6 +5,7 @@ import io
 import json
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -359,6 +360,131 @@ def set_requires_core(pack: Path, line: str) -> None:
     old = 'requires_core = ">=1.0, <2"\n'
     assert old in toml.read_text(), "fixture no longer pins requires_core"
     toml.write_text(toml.read_text().replace(old, line + "\n" if line else ""))
+
+
+def snapshot(*roots: Path) -> dict:
+    """Every path under roots with its link target or size and mtime, to prove nothing changed."""
+    seen = {}
+    for root in roots:
+        for path in sorted(root.rglob("*")):
+            seen[path] = os.readlink(path) if path.is_symlink() else (path.lstat().st_size, path.lstat().st_mtime_ns)
+    return seen
+
+
+class DoctorTest(TempRepoCase):
+    def setUp(self):
+        super().setUp()
+        self.home = Path(tempfile.mkdtemp())
+        self.old_home = os.environ["HOME"]
+        os.environ["HOME"] = str(self.home)
+        quiet(aicfg.cmd_sync, True)
+        self.skills = self.home / ".claude/skills"
+
+    def tearDown(self):
+        os.environ["HOME"] = self.old_home
+        shutil.rmtree(self.home)
+        super().tearDown()
+
+    def doctor(self, expect_code: int | None = None) -> list[tuple[str, str, str]]:
+        code, out = quiet(aicfg.cmd_doctor)
+        if expect_code is not None:
+            self.assertEqual(code, expect_code, out)
+        return aicfg.doctor_findings()
+
+    def assert_one_fail(self, what: str, fix: str) -> None:
+        findings = self.doctor(1)
+        fails = [f for f in findings if f[0] == "FAIL"]
+        self.assertEqual(len(fails), 1, findings)
+        self.assertIn(what, fails[0][1])
+        self.assertIn(fix, fails[0][2])
+
+    def test_clean_after_apply(self):
+        code, out = quiet(aicfg.cmd_doctor)
+        self.assertEqual(code, 0, out)
+        self.assertIn("No problems found.", out)
+
+    def test_writes_nothing(self):
+        (self.repo / "rules/99-new.md").write_text("# New\n\n- Rule.\n")
+        (self.skills / "spec-agent").unlink()
+        (self.home / ".claude/settings.json").write_text("{}\n")
+        before = snapshot(self.home, self.repo)
+        self.doctor(1)
+        self.assertEqual(snapshot(self.home, self.repo), before)
+
+    def test_stale_render(self):
+        (self.repo / "rules/99-new.md").write_text("# New\n\n- Rule.\n")
+        self.assert_one_fail("dist/instructions.md", "apply")
+
+    def test_missing_render(self):
+        (self.repo / "dist/instructions.md").unlink()
+        findings = self.doctor(1)
+        self.assertTrue(any("dist/instructions.md" in f[1] and "apply" in f[2] for f in findings), findings)
+
+    def test_missing_link(self):
+        (self.skills / "spec-agent").unlink()
+        self.assert_one_fail("spec-agent", "apply")
+
+    def test_many_missing_links_are_one_line(self):
+        shutil.rmtree(self.skills)
+        self.skills.mkdir()
+        self.assert_one_fail("links are missing", "apply")
+
+    def test_link_to_the_wrong_item(self):
+        (self.skills / "spec-agent").unlink()
+        (self.skills / "spec-agent").symlink_to(self.repo / "skills/terraform")
+        self.assert_one_fail("spec-agent", "apply")
+
+    def test_stale_link(self):
+        (self.skills / "gone").symlink_to(self.repo / "skills/gone")
+        self.assert_one_fail("gone", "apply")
+
+    def test_broken_link_after_moving_the_repo(self):
+        (self.skills / "spec-agent").unlink()
+        (self.skills / "spec-agent").symlink_to("/nonexistent/old-checkout/skills/spec-agent")
+        self.assert_one_fail("broken", "rm")
+
+    def test_real_file_where_a_link_belongs(self):
+        (self.skills / "spec-agent").unlink()
+        (self.skills / "spec-agent").mkdir()
+        self.assert_one_fail("not a link", "move")
+
+    def test_harness_not_installed_warns(self):
+        shutil.rmtree(self.home / ".cursor")
+        findings = self.doctor(0)
+        self.assertEqual([f[0] for f in findings], ["WARN"], findings)
+        self.assertIn("cursor", findings[0][1])
+        self.assertIn("[cursor] enabled = false", findings[0][2])
+        self.assertIn("harnesses.local.toml", findings[0][2])
+
+    def test_missing_pack_path(self):
+        (self.repo / "packs.local.toml").write_text('[ghost]\npath = "/nonexistent/pack"\n')
+        self.assert_one_fail("ghost", "packs")
+
+    def test_incompatible_pack(self):
+        pack = make_pack(self.home / "acme-pack")
+        set_requires_core(pack, 'requires_core = ">=99"')
+        (self.repo / "packs.local.toml").write_text(f'[acme]\npath = "{pack}"\n')
+        findings = self.doctor(1)
+        self.assertTrue(any(f[0] == "FAIL" and "acme" in f[1] and "requires_core" in f[1] for f in findings), findings)
+
+    def test_unmerged_hooks(self):
+        (self.home / ".claude/settings.json").write_text("{}\n")
+        self.assert_one_fail("settings.json", "apply")
+
+    def test_invalid_settings_json(self):
+        (self.home / ".claude/settings.json").write_text("{not json\n")
+        self.assert_one_fail("invalid JSON", "by hand")
+
+
+class PythonVersionTest(unittest.TestCase):
+    def test_old_python_gets_a_message_not_a_traceback(self):
+        # Hiding tomllib is what Python 3.10 looks like to the script.
+        code = ("import runpy, sys; sys.modules['tomllib'] = None; sys.argv = ['aicfg.py', 'status']; "
+                f"runpy.run_path({str(REPO / 'scripts/aicfg.py')!r}, run_name='__main__')")
+        result = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertIn("needs Python 3.11+", result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
 
 
 class VersionConstraintTest(unittest.TestCase):

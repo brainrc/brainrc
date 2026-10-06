@@ -7,6 +7,9 @@ Usage:
                                  merge settings
   aicfg.py validate [--pack DIR] check frontmatter, cross-references, packs, and tripwires
                                  (used in CI); --pack checks core plus that pack only
+  aicfg.py doctor                diagnose this machine's install (read-only): stale renders,
+                                 missing/broken links, broken packs, unmerged hooks; exits 1
+                                 on any problem, each with its fix
   aicfg.py tokens                estimate the context cost of every skill, agent, and command
 
 Sources: this repo ("core", versioned by VERSION) plus any packs listed in packs.toml /
@@ -19,15 +22,21 @@ are merged (only entries owned by ai-config are replaced) and backed up first.
 """
 from __future__ import annotations
 
+import contextlib
 import copy
 import fnmatch
+import io
 import json
 import operator
 import os
 import re
 import shutil
 import sys
-import tomllib
+
+try:
+    import tomllib
+except ImportError:  # Python < 3.11; say so instead of a traceback
+    sys.exit(f"aicfg needs Python 3.11+ (this is {sys.version.split()[0]}).")
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -423,9 +432,10 @@ def _managed_target(target: Path, roots: list[Path]) -> bool:
     return False
 
 
-def plan(srcs: list[Source] | None = None) -> tuple[list[Link], list[Path], list[SettingsMerge]]:
+def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
+         ) -> tuple[list[Link], list[Path], list[SettingsMerge]]:
     srcs = srcs if srcs is not None else sources()
-    every_src = sources(include_disabled=True)
+    every_src = every_src if every_src is not None else sources(include_disabled=True)
     roots = [s.root for s in every_src]
     links: list[Link] = []
     merges: list[SettingsMerge] = []
@@ -821,6 +831,153 @@ def cmd_validate(pack: str | None = None) -> int:
     return 1 if errors else 0
 
 
+# ---------- doctor ----------
+
+APPLY = "python3 scripts/aicfg.py apply"
+Finding = tuple[str, str, str]  # (FAIL | WARN, what is wrong, how to fix it)
+
+
+def _doctor_sources() -> tuple[list[Source], list[Source], list[Finding]]:
+    """(sources apply would use, every source root incl. disabled or broken packs, findings).
+    Each pack is checked on its own, so one broken pack doesn't hide the rest."""
+    srcs, every_src, found = [Source("core", REPO)], [Source("core", REPO)], []
+    try:
+        core = core_version()
+        packs = _layered("packs")
+    except (ConfigError, tomllib.TOMLDecodeError) as e:
+        return srcs, every_src, [("FAIL", str(e), "fix VERSION or packs.toml / packs.local.toml")]
+    disable = "or set `enabled = false` for it in packs.local.toml"
+    for key, cfg in packs.items():
+        try:
+            root = _pack_root(cfg, key)
+        except ConfigError as e:
+            found.append(("FAIL", str(e), f"add `path` to [{key}], {disable}"))
+            continue
+        if not cfg.get("enabled", True):
+            every_src.append(Source(key, root))
+            continue
+        try:
+            src = load_pack(root, key)
+        except ConfigError as e:
+            every_src.append(Source(key, root))
+            found.append(("FAIL", str(e),
+                          f"fix `path` for [{key}] in packs.toml / packs.local.toml, {disable}"))
+            continue
+        every_src.append(src)
+        errors, _ = pack_compat(src, core)
+        if errors:
+            fix = f"update the pack or core (see CHANGELOG.md), {disable}"
+            found += [("FAIL", e, fix) for e in errors]
+            continue
+        with contextlib.redirect_stdout(io.StringIO()):
+            failed = cmd_validate(str(root))
+        if failed:
+            found.append(("FAIL", f"pack {src.name}: validate --pack fails",
+                          f"python3 scripts/aicfg.py validate --pack {tilde(root)}"))
+        srcs.append(src)
+    found += [("FAIL", c, "rename one of the pair, then apply") for c in collisions(srcs)]
+    return srcs, every_src, found
+
+
+def _render_findings(srcs: list[Source]) -> list[Finding]:
+    found = []
+    targets = [(rendered_instructions(), lambda: render_instructions(srcs))]
+    if extensions_file().parent.is_dir():
+        targets.append((extensions_file(), lambda: render_extensions(srcs)))
+    for path, render in targets:
+        rel = str(path.relative_to(REPO))
+        if not path.is_file():
+            found.append(("FAIL", f"{rel} has not been rendered", APPLY))
+        elif path.read_text() != render():
+            found.append(("FAIL", f"{rel} is stale (sources changed since the last apply)", APPLY))
+    return found
+
+
+def _link_finding(link: Link, roots: list[Path]) -> Finding | None:
+    state, dest = link.state(roots), tilde(link.dest)
+    if state == "create":
+        return "FAIL", f"{link.harness}: {dest} is missing", APPLY
+    if state == "update":
+        return "FAIL", f"{link.harness}: {dest} points at the wrong item", APPLY
+    if state == "ok":
+        return None
+    if not link.dest.is_symlink():
+        return ("FAIL", f"{link.harness}: {dest} is a real file, not a link",
+                f"move it into the repo or a pack (or delete it), then {APPLY}")
+    target = link_target(link.dest)
+    if not target.exists():
+        return ("FAIL", f"{link.harness}: {dest} is a broken link to {tilde(target)} (repo moved?)",
+                f"rm {dest} && {APPLY}")
+    return ("FAIL", f"{link.harness}: {dest} links to {tilde(target)}, outside ai-config and its packs",
+            f"move that into a pack (or delete the link), then {APPLY}")
+
+
+def doctor_findings() -> list[Finding]:
+    """Everything wrong with this machine's install, each with its fix. Writes nothing."""
+    srcs, every_src, found = _doctor_sources()
+    found += _render_findings(srcs)
+    roots = [s.root for s in every_src]
+    links, stale, merges = plan(srcs, every_src)
+
+    skipped = set()
+    for name, h in load_harnesses().items():
+        key = next((k for k in ("instructions", "skills") if k in h), None)
+        home = expand(h[key]).parent if key else None
+        if home and not home.is_dir():
+            skipped.add(name)
+            found.append(("WARN", f"{name}: {tilde(home)} doesn't exist (not installed?)",
+                          f"add `[{name}] enabled = false` to harnesses.local.toml, or install it"))
+    missing: dict[str, list[Link]] = {}
+    for link in links:
+        if link.harness in skipped:
+            continue
+        if link.state(roots) == "create":
+            missing.setdefault(link.harness, []).append(link)
+        elif f := _link_finding(link, roots):
+            found.append(f)
+    for name, group in missing.items():  # a never-applied harness is one line, not dozens
+        if len(group) > 3:
+            found.append(("FAIL", f"{name}: {len(group)} links are missing, e.g. {tilde(group[0].dest)}",
+                          APPLY))
+        else:
+            found += [_link_finding(link, roots) for link in group]
+    found += [("FAIL", f"{tilde(p)} is a stale link ai-config no longer makes", f"{APPLY} (prunes it)")
+              for p in stale]
+
+    # Broken links aicfg doesn't manage, in the directories it links into.
+    known = {link.dest for link in links} | set(stale)
+    for name, h in load_harnesses().items():
+        for kind in KINDS:
+            d = expand(h[kind]) if kind in h and name not in skipped else None
+            for p in sorted(d.iterdir()) if d and d.is_dir() else []:
+                if p.is_symlink() and not p.exists() and p not in known:
+                    found.append(("WARN", f"{name}: {tilde(p)} is a broken link not made by ai-config",
+                                  f"rm {tilde(p)}"))
+
+    for m in merges:
+        if m.harness in skipped:
+            continue
+        state, _ = settings_change(m)
+        if state == "merge":
+            found.append(("FAIL", f"{m.harness}: {tilde(m.dest)} is missing ai-config's hooks", APPLY))
+        elif state == "conflict":
+            found.append(("FAIL", f"{m.harness}: {tilde(m.dest)} is invalid JSON",
+                          f"fix it by hand, then {APPLY}"))
+    return found
+
+
+def cmd_doctor() -> int:
+    findings = doctor_findings()
+    for level, what, fix in findings:
+        print(f"{level} {what}\n     fix: {fix}")
+    fails = sum(level == "FAIL" for level, _, _ in findings)
+    if findings:
+        print(f"\n{fails} problem(s), {len(findings) - fails} warning(s).")
+    else:
+        print("No problems found.")
+    return 1 if fails else 0
+
+
 # ---------- tokens ----------
 
 def estimate_tokens(text: str) -> int:
@@ -865,6 +1022,8 @@ def main(argv: list[str]) -> int:
             return cmd_validate()
         if len(argv) == 4 and argv[2] == "--pack":
             return cmd_validate(argv[3])
+    if cmd == "doctor" and len(argv) == 2:
+        return cmd_doctor()
     if cmd == "tokens" and len(argv) == 2:
         return cmd_tokens()
     print(__doc__)

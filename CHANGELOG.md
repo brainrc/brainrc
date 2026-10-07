@@ -11,6 +11,15 @@ a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everyt
 Every merged PR bumps `VERSION` and adds its entries under that version. There is no Unreleased
 section: `main` is what users pull, so `VERSION` must always describe it exactly.
 
+## 0.3.13 (2026-10-07)
+
+- spec-agent: in subagent mode, independent plan tasks (no `after:` dependency, no shared
+  files) run as parallel waves in separate git worktrees and land in plan order; at most 2
+  per wave for `standard`, 3 for `large`. State and the retro record the time saved. Sandbox
+  ticket 003 and `evals/cases/sandbox-003.toml` exercise it (#25).
+- spec-agent: gates are asked as a multiple-choice question (Approve / Request changes, plus
+  any open choices) when the harness has one, e.g. Claude Code's `AskUserQuestion`.
+
 ## 0.3.12 (2026-10-07)
 
 - Supported platforms documented: macOS and Linux, Windows through WSL or with symlinks

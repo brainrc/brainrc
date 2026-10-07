@@ -1,0 +1,130 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:25",
+    "id": "25",
+    "title": "Roadmap: run independent plan tasks in parallel in subagent mode",
+    "url": "https://github.com/bxker/ai-config/issues/25",
+    "pr": "https://github.com/bxker/ai-config/pull/48"
+  },
+  "slug": "025-parallel-tasks",
+  "branch": "025-parallel-tasks",
+  "base": "main",
+  "size": "standard",
+  "mode": "inline",
+  "delivery": "normal",
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate",
+      "python3 scripts/aicfg.py validate --pack examples/pack-acme"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "engine and contract docs",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3"
+      ],
+      "review": "batch",
+      "red": "n/a (prose)",
+      "commit": "1214b6c"
+    },
+    {
+      "id": "T2",
+      "title": "sandbox ticket 003 and eval case",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC4"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "c58b0ee"
+    },
+    {
+      "id": "T3",
+      "title": "real landing run, release",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC5",
+        "AC6"
+      ],
+      "review": "batch",
+      "red": "n/a (real run)",
+      "commit": "74c7e32"
+    },
+    {
+      "id": "T4",
+      "title": "gates as multiple-choice questions (added at Plan gate)",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [],
+      "review": "batch",
+      "red": "n/a (prose)",
+      "commit": "6f058a8"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-07T04:44:30Z",
+    "stage_started_at": {
+      "intake": "2026-10-07T04:44:30Z",
+      "spec": "2026-10-07T04:44:30Z",
+      "plan": "2026-10-07T04:46:10Z",
+      "implement": "2026-10-07T04:50:00Z",
+      "verify": "2026-10-07T04:50:28Z",
+      "document": "2026-10-07T04:50:28Z",
+      "deliver": "2026-10-07T04:50:28Z",
+      "done": "2026-10-07T04:51:50Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-07T04:44:30Z",
+        "approved_at": "2026-10-07T04:46:10Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-07T04:46:10Z",
+        "approved_at": "2026-10-07T04:50:00Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-07T04:50:28Z",
+        "approved_at": "2026-10-07T04:51:50Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 1
+  }
+}

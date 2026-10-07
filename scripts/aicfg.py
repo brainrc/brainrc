@@ -460,6 +460,15 @@ def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
         if "settings" in h and fragments:
             known = {pack_hooks_dir(h["hooks_dir"], s.name) for s in every_src if "hooks_dir" in h}
             merges.append(SettingsMerge(name, expand(h["settings"]), fragments, known))
+    # A disabled harness keeps its settings file, so take ai-config's hooks back out of it:
+    # merging no fragments removes only the groups ai-config owns.
+    enabled = load_harnesses()
+    for name, h in load_harnesses(include_disabled=True).items():
+        if name not in enabled and "settings" in h:
+            known = set()
+            if "hooks_dir" in h:
+                known = {h["hooks_dir"]} | {pack_hooks_dir(h["hooks_dir"], s.name) for s in every_src}
+            merges.append(SettingsMerge(name, expand(h["settings"]), [], known))
 
     # Stale: links aicfg made earlier that it wouldn't make now (removed items, disabled packs,
     # disabled harnesses). Only symlinks pointing at a path aicfg links to are touched.
@@ -506,7 +515,7 @@ def merge_settings(current: dict, fragment: dict, markers: set[str] = frozenset(
             hooks[event] = groups
         else:
             hooks.pop(event, None)
-    if not hooks and "hooks" not in current:
+    if not hooks and current.get("hooks") != {}:  # drop the key ai-config emptied, keep a user's own {}
         merged.pop("hooks")
     return merged
 
@@ -958,7 +967,10 @@ def doctor_findings() -> list[Finding]:
         if m.harness in skipped:
             continue
         state, _ = settings_change(m)
-        if state == "merge":
+        if state == "merge" and not m.fragments:
+            found.append(("FAIL", f"{tilde(m.dest)} has ai-config's hooks but {m.harness} is disabled",
+                          f"{APPLY} (removes them)"))
+        elif state == "merge":
             found.append(("FAIL", f"{m.harness}: {tilde(m.dest)} is missing ai-config's hooks", APPLY))
         elif state == "conflict":
             found.append(("FAIL", f"{m.harness}: {tilde(m.dest)} is invalid JSON",

@@ -146,6 +146,45 @@ class SyncFakeHomeTest(TempRepoCase):
         self.assertIn("invalid JSON", out)
         self.assertEqual(settings.read_text(), "{ not json")
 
+    def test_disabling_harness_removes_only_its_owned_hooks(self):
+        quiet(aicfg.cmd_sync, True)
+        settings = self.home / ".claude/settings.json"
+        data = json.loads(settings.read_text())
+        data["tui"] = "fullscreen"
+        data["hooks"]["PreToolUse"].insert(0, FOREIGN)
+        settings.write_text(json.dumps(data))
+        (self.repo / "harnesses.local.toml").write_text("[claude]\nenabled = false\n")
+        before = settings.read_text()
+
+        code, out = quiet(aicfg.cmd_sync, False)
+        self.assertEqual(code, 0, out)
+        self.assertRegex(out, r"MERGE +claude +~/.claude/settings.json")
+        self.assertEqual(settings.read_text(), before)
+
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        after = json.loads(settings.read_text())
+        self.assertNotIn("hooks/ai-config", json.dumps(after))
+        self.assertEqual(after["hooks"]["PreToolUse"], [FOREIGN])
+        self.assertEqual(after["tui"], "fullscreen")
+        self.assertTrue(list(settings.parent.glob("settings.json.bak-aicfg-*")))
+        self.assertIn("Everything in sync.", quiet(aicfg.cmd_sync, False)[1])
+
+    def test_uninstall_restores_the_settings_file(self):
+        settings = self.home / ".claude/settings.json"
+        settings.parent.mkdir(parents=True)
+        settings.write_text('{"theme": "dark"}\n')
+        quiet(aicfg.cmd_sync, True)
+        (self.repo / "harnesses.local.toml").write_text("[claude]\nenabled = false\n")
+        quiet(aicfg.cmd_sync, True)
+        self.assertEqual(json.loads(settings.read_text()), {"theme": "dark"})
+
+    def test_disabled_harness_without_settings_is_left_alone(self):
+        (self.repo / "harnesses.local.toml").write_text("[claude]\nenabled = false\n")
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        self.assertFalse((self.home / ".claude/settings.json").exists())
+
     def test_backups_are_capped(self):
         (self.home / ".claude").mkdir()
         settings = self.home / ".claude/settings.json"
@@ -474,6 +513,16 @@ class DoctorTest(TempRepoCase):
         (self.repo / "packs.local.toml").write_text(f'[acme]\npath = "{pack}"\n')
         findings = self.doctor(1)
         self.assertTrue(any(f[0] == "FAIL" and "acme" in f[1] and "requires_core" in f[1] for f in findings), findings)
+
+    def test_hooks_left_in_a_disabled_harness(self):
+        (self.repo / "harnesses.local.toml").write_text("[claude]\nenabled = false\n")
+        findings = self.doctor(1)
+        fails = [f for f in findings if f[0] == "FAIL" and "settings.json" in f[1]]
+        self.assertEqual(len(fails), 1, findings)
+        self.assertIn("claude is disabled", fails[0][1])
+        self.assertIn("apply", fails[0][2])
+        quiet(aicfg.cmd_sync, True)
+        self.doctor(0)
 
     def test_unmerged_hooks(self):
         (self.home / ".claude/settings.json").write_text("{}\n")

@@ -1,0 +1,1 @@
+Fixed in the linked PR (0.3.9). Disabling a harness and running `apply` now removes only ai-config's hooks from its settings file, and an uninstall gives back the original file exactly. `doctor` flags leftover hooks until then, and the troubleshooting doc's Uninstall section no longer has a manual step.

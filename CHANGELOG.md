@@ -11,6 +11,12 @@ a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everyt
 Every merged PR bumps `VERSION` and adds its entries under that version. There is no Unreleased
 section: `main` is what users pull, so `VERSION` must always describe it exactly.
 
+## 0.3.9 (2026-10-07)
+
+- `apply` removes ai-config's hooks from a disabled harness's settings file (other hooks and
+  settings stay, backup first), and `doctor` reports them until it does. Uninstalling no longer
+  needs a manual step (#42).
+
 ## 0.3.8 (2026-10-07)
 
 - Docs: `docs/troubleshooting.md`, by symptom: missing items, `CONFLICT`, pack errors, settings

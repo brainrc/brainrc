@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:42",
+    "id": "42",
+    "title": "apply leaves ai-config's hooks in settings.json when a harness is disabled",
+    "url": "https://github.com/bxker/ai-config/issues/42",
+    "pr": "https://github.com/bxker/ai-config/pull/43"
+  },
+  "slug": "042-disabled-harness-hooks",
+  "branch": "042-disabled-harness-hooks",
+  "base": "main",
+  "size": "small",
+  "mode": "inline",
+  "delivery": "normal",
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "skipped",
+    "deliver": "approved"
+  },
+  "domains": [],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate",
+      "python3 scripts/aicfg.py validate --pack examples/pack-acme"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Remove owned hooks for disabled harnesses",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "scripts/aicfg.py",
+        "tests/test_aicfg.py",
+        "docs/troubleshooting.md",
+        "VERSION",
+        "CHANGELOG.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "dfa0238"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-07T04:03:01Z",
+    "stage_started_at": {
+      "intake": "2026-10-07T04:03:01Z",
+      "spec": "2026-10-07T04:03:01Z",
+      "implement": "2026-10-07T04:10:00Z",
+      "verify": "2026-10-07T04:10:48Z",
+      "document": "2026-10-07T04:10:48Z",
+      "deliver": "2026-10-07T04:10:48Z",
+      "done": "2026-10-07T04:13:28Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-07T04:03:01Z",
+        "approved_at": "2026-10-07T04:10:00Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-07T04:10:48Z",
+        "approved_at": "2026-10-07T04:13:28Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  }
+}

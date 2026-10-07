@@ -11,6 +11,15 @@ a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everyt
 Every merged PR bumps `VERSION` and adds its entries under that version. There is no Unreleased
 section: `main` is what users pull, so `VERSION` must always describe it exactly.
 
+## 0.3.11 (2026-10-07)
+
+- **[pack contract]** `validate` enforces always-loaded token budgets (rules plus descriptions)
+  per source: 3,000 for core, and a pack's optional `max_always_tokens` in `pack.toml`.
+  Non-breaking: a pack without the key gets a warning above 1,000 tokens, and any description
+  over 100 tokens gets a warning. `tokens` shows each source against its budget (#10).
+- `unslop`: the rule catalogue moves word for word into `references/`, so SKILL.md is ~1.5k
+  tokens instead of ~3.5k, with a 60-token description. `doc-types` description trimmed.
+
 ## 0.3.10 (2026-10-07)
 
 - spec-agent, from the #39, #12, #17, and #42 retros (#44): the verifier runs anything a person

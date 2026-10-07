@@ -15,6 +15,8 @@
 | Checks scoped to changed packages/roots during implement | `references/efficiency.md` | faster loops; full run once at verify |
 | Domain skills load on demand | Agent Skills progressive disclosure | only the stacks touched cost tokens |
 | Short, de-duplicated global rules | `rules/` | rules load in every session of every tool |
+| Always-loaded token budgets | `validate` (`CORE_ALWAYS_BUDGET`, pack `max_always_tokens`) | rules and descriptions can't grow unnoticed; `tokens` shows each source against its budget ([packs](packs.md#context-cost)) |
+| Long skills keep catalogues in `references/` | e.g. `skills/unslop` | the body read on every use stays short |
 | Static role files, variable text last | `agents/`, dispatch prompt | stable prefixes for prompt caching |
 
 Measure with the metrics in each run's `retro.md`, plus token/cost tools below.

@@ -1,30 +1,92 @@
 {
   "version": 1,
-  "ticket": {"source": "github", "ref": "gh:11", "id": "11",
-             "title": "Portability: replace or document the skills/spec-agent/roles symlink",
-             "url": "https://github.com/bxker/ai-config/issues/11", "pr": null},
+  "ticket": {
+    "source": "github",
+    "ref": "gh:11",
+    "id": "11",
+    "title": "Portability: replace or document the skills/spec-agent/roles symlink",
+    "url": "https://github.com/bxker/ai-config/issues/11",
+    "pr": null
+  },
   "slug": "011-roles-symlink",
   "branch": "011-roles-symlink",
   "base": "main",
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "spec",
-  "gates": {"spec": "pending", "plan": "pending", "deliver": "pending"},
+  "stage": "plan",
+  "gates": {
+    "spec": "approved",
+    "plan": "pending",
+    "deliver": "pending"
+  },
   "domains": [],
   "targets": {},
-  "commands": {"test": "python3 -m unittest discover -s tests -q", "lint": null, "build": null,
-               "validate": ["python3 scripts/aicfg.py validate",
-                            "python3 scripts/aicfg.py validate --pack examples/pack-acme"],
-               "plan": null, "baseline_failures": []},
-  "tasks": [],
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate",
+      "python3 scripts/aicfg.py validate --pack examples/pack-acme"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "roles link guard in validate and doctor",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC2",
+        "AC3",
+        "AC5"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T2",
+      "title": "Platforms docs and release",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC1",
+        "AC4",
+        "AC5"
+      ],
+      "review": "batch"
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-07T04:34:09Z",
-    "stage_started_at": {"intake": "2026-10-07T04:34:09Z", "spec": "2026-10-07T04:34:09Z"},
-    "gates": {"spec": {"presented_at": "2026-10-07T04:34:09Z"}},
-    "gate_rework": {"spec": 0, "plan": 0, "deliver": 0},
-    "reviews": {"total": 0, "first_pass": 0},
+    "stage_started_at": {
+      "intake": "2026-10-07T04:34:09Z",
+      "spec": "2026-10-07T04:34:09Z",
+      "plan": "2026-10-07T04:37:57Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-07T04:34:09Z",
+        "approved_at": "2026-10-07T04:37:57Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-07T04:37:57Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
     "retries": 0,
     "interventions": 0
   }

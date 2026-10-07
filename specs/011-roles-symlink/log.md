@@ -12,3 +12,17 @@
 **Open issues:** decision at the Spec gate
 
 **Next:** Spec gate
+
+## planner · plan · done
+2026-10-07T04:37:57Z
+
+**Did:** 2 tasks; option 1 + guard approved.
+
+**Evidence:**
+- spec approved 2026-10-07T04:37:57Z
+
+**Changed files:** `specs/011-roles-symlink/plan.md`
+
+**Open issues:** none
+
+**Next:** Plan gate

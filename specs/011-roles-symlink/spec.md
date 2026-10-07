@@ -1,6 +1,6 @@
 # Spec: Supported platforms and a guarded roles symlink
 
-Ticket: gh:11 · Size: standard (decision; ~4 files, ~40 lines) · Status: draft
+Ticket: gh:11 · Size: standard (decision; ~4 files, ~40 lines) · Status: approved
 
 ## Decision (choose at this gate)
 **Recommended: option 1, plus a guard.** Keep the symlink, state the supported platforms, and
@@ -27,4 +27,4 @@ make a broken checkout fail loudly.
   support) and on a link to the wrong place; passes on the real repo. VERSION 0.3.12, CHANGELOG.
 
 ## Open questions
-1. Option 1 + guard (recommended), or option 2 (render `roles/` at apply)?
+None. Option 1 + guard approved at the Spec gate.

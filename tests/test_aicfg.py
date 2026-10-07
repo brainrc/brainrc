@@ -652,6 +652,48 @@ class RolesLinkTest(TempRepoCase):
         self.assert_validate_fails()
 
 
+class PluginTest(TempRepoCase):
+    def manifest(self, name="plugin.json"):
+        return json.loads(aicfg.plugin_manifests()[f".claude-plugin/{name}"])
+
+    def test_plugin_manifest_comes_from_the_repo(self):
+        set_core_version(self.repo, "1.2.3")
+        plugin = self.manifest()
+        self.assertEqual((plugin["name"], plugin["version"]), ("ai-config", "1.2.3"))
+        self.assertEqual(plugin["author"], {"name": "ai-config contributors"})
+        commands = [h["command"] for groups in plugin["hooks"].values() for g in groups for h in g["hooks"]]
+        self.assertIn('python3 "${CLAUDE_PLUGIN_ROOT}/overrides/claude/hooks/guard_outward.py"', commands)
+        self.assertNotIn("{{hooks_dir}}", json.dumps(plugin))
+
+    def test_marketplace_lists_the_repo_as_the_plugin(self):
+        market = self.manifest("marketplace.json")
+        self.assertEqual(market["name"], "ai-config")
+        self.assertEqual(market["plugins"][0]["source"], ".")
+        self.assertEqual(market["plugins"][0]["version"], self.manifest()["version"])
+
+    def test_plugin_command_writes_once(self):
+        code, out = quiet(aicfg.cmd_plugin)
+        self.assertEqual(code, 0, out)
+        self.assertTrue((self.repo / ".claude-plugin/plugin.json").is_file())
+        self.assertEqual(aicfg.check_plugin(), [])
+        code, out = quiet(aicfg.cmd_plugin)
+        self.assertIn("up to date", out)
+
+    def test_validate_fails_on_missing_or_stale_manifests(self):
+        self.assertEqual(aicfg.check_plugin(), [])  # no .claude-plugin/: this repo doesn't publish one
+        quiet(aicfg.cmd_plugin)
+        (self.repo / ".claude-plugin/marketplace.json").unlink()
+        errors = aicfg.check_plugin()
+        self.assertTrue(any("marketplace.json" in e and "missing" in e and "aicfg.py plugin" in e for e in errors), errors)
+        quiet(aicfg.cmd_plugin)
+        set_core_version(self.repo, "9.9.9")
+        errors = aicfg.check_plugin()
+        self.assertTrue(any("plugin.json" in e and "stale" in e for e in errors), errors)
+        code, out = quiet(aicfg.cmd_validate)
+        self.assertEqual(code, 1)
+        self.assertIn("aicfg.py plugin", out)
+
+
 class PythonVersionTest(unittest.TestCase):
     def test_old_python_gets_a_message_not_a_traceback(self):
         # Hiding tomllib is what Python 3.10 looks like to the script.

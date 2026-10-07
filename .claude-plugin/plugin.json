@@ -1,0 +1,33 @@
+{
+  "name": "ai-config",
+  "version": "0.3.14",
+  "description": "Skills, agents, commands, and guard hooks for spec-driven work: spec-agent takes a ticket to a reviewed PR through approval gates.",
+  "author": {
+    "name": "ai-config contributors"
+  },
+  "license": "MIT",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|mcp__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/overrides/claude/hooks/guard_outward.py\"",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Write|Edit|MultiEdit|Grep|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/overrides/claude/hooks/guard_secrets.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

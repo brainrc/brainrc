@@ -1,0 +1,15 @@
+{
+  "name": "ai-config",
+  "owner": {
+    "name": "ai-config contributors"
+  },
+  "description": "Skills, agents, commands, and guard hooks for spec-driven work: spec-agent takes a ticket to a reviewed PR through approval gates.",
+  "plugins": [
+    {
+      "name": "ai-config",
+      "source": ".",
+      "description": "Skills, agents, commands, and guard hooks for spec-driven work: spec-agent takes a ticket to a reviewed PR through approval gates.",
+      "version": "0.3.14"
+    }
+  ]
+}

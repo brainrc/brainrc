@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:26",
+    "id": "26",
+    "title": "Roadmap: publish as a Claude Code plugin / marketplace",
+    "url": "https://github.com/bxker/ai-config/issues/26",
+    "pr": "https://github.com/bxker/ai-config/pull/49"
+  },
+  "slug": "026-plugin-packaging",
+  "branch": "026-plugin-packaging",
+  "base": "main",
+  "size": "standard",
+  "mode": "inline",
+  "delivery": "normal",
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate",
+      "python3 scripts/aicfg.py validate --pack examples/pack-acme"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "manifest generator and stale check",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC6"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "857c044"
+    },
+    {
+      "id": "T2",
+      "title": "generated manifests, real validate, role fallback",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC3",
+        "AC5"
+      ],
+      "review": "batch",
+      "red": "n/a (real validate)",
+      "commit": "c8b03cb"
+    },
+    {
+      "id": "T3",
+      "title": "docs and release",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC4",
+        "AC6"
+      ],
+      "review": "batch",
+      "red": "n/a (docs)",
+      "commit": "50f3e77"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-07T04:55:33Z",
+    "stage_started_at": {
+      "intake": "2026-10-07T04:55:33Z",
+      "spec": "2026-10-07T04:55:33Z",
+      "plan": "2026-10-07T04:56:50Z",
+      "implement": "2026-10-07T05:03:00Z",
+      "verify": "2026-10-07T05:01:20Z",
+      "document": "2026-10-07T05:01:20Z",
+      "deliver": "2026-10-07T05:01:20Z",
+      "done": "2026-10-07T05:02:14Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-07T04:55:33Z",
+        "approved_at": "2026-10-07T04:56:50Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-07T04:56:50Z",
+        "approved_at": "2026-10-07T05:03:00Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-07T05:01:20Z",
+        "approved_at": "2026-10-07T05:02:14Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  }
+}

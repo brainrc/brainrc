@@ -67,6 +67,25 @@ changing anything: stale rules, missing or broken links (after moving the repo, 
 packs, unmerged hooks, and harnesses that aren't installed. Each problem comes with its fix.
 [docs/troubleshooting.md](docs/troubleshooting.md) covers the rest, including how to uninstall.
 
+### Claude Code plugin (no clone)
+
+Claude Code users can install the skills, agents, commands, and guard hooks as a plugin:
+
+```text
+/plugin marketplace add bxker/ai-config
+/plugin install ai-config@ai-config
+```
+
+| Piece | Plugin | `aicfg` |
+|---|---|---|
+| Skills, agents, commands | yes, named `ai-config:<name>` (`/ai-config:work`) | yes |
+| Claude guard hooks | yes | yes |
+| Rules (`rules/`) | no: plugins can't load instructions into every session | yes |
+| Packs, other harnesses (Codex, OpenCode, Gemini, Cursor) | no | yes |
+
+Use one path, not both: together they load every skill and hook twice. For rules with the
+plugin, copy `rules/*.md` into your own `~/.claude/CLAUDE.md`.
+
 ### Platforms
 
 macOS and Linux. Everything installs by symlink, and spec-agent reads its role files through

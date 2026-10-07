@@ -10,6 +10,8 @@ Usage:
   aicfg.py doctor                diagnose this machine's install (read-only): stale renders,
                                  missing/broken links, broken packs, unmerged hooks; exits 1
                                  on any problem, each with its fix
+  aicfg.py plugin                write the Claude Code plugin and marketplace manifests
+                                 (.claude-plugin/); validate fails when they're stale
   aicfg.py tokens                estimate the context cost of every skill, agent, and command
 
 Sources: this repo ("core", versioned by VERSION) plus any packs listed in packs.toml /
@@ -846,6 +848,8 @@ def cmd_validate(pack: str | None = None) -> int:
         errors += check_changelog(core_version())
         compat_errors, warnings = check_packs(srcs)
         errors += compat_errors
+        if not pack:
+            errors += check_plugin()
         budget_errors, budget_warnings = check_budgets(srcs)
         errors += budget_errors
         warnings += budget_warnings
@@ -1017,6 +1021,68 @@ def cmd_doctor() -> int:
     return 1 if fails else 0
 
 
+# ---------- plugin ----------
+
+PLUGIN_DIR = ".claude-plugin"
+
+
+PLUGIN_NAME = "ai-config"
+PLUGIN_AUTHOR = {"name": "ai-config contributors"}
+PLUGIN_DESCRIPTION = ("Skills, agents, commands, and guard hooks for spec-driven work: spec-agent "
+                      "takes a ticket to a reviewed PR through approval gates.")
+
+
+def plugin_manifests() -> dict[str, str]:
+    """The Claude Code plugin and marketplace manifests for core, built from the repo.
+    The repo root is the plugin (default skills/, agents/, commands/ folders) and the marketplace."""
+    version = ".".join(map(str, core_version()))
+    hooks_dir = "${CLAUDE_PLUGIN_ROOT}/overrides/claude/hooks"
+    hooks = render_fragment(REPO / "overrides" / "claude" / "settings.fragment.json", hooks_dir)["hooks"]
+    plugin = {"name": PLUGIN_NAME, "version": version, "description": PLUGIN_DESCRIPTION,
+              "author": PLUGIN_AUTHOR, "license": "MIT", "hooks": hooks}
+    market = {"name": PLUGIN_NAME, "owner": PLUGIN_AUTHOR, "description": PLUGIN_DESCRIPTION,
+              "plugins": [{"name": PLUGIN_NAME, "source": ".", "description": PLUGIN_DESCRIPTION,
+                           "version": version}]}
+    return {f"{PLUGIN_DIR}/{name}": json.dumps(data, indent=2) + "\n"
+            for name, data in (("plugin.json", plugin), ("marketplace.json", market))}
+
+
+def check_plugin() -> list[str]:
+    """Only where the repo publishes a plugin (has .claude-plugin/), as core does."""
+    if not (REPO / PLUGIN_DIR).is_dir():
+        return []
+    errors = []
+    for rel, text in plugin_manifests().items():
+        path = REPO / rel
+        if not path.is_file():
+            errors.append(f"{rel}: missing; run `python3 scripts/aicfg.py plugin`")
+        elif path.read_text() != text:
+            errors.append(f"{rel}: stale (VERSION, hooks, or the fragment changed); "
+                          "run `python3 scripts/aicfg.py plugin`")
+    return errors
+
+
+def cmd_plugin() -> int:
+    """Write the Claude Code plugin manifests; they're committed so GitHub installs work."""
+    try:
+        manifests = plugin_manifests()
+    except ConfigError as e:
+        print(f"ERROR {e}")
+        return 1
+    changed = False
+    for rel, text in manifests.items():
+        path = REPO / rel
+        if path.is_file() and path.read_text() == text:
+            continue
+        path.parent.mkdir(exist_ok=True)
+        path.write_text(text)
+        print(f"WROTE {rel}")
+        changed = True
+    if not changed:
+        print("Plugin manifests up to date.")
+    return 0
+
+
 # ---------- tokens ----------
 
 def estimate_tokens(text: str) -> int:
@@ -1107,6 +1173,8 @@ def main(argv: list[str]) -> int:
             return cmd_validate()
         if len(argv) == 4 and argv[2] == "--pack":
             return cmd_validate(argv[3])
+    if cmd == "plugin" and len(argv) == 2:
+        return cmd_plugin()
     if cmd == "doctor" and len(argv) == 2:
         return cmd_doctor()
     if cmd == "tokens" and len(argv) == 2:

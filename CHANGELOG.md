@@ -11,6 +11,14 @@ a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everyt
 Every merged PR bumps `VERSION` and adds its entries under that version. There is no Unreleased
 section: `main` is what users pull, so `VERSION` must always describe it exactly.
 
+## 0.3.14 (2026-10-07)
+
+- Claude Code plugin: `/plugin marketplace add bxker/ai-config`, then
+  `/plugin install ai-config@ai-config`, installs the skills, agents, commands, and guard hooks
+  without `aicfg`. Rules, packs, and other harnesses still need `aicfg`. `aicfg plugin` generates
+  `.claude-plugin/` from the repo, and `validate` fails when it's stale, so run it after every
+  `VERSION` bump. Packs stay `aicfg` packs (decision in `docs/packs.md`) (#26).
+
 ## 0.3.13 (2026-10-07)
 
 - spec-agent: in subagent mode, independent plan tasks (no `after:` dependency, no shared

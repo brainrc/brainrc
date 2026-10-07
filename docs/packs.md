@@ -128,6 +128,13 @@ This checks the core plus that pack only, whatever is in `packs.toml`: frontmatt
 cross-references (pack files may reference core skills and agents), name prefixes and
 collisions, `pack.toml` extension references, `requires_core`, and tripwires.
 
+## Packs and Claude Code plugins
+
+Core also ships as a Claude Code plugin (README, Install). Packs stay `aicfg` packs: a plugin
+could carry a pack's skills, agents, and hooks, but not its rules or its spec-agent extensions
+(domains, ticket connector, Deliver checks), which `aicfg apply` renders into core. Revisit if
+plugins gain a way to extend another plugin.
+
 ## Context cost
 
 `python3 scripts/aicfg.py tokens` estimates tokens per skill, agent, and command across all

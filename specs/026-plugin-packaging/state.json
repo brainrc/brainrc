@@ -6,7 +6,7 @@
     "id": "26",
     "title": "Roadmap: publish as a Claude Code plugin / marketplace",
     "url": "https://github.com/bxker/ai-config/issues/26",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/49"
   },
   "slug": "026-plugin-packaging",
   "branch": "026-plugin-packaging",
@@ -14,11 +14,11 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [],
   "targets": {},
@@ -88,7 +88,8 @@
       "implement": "2026-10-07T05:03:00Z",
       "verify": "2026-10-07T05:01:20Z",
       "document": "2026-10-07T05:01:20Z",
-      "deliver": "2026-10-07T05:01:20Z"
+      "deliver": "2026-10-07T05:01:20Z",
+      "done": "2026-10-07T05:02:14Z"
     },
     "gates": {
       "spec": {
@@ -100,7 +101,8 @@
         "approved_at": "2026-10-07T05:03:00Z"
       },
       "deliver": {
-        "presented_at": "2026-10-07T05:01:20Z"
+        "presented_at": "2026-10-07T05:01:20Z",
+        "approved_at": "2026-10-07T05:02:14Z"
       }
     },
     "gate_rework": {

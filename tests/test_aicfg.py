@@ -533,6 +533,74 @@ class DoctorTest(TempRepoCase):
         self.assert_one_fail("invalid JSON", "by hand")
 
 
+class BudgetTest(TempRepoCase):
+    def setUp(self):
+        super().setUp()
+        self.pack = make_pack(Path(tempfile.mkdtemp()).resolve() / "acme-pack")
+        set_core_version(self.repo, "1.2.3")
+        self.core = aicfg.Source("core", self.repo)
+        self.old_budget = aicfg.CORE_ALWAYS_BUDGET
+
+    def tearDown(self):
+        aicfg.CORE_ALWAYS_BUDGET = self.old_budget
+        shutil.rmtree(self.pack.parent)
+        super().tearDown()
+
+    def check(self, *packs):
+        return aicfg.check_budgets([self.core, *packs])
+
+    def test_core_is_within_budget_with_no_warnings(self):
+        total, items = aicfg.always_tokens(self.core)
+        self.assertGreater(total, 1000)
+        self.assertLessEqual(total, aicfg.CORE_ALWAYS_BUDGET)
+        self.assertEqual(self.check(), ([], []))
+
+    def test_always_tokens_counts_rules_and_descriptions(self):
+        total, items = aicfg.always_tokens(self.core)
+        labels = [label for _, label in items]
+        self.assertIn("rules/30-guardrails.md", labels)
+        self.assertIn("skills/spec-agent", labels)
+        self.assertIn("agents/verifier.md", labels)
+        self.assertIn("commands/work.md", labels)
+        self.assertEqual(total, sum(n for n, _ in items))
+
+    def test_core_over_budget_fails_naming_the_biggest_items(self):
+        aicfg.CORE_ALWAYS_BUDGET = 100
+        errors, _ = self.check()
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("core", errors[0])
+        self.assertIn("budget 100", errors[0])
+        _, items = aicfg.always_tokens(self.core)
+        for _, label in sorted(items, reverse=True)[:3]:
+            self.assertIn(label, errors[0])
+        code, out = quiet(aicfg.cmd_validate)
+        self.assertEqual(code, 1, out)
+        self.assertIn("budget 100", out)
+
+    def test_pack_over_its_declared_budget_fails(self):
+        toml = self.pack / "pack.toml"
+        toml.write_text(toml.read_text().replace('prefix = "acme-"\n', 'prefix = "acme-"\nmax_always_tokens = 10\n'))
+        errors, _ = self.check(aicfg.load_pack(self.pack))
+        self.assertTrue(any("acme" in e and "budget 10" in e for e in errors), errors)
+
+    def test_pack_without_a_budget_warns_above_the_default(self):
+        (self.pack / "rules/50-acme.md").write_text("# Acme\n\n" + "- Rule text here.\n" * 300)
+        errors, warnings = self.check(aicfg.load_pack(self.pack))
+        self.assertEqual(errors, [])
+        self.assertTrue(any("acme" in w and "max_always_tokens" in w for w in warnings), warnings)
+
+    def test_long_description_warns(self):
+        skill = self.pack / "skills/acme-deploy/SKILL.md"
+        skill.write_text("---\nname: acme-deploy\ndescription: " + "word " * 120 + "\n---\nBody.\n")
+        _, warnings = self.check(aicfg.load_pack(self.pack))
+        self.assertTrue(any("acme:skills/acme-deploy" in w and "description" in w for w in warnings), warnings)
+
+    def test_tokens_shows_budget_per_source(self):
+        code, out = quiet(aicfg.cmd_tokens)
+        self.assertEqual(code, 0)
+        self.assertRegex(out, r"core: ~\d+ / 3000 always-loaded tokens")
+
+
 class PythonVersionTest(unittest.TestCase):
     def test_old_python_gets_a_message_not_a_traceback(self):
         # Hiding tomllib is what Python 3.10 looks like to the script.

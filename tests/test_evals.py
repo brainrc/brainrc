@@ -320,6 +320,12 @@ class CaseFileTest(unittest.TestCase):
                 self.assertTrue(any(skill in c.get("expect", []) for c in cases), "no positive case")
                 self.assertTrue(any(skill in c.get("forbid", []) for c in cases), "no negative case")
 
+    def test_sandbox_cases_name_tickets_that_exist(self):
+        for path in sorted((REPO / "evals/cases").glob("*.toml")):
+            with self.subTest(case=path.name):
+                ref = tomllib.loads(path.read_text())["ticket_ref"].removeprefix("local:")
+                self.assertTrue((REPO / "examples/sandbox" / ref).is_file(), ref)
+
     def test_sandbox_cases_use_known_check_kinds(self):
         for path in sorted((REPO / "evals/cases").glob("*.toml")):
             with self.subTest(case=path.name):

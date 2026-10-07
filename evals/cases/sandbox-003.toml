@@ -1,0 +1,42 @@
+# Ticket 003 (two independent slices): in subagent mode the run should land both tasks from one
+# parallel wave, keep every criterion green, and leave main alone.
+ticket_ref = "local:tickets/003-two-features.md"
+
+[[check]]
+kind = "state"
+field = "stage"
+equals = "done"
+
+[[check]]
+kind = "state"
+field = "metrics.waves.max_width"
+equals = 2
+
+[[check]]
+kind = "verify"
+
+[[check]]
+kind = "command"
+run = ["python3", "-m", "unittest", "-q"]
+exit = 0
+
+[[check]]
+kind = "command"
+run = ["python3", "farewell.py", "Ada"]
+stdout = "Goodbye, Ada!\n"
+
+[[check]]
+kind = "command"
+run = ["python3", "greet.py", "--version"]
+stdout = "greet 1.0\n"
+
+[[check]]
+kind = "command"
+run = ["python3", "greet.py", "Ada"]
+stdout = "Hello, Ada!\n"
+
+[[check]]
+kind = "main_untouched"
+
+[[check]]
+kind = "branch"

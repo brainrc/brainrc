@@ -28,3 +28,19 @@
 **Open issues:** follow-up issue for leftover hooks (Deliver gate)
 
 **Next:** Deliver gate
+
+## orchestrator · deliver · done
+2026-10-07T03:41:51Z
+
+**Did:** Pushed, opened PR #41 (closes #17), filed #42, posted ticket comment, subscribed.
+
+**Evidence:**
+- https://github.com/bxker/ai-config/pull/41
+- https://github.com/bxker/ai-config/issues/42
+- https://github.com/bxker/ai-config/issues/17#issuecomment-6030429051
+
+**Changed files:** `specs/017-troubleshooting/retro.md`
+
+**Open issues:** CI pending
+
+**Next:** none

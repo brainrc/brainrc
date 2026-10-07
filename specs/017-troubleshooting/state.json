@@ -6,7 +6,7 @@
     "id": "17",
     "title": "Docs: add a troubleshooting section",
     "url": "https://github.com/bxker/ai-config/issues/17",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/41"
   },
   "slug": "017-troubleshooting",
   "branch": "017-troubleshooting",
@@ -14,11 +14,11 @@
   "size": "small",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "skipped",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [],
   "targets": {},
@@ -68,7 +68,8 @@
       "implement": "2026-10-07T03:00:00Z",
       "verify": "2026-10-07T03:02:04Z",
       "document": "2026-10-07T03:02:04Z",
-      "deliver": "2026-10-07T03:02:04Z"
+      "deliver": "2026-10-07T03:02:04Z",
+      "done": "2026-10-07T03:41:51Z"
     },
     "gates": {
       "spec": {
@@ -76,7 +77,8 @@
         "approved_at": "2026-10-07T03:00:00Z"
       },
       "deliver": {
-        "presented_at": "2026-10-07T03:02:04Z"
+        "presented_at": "2026-10-07T03:02:04Z",
+        "approved_at": "2026-10-07T03:41:51Z"
       }
     },
     "gate_rework": {

@@ -6,7 +6,7 @@
     "id": "44",
     "title": "spec-agent: apply lessons from the #39, #12, #17, #42 retros",
     "url": "https://github.com/bxker/ai-config/issues/44",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/45"
   },
   "slug": "044-retro-improvements",
   "branch": "044-retro-improvements",
@@ -14,11 +14,11 @@
   "size": "small",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "skipped",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [],
   "targets": {},
@@ -69,7 +69,8 @@
       "implement": "2026-10-07T04:18:41Z",
       "verify": "2026-10-07T04:18:41Z",
       "document": "2026-10-07T04:18:41Z",
-      "deliver": "2026-10-07T04:18:41Z"
+      "deliver": "2026-10-07T04:18:41Z",
+      "done": "2026-10-07T04:19:54Z"
     },
     "gates": {
       "spec": {
@@ -77,7 +78,8 @@
         "approved_at": "2026-10-07T04:18:41Z"
       },
       "deliver": {
-        "presented_at": "2026-10-07T04:18:41Z"
+        "presented_at": "2026-10-07T04:18:41Z",
+        "approved_at": "2026-10-07T04:19:54Z"
       }
     },
     "gate_rework": {

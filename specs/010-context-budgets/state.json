@@ -6,7 +6,7 @@
     "id": "10",
     "title": "Enforce context budgets for always-loaded tokens, per source; trim unslop",
     "url": "https://github.com/bxker/ai-config/issues/10",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/46"
   },
   "slug": "010-context-budgets",
   "branch": "010-context-budgets",
@@ -14,11 +14,11 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [],
   "targets": {},
@@ -107,7 +107,8 @@
       "implement": "2026-10-07T04:32:00Z",
       "verify": "2026-10-07T04:30:59Z",
       "document": "2026-10-07T04:30:59Z",
-      "deliver": "2026-10-07T04:30:59Z"
+      "deliver": "2026-10-07T04:30:59Z",
+      "done": "2026-10-07T04:31:58Z"
     },
     "gates": {
       "spec": {
@@ -119,7 +120,8 @@
         "approved_at": "2026-10-07T04:32:00Z"
       },
       "deliver": {
-        "presented_at": "2026-10-07T04:30:59Z"
+        "presented_at": "2026-10-07T04:30:59Z",
+        "approved_at": "2026-10-07T04:31:58Z"
       }
     },
     "gate_rework": {

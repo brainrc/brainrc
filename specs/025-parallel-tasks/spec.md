@@ -1,6 +1,6 @@
 # Spec: Parallel implement waves in subagent mode
 
-Ticket: gh:25 · Size: standard (engine prose in 5 files, a sandbox ticket and eval case; design choices) · Status: draft
+Ticket: gh:25 · Size: standard (engine prose in 5 files, a sandbox ticket and eval case; design choices) · Status: approved
 
 ## Problem
 Implement runs tasks one at a time even when they touch different files, so a plan with
@@ -52,5 +52,5 @@ other's half-written changes.
   like #18. I'll propose running it in this session after merge, as a separate step.
 
 ## Open questions
-1. Run the ticket-003 end-to-end here after merge (uses subagents, so more tokens), or leave
-  it for a later session?
+1. Run the ticket-003 end-to-end here after merge, or later? Not answered at the Spec gate;
+   asked again after merge, and not run until the owner says so.

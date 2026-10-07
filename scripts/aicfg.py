@@ -972,7 +972,8 @@ def cmd_doctor() -> int:
         print(f"{level} {what}\n     fix: {fix}")
     fails = sum(level == "FAIL" for level, _, _ in findings)
     if findings:
-        print(f"\n{fails} problem(s), {len(findings) - fails} warning(s).")
+        print(f"\n{fails} problem(s), {len(findings) - fails} warning(s). "
+              "More help: docs/troubleshooting.md")
     else:
         print("No problems found.")
     return 1 if fails else 0

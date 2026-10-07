@@ -403,6 +403,14 @@ class DoctorTest(TempRepoCase):
         self.assertEqual(code, 0, out)
         self.assertIn("No problems found.", out)
 
+    def test_points_to_troubleshooting_only_when_something_is_wrong(self):
+        _, clean = quiet(aicfg.cmd_doctor)
+        self.assertNotIn("troubleshooting", clean)
+        (self.skills / "spec-agent").unlink()
+        _, out = quiet(aicfg.cmd_doctor)
+        self.assertIn("docs/troubleshooting.md", out.splitlines()[-1])
+        self.assertTrue((REPO / "docs/troubleshooting.md").is_file())
+
     def test_writes_nothing(self):
         (self.repo / "rules/99-new.md").write_text("# New\n\n- Rule.\n")
         (self.skills / "spec-agent").unlink()

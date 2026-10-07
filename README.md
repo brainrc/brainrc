@@ -37,7 +37,7 @@ harnesses.toml  Where each harness reads each content type.
 packs.toml      Extra source repos ("packs") layered on top; usually set in packs.local.toml.
 VERSION         Core version that packs pin with `requires_core`; changes in CHANGELOG.md.
 scripts/        aicfg.py: sync, validate, doctor, tokens (Python 3.11+, stdlib only).
-docs/           spec-agent, guardrails, efficiency, formats, roadmap.
+docs/           spec-agent, guardrails, efficiency, formats, troubleshooting, roadmap.
 tests/          stdlib unittest for aicfg and hooks.
 examples/       Sandbox project + tickets for trying spec-agent.
 dist/           Generated output (gitignored).
@@ -65,6 +65,7 @@ first, and the last 5 backups are kept).
 Something missing in a harness? `python3 scripts/aicfg.py doctor` checks the install without
 changing anything: stale rules, missing or broken links (after moving the repo, say), broken
 packs, unmerged hooks, and harnesses that aren't installed. Each problem comes with its fix.
+[docs/troubleshooting.md](docs/troubleshooting.md) covers the rest, including how to uninstall.
 
 ## Per-machine customization (never committed)
 

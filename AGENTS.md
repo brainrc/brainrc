@@ -23,5 +23,5 @@ These rules apply to human contributors too. Setup and PR workflow: [CONTRIBUTIN
 - Keep files short: they are loaded into model context. Rules load every session.
 - After changes, run `python3 scripts/aicfg.py validate` and `python3 -m unittest discover -s tests`.
 - Every PR bumps `VERSION` (semver, policy in `CHANGELOG.md`) and adds its entries under that
-  version in `CHANGELOG.md`. No Unreleased section.
-- Don't edit `dist/`; it's generated.
+  version in `CHANGELOG.md`. No Unreleased section. Then run `python3 scripts/aicfg.py plugin`.
+- Don't edit `dist/` or `.claude-plugin/`; they're generated.

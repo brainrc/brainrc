@@ -22,7 +22,8 @@ check for home-directory paths on every commit.
 2. Make the change. Content that only fits your team or employer belongs in a pack, not here
    ([packs](docs/packs.md), [tutorial](docs/tutorial.md)).
 3. Bump `VERSION` and add your entry under it in `CHANGELOG.md` (the policy is at the top of
-   the changelog). `validate` fails if they disagree.
+   the changelog), then run `python3 scripts/aicfg.py plugin` to update the plugin manifests.
+   `validate` fails if any of them disagree.
 4. Run the checks:
 
    ```bash

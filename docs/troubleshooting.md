@@ -19,6 +19,11 @@ rules) needs `apply`, edits included. Restart the harness or start a new session
 If you moved the repo, the old links are broken. `doctor` names each one: delete it, then
 `apply`.
 
+## Every skill shows up twice, or a hook runs twice
+
+Both the Claude Code plugin and `aicfg` are installed. Keep one: `/plugin uninstall
+ai-config@ai-config`, or uninstall `aicfg` (below).
+
 ## `CONFLICT` in `status` or `apply`
 
 A real file, or a symlink pointing outside this repo and your packs, sits where `aicfg` wants

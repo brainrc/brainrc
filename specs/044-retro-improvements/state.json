@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:44",
+    "id": "44",
+    "title": "spec-agent: apply lessons from the #39, #12, #17, #42 retros",
+    "url": "https://github.com/bxker/ai-config/issues/44",
+    "pr": "https://github.com/bxker/ai-config/pull/45"
+  },
+  "slug": "044-retro-improvements",
+  "branch": "044-retro-improvements",
+  "base": "main",
+  "size": "small",
+  "mode": "inline",
+  "delivery": "normal",
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "skipped",
+    "deliver": "approved"
+  },
+  "domains": [],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate",
+      "python3 scripts/aicfg.py validate --pack examples/pack-acme"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Four retro lessons in agents and references",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "agents/verifier.md",
+        "agents/implementer.md",
+        "skills/spec-agent/references/lifecycle.md",
+        "skills/spec-agent/references/sizing.md",
+        "VERSION",
+        "CHANGELOG.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5"
+      ],
+      "review": "batch",
+      "red": "n/a (prose)",
+      "commit": "7c746be"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-07T04:17:31Z",
+    "stage_started_at": {
+      "intake": "2026-10-07T04:17:31Z",
+      "spec": "2026-10-07T04:17:31Z",
+      "implement": "2026-10-07T04:18:41Z",
+      "verify": "2026-10-07T04:18:41Z",
+      "document": "2026-10-07T04:18:41Z",
+      "deliver": "2026-10-07T04:18:41Z",
+      "done": "2026-10-07T04:19:54Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-07T04:17:31Z",
+        "approved_at": "2026-10-07T04:18:41Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-07T04:18:41Z",
+        "approved_at": "2026-10-07T04:19:54Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  }
+}

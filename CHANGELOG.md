@@ -11,6 +11,13 @@ a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everyt
 Every merged PR bumps `VERSION` and adds its entries under that version. There is no Unreleased
 section: `main` is what users pull, so `VERSION` must always describe it exactly.
 
+## 0.3.10 (2026-10-07)
+
+- spec-agent, from the #39, #12, #17, and #42 retros (#44): the verifier runs anything a person
+  runs once for real, with a fresh fake `HOME`; the implementer shows red by switching off only
+  the new change; the done checkpoint is pushed after CI on the delivered commit finishes; test
+  lines count about half toward size.
+
 ## 0.3.9 (2026-10-07)
 
 - `apply` removes ai-config's hooks from a disabled harness's settings file (other hooks and

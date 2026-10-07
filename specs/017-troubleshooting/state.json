@@ -1,29 +1,93 @@
 {
   "version": 1,
-  "ticket": {"source": "github", "ref": "gh:17", "id": "17", "title": "Docs: add a troubleshooting section",
-             "url": "https://github.com/bxker/ai-config/issues/17", "pr": null},
+  "ticket": {
+    "source": "github",
+    "ref": "gh:17",
+    "id": "17",
+    "title": "Docs: add a troubleshooting section",
+    "url": "https://github.com/bxker/ai-config/issues/17",
+    "pr": null
+  },
   "slug": "017-troubleshooting",
   "branch": "017-troubleshooting",
   "base": "main",
   "size": "small",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "spec",
-  "gates": {"spec": "pending", "plan": "skipped", "deliver": "pending"},
+  "stage": "deliver",
+  "gates": {
+    "spec": "approved",
+    "plan": "skipped",
+    "deliver": "pending"
+  },
   "domains": [],
   "targets": {},
-  "commands": {"test": "python3 -m unittest discover -s tests -q", "lint": null, "build": null,
-               "validate": ["python3 scripts/aicfg.py validate",
-                            "python3 scripts/aicfg.py validate --pack examples/pack-acme"],
-               "plan": null, "baseline_failures": []},
-  "tasks": [],
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate",
+      "python3 scripts/aicfg.py validate --pack examples/pack-acme"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Troubleshooting doc and doctor pointer",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "docs/troubleshooting.md",
+        "scripts/aicfg.py",
+        "tests/test_aicfg.py",
+        "README.md",
+        "VERSION",
+        "CHANGELOG.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "14e2969"
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-06T17:02:54Z",
-    "stage_started_at": {"intake": "2026-10-06T17:02:54Z", "spec": "2026-10-06T17:02:54Z"},
-    "gates": {"spec": {"presented_at": "2026-10-06T17:02:54Z"}},
-    "gate_rework": {"spec": 0, "plan": 0, "deliver": 0},
-    "reviews": {"total": 0, "first_pass": 0},
+    "stage_started_at": {
+      "intake": "2026-10-06T17:02:54Z",
+      "spec": "2026-10-06T17:02:54Z",
+      "implement": "2026-10-07T03:00:00Z",
+      "verify": "2026-10-07T03:02:04Z",
+      "document": "2026-10-07T03:02:04Z",
+      "deliver": "2026-10-07T03:02:04Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-06T17:02:54Z",
+        "approved_at": "2026-10-07T03:00:00Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-07T03:02:04Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
     "retries": 0,
     "interventions": 0
   }

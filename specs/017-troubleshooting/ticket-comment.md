@@ -1,0 +1,1 @@
+Done in the linked PR (0.3.8): `docs/troubleshooting.md` covers each symptom from the issue, the README links it, and `doctor` points to it. While checking the uninstall steps I found that `apply` leaves ai-config's hooks in `settings.json` when the `claude` harness is disabled. That's filed as a follow-up.

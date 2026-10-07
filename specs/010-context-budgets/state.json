@@ -1,0 +1,139 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:10",
+    "id": "10",
+    "title": "Enforce context budgets for always-loaded tokens, per source; trim unslop",
+    "url": "https://github.com/bxker/ai-config/issues/10",
+    "pr": "https://github.com/bxker/ai-config/pull/46"
+  },
+  "slug": "010-context-budgets",
+  "branch": "010-context-budgets",
+  "base": "main",
+  "size": "standard",
+  "mode": "inline",
+  "delivery": "normal",
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate",
+      "python3 scripts/aicfg.py validate --pack examples/pack-acme"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "budget checks in validate and tokens",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC8"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "18b11c7",
+      "files": [
+        "scripts/aicfg.py",
+        "tests/test_aicfg.py"
+      ]
+    },
+    {
+      "id": "T2",
+      "title": "unslop split, descriptions",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC5",
+        "AC6"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "9763841",
+      "files": [
+        "skills/unslop/SKILL.md",
+        "skills/unslop/references/",
+        "skills/doc-types/SKILL.md",
+        "tests/test_aicfg.py",
+        "tests/fixtures/unslop-rules.txt"
+      ]
+    },
+    {
+      "id": "T3",
+      "title": "docs and release",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC7"
+      ],
+      "review": "batch",
+      "red": "n/a (docs)",
+      "commit": "6588931",
+      "files": [
+        "docs/packs.md",
+        "docs/efficiency.md",
+        "examples/pack-acme/pack.toml",
+        "VERSION",
+        "CHANGELOG.md"
+      ]
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-07T04:22:47Z",
+    "stage_started_at": {
+      "intake": "2026-10-07T04:22:47Z",
+      "spec": "2026-10-07T04:22:47Z",
+      "plan": "2026-10-07T04:25:45Z",
+      "implement": "2026-10-07T04:32:00Z",
+      "verify": "2026-10-07T04:30:59Z",
+      "document": "2026-10-07T04:30:59Z",
+      "deliver": "2026-10-07T04:30:59Z",
+      "done": "2026-10-07T04:31:58Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-07T04:22:47Z",
+        "approved_at": "2026-10-07T04:25:45Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-07T04:25:45Z",
+        "approved_at": "2026-10-07T04:32:00Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-07T04:30:59Z",
+        "approved_at": "2026-10-07T04:31:58Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 1,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  }
+}

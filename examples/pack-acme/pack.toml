@@ -2,6 +2,7 @@
 name = "acme"
 prefix = "acme-"                  # skills, agents, and commands must start with this
 requires_core = ">=0.3, <0.4"     # core versions this pack works with (docs/packs.md#compatibility)
+max_always_tokens = 400          # rules + descriptions loaded every session (docs/packs.md#context-cost)
 
 # Extra row for spec-agent's Domains table: files that load acme-deploy and get infra review.
 [[extensions.domains]]

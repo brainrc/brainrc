@@ -46,6 +46,7 @@ two sources. `apply` refuses to write anything if one does.
 name = "acme"
 prefix = "acme-"          # default: "<name>-"
 requires_core = ">=0.3, <0.4"   # core versions this pack works with (see Compatibility)
+max_always_tokens = 800   # optional budget for rules + descriptions (see Context cost)
 
 [[extensions.domains]]    # extra rows for spec-agent's Domains table
 files = "`deploy/*.yaml`, `charts/acme-*`"
@@ -132,3 +133,14 @@ collisions, `pack.toml` extension references, `requires_core`, and tripwires.
 `python3 scripts/aicfg.py tokens` estimates tokens per skill, agent, and command across all
 enabled sources. It also shows what loads in every session (rules and descriptions) versus on
 use. Keep pack rules short: they load in every session on that machine.
+
+`validate` enforces a budget on each source's always-loaded tokens (its rules plus its skill,
+agent, and command descriptions). Core's is 3,000. A pack declares its own in `pack.toml`:
+
+```toml
+max_always_tokens = 800
+```
+
+Over a declared budget, `validate` fails and names the biggest items. A pack without
+`max_always_tokens` gets a warning above 1,000 tokens. Any description over 100 tokens gets a
+warning: say what the skill does and when to use it, and move the rest into the body.

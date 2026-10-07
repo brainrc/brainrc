@@ -32,6 +32,9 @@ model: sonnet             # optional: haiku | sonnet | opus | inherit
 System prompt...
 ```
 
+spec-agent reads these files through `skills/spec-agent/roles`, a symlink to `../../agents`.
+Keep it a symlink: `validate` fails otherwise ([Platforms](../README.md#platforms)).
+
 ## Commands: `commands/<name>.md`
 
 ```markdown

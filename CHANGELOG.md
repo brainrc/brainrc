@@ -11,6 +11,12 @@ a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everyt
 Every merged PR bumps `VERSION` and adds its entries under that version. There is no Unreleased
 section: `main` is what users pull, so `VERSION` must always describe it exactly.
 
+## 0.3.12 (2026-10-07)
+
+- Supported platforms documented: macOS and Linux, Windows through WSL or with symlinks
+  enabled. `skills/spec-agent/roles` stays a symlink; `validate` and `doctor` now say when a
+  checkout broke it and how to restore it (#11).
+
 ## 0.3.11 (2026-10-07)
 
 - **[pack contract]** `validate` enforces always-loaded token budgets (rules plus descriptions)

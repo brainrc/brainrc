@@ -524,6 +524,13 @@ class DoctorTest(TempRepoCase):
         quiet(aicfg.cmd_sync, True)
         self.doctor(0)
 
+    def test_broken_roles_link(self):
+        roles = self.repo / "skills/spec-agent/roles"
+        roles.unlink()
+        roles.write_text("../../agents")
+        findings = self.doctor(1)
+        self.assertTrue(any(f[0] == "FAIL" and "roles" in f[1] and "Platforms" in f[2] for f in findings), findings)
+
     def test_unmerged_hooks(self):
         (self.home / ".claude/settings.json").write_text("{}\n")
         self.assert_one_fail("settings.json", "apply")
@@ -617,6 +624,32 @@ class UnslopSplitTest(unittest.TestCase):
             self.assertIn(f"references/{ref}", body)
         description = aicfg.frontmatter(self.SKILL / "SKILL.md")["description"]
         self.assertLessEqual(aicfg.estimate_tokens(description), 60)
+
+
+class RolesLinkTest(TempRepoCase):
+    def setUp(self):
+        super().setUp()
+        self.roles = self.repo / "skills/spec-agent/roles"
+
+    def assert_validate_fails(self):
+        code, out = quiet(aicfg.cmd_validate)
+        self.assertEqual(code, 1, out)
+        self.assertIn("skills/spec-agent/roles", out)
+        self.assertIn("Platforms", out)
+
+    def test_repo_link_passes(self):
+        self.assertTrue(self.roles.is_symlink())
+        self.assertIsNone(aicfg.check_roles_link())
+
+    def test_plain_file_from_a_checkout_without_symlinks_fails(self):
+        self.roles.unlink()
+        self.roles.write_text("../../agents")  # what git writes when core.symlinks is false
+        self.assert_validate_fails()
+
+    def test_link_to_the_wrong_place_fails(self):
+        self.roles.unlink()
+        self.roles.symlink_to("../../skills")
+        self.assert_validate_fails()
 
 
 class PythonVersionTest(unittest.TestCase):

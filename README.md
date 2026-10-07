@@ -67,6 +67,13 @@ changing anything: stale rules, missing or broken links (after moving the repo, 
 packs, unmerged hooks, and harnesses that aren't installed. Each problem comes with its fix.
 [docs/troubleshooting.md](docs/troubleshooting.md) covers the rest, including how to uninstall.
 
+### Platforms
+
+macOS and Linux. Everything installs by symlink, and spec-agent reads its role files through
+the `skills/spec-agent/roles` symlink, so the checkout needs symlinks too. On Windows, use WSL,
+or turn on Developer Mode and run `git config --global core.symlinks true` before cloning.
+`validate` and `doctor` report a checkout without symlinks, with the fix.
+
 ## Per-machine customization (never committed)
 
 | File | Purpose |

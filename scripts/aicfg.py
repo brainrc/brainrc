@@ -791,6 +791,25 @@ def _check_tripwires(src: Source) -> list[str]:
     return errors
 
 
+ROLES_LINK = Path("skills/spec-agent/roles")
+
+
+ROLES_FIX = ("enable symlinks (README, Platforms), then restore it with "
+             "`git checkout -- skills/spec-agent/roles`")
+
+
+def check_roles_link() -> str | None:
+    """spec-agent reads its role files through roles/ -> ../../agents. A checkout without symlink
+    support writes a plain file instead, and every role link breaks."""
+    path = REPO / ROLES_LINK
+    if not path.is_symlink() and not path.exists():
+        return None  # not this repo's layout (e.g. a pack)
+    if path.is_symlink() and os.readlink(path) == "../../agents":
+        return None
+    found = f"a link to {os.readlink(path)}" if path.is_symlink() else "a plain file"
+    return f"{ROLES_LINK} must be a symlink to ../../agents but is {found} (cloned without symlink support?)"
+
+
 def check_connectors(srcs: list[Source]) -> list[str]:
     """Core `ticket-*` skills and pack `[extensions.ticket]` connectors need a `##` heading naming
     each required operation. One heading may name several (`## comment / transition / link_pr`)."""
@@ -817,6 +836,8 @@ def cmd_validate(pack: str | None = None) -> int:
     agent_names = {f.stem for s in srcs for f in markdown_files("agents", s)}
     skill_names = {p.name for s in srcs for p in skills(s)}
     errors = collisions(srcs)
+    if roles := check_roles_link():
+        errors.append(f"{roles}; {ROLES_FIX}")
     for src in srcs:
         errors += _validate_source(src, agent_names, skill_names)
     errors += check_connectors(srcs)
@@ -927,6 +948,8 @@ def _link_finding(link: Link, roots: list[Path]) -> Finding | None:
 def doctor_findings() -> list[Finding]:
     """Everything wrong with this machine's install, each with its fix. Writes nothing."""
     srcs, every_src, found = _doctor_sources()
+    if roles := check_roles_link():
+        found.append(("FAIL", roles, ROLES_FIX))
     found += _render_findings(srcs)
     roots = [s.root for s in every_src]
     links, stale, merges = plan(srcs, every_src)

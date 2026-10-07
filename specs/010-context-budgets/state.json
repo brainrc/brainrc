@@ -14,10 +14,10 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "plan",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [],
@@ -38,8 +38,8 @@
       "id": "T1",
       "title": "budget checks in validate and tokens",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC1",
         "AC2",
@@ -47,30 +47,54 @@
         "AC4",
         "AC8"
       ],
-      "review": "batch"
+      "review": "batch",
+      "red": "assertion",
+      "commit": "18b11c7",
+      "files": [
+        "scripts/aicfg.py",
+        "tests/test_aicfg.py"
+      ]
     },
     {
       "id": "T2",
       "title": "unslop split, descriptions",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC5",
         "AC6"
       ],
-      "review": "batch"
+      "review": "batch",
+      "red": "assertion",
+      "commit": "9763841",
+      "files": [
+        "skills/unslop/SKILL.md",
+        "skills/unslop/references/",
+        "skills/doc-types/SKILL.md",
+        "tests/test_aicfg.py",
+        "tests/fixtures/unslop-rules.txt"
+      ]
     },
     {
       "id": "T3",
       "title": "docs and release",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC7"
       ],
-      "review": "batch"
+      "review": "batch",
+      "red": "n/a (docs)",
+      "commit": "6588931",
+      "files": [
+        "docs/packs.md",
+        "docs/efficiency.md",
+        "examples/pack-acme/pack.toml",
+        "VERSION",
+        "CHANGELOG.md"
+      ]
     }
   ],
   "blocked": null,
@@ -79,7 +103,11 @@
     "stage_started_at": {
       "intake": "2026-10-07T04:22:47Z",
       "spec": "2026-10-07T04:22:47Z",
-      "plan": "2026-10-07T04:25:45Z"
+      "plan": "2026-10-07T04:25:45Z",
+      "implement": "2026-10-07T04:32:00Z",
+      "verify": "2026-10-07T04:30:59Z",
+      "document": "2026-10-07T04:30:59Z",
+      "deliver": "2026-10-07T04:30:59Z"
     },
     "gates": {
       "spec": {
@@ -87,7 +115,11 @@
         "approved_at": "2026-10-07T04:25:45Z"
       },
       "plan": {
-        "presented_at": "2026-10-07T04:25:45Z"
+        "presented_at": "2026-10-07T04:25:45Z",
+        "approved_at": "2026-10-07T04:32:00Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-07T04:30:59Z"
       }
     },
     "gate_rework": {
@@ -96,7 +128,7 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
+      "total": 1,
       "first_pass": 0
     },
     "retries": 0,

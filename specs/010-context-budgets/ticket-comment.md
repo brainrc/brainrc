@@ -1,0 +1,1 @@
+Done in the linked PR (0.3.11). Core is at ~2,577 of 3,000 always-loaded tokens, and packs can declare `max_always_tokens`. `unslop` is ~1.5k tokens on use, with all of its rules kept in `references/`.

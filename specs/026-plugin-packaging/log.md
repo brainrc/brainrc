@@ -13,3 +13,17 @@
 **Open issues:** none
 
 **Next:** Spec gate
+
+## planner · plan · done
+2026-10-07T04:56:50Z
+
+**Did:** 3 tasks; cross-task red noted up front (retro lesson from #10).
+
+**Evidence:**
+- spec approved 2026-10-07T04:56:50Z
+
+**Changed files:** `specs/026-plugin-packaging/plan.md`
+
+**Open issues:** none
+
+**Next:** Plan gate

@@ -1,6 +1,6 @@
 # Spec: Claude Code plugin and marketplace
 
-Ticket: gh:26 · Size: standard (generator in aicfg, two generated manifests, docs; design choices) · Status: draft
+Ticket: gh:26 · Size: standard (generator in aicfg, two generated manifests, docs; design choices) · Status: approved
 
 ## What the plugin format covers (from the Claude Code docs and a `claude plugin validate` probe)
 | ai-config piece | As a plugin |

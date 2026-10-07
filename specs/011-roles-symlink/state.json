@@ -14,10 +14,10 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "plan",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [],
@@ -38,27 +38,41 @@
       "id": "T1",
       "title": "roles link guard in validate and doctor",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC2",
         "AC3",
         "AC5"
       ],
-      "review": "batch"
+      "review": "batch",
+      "red": "assertion",
+      "commit": "aae64f0",
+      "files": [
+        "scripts/aicfg.py",
+        "tests/test_aicfg.py"
+      ]
     },
     {
       "id": "T2",
       "title": "Platforms docs and release",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC1",
         "AC4",
         "AC5"
       ],
-      "review": "batch"
+      "review": "batch",
+      "red": "n/a (docs)",
+      "commit": "8a895c0",
+      "files": [
+        "README.md",
+        "docs/formats.md",
+        "VERSION",
+        "CHANGELOG.md"
+      ]
     }
   ],
   "blocked": null,
@@ -67,7 +81,11 @@
     "stage_started_at": {
       "intake": "2026-10-07T04:34:09Z",
       "spec": "2026-10-07T04:34:09Z",
-      "plan": "2026-10-07T04:37:57Z"
+      "plan": "2026-10-07T04:37:57Z",
+      "implement": "2026-10-07T04:37:00Z",
+      "verify": "2026-10-07T04:40:04Z",
+      "document": "2026-10-07T04:40:04Z",
+      "deliver": "2026-10-07T04:40:04Z"
     },
     "gates": {
       "spec": {
@@ -75,7 +93,11 @@
         "approved_at": "2026-10-07T04:37:57Z"
       },
       "plan": {
-        "presented_at": "2026-10-07T04:37:57Z"
+        "presented_at": "2026-10-07T04:37:57Z",
+        "approved_at": "2026-10-07T04:37:00Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-07T04:40:04Z"
       }
     },
     "gate_rework": {

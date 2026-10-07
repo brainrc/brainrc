@@ -1,0 +1,1 @@
+Done in the linked PR (0.3.12). I kept the symlink and documented the supported platforms (option 1), because everything installs by symlink anyway. `validate` and `doctor` now name a broken checkout and how to restore it. Copy-based packaging belongs to #26.

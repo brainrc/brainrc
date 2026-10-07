@@ -26,3 +26,18 @@
 **Open issues:** none
 
 **Next:** Plan gate
+
+## implementer + verifier + doc-writer · T1, T2, verify, document · done
+2026-10-07T04:40:04Z
+
+**Did:** Guard in validate and doctor (aae64f0); Platforms docs and 0.3.12 (8a895c0).
+
+**Evidence:**
+- red: 3 assertion failures on a stub (validate output lacked the roles line; doctor "No problems found.")
+- tests OK; validate OK; real clone without symlinks reports it, and the suggested fix restores it
+
+**Changed files:** `scripts/aicfg.py`, `tests/test_aicfg.py`, `README.md`, `docs/formats.md`, `VERSION`, `CHANGELOG.md`
+
+**Open issues:** none
+
+**Next:** Deliver gate

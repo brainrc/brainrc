@@ -14,10 +14,10 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "plan",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [],
@@ -38,37 +38,54 @@
       "id": "T1",
       "title": "engine and contract docs",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC1",
         "AC2",
         "AC3"
       ],
-      "review": "batch"
+      "review": "batch",
+      "red": "n/a (prose)",
+      "commit": "1214b6c"
     },
     {
       "id": "T2",
       "title": "sandbox ticket 003 and eval case",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC4"
       ],
-      "review": "batch"
+      "review": "batch",
+      "red": "assertion",
+      "commit": "c58b0ee"
     },
     {
       "id": "T3",
       "title": "real landing run, release",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC5",
         "AC6"
       ],
-      "review": "batch"
+      "review": "batch",
+      "red": "n/a (real run)",
+      "commit": "74c7e32"
+    },
+    {
+      "id": "T4",
+      "title": "gates as multiple-choice questions (added at Plan gate)",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [],
+      "review": "batch",
+      "red": "n/a (prose)",
+      "commit": "6f058a8"
     }
   ],
   "blocked": null,
@@ -77,7 +94,11 @@
     "stage_started_at": {
       "intake": "2026-10-07T04:44:30Z",
       "spec": "2026-10-07T04:44:30Z",
-      "plan": "2026-10-07T04:46:10Z"
+      "plan": "2026-10-07T04:46:10Z",
+      "implement": "2026-10-07T04:50:00Z",
+      "verify": "2026-10-07T04:50:28Z",
+      "document": "2026-10-07T04:50:28Z",
+      "deliver": "2026-10-07T04:50:28Z"
     },
     "gates": {
       "spec": {
@@ -85,7 +106,11 @@
         "approved_at": "2026-10-07T04:46:10Z"
       },
       "plan": {
-        "presented_at": "2026-10-07T04:46:10Z"
+        "presented_at": "2026-10-07T04:46:10Z",
+        "approved_at": "2026-10-07T04:50:00Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-07T04:50:28Z"
       }
     },
     "gate_rework": {

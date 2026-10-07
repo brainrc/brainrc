@@ -26,3 +26,19 @@
 **Open issues:** none
 
 **Next:** Plan gate
+
+## implementer + verifier + doc-writer · T1–T4, verify, document · done
+2026-10-07T04:50:28Z
+
+**Did:** Wave docs (1214b6c), gate buttons (6f058a8), ticket 003 and eval case (c58b0ee), worktree-removal fix and 0.3.13 (74c7e32).
+
+**Evidence:**
+- red: test_sandbox_cases_name_tickets_that_exist failed on the missing ticket
+- real landing run: T1, T2 landed in order; stray T3 rejected; first run found the worktree-remove bug
+- tests OK; validate OK (core and pack); SKILL.md +54 tokens
+
+**Changed files:** see the PR diff stat
+
+**Open issues:** issue criterion 3 needs a subagent-mode run of ticket 003
+
+**Next:** Deliver gate

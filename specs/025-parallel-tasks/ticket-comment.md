@@ -1,0 +1,1 @@
+Engine support is in the linked PR (0.3.13): parallel waves in separate worktrees, landing in plan order, sandbox ticket 003 and its eval case. This issue stays open until a subagent-mode run of ticket 003 measures the time saved.

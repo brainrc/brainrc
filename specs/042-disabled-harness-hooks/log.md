@@ -26,3 +26,18 @@
 **Open issues:** none
 
 **Next:** Deliver gate
+
+## orchestrator · deliver · done
+2026-10-07T04:13:28Z
+
+**Did:** Pushed, opened PR #43 (closes #42), posted ticket comment, subscribed.
+
+**Evidence:**
+- https://github.com/bxker/ai-config/pull/43
+- https://github.com/bxker/ai-config/issues/42#issuecomment-6030772421
+
+**Changed files:** `specs/042-disabled-harness-hooks/retro.md`
+
+**Open issues:** CI pending
+
+**Next:** none

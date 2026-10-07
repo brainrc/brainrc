@@ -14,10 +14,10 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "plan",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [],
@@ -38,38 +38,44 @@
       "id": "T1",
       "title": "manifest generator and stale check",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC1",
         "AC2",
         "AC6"
       ],
-      "review": "batch"
+      "review": "batch",
+      "red": "assertion",
+      "commit": "857c044"
     },
     {
       "id": "T2",
       "title": "generated manifests, real validate, role fallback",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC3",
         "AC5"
       ],
-      "review": "batch"
+      "review": "batch",
+      "red": "n/a (real validate)",
+      "commit": "c8b03cb"
     },
     {
       "id": "T3",
       "title": "docs and release",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC4",
         "AC6"
       ],
-      "review": "batch"
+      "review": "batch",
+      "red": "n/a (docs)",
+      "commit": "50f3e77"
     }
   ],
   "blocked": null,
@@ -78,7 +84,11 @@
     "stage_started_at": {
       "intake": "2026-10-07T04:55:33Z",
       "spec": "2026-10-07T04:55:33Z",
-      "plan": "2026-10-07T04:56:50Z"
+      "plan": "2026-10-07T04:56:50Z",
+      "implement": "2026-10-07T05:03:00Z",
+      "verify": "2026-10-07T05:01:20Z",
+      "document": "2026-10-07T05:01:20Z",
+      "deliver": "2026-10-07T05:01:20Z"
     },
     "gates": {
       "spec": {
@@ -86,7 +96,11 @@
         "approved_at": "2026-10-07T04:56:50Z"
       },
       "plan": {
-        "presented_at": "2026-10-07T04:56:50Z"
+        "presented_at": "2026-10-07T04:56:50Z",
+        "approved_at": "2026-10-07T05:03:00Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-07T05:01:20Z"
       }
     },
     "gate_rework": {

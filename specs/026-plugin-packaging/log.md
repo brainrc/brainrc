@@ -27,3 +27,19 @@
 **Open issues:** none
 
 **Next:** Plan gate
+
+## implementer + verifier + doc-writer · T1–T3, verify, document · done
+2026-10-07T05:01:20Z
+
+**Did:** Generator and stale check (857c044), manifests and role fallback (c8b03cb), docs and 0.3.14 (50f3e77).
+
+**Evidence:**
+- red: 4 assertion failures on a stub (after fixing two KeyError reds)
+- claude plugin validate passes; real install in a fake HOME works; roles symlink survives; installed hook guards git push
+- tests OK; validate OK (core and pack)
+
+**Changed files:** see the PR diff stat
+
+**Open issues:** none
+
+**Next:** Deliver gate

@@ -1,0 +1,1 @@
+Done in the linked PR (0.3.14). Install with `/plugin marketplace add bxker/ai-config`, then `/plugin install ai-config@ai-config`. Rules, packs, and other harnesses still need `aicfg`. The packs-as-plugins decision is recorded in `docs/packs.md`: packs stay `aicfg` packs.

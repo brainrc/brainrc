@@ -60,12 +60,9 @@ No backup is made when the file didn't exist yet.
 
    Repeat for `codex`, `opencode`, `gemini`, and `cursor`.
 2. Run `python3 scripts/aicfg.py apply`. It removes every link it made, including the hooks
-   directory.
-3. Remove ai-config's hooks from `~/.claude/settings.json`; `apply` leaves them in place, and
-   they now point at a missing directory. Either restore the oldest
-   `settings.json.bak-aicfg-*` from before your first `apply` (if one exists), or delete each
-   hook entry whose `command` contains `/hooks/ai-config`.
-4. Delete the repo.
+   directory, and takes ai-config's hooks out of `~/.claude/settings.json` (backing it up
+   first). Your other settings and other tools' hooks stay.
+3. Delete the repo.
 
 ## A guard hook blocked something safe, or missed something risky
 

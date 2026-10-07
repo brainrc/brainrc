@@ -11,6 +11,12 @@ a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everyt
 Every merged PR bumps `VERSION` and adds its entries under that version. There is no Unreleased
 section: `main` is what users pull, so `VERSION` must always describe it exactly.
 
+## 0.3.8 (2026-10-07)
+
+- Docs: `docs/troubleshooting.md`, by symptom: missing items, `CONFLICT`, pack errors, settings
+  backups, uninstalling, and reporting a guard hook mistake. `doctor` points to it when it finds
+  a problem (#17).
+
 ## 0.3.7 (2026-10-06)
 
 - `aicfg doctor`: a read-only check of this machine's install. It reports stale renders,

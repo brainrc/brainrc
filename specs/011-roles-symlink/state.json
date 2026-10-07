@@ -6,7 +6,7 @@
     "id": "11",
     "title": "Portability: replace or document the skills/spec-agent/roles symlink",
     "url": "https://github.com/bxker/ai-config/issues/11",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/47"
   },
   "slug": "011-roles-symlink",
   "branch": "011-roles-symlink",
@@ -14,11 +14,11 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [],
   "targets": {},
@@ -85,7 +85,8 @@
       "implement": "2026-10-07T04:37:00Z",
       "verify": "2026-10-07T04:40:04Z",
       "document": "2026-10-07T04:40:04Z",
-      "deliver": "2026-10-07T04:40:04Z"
+      "deliver": "2026-10-07T04:40:04Z",
+      "done": "2026-10-07T04:41:08Z"
     },
     "gates": {
       "spec": {
@@ -97,7 +98,8 @@
         "approved_at": "2026-10-07T04:37:00Z"
       },
       "deliver": {
-        "presented_at": "2026-10-07T04:40:04Z"
+        "presented_at": "2026-10-07T04:40:04Z",
+        "approved_at": "2026-10-07T04:41:08Z"
       }
     },
     "gate_rework": {

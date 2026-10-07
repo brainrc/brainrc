@@ -41,3 +41,17 @@
 **Open issues:** none
 
 **Next:** Deliver gate
+
+## orchestrator · deliver · done
+2026-10-07T04:41:08Z
+
+**Did:** Pushed, opened PR #47 (closes #11), posted ticket comment, subscribed.
+
+**Evidence:**
+- https://github.com/bxker/ai-config/pull/47
+
+**Changed files:** `specs/011-roles-symlink/retro.md`
+
+**Open issues:** CI pending
+
+**Next:** none

@@ -601,6 +601,24 @@ class BudgetTest(TempRepoCase):
         self.assertRegex(out, r"core: ~\d+ / 3000 always-loaded tokens")
 
 
+class UnslopSplitTest(unittest.TestCase):
+    SKILL = REPO / "skills/unslop"
+
+    def test_no_rule_line_was_lost(self):
+        text = "\n".join(p.read_text() for p in sorted(self.SKILL.rglob("*.md")))
+        for line in (REPO / "tests/fixtures/unslop-rules.txt").read_text().splitlines():
+            with self.subTest(line=line[:60]):
+                self.assertIn(line, text)
+
+    def test_skill_md_is_short_and_links_its_references(self):
+        body = (self.SKILL / "SKILL.md").read_text()
+        self.assertLess(len(body), 6000)
+        for ref in ("structure.md", "clarity.md", "change-prose.md"):
+            self.assertIn(f"references/{ref}", body)
+        description = aicfg.frontmatter(self.SKILL / "SKILL.md")["description"]
+        self.assertLessEqual(aicfg.estimate_tokens(description), 60)
+
+
 class PythonVersionTest(unittest.TestCase):
     def test_old_python_gets_a_message_not_a_traceback(self):
         # Hiding tomllib is what Python 3.10 looks like to the script.

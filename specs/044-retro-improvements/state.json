@@ -1,29 +1,94 @@
 {
   "version": 1,
-  "ticket": {"source": "local", "ref": "local:retros-2026-10-07", "id": null,
-             "title": "spec-agent: apply lessons from the #39, #12, #17, #42 retros", "url": null, "pr": null},
-  "slug": "retro-improvements-2",
-  "branch": "retro-improvements-2",
+  "ticket": {
+    "source": "github",
+    "ref": "gh:44",
+    "id": "44",
+    "title": "spec-agent: apply lessons from the #39, #12, #17, #42 retros",
+    "url": "https://github.com/bxker/ai-config/issues/44",
+    "pr": null
+  },
+  "slug": "044-retro-improvements",
+  "branch": "044-retro-improvements",
   "base": "main",
   "size": "small",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "spec",
-  "gates": {"spec": "pending", "plan": "skipped", "deliver": "pending"},
+  "stage": "deliver",
+  "gates": {
+    "spec": "approved",
+    "plan": "skipped",
+    "deliver": "pending"
+  },
   "domains": [],
   "targets": {},
-  "commands": {"test": "python3 -m unittest discover -s tests -q", "lint": null, "build": null,
-               "validate": ["python3 scripts/aicfg.py validate",
-                            "python3 scripts/aicfg.py validate --pack examples/pack-acme"],
-               "plan": null, "baseline_failures": []},
-  "tasks": [],
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate",
+      "python3 scripts/aicfg.py validate --pack examples/pack-acme"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Four retro lessons in agents and references",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "agents/verifier.md",
+        "agents/implementer.md",
+        "skills/spec-agent/references/lifecycle.md",
+        "skills/spec-agent/references/sizing.md",
+        "VERSION",
+        "CHANGELOG.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5"
+      ],
+      "review": "batch",
+      "red": "n/a (prose)",
+      "commit": "7c746be"
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-07T04:17:31Z",
-    "stage_started_at": {"intake": "2026-10-07T04:17:31Z", "spec": "2026-10-07T04:17:31Z"},
-    "gates": {"spec": {"presented_at": "2026-10-07T04:17:31Z"}},
-    "gate_rework": {"spec": 0, "plan": 0, "deliver": 0},
-    "reviews": {"total": 0, "first_pass": 0},
+    "stage_started_at": {
+      "intake": "2026-10-07T04:17:31Z",
+      "spec": "2026-10-07T04:17:31Z",
+      "implement": "2026-10-07T04:18:41Z",
+      "verify": "2026-10-07T04:18:41Z",
+      "document": "2026-10-07T04:18:41Z",
+      "deliver": "2026-10-07T04:18:41Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-07T04:17:31Z",
+        "approved_at": "2026-10-07T04:18:41Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-07T04:18:41Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
     "retries": 0,
     "interventions": 0
   }

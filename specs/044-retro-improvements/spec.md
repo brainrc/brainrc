@@ -1,6 +1,6 @@
 # Spec: spec-agent retro improvements (round 2)
 
-Ticket: local retros (issue filed on approval) · Size: small (4 files, ~15 lines) · Status: draft
+Ticket: gh:44 · Size: small (4 files, ~15 lines) · Status: draft
 
 ## Problem
 Five process gaps showed up across the last four runs; each cost a fix cycle or a near miss.

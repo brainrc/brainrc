@@ -6,7 +6,7 @@
     "id": "25",
     "title": "Roadmap: run independent plan tasks in parallel in subagent mode",
     "url": "https://github.com/bxker/ai-config/issues/25",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/48"
   },
   "slug": "025-parallel-tasks",
   "branch": "025-parallel-tasks",
@@ -14,11 +14,11 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [],
   "targets": {},
@@ -98,7 +98,8 @@
       "implement": "2026-10-07T04:50:00Z",
       "verify": "2026-10-07T04:50:28Z",
       "document": "2026-10-07T04:50:28Z",
-      "deliver": "2026-10-07T04:50:28Z"
+      "deliver": "2026-10-07T04:50:28Z",
+      "done": "2026-10-07T04:51:50Z"
     },
     "gates": {
       "spec": {
@@ -110,7 +111,8 @@
         "approved_at": "2026-10-07T04:50:00Z"
       },
       "deliver": {
-        "presented_at": "2026-10-07T04:50:28Z"
+        "presented_at": "2026-10-07T04:50:28Z",
+        "approved_at": "2026-10-07T04:51:50Z"
       }
     },
     "gate_rework": {
@@ -123,6 +125,6 @@
       "first_pass": 0
     },
     "retries": 0,
-    "interventions": 0
+    "interventions": 1
   }
 }

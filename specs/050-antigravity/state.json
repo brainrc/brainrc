@@ -14,10 +14,10 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "plan",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [],
@@ -38,69 +38,69 @@
       "id": "T1",
       "title": "tests first",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC1",
         "AC2"
       ],
       "review": "batch",
-      "red": null,
-      "commit": null
+      "red": "errors (missing rule_text, plugin.json)",
+      "commit": "b19c25d"
     },
     {
       "id": "T2",
       "title": "aicfg changes",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC1",
         "AC2"
       ],
       "review": "batch",
       "red": null,
-      "commit": null
+      "commit": "8c16a11"
     },
     {
       "id": "T3",
       "title": "rules frontmatter",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC2"
       ],
       "review": "batch",
       "red": null,
-      "commit": null
+      "commit": "6397bd7"
     },
     {
       "id": "T4",
       "title": "real apply",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC5"
       ],
       "review": "batch",
-      "red": null,
+      "red": "n/a (real run)",
       "commit": null
     },
     {
       "id": "T5",
       "title": "docs and release",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC3",
         "AC4"
       ],
       "review": "batch",
-      "red": null,
-      "commit": null
+      "red": "n/a (docs)",
+      "commit": "f732f53"
     }
   ],
   "blocked": null,
@@ -109,7 +109,11 @@
     "stage_started_at": {
       "intake": "2026-10-08T05:19:09Z",
       "spec": "2026-10-08T05:19:09Z",
-      "plan": "2026-10-08T05:19:43Z"
+      "plan": "2026-10-08T05:19:43Z",
+      "implement": "2026-10-08T05:32:10Z",
+      "verify": "2026-10-08T05:35:41Z",
+      "document": "2026-10-08T05:35:41Z",
+      "deliver": "2026-10-08T05:35:41Z"
     },
     "gates": {
       "spec": {
@@ -117,7 +121,11 @@
         "approved_at": "2026-10-08T05:19:43Z"
       },
       "plan": {
-        "presented_at": "2026-10-08T05:21:00Z"
+        "presented_at": "2026-10-08T05:21:00Z",
+        "approved_at": "2026-10-08T05:32:10Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-08T05:35:41Z"
       }
     },
     "gate_rework": {

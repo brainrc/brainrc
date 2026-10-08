@@ -6,7 +6,7 @@
     "id": "50",
     "title": "Native package installs for every harness (step 2: Codex)",
     "url": "https://github.com/bxker/ai-config/issues/50",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/53"
   },
   "slug": "050-codex",
   "branch": "050-codex",
@@ -14,11 +14,11 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [],
   "targets": {},
@@ -111,7 +111,8 @@
       "implement": "2026-10-08T03:24:55Z",
       "verify": "2026-10-08T03:28:16Z",
       "document": "2026-10-08T03:28:16Z",
-      "deliver": "2026-10-08T03:28:16Z"
+      "deliver": "2026-10-08T03:28:16Z",
+      "done": "2026-10-08T04:26:58Z"
     },
     "gates": {
       "spec": {
@@ -123,7 +124,8 @@
         "approved_at": "2026-10-08T03:24:55Z"
       },
       "deliver": {
-        "presented_at": "2026-10-08T03:28:16Z"
+        "presented_at": "2026-10-08T03:28:16Z",
+        "approved_at": "2026-10-08T04:26:58Z"
       }
     },
     "gate_rework": {

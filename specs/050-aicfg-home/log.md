@@ -1,0 +1,14 @@
+## analyst · spec · done
+2026-10-08T02:10:49Z
+
+**Did:** Spec (standard): 7 criteria, one compatibility choice (A: keep in-repo copy, PATCH; B: move, MINOR).
+
+**Evidence:**
+- intake: tree clean; no open PRs; baseline tests OK
+- references to the rendered paths: aicfg.py (9), tests (7), spec-agent and ticket-jira text (4), docs (8), harnesses.toml (1)
+
+**Changed files:** `specs/050-aicfg-home/spec.md`
+
+**Open issues:** compatibility choice at the Spec gate
+
+**Next:** Spec gate

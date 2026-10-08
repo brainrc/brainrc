@@ -1,6 +1,6 @@
 # Spec: Antigravity installs ai-config as a plugin
 
-Ticket: gh:50 (step 3 of 6; refs) · Size: standard (manifest, rules frontmatter, aicfg strip, docs) · Status: draft
+Ticket: gh:50 (step 3 of 6; refs) · Size: standard (manifest, rules frontmatter, aicfg strip, docs) · Status: approved
 
 ## Background (public sources; nothing here was run against a real agy)
 Google retired Gemini CLI for consumer accounts on 2026-06-18; Antigravity CLI (`agy`, Go,

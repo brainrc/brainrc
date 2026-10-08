@@ -6,7 +6,7 @@
     "id": "50",
     "title": "Native package installs for every harness, packs included, without a clone (spike)",
     "url": "https://github.com/bxker/ai-config/issues/50",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/51"
   },
   "slug": "050-packaging-spike",
   "branch": "050-packaging-spike",
@@ -14,11 +14,11 @@
   "size": "small",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "skipped",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [],
   "targets": {},
@@ -65,18 +65,20 @@
     "stage_started_at": {
       "intake": "2026-10-08T02:04:35Z",
       "spec": "2026-10-08T02:04:35Z",
-      "implement": "2026-10-08T00:00:00Z",
+      "implement": "2026-10-08T02:06:10Z",
       "verify": "2026-10-08T02:06:10Z",
       "document": "2026-10-08T02:06:10Z",
-      "deliver": "2026-10-08T02:06:10Z"
+      "deliver": "2026-10-08T02:06:10Z",
+      "done": "2026-10-08T02:07:01Z"
     },
     "gates": {
       "spec": {
         "presented_at": "2026-10-08T02:04:35Z",
-        "approved_at": "2026-10-08T00:00:00Z"
+        "approved_at": "2026-10-08T02:06:10Z"
       },
       "deliver": {
-        "presented_at": "2026-10-08T02:06:10Z"
+        "presented_at": "2026-10-08T02:06:10Z",
+        "approved_at": "2026-10-08T02:07:01Z"
       }
     },
     "gate_rework": {

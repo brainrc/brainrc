@@ -37,7 +37,7 @@ harnesses.toml  Where each harness reads each content type.
 packs.toml      Extra source repos ("packs") layered on top; usually set in packs.local.toml.
 VERSION         Core version that packs pin with `requires_core`; changes in CHANGELOG.md.
 scripts/        aicfg.py: sync, validate, doctor, tokens (Python 3.11+, stdlib only).
-docs/           spec-agent, guardrails, efficiency, formats, troubleshooting, roadmap.
+docs/           spec-agent, guardrails, efficiency, formats, troubleshooting, harness packages, roadmap.
 tests/          stdlib unittest for aicfg and hooks.
 examples/       Sandbox project + tickets for trying spec-agent.
 dist/           Generated output (gitignored).

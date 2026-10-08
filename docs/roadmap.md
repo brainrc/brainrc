@@ -10,5 +10,4 @@ Next:
 - [ ] **Gemini command adapter**: markdown commands → TOML.
 - [ ] **Living specs** (OpenSpec-style): archive completed specs into per-domain `specs/` truth with deltas.
 - [ ] **Metrics rollup**: `scripts/retro_report.py` aggregating `retro.md`/`state.json` across projects, plus ccusage cost.
-- [ ] **Parallel tasks**: run independent tasks (disjoint `files`, no deps) concurrently in subagent mode.
-- [ ] **Plugin packaging**: publish as a Claude Code plugin/marketplace.
+- [ ] **Native packages for every harness** ([#50](https://github.com/bxker/ai-config/issues/50)): install core and packs without a clone; per-harness findings and order in [harness-packages.md](harness-packages.md).

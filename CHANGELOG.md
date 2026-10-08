@@ -11,6 +11,15 @@ a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everyt
 Every merged PR bumps `VERSION` and adds its entries under that version. There is no Unreleased
 section: `main` is what users pull, so `VERSION` must always describe it exactly.
 
+## 0.3.16 (2026-10-08)
+
+- **[pack contract]** `apply` renders rules and spec-agent extensions to `$AICFG_HOME`
+  (default `~/.config/ai-config/`), outside the checkout, so packaged installs can read them
+  (#50, step 1). Each harness's instructions link moves there on the next `apply`, and the old
+  `dist/instructions.md` is removed. Non-breaking: `skills/spec-agent/references/extensions.md`
+  is still written, but it's deprecated; packs that read it should read
+  `$AICFG_HOME/extensions.md` instead. A later MINOR release stops writing it.
+
 ## 0.3.15 (2026-10-08)
 
 - Docs: `docs/harness-packages.md` records the #50 spike: what each harness (Claude Code, Codex,

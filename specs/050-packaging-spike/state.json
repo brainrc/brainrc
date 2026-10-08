@@ -1,30 +1,93 @@
 {
   "version": 1,
-  "ticket": {"source": "github", "ref": "gh:50", "id": "50",
-             "title": "Native package installs for every harness, packs included, without a clone (spike)",
-             "url": "https://github.com/bxker/ai-config/issues/50", "pr": null},
+  "ticket": {
+    "source": "github",
+    "ref": "gh:50",
+    "id": "50",
+    "title": "Native package installs for every harness, packs included, without a clone (spike)",
+    "url": "https://github.com/bxker/ai-config/issues/50",
+    "pr": null
+  },
   "slug": "050-packaging-spike",
   "branch": "050-packaging-spike",
   "base": "main",
   "size": "small",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "spec",
-  "gates": {"spec": "pending", "plan": "skipped", "deliver": "pending"},
+  "stage": "deliver",
+  "gates": {
+    "spec": "approved",
+    "plan": "skipped",
+    "deliver": "pending"
+  },
   "domains": [],
   "targets": {},
-  "commands": {"test": "python3 -m unittest discover -s tests -q", "lint": null, "build": null,
-               "validate": ["python3 scripts/aicfg.py validate",
-                            "python3 scripts/aicfg.py validate --pack examples/pack-acme"],
-               "plan": null, "baseline_failures": []},
-  "tasks": [],
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate",
+      "python3 scripts/aicfg.py validate --pack examples/pack-acme"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "record the spike",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "docs/harness-packages.md",
+        "docs/roadmap.md",
+        "README.md",
+        "VERSION",
+        "CHANGELOG.md",
+        ".claude-plugin/plugin.json",
+        ".claude-plugin/marketplace.json"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3"
+      ],
+      "review": "batch",
+      "red": "n/a (docs)",
+      "commit": "75ed970"
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-08T02:04:35Z",
-    "stage_started_at": {"intake": "2026-10-08T02:04:35Z", "spec": "2026-10-08T02:04:35Z"},
-    "gates": {"spec": {"presented_at": "2026-10-08T02:04:35Z"}},
-    "gate_rework": {"spec": 0, "plan": 0, "deliver": 0},
-    "reviews": {"total": 0, "first_pass": 0},
+    "stage_started_at": {
+      "intake": "2026-10-08T02:04:35Z",
+      "spec": "2026-10-08T02:04:35Z",
+      "implement": "2026-10-08T00:00:00Z",
+      "verify": "2026-10-08T02:06:10Z",
+      "document": "2026-10-08T02:06:10Z",
+      "deliver": "2026-10-08T02:06:10Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-08T02:04:35Z",
+        "approved_at": "2026-10-08T00:00:00Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-08T02:06:10Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
     "retries": 0,
     "interventions": 0
   }

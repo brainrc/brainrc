@@ -26,3 +26,19 @@
 **Open issues:** none
 
 **Next:** Plan gate
+
+## implementer + verifier + doc-writer · T1–T3, verify, document · done
+2026-10-08T02:15:14Z
+
+**Did:** AICFG_HOME rendering (4db8d33), readers and docs plus dist/ cleanup (2919d05), 0.3.16 (2a4a3f6).
+
+**Evidence:**
+- red: 4 assertion failures on a stub; empty dist/ test red then green
+- tests OK; validate OK (core and pack); tutorial ran clean
+- real apply and real upgrade in fake HOMEs: correct paths, status in sync, doctor clean
+
+**Changed files:** see the PR diff stat
+
+**Open issues:** none
+
+**Next:** Deliver gate

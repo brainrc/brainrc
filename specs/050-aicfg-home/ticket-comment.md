@@ -1,0 +1,1 @@
+Step 1 of the proposed order is in the linked PR (0.3.16): `apply` renders rules and extensions to `$AICFG_HOME` (default `~/.config/ai-config/`), and spec-agent reads extensions from there. The in-repo `extensions.md` is still written but deprecated. Next is step 2: Codex through the existing `.claude-plugin/`, with commands converted to skills.

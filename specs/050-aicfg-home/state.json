@@ -14,10 +14,10 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "plan",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [],
@@ -38,8 +38,8 @@
       "id": "T1",
       "title": "aicfg renders to AICFG_HOME",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC1",
         "AC2",
@@ -47,30 +47,36 @@
         "AC5",
         "AC7"
       ],
-      "review": "batch"
+      "review": "batch",
+      "red": "assertion",
+      "commit": "4db8d33"
     },
     {
       "id": "T2",
       "title": "readers and docs",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC4",
         "AC6"
       ],
-      "review": "batch"
+      "review": "batch",
+      "red": "assertion (dist cleanup)",
+      "commit": "2919d05"
     },
     {
       "id": "T3",
       "title": "release",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC7"
       ],
-      "review": "batch"
+      "review": "batch",
+      "red": "n/a (release)",
+      "commit": "2a4a3f6"
     }
   ],
   "blocked": null,
@@ -79,7 +85,11 @@
     "stage_started_at": {
       "intake": "2026-10-08T02:10:49Z",
       "spec": "2026-10-08T02:10:49Z",
-      "plan": "2026-10-08T02:11:37Z"
+      "plan": "2026-10-08T02:11:37Z",
+      "implement": "2026-10-08T02:11:37Z",
+      "verify": "2026-10-08T02:15:14Z",
+      "document": "2026-10-08T02:15:14Z",
+      "deliver": "2026-10-08T02:15:14Z"
     },
     "gates": {
       "spec": {
@@ -87,7 +97,11 @@
         "approved_at": "2026-10-08T02:11:37Z"
       },
       "plan": {
-        "presented_at": "2026-10-08T02:11:37Z"
+        "presented_at": "2026-10-08T02:11:37Z",
+        "approved_at": "2026-10-08T02:11:37Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-08T02:15:14Z"
       }
     },
     "gate_rework": {

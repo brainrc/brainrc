@@ -4,7 +4,7 @@
 #   skills       directory; each skills/<name>/ is symlinked into it
 #   agents       directory; each agents/<name>.md is symlinked into it
 #   commands     directory; each commands/<name>.md is symlinked into it
-#   instructions file; symlinked to the rendered dist/instructions.md
+#   instructions file; symlinked to the rendered $AICFG_HOME/instructions.md (default ~/.config/ai-config)
 #   hooks_dir    directory; symlinked to overrides/<harness>/hooks. Fragments refer to it
 #                as {{hooks_dir}}, so moving it keeps hook commands working
 #   settings     JSON file; hooks from overrides/<harness>/settings.fragment.json are

@@ -740,7 +740,7 @@ class AicfgHomeTest(TempRepoCase):
         self.assertRegex(out, r"UPDATE +claude +~/.claude/CLAUDE.md")
         quiet(aicfg.cmd_sync, True)
         self.assertEqual(aicfg.link_target(link), self.aicfg_home / "instructions.md")
-        self.assertFalse(old.exists())
+        self.assertFalse(old.parent.exists())  # the emptied dist/ goes too
 
     def test_disabled_harness_link_to_aicfg_home_is_pruned(self):
         quiet(aicfg.cmd_sync, True)

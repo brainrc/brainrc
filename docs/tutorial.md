@@ -103,7 +103,7 @@ harness's skills directory. After `apply`, `status` prints `Everything in sync.`
 
 ```bash
 ls ~/.claude/skills/myteam-protobuf
-grep myteam skills/spec-agent/references/extensions.md
+grep myteam ~/.config/ai-config/extensions.md
 python3 scripts/aicfg.py tokens | grep myteam
 ```
 

@@ -3,8 +3,8 @@
 
 Usage:
   aicfg.py status                show what would change (default, no writes)
-  aicfg.py apply                 render rules and pack extensions, create/refresh symlinks,
-                                 merge settings
+  aicfg.py apply                 render rules and pack extensions to $AICFG_HOME (default
+                                 ~/.config/ai-config), create/refresh symlinks, merge settings
   aicfg.py validate [--pack DIR] check frontmatter, cross-references, packs, and tripwires
                                  (used in CI); --pack checks core plus that pack only
   aicfg.py doctor                diagnose this machine's install (read-only): stale renders,
@@ -603,6 +603,8 @@ def cmd_sync(apply: bool) -> int:
             extensions_file().write_text(extensions)
         if legacy_instructions().is_file():
             legacy_instructions().unlink()
+            if not any(legacy_instructions().parent.iterdir()):
+                legacy_instructions().parent.rmdir()
 
     links, stale, merges = plan(srcs)
     conflicts = changes = 0

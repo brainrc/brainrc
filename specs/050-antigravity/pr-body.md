@@ -10,7 +10,8 @@ agy plugin install https://github.com/bxker/ai-config
 - **Root `plugin.json`** (`{"name": "ai-config"}`): `agy plugin install` needs it at the repo root. `aicfg plugin` generates it, and `validate` fails when it's missing or stale.
 - **Rules get `trigger: always_on` frontmatter.** Antigravity silently drops plugin rules without a trigger. `aicfg` strips the frontmatter wherever it reads rules, so the rendered `instructions.md` is byte-identical to main's. `validate` requires a trigger on core rules (packs are unaffected).
 - **No guard hooks for Antigravity yet.** Its `PreToolUse` has no known "no objection" reply: an empty `{}` is reported to deny every call, and `allow` is documented as auto-approve. Hooks wait for a live test; the README points to agy's own permission settings.
-- **Docs:** `docs/harness-packages.md` replaces the Gemini CLI section with Antigravity (Gemini CLI is kept as a short retired note). Also updated: README, `docs/formats.md`, the roadmap (the Gemini TOML adapter is dropped) and AGENTS.md. `VERSION` 0.3.18.
+- **`aicfg` syncs to Antigravity in place of Gemini CLI:** skills go to `~/.gemini/config/skills` and rules to `~/.gemini/config/AGENTS.md`. The `gemini` harness stays in `harnesses.toml` but disabled, so the next `apply` removes its old links. It can be re-enabled in `harnesses.local.toml` for accounts still on Gemini CLI.
+- **Docs say Antigravity wherever they said Gemini:** README, `docs/{formats,architecture,guardrails,spec-agent,troubleshooting,harness-packages}.md`, spec-agent's fallback, `overrides/README.md`, `mcp/servers.toml`, and AGENTS.md. Only the CHANGELOG history and one retirement line still name Gemini CLI. The roadmap's Gemini TOML adapter is dropped. `VERSION` 0.3.18.
 
 ## Acceptance criteria
 - [x] AC1 root `plugin.json` generated and checked
@@ -23,6 +24,7 @@ agy plugin install https://github.com/bxker/ai-config
 - `python3 -m unittest discover -s tests -q` → OK (132). The new tests failed first.
 - `validate` (core and pack), `claude plugin validate .` and `run-tutorial.sh` → OK.
 - `apply` in a fake home directory: the rendered `instructions.md` is identical to main's.
+- Upgrade in a fake home directory, from main's config to this branch: the 26 `~/.gemini/skills` links and `GEMINI.md` are removed, 26 skills and `AGENTS.md` are linked under `~/.gemini/config/`, and `doctor` is clean.
 - Codex 0.161.0 reinstall in a scratch folder: installs 0.3.18 with the new root `plugin.json` present.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)

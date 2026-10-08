@@ -19,6 +19,10 @@ section: `main` is what users pull, so `VERSION` must always describe it exactly
   Antigravity drops them; `aicfg` strips it, so other harnesses get the same text, and `validate`
   requires it on core rules. No guard hooks for Antigravity yet. Built from public docs and
   issues; not yet run against a real `agy`.
+- `aicfg` syncs to Antigravity (`~/.gemini/config/skills`, `~/.gemini/config/AGENTS.md`) in place
+  of Gemini CLI. The `gemini` harness is kept disabled, so the next `apply` removes its old links;
+  enable it in `harnesses.local.toml` if your account still runs Gemini CLI. Docs say Antigravity
+  wherever they said Gemini.
 
 ## 0.3.17 (2026-10-08)
 

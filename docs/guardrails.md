@@ -49,6 +49,6 @@ Harness permission modes still apply.
 
 ## Gaps by tool
 
-Codex, Gemini CLI, OpenCode, and Cursor get the rules and workflow layers only. Use their own
+Codex, Antigravity CLI, OpenCode, and Cursor get the rules and workflow layers only. Use their own
 permission/sandbox settings (e.g. Codex approval modes) alongside. Porting the hooks to tools
 that support pre-execution hooks is on the [roadmap](roadmap.md).

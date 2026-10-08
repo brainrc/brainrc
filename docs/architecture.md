@@ -43,7 +43,7 @@ extensions are rendered, so re-run `apply` after changing them or enabling a pac
 
 ## Glossary
 
-- **Harness**: an AI coding tool ai-config syncs into: Claude Code, Codex, OpenCode, Gemini CLI, Cursor ([support](formats.md#harness-support)).
+- **Harness**: an AI coding tool ai-config syncs into: Claude Code, Codex, OpenCode, Antigravity CLI, Cursor ([support](formats.md#harness-support)).
 - **Core**: this repo. Generic content only, versioned by `VERSION` ([CHANGELOG](../CHANGELOG.md)).
 - **Pack**: a separate repo layered on core for content that can't live here ([packs](packs.md)).
 - **Skill**: instructions a tool loads on demand, triggered by its description ([format](formats.md#skills-skillsnameskillmd)).

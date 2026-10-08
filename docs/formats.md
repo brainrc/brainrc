@@ -62,17 +62,16 @@ machine. Format and extension points: [packs.md](packs.md).
 
 ## Harness support
 
-| | Claude Code | Codex | OpenCode | Gemini CLI | Cursor |
+| | Claude Code | Codex | OpenCode | Antigravity CLI | Cursor |
 |---|---|---|---|---|---|
 | Skills | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Rules | ✅ CLAUDE.md | ✅ AGENTS.md | ✅ AGENTS.md | ✅ GEMINI.md | ❌ Settings UI only |
-| Commands | ✅ | ✅ prompts | ✅ | ⏳ needs TOML adapter | ⏳ |
+| Rules | ✅ CLAUDE.md | ✅ AGENTS.md | ✅ AGENTS.md | ✅ AGENTS.md | ❌ Settings UI only |
+| Commands | ✅ | ✅ prompts | ✅ | ➖ none: skills are its slash commands | ⏳ |
 | Agents | ✅ subagents | ↪ role-switch fallback | ↪ fallback (adapter ⏳) | ↪ fallback | ↪ fallback |
 | Guard hooks | ✅ | ❌ rules only | ❌ | ❌ | ❌ |
 | MCP | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ |
 
-Gemini CLI is retired for consumer accounts; `aicfg` still syncs to `~/.gemini` for the
-accounts it serves. Its replacement, Antigravity CLI, installs ai-config as a plugin
-([README](../README.md#claude-code-plugin-no-clone)).
+Antigravity CLI paths (`~/.gemini/config/`) come from its changelog and user reports, not a live
+run. It can also install ai-config as a plugin ([README](../README.md#claude-code-plugin-no-clone)).
 
 Harness paths change often. If one moves, update `harnesses.toml`.

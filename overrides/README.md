@@ -1,7 +1,7 @@
 # overrides/
 
 Harness-specific config that has no cross-tool equivalent, one folder per
-harness (`claude/`, `codex/`, `opencode/`, `gemini/`, `cursor/`). Examples:
+harness (`claude/`, `codex/`, `opencode/`, `antigravity/`, `cursor/`). Examples:
 Claude `settings.json` hooks, Codex `config.toml` model defaults.
 
 `claude/` is synced: `hooks/` is symlinked to the harness's `hooks_dir`, and

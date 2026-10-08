@@ -19,7 +19,7 @@ spec.loader.exec_module(aicfg)
 
 FOREIGN = {"hooks": [{"type": "command", "command": "node /opt/other/hook.js"}]}
 OURS_OLD = {"matcher": "Bash", "hooks": [{"type": "command", "command": "python3 ~/.claude/hooks/ai-config/old.py"}]}
-SOURCES = ("skills", "agents", "commands", "overrides", "rules")
+SOURCES = ("skills", "agents", "overrides", "rules")  # core ships no commands/ (packs may)
 FRAGMENT = REPO / "overrides/claude/settings.fragment.json"
 
 
@@ -578,7 +578,7 @@ class BudgetTest(TempRepoCase):
         self.assertIn("rules/30-guardrails.md", labels)
         self.assertIn("skills/spec-agent", labels)
         self.assertIn("agents/verifier.md", labels)
-        self.assertIn("commands/work.md", labels)
+        self.assertIn("skills/work", labels)
         self.assertEqual(total, sum(n for n, _ in items))
 
     def test_core_over_budget_fails_naming_the_biggest_items(self):
@@ -755,6 +755,22 @@ class AicfgHomeTest(TempRepoCase):
         fails = [f for f in aicfg.doctor_findings() if f[0] == "FAIL"]
         self.assertEqual(len(fails), 1, fails)
         self.assertIn(aicfg.tilde(self.aicfg_home / "instructions.md"), fails[0][1])
+
+
+class UserInvokedSkillTest(unittest.TestCase):
+    """Codex skips commands that use $ARGUMENTS, so core ships them as user-invoked skills."""
+
+    def test_core_has_no_commands_folder(self):
+        self.assertFalse((REPO / "commands").exists())
+
+    def test_skills_taking_arguments_are_user_invoked(self):
+        for skill in sorted((REPO / "skills").glob("*/SKILL.md")):
+            if "$ARGUMENTS" not in skill.read_text():
+                continue
+            with self.subTest(skill=skill.parent.name):
+                meta = aicfg.frontmatter(skill)
+                self.assertEqual(meta.get("disable-model-invocation"), "true")
+                self.assertTrue(meta.get("argument-hint"))
 
 
 class PythonVersionTest(unittest.TestCase):

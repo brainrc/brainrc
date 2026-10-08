@@ -1,0 +1,143 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:50",
+    "id": "50",
+    "title": "Native package installs for every harness (step 2: Codex)",
+    "url": "https://github.com/bxker/ai-config/issues/50",
+    "pr": "https://github.com/bxker/ai-config/pull/53"
+  },
+  "slug": "050-codex",
+  "branch": "050-codex",
+  "base": "main",
+  "size": "standard",
+  "mode": "inline",
+  "delivery": "normal",
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate",
+      "python3 scripts/aicfg.py validate --pack examples/pack-acme"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "skill shape test",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC4"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "717b1a6"
+    },
+    {
+      "id": "T2",
+      "title": "commands become skills",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC1"
+      ],
+      "review": "batch",
+      "red": "assertion (T1 test)",
+      "commit": "717b1a6"
+    },
+    {
+      "id": "T3",
+      "title": "roles fallback",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC2"
+      ],
+      "review": "batch",
+      "red": "n/a (prose)",
+      "commit": "361ddb5"
+    },
+    {
+      "id": "T4",
+      "title": "real checks",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC3",
+        "AC5"
+      ],
+      "review": "batch",
+      "red": "n/a (real runs)",
+      "commit": null
+    },
+    {
+      "id": "T5",
+      "title": "docs and release",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC6"
+      ],
+      "review": "batch",
+      "red": "n/a (docs)",
+      "commit": "c9f3209"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-08T03:19:27Z",
+    "stage_started_at": {
+      "intake": "2026-10-08T03:19:27Z",
+      "spec": "2026-10-08T03:19:27Z",
+      "plan": "2026-10-08T03:24:26Z",
+      "implement": "2026-10-08T03:24:55Z",
+      "verify": "2026-10-08T03:28:16Z",
+      "document": "2026-10-08T03:28:16Z",
+      "deliver": "2026-10-08T03:28:16Z",
+      "done": "2026-10-08T04:26:58Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-08T03:19:27Z",
+        "approved_at": "2026-10-08T03:24:26Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-08T03:24:26Z",
+        "approved_at": "2026-10-08T03:24:55Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-08T03:28:16Z",
+        "approved_at": "2026-10-08T04:26:58Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  }
+}

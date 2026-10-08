@@ -30,7 +30,7 @@ rules/          Global instructions, as ordered markdown fragments (00-core.md, 
                 Concatenated into CLAUDE.md / AGENTS.md / GEMINI.md.
 skills/<name>/  Agent Skills: spec-agent engine, ticket connectors, domain skills (terraform, aws, ...).
 agents/         Agent roles (analyst, architect, implementer, reviewers, verifier, doc-writer).
-commands/       Slash commands / prompts (markdown + frontmatter, $ARGUMENTS placeholder).
+commands/       Optional, for packs: slash commands. Core's (/work, /review, /spec-*) are skills.
 mcp/            Canonical MCP server registry. Env var names only, never secret values.
 overrides/      Harness-specific config (Claude guard hooks + settings fragment).
 harnesses.toml  Where each harness reads each content type.
@@ -69,7 +69,7 @@ packs, unmerged hooks, and harnesses that aren't installed. Each problem comes w
 
 ### Claude Code plugin (no clone)
 
-Claude Code users can install the skills, agents, commands, and guard hooks as a plugin:
+Claude Code users can install the skills (including `/work`), agents, and guard hooks as a plugin:
 
 ```text
 /plugin marketplace add bxker/ai-config
@@ -78,13 +78,25 @@ Claude Code users can install the skills, agents, commands, and guard hooks as a
 
 | Piece | Plugin | `aicfg` |
 |---|---|---|
-| Skills, agents, commands | yes, named `ai-config:<name>` (`/ai-config:work`) | yes |
+| Skills, agents | yes, named `ai-config:<name>` (`/ai-config:work`) | yes |
 | Claude guard hooks | yes | yes |
 | Rules (`rules/`) | no: plugins can't load instructions into every session | yes |
 | Packs, other harnesses (Codex, OpenCode, Gemini, Cursor) | no | yes |
 
 Use one path, not both: together they load every skill and hook twice. For rules with the
 plugin, copy `rules/*.md` into your own `~/.claude/CLAUDE.md`.
+
+Codex installs the same plugin:
+
+```text
+codex plugin marketplace add bxker/ai-config
+codex plugin add ai-config@ai-config
+```
+
+Codex gets the skills (`work`, `review`, `spec-*`, and the rest) and the agent files spec-agent
+reads. Rules don't come with a Codex plugin: run `aicfg`, or copy `rules/*.md` into
+`~/.codex/AGENTS.md`. Whether Codex runs the plugin's guard hooks is not yet verified
+([harness packages](docs/harness-packages.md#codex)).
 
 ### Platforms
 

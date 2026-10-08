@@ -11,6 +11,15 @@ a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everyt
 Every merged PR bumps `VERSION` and adds its entries under that version. There is no Unreleased
 section: `main` is what users pull, so `VERSION` must always describe it exactly.
 
+## 0.3.17 (2026-10-08)
+
+- Codex installs ai-config from the existing plugin: `codex plugin marketplace add
+  bxker/ai-config`, then `codex plugin add ai-config@ai-config` (verified with Codex 0.161.0) (#50,
+  step 2). Core's slash commands (`/work`, `/review`, `/spec-status`, `/spec-approve`,
+  `/spec-resume`) are now user-invoked skills, because Codex skips commands that use `$ARGUMENTS`;
+  they keep their names in Claude Code, and `apply` swaps the old command links for skill links.
+  spec-agent reads `agents/` at the package root when an install drops the `roles` symlink.
+
 ## 0.3.16 (2026-10-08)
 
 - **[pack contract]** `apply` renders rules and spec-agent extensions to `$AICFG_HOME`

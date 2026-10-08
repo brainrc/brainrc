@@ -11,7 +11,8 @@ These rules apply to human contributors too. Setup and PR workflow: [CONTRIBUTIN
   name) and `description` (what it does and *when* to use it).
 - Agents: `agents/<name>.md` with frontmatter `name` (must equal the file stem),
   `description`, and optional `tools`.
-- Commands: `commands/<name>.md` with frontmatter `description`; use `$ARGUMENTS`.
+- Commands (packs only): `commands/<name>.md` with frontmatter `description`; use `$ARGUMENTS`.
+  Core ships slash commands as skills with `disable-model-invocation: true` and `argument-hint`.
 - Rules: `rules/NN-topic.md`, concatenated in filename order. Keep them
   harness-neutral (no tool-specific syntax like `@imports`).
 - Domain skills (`skills/<stack>/`) follow: Validate (offline commands) / Conventions /

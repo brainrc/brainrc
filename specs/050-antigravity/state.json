@@ -6,7 +6,7 @@
     "id": "50",
     "title": "Native package installs for every harness (step 3: Antigravity)",
     "url": "https://github.com/bxker/ai-config/issues/50",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/54"
   },
   "slug": "050-antigravity",
   "branch": "050-antigravity",
@@ -14,11 +14,11 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [],
   "targets": {},
@@ -113,7 +113,8 @@
       "implement": "2026-10-08T05:32:10Z",
       "verify": "2026-10-08T05:35:41Z",
       "document": "2026-10-08T05:35:41Z",
-      "deliver": "2026-10-08T05:35:41Z"
+      "deliver": "2026-10-08T05:35:41Z",
+      "done": "2026-10-08T05:39:17Z"
     },
     "gates": {
       "spec": {
@@ -125,7 +126,8 @@
         "approved_at": "2026-10-08T05:32:10Z"
       },
       "deliver": {
-        "presented_at": "2026-10-08T05:35:41Z"
+        "presented_at": "2026-10-08T05:35:41Z",
+        "approved_at": "2026-10-08T05:39:17Z"
       }
     },
     "gate_rework": {
@@ -138,6 +140,6 @@
       "first_pass": 0
     },
     "retries": 0,
-    "interventions": 0
+    "interventions": 1
   }
 }

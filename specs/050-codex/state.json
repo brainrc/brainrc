@@ -14,10 +14,10 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "plan",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [],
@@ -38,57 +38,67 @@
       "id": "T1",
       "title": "skill shape test",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC4"
       ],
-      "review": "batch"
+      "review": "batch",
+      "red": "assertion",
+      "commit": "717b1a6"
     },
     {
       "id": "T2",
       "title": "commands become skills",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC1"
       ],
-      "review": "batch"
+      "review": "batch",
+      "red": "assertion (T1 test)",
+      "commit": "717b1a6"
     },
     {
       "id": "T3",
       "title": "roles fallback",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC2"
       ],
-      "review": "batch"
+      "review": "batch",
+      "red": "n/a (prose)",
+      "commit": "361ddb5"
     },
     {
       "id": "T4",
       "title": "real checks",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC3",
         "AC5"
       ],
-      "review": "batch"
+      "review": "batch",
+      "red": "n/a (real runs)",
+      "commit": null
     },
     {
       "id": "T5",
       "title": "docs and release",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC6"
       ],
-      "review": "batch"
+      "review": "batch",
+      "red": "n/a (docs)",
+      "commit": "c9f3209"
     }
   ],
   "blocked": null,
@@ -97,7 +107,11 @@
     "stage_started_at": {
       "intake": "2026-10-08T03:19:27Z",
       "spec": "2026-10-08T03:19:27Z",
-      "plan": "2026-10-08T03:24:26Z"
+      "plan": "2026-10-08T03:24:26Z",
+      "implement": "2026-10-08T03:24:55Z",
+      "verify": "2026-10-08T03:28:16Z",
+      "document": "2026-10-08T03:28:16Z",
+      "deliver": "2026-10-08T03:28:16Z"
     },
     "gates": {
       "spec": {
@@ -105,7 +119,11 @@
         "approved_at": "2026-10-08T03:24:26Z"
       },
       "plan": {
-        "presented_at": "2026-10-08T03:24:26Z"
+        "presented_at": "2026-10-08T03:24:26Z",
+        "approved_at": "2026-10-08T03:24:55Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-08T03:28:16Z"
       }
     },
     "gate_rework": {

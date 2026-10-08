@@ -27,3 +27,19 @@
 **Open issues:** none
 
 **Next:** Plan gate
+
+## implementer + verifier + doc-writer · T1–T5, verify, document · done
+2026-10-08T03:28:16Z
+
+**Did:** Commands to skills with the shape test (717b1a6), roles fallback (361ddb5), docs and 0.3.17 (c9f3209).
+
+**Evidence:**
+- red: test_core_has_no_commands_folder failed while commands/ existed
+- real apply upgrade in a fake HOME; real Codex reinstall shows the 5 skills
+- tests OK; validate OK; claude plugin validate OK; tutorial ran clean
+
+**Changed files:** see the PR diff stat
+
+**Open issues:** Codex hooks and rules unverified (login needed)
+
+**Next:** Deliver gate

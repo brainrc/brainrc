@@ -11,6 +11,15 @@ a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everyt
 Every merged PR bumps `VERSION` and adds its entries under that version. There is no Unreleased
 section: `main` is what users pull, so `VERSION` must always describe it exactly.
 
+## 0.3.18 (2026-10-08)
+
+- Antigravity CLI, which replaced Gemini CLI, can install ai-config as a plugin: `agy plugin
+  install https://github.com/bxker/ai-config` (#50, step 3). `aicfg plugin` also writes the root
+  `plugin.json` it needs. Core rules start with `trigger: always_on` frontmatter, without which
+  Antigravity drops them; `aicfg` strips it, so other harnesses get the same text, and `validate`
+  requires it on core rules. No guard hooks for Antigravity yet. Built from public docs and
+  issues; not yet run against a real `agy`.
+
 ## 0.3.17 (2026-10-08)
 
 - Codex installs ai-config from the existing plugin: `codex plugin marketplace add

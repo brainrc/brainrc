@@ -2,7 +2,8 @@
 
 What each harness supports for installing ai-config as a native package, without a clone.
 Research for [#50](https://github.com/bxker/ai-config/issues/50), done 2026-10-08. Formats
-change fast: re-check a harness's docs before building its package.
+change fast: re-check a harness's docs before building its package. Gemini CLI was retired for
+consumer accounts on 2026-06-18; [Antigravity CLI](#antigravity-cli) replaced it.
 
 ## At a glance
 
@@ -10,7 +11,8 @@ change fast: re-check a harness's docs before building its package.
 |---|---|---|---|---|---|
 | Claude Code | `.claude-plugin/` ([shipped](../README.md#claude-code-plugin-no-clone)); `/plugin install` | `SessionStart` hook output (10,000-char cap) | yes: allow, ask, deny | yes, as `ai-config:<name>` | plugin `dependencies` with semver ranges |
 | Codex | `.codex-plugin/` **or `.claude-plugin/`** (verified); `codex plugin marketplace add owner/repo` | no plugin route: `~/.codex/AGENTS.md` or config `developer_instructions` | yes: `PreToolUse`, `SessionStart` | TOML roles in config; not shippable in a plugin | separate plugin; no dependencies found |
-| Gemini CLI | `gemini-extension.json`; `gemini extensions install <git url>` | the extension's `GEMINI.md` (`contextFileName`) | yes: `BeforeTool` can deny; ask undocumented | markdown, `agents/` (preview) | separate extension; no dependencies |
+| Antigravity CLI | root `plugin.json` ([shipped](../README.md#claude-code-plugin-no-clone), unverified); `agy plugin install <git url>` | plugin `rules/*.md` with `trigger:` frontmatter | yes: `PreToolUse` ask or deny; no known "no opinion" reply | markdown, `agents/` | separate plugin; no dependencies found |
+| Gemini CLI (retired) | `gemini-extension.json`; `gemini extensions install <git url>` | the extension's `GEMINI.md` | yes: `BeforeTool` | markdown, `agents/` (preview) | separate extension |
 | OpenCode | JS plugin (npm or `~/.config/opencode/plugins/`): hooks and tools only | `instructions[]` config or `AGENTS.md` | blocks by throwing; no ask | markdown files with a different frontmatter | `plugin[]`, `instructions[]`, `skills.paths` |
 | Cursor | `.cursor-plugin/plugin.json`: rules, skills, agents, commands, hooks | through the plugin | yes: allow, deny; ask reported broken | markdown | marketplace JSON (schema unconfirmed) |
 
@@ -47,19 +49,34 @@ here): `codex-rs/core-plugins/`, `codex-rs/hooks/`, `codex-rs/agent-roles/`.
   `SessionStart` hook can inject rules is **unconfirmed**.
 - Agents: `[agents.<role>]` TOML; a plugin can't ship them.
 
-## Gemini CLI
+## Antigravity CLI
 
-Sources: [extensions reference](https://github.com/google-gemini/gemini-cli/blob/main/docs/extensions/reference.md),
-[custom commands](https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/custom-commands.md),
-[skills](https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/skills.md),
-[hooks](https://github.com/google-gemini/gemini-cli/blob/main/docs/hooks/reference.md),
-[subagents](https://github.com/google-gemini/gemini-cli/blob/main/docs/core/subagents.md).
+Google's docs site was blocked here and `agy` (closed source) couldn't be installed, so this
+comes from public sources: the [antigravity-cli](https://github.com/google-antigravity/antigravity-cli)
+CHANGELOG and issues (#403, #1053, #1059), and plugins that record tested behavior
+([MemPalace](https://github.com/MemPalace/mempalace/blob/develop/hooks/antigravity/INVESTIGATION.md),
+[CoalHearth v2.8.0](https://github.com/TheColliery/CoalHearth/releases/tag/v2.8.0) on agy 1.3.1).
+Nothing here was run against a real `agy`.
 
-- An extension ships `GEMINI.md` (always loaded), `skills/`, `commands/*.toml` (`prompt`,
-  `{{args}}`), `agents/`, and `hooks/hooks.json` with `${extensionPath}`.
-- Hooks block with exit code 2 or `decision: "deny"`; non-JSON stdout means allow, so a guard
-  must never print stray output. Ask: **undocumented**.
-- Agents: `model: haiku|sonnet|opus` needs mapping to Gemini models.
+- A plugin is a folder with `plugin.json` (`name` only; extra keys may be rejected), plus optional
+  `skills/`, `agents/`, `rules/`, `hooks.json`, and `mcp_config.json`. `agy plugin install <git
+  url>` needs `plugin.json` at the repo root. No `commands/`: skills are the slash commands.
+  Install may copy only the folders it recognises (#403).
+- Rules: `rules/*.md` load only with frontmatter naming a `trigger` (`always_on`,
+  `model_decision`, `glob`, `manual`); files without one are dropped silently.
+- Hooks: `hooks.json` at the plugin root, `{"<name>": {"PreToolUse": [{"matcher", "hooks"}]}}`;
+  commands run from the plugin folder. `PreToolUse` gets `toolCall: {name, args}` (`run_command`
+  → `args.CommandLine`; `view_file`, `write_to_file`, `replace_file_content`) and prints
+  `{"decision": "ask" | "deny", "reason"}`. An empty `{}` is reported to deny every call and
+  `allow` is documented as auto-approve, so a guard has no safe reply for "no objection". **Not
+  shipped** until a live test settles it.
+- Skills: `disable-slash-command` hides a skill from `/`; `disable-model-invocation` is likely ignored.
+
+## Gemini CLI (retired)
+
+Retired for consumer accounts; enterprise and paid API keys still work. Extensions ship
+`gemini-extension.json`, `GEMINI.md`, `skills/`, TOML `commands/`, `agents/`, and
+`hooks/hooks.json` (`BeforeTool`, deny via exit code 2 or `decision: "deny"`).
 
 ## OpenCode
 
@@ -85,10 +102,10 @@ Evidence is weakest here: cursor.com was blocked, so claims come from search-res
 
 ## What this means
 
-1. **One generated `.claude-plugin/` may serve Claude Code, Codex, and (close) Cursor.** Gemini
-   needs `gemini-extension.json`; OpenCode needs a config dir plus a JS hook plugin.
+1. **One generated `.claude-plugin/` may serve Claude Code, Codex, and (close) Cursor.**
+   Antigravity needs a root `plugin.json`; OpenCode needs a config dir plus a JS hook plugin.
 2. **Commands should become skills**, or be generated per harness: Codex skips `$ARGUMENTS`
-   commands and Gemini wants TOML.
+   commands and Antigravity has no commands.
 3. **Rules and pack extensions need rendering outside the checkout** (`$AICFG_HOME`), then each
    harness loads them its own way. Codex plugins have no rules route yet.
 4. **Guard hooks need a deny fallback**: only Claude Code reliably supports ask.
@@ -97,7 +114,7 @@ Evidence is weakest here: cursor.com was blocked, so claims come from search-res
 
 1. Render to `$AICFG_HOME`; spec-agent reads extensions from there (every harness needs it).
 2. Codex through the existing `.claude-plugin/`: test the install, convert commands to skills.
-3. Gemini extension: manifest, `GEMINI.md`, TOML commands, hooks with deny.
+3. Antigravity plugin: root `plugin.json`, rule triggers (done, unverified); hooks after a live test.
 4. OpenCode: config dir, agent transform (#19), JS guard plugin.
 5. Cursor: after confirming the format against its docs.
 6. Packs as packages, starting with Claude `dependencies`.

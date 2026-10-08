@@ -13,7 +13,8 @@ These rules apply to human contributors too. Setup and PR workflow: [CONTRIBUTIN
   `description`, and optional `tools`.
 - Commands (packs only): `commands/<name>.md` with frontmatter `description`; use `$ARGUMENTS`.
   Core ships slash commands as skills with `disable-model-invocation: true` and `argument-hint`.
-- Rules: `rules/NN-topic.md`, concatenated in filename order. Keep them
+- Rules: `rules/NN-topic.md`, concatenated in filename order, each starting with
+  `trigger: always_on` frontmatter (Antigravity needs it; `aicfg` strips it). Keep them
   harness-neutral (no tool-specific syntax like `@imports`).
 - Domain skills (`skills/<stack>/`) follow: Validate (offline commands) / Conventions /
   Review checklist / Never without approval. Register new ones in the Domains table of
@@ -25,4 +26,4 @@ These rules apply to human contributors too. Setup and PR workflow: [CONTRIBUTIN
 - After changes, run `python3 scripts/aicfg.py validate` and `python3 -m unittest discover -s tests`.
 - Every PR bumps `VERSION` (semver, policy in `CHANGELOG.md`) and adds its entries under that
   version in `CHANGELOG.md`. No Unreleased section. Then run `python3 scripts/aicfg.py plugin`.
-- Don't edit `dist/` or `.claude-plugin/`; they're generated.
+- Don't edit `dist/`, `.claude-plugin/`, or the root `plugin.json`; they're generated.

@@ -71,4 +71,8 @@ machine. Format and extension points: [packs.md](packs.md).
 | Guard hooks | ✅ | ❌ rules only | ❌ | ❌ | ❌ |
 | MCP | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ |
 
+Gemini CLI is retired for consumer accounts; `aicfg` still syncs to `~/.gemini` for the
+accounts it serves. Its replacement, Antigravity CLI, installs ai-config as a plugin
+([README](../README.md#claude-code-plugin-no-clone)).
+
 Harness paths change often. If one moves, update `harnesses.toml`.

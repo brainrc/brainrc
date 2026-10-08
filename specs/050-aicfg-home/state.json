@@ -6,7 +6,7 @@
     "id": "50",
     "title": "Native package installs for every harness (step 1: render to $AICFG_HOME)",
     "url": "https://github.com/bxker/ai-config/issues/50",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/52"
   },
   "slug": "050-aicfg-home",
   "branch": "050-aicfg-home",
@@ -14,11 +14,11 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [],
   "targets": {},
@@ -89,7 +89,8 @@
       "implement": "2026-10-08T02:11:37Z",
       "verify": "2026-10-08T02:15:14Z",
       "document": "2026-10-08T02:15:14Z",
-      "deliver": "2026-10-08T02:15:14Z"
+      "deliver": "2026-10-08T02:15:14Z",
+      "done": "2026-10-08T02:16:10Z"
     },
     "gates": {
       "spec": {
@@ -101,7 +102,8 @@
         "approved_at": "2026-10-08T02:11:37Z"
       },
       "deliver": {
-        "presented_at": "2026-10-08T02:15:14Z"
+        "presented_at": "2026-10-08T02:15:14Z",
+        "approved_at": "2026-10-08T02:15:44Z"
       }
     },
     "gate_rework": {

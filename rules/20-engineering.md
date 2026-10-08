@@ -1,3 +1,7 @@
+---
+trigger: always_on
+---
+
 # Engineering
 
 - Test-first for behavior changes: failing test, minimal code to green, then tidy.

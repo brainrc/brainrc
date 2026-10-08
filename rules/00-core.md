@@ -1,3 +1,7 @@
+---
+trigger: always_on
+---
+
 # Working agreements
 
 - Read the relevant code before changing it. Match existing style, naming, and comment density.

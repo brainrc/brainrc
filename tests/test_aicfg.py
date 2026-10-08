@@ -833,7 +833,7 @@ class RenderInstructionsTest(TempRepoCase):
         super().tearDown()
 
     def last_core_rule(self, out: str) -> int:
-        last = aicfg.markdown_files("rules", self.core)[-1].read_text().strip()
+        last = aicfg.rule_text(aicfg.markdown_files("rules", self.core)[-1])
         return out.index(last) + len(last)
 
     def test_core_only_render_is_unchanged(self):

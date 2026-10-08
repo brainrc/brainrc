@@ -12,3 +12,17 @@
 **Open issues:** compatibility choice at the Spec gate
 
 **Next:** Spec gate
+
+## planner · plan · done
+2026-10-08T02:11:37Z
+
+**Did:** 3 tasks; tests isolate AICFG_HOME.
+
+**Evidence:**
+- spec approved with option A at 2026-10-08T02:11:37Z
+
+**Changed files:** `specs/050-aicfg-home/plan.md`
+
+**Open issues:** none
+
+**Next:** Plan gate

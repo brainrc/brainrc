@@ -1,6 +1,6 @@
 # Spec: Render rules and extensions to $AICFG_HOME
 
-Ticket: gh:50 (step 1 of 6; refs) · Size: standard (aicfg paths, spec-agent text, 6 docs; one compatibility choice) · Status: draft
+Ticket: gh:50 (step 1 of 6; refs) · Size: standard (aicfg paths, spec-agent text, 6 docs; one compatibility choice) · Status: approved
 
 ## Problem
 `apply` writes `dist/instructions.md` and `skills/spec-agent/references/extensions.md` into the
@@ -39,4 +39,4 @@ Hook fragments stay rendered into settings by the existing merge. Loading the ru
 (Claude `SessionStart`, Gemini `GEMINI.md`) is a later #50 step.
 
 ## Open questions
-1. Compatibility: A or B?
+None. Option A approved at the Spec gate.

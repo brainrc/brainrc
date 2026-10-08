@@ -20,6 +20,9 @@ on its own.
 | `/spec-approve [notes]` | Approve the pending gate |
 | `/spec-resume [ref]` | Continue an interrupted run (any tool) |
 
+These are user-invoked skills (`skills/work/` and so on), so every harness that reads skills
+gets them. In the Claude Code plugin they're `/ai-config:work`; in Codex, call the skill by name.
+
 ## Design principles
 
 1. **Files are the handoff.** Agents share no memory; each reads named artifacts in

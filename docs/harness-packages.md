@@ -9,7 +9,7 @@ change fast: re-check a harness's docs before building its package.
 | Harness | Package and install | Rules without a clone | Hooks | Agents | Packs |
 |---|---|---|---|---|---|
 | Claude Code | `.claude-plugin/` ([shipped](../README.md#claude-code-plugin-no-clone)); `/plugin install` | `SessionStart` hook output (10,000-char cap) | yes: allow, ask, deny | yes, as `ai-config:<name>` | plugin `dependencies` with semver ranges |
-| Codex | `.codex-plugin/` **or `.claude-plugin/`**; `codex plugin marketplace add owner/repo` | no plugin route: `~/.codex/AGENTS.md` or config `developer_instructions` | yes: `PreToolUse`, `SessionStart` | TOML roles in config; not shippable in a plugin | separate plugin; no dependencies found |
+| Codex | `.codex-plugin/` **or `.claude-plugin/`** (verified); `codex plugin marketplace add owner/repo` | no plugin route: `~/.codex/AGENTS.md` or config `developer_instructions` | yes: `PreToolUse`, `SessionStart` | TOML roles in config; not shippable in a plugin | separate plugin; no dependencies found |
 | Gemini CLI | `gemini-extension.json`; `gemini extensions install <git url>` | the extension's `GEMINI.md` (`contextFileName`) | yes: `BeforeTool` can deny; ask undocumented | markdown, `agents/` (preview) | separate extension; no dependencies |
 | OpenCode | JS plugin (npm or `~/.config/opencode/plugins/`): hooks and tools only | `instructions[]` config or `AGENTS.md` | blocks by throwing; no ask | markdown files with a different frontmatter | `plugin[]`, `instructions[]`, `skills.paths` |
 | Cursor | `.cursor-plugin/plugin.json`: rules, skills, agents, commands, hooks | through the plugin | yes: allow, deny; ask reported broken | markdown | marketplace JSON (schema unconfirmed) |
@@ -37,10 +37,12 @@ Source: [openai/codex](https://github.com/openai/codex) at `529cd6b` (the docs s
 here): `codex-rs/core-plugins/`, `codex-rs/hooks/`, `codex-rs/agent-roles/`.
 
 - Reads `.claude-plugin/marketplace.json` and `.claude-plugin/plugin.json` as well as its own
-  `.codex-plugin/`, so the existing Claude plugin may install as is (**untested**).
+  `.codex-plugin/`. **Verified** with Codex 0.161.0: `codex plugin marketplace add <repo>` and
+  `codex plugin add ai-config@ai-config` install our plugin unchanged. The install copy **drops
+  symlinks** (`skills/spec-agent/roles`), so spec-agent falls back to `../../agents/`.
 - Skills: native, `~/.agents/skills` (`~/.codex/skills` deprecated). Custom prompts are deprecated
-  for skills; a plugin's `commands/` become skills, **except any that use `$ARGUMENTS`**: all five
-  of ours would be skipped.
+  for skills; a plugin's `commands/` become skills, **except any that use `$ARGUMENTS`** (verified:
+  all five of ours were skipped). Core now ships them as user-invoked skills, which Codex installs.
 - Hooks: `PreToolUse`, `SessionStart`, and more, from a plugin's `hooks/hooks.json`. Whether a
   `SessionStart` hook can inject rules is **unconfirmed**.
 - Agents: `[agents.<role>]` TOML; a plugin can't ship them.

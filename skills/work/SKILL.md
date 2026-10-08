@@ -1,6 +1,8 @@
 ---
+name: work
 description: Take a work item from ticket to reviewed PR with spec-agent (gh:<n>, jira:<KEY-n>, issue URL, local:<path>, free text, or --campaign <epic>)
 argument-hint: <gh:42 | jira:PROJ-7 | issue URL | local:path.md | free text | --campaign <epic|query>> [--local] [--batch-size N] [--dry-run]
+disable-model-invocation: true
 ---
 
 Use the `spec-agent` skill to work on this item end to end:
@@ -13,3 +15,6 @@ If `--campaign` is given, run campaign mode (spec-agent `references/campaign.md`
 epic, query, or list of refs; `--dry-run` stops at the Campaign gate.
 Stop at every gate for my approval. Never push, open PRs, or update the ticket before the
 Deliver gate is approved.
+
+If `$ARGUMENTS` appears literally above, this tool didn't fill it in: use what the user typed
+with this skill instead.

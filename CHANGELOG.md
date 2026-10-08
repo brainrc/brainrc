@@ -11,6 +11,12 @@ a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everyt
 Every merged PR bumps `VERSION` and adds its entries under that version. There is no Unreleased
 section: `main` is what users pull, so `VERSION` must always describe it exactly.
 
+## 0.3.15 (2026-10-08)
+
+- Docs: `docs/harness-packages.md` records the #50 spike: what each harness (Claude Code, Codex,
+  Gemini CLI, OpenCode, Cursor) supports for native packages, rules, hooks, agents, and packs,
+  with sources, unconfirmed items, and a proposed build order. The roadmap drops shipped items.
+
 ## 0.3.14 (2026-10-07)
 
 - Claude Code plugin: `/plugin marketplace add bxker/ai-config`, then

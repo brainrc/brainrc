@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "ticket": {"source": "github", "ref": "gh:50", "id": "50",
+             "title": "Native package installs for every harness, packs included, without a clone (spike)",
+             "url": "https://github.com/bxker/ai-config/issues/50", "pr": null},
+  "slug": "050-packaging-spike",
+  "branch": "050-packaging-spike",
+  "base": "main",
+  "size": "small",
+  "mode": "inline",
+  "delivery": "normal",
+  "stage": "spec",
+  "gates": {"spec": "pending", "plan": "skipped", "deliver": "pending"},
+  "domains": [],
+  "targets": {},
+  "commands": {"test": "python3 -m unittest discover -s tests -q", "lint": null, "build": null,
+               "validate": ["python3 scripts/aicfg.py validate",
+                            "python3 scripts/aicfg.py validate --pack examples/pack-acme"],
+               "plan": null, "baseline_failures": []},
+  "tasks": [],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-08T02:04:35Z",
+    "stage_started_at": {"intake": "2026-10-08T02:04:35Z", "spec": "2026-10-08T02:04:35Z"},
+    "gates": {"spec": {"presented_at": "2026-10-08T02:04:35Z"}},
+    "gate_rework": {"spec": 0, "plan": 0, "deliver": 0},
+    "reviews": {"total": 0, "first_pass": 0},
+    "retries": 0,
+    "interventions": 0
+  }
+}

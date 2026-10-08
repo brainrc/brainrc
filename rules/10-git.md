@@ -1,3 +1,7 @@
+---
+trigger: always_on
+---
+
 # Git
 
 - Commit messages: imperative subject of 72 chars or fewer, blank line, body explaining *why*.

@@ -10,8 +10,8 @@ Usage:
   aicfg.py doctor                diagnose this machine's install (read-only): stale renders,
                                  missing/broken links, broken packs, unmerged hooks; exits 1
                                  on any problem, each with its fix
-  aicfg.py plugin                write the Claude Code plugin and marketplace manifests
-                                 (.claude-plugin/); validate fails when they're stale
+  aicfg.py plugin                write the plugin manifests (.claude-plugin/, plugin.json);
+                                 validate fails when they're stale
   aicfg.py tokens                estimate the context cost of every skill, agent, and command
 
 Sources: this repo ("core", versioned by VERSION) plus any packs listed in packs.toml /
@@ -307,6 +307,15 @@ def collisions(srcs: list[Source]) -> list[str]:
 RULES_REFINE = "They refine the rules above and never override them."
 
 
+def rule_text(path: Path) -> str:
+    """A rule's text without its frontmatter (`trigger:` is for Antigravity, which drops rules
+    without one); every other harness gets the rule as written."""
+    text = path.read_text().strip()
+    if text.startswith("---\n") and (end := text.find("\n---", 4)) != -1:
+        text = text[end + 4:].strip()
+    return text
+
+
 def render_instructions(srcs: list[Source] | None = None) -> str:
     """Core rules, then one labelled block per pack in source order, then machine-local rules.
 
@@ -321,13 +330,13 @@ def render_instructions(srcs: list[Source] | None = None) -> str:
         rules = markdown_files("rules", src)
         if rules and not src.is_core:
             parts.append(f"<!-- pack: {src.name} -->\nRules from pack {src.name}. {RULES_REFINE}")
-        parts += [p.read_text().strip() for p in rules]
+        parts += [rule_text(p) for p in rules]
         rules_dir = src.root / "rules"
         if rules_dir.is_dir():
             local += [(p.name, i, p) for p in rules_dir.glob("*.local.md")]
     if local:
         parts.append(f"<!-- local -->\nMachine-local rules. {RULES_REFINE}")
-        parts += [p.read_text().strip() for _, _, p in sorted(local)]
+        parts += [rule_text(p) for _, _, p in sorted(local)]
     return "\n\n".join(parts) + "\n"
 
 
@@ -715,6 +724,10 @@ def _validate_source(src: Source, agent_names: set[str], skill_names: set[str]) 
         for md in _markdown_under(s):
             errors += _check_references(src, md, agent_names, skill_names)
 
+    if src.is_core:
+        errors += [f"{src.rel(r)}: missing `trigger` frontmatter (Antigravity drops the rule without it)"
+                   for r in markdown_files("rules", src) if not frontmatter(r).get("trigger")]
+
     for f in markdown_files("agents", src):
         rel = src.rel(f)
         meta = frontmatter(f)
@@ -1059,8 +1072,8 @@ PLUGIN_DESCRIPTION = ("Skills, agents, commands, and guard hooks for spec-driven
 
 
 def plugin_manifests() -> dict[str, str]:
-    """The Claude Code plugin and marketplace manifests for core, built from the repo.
-    The repo root is the plugin (default skills/, agents/, commands/ folders) and the marketplace."""
+    """The plugin manifests for core, built from the repo: Claude Code's plugin and marketplace
+    (Codex reads them too) and Antigravity's root plugin.json. The repo root is the plugin."""
     version = ".".join(map(str, core_version()))
     hooks_dir = "${CLAUDE_PLUGIN_ROOT}/overrides/claude/hooks"
     hooks = render_fragment(REPO / "overrides" / "claude" / "settings.fragment.json", hooks_dir)["hooks"]
@@ -1069,8 +1082,10 @@ def plugin_manifests() -> dict[str, str]:
     market = {"name": PLUGIN_NAME, "owner": PLUGIN_AUTHOR, "description": PLUGIN_DESCRIPTION,
               "plugins": [{"name": PLUGIN_NAME, "source": ".", "description": PLUGIN_DESCRIPTION,
                            "version": version}]}
-    return {f"{PLUGIN_DIR}/{name}": json.dumps(data, indent=2) + "\n"
-            for name, data in (("plugin.json", plugin), ("marketplace.json", market))}
+    manifests = {f"{PLUGIN_DIR}/{name}": json.dumps(data, indent=2) + "\n"
+                 for name, data in (("plugin.json", plugin), ("marketplace.json", market))}
+    manifests["plugin.json"] = json.dumps({"name": PLUGIN_NAME}, indent=2) + "\n"  # Antigravity
+    return manifests
 
 
 def check_plugin() -> list[str]:
@@ -1089,7 +1104,7 @@ def check_plugin() -> list[str]:
 
 
 def cmd_plugin() -> int:
-    """Write the Claude Code plugin manifests; they're committed so GitHub installs work."""
+    """Write the plugin manifests; they're committed so GitHub installs work."""
     try:
         manifests = plugin_manifests()
     except ConfigError as e:
@@ -1126,7 +1141,7 @@ def _description_tokens(path: Path) -> int:
 
 def always_tokens(src: Source) -> tuple[int, list[tuple[int, str]]]:
     """What a source loads into every session: its rules, and each item's description."""
-    items = [(estimate_tokens(p.read_text().strip()), src.rel(p)) for p in markdown_files("rules", src)]
+    items = [(estimate_tokens(rule_text(p)), src.rel(p)) for p in markdown_files("rules", src)]
     items += [(_description_tokens(s / "SKILL.md"), src.rel(s)) for s in skills(src)]
     items += [(_description_tokens(f), src.rel(f)) for kind in ("agents", "commands")
               for f in markdown_files(kind, src)]

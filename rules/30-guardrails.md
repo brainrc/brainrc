@@ -1,3 +1,7 @@
+---
+trigger: always_on
+---
+
 # Guardrails
 
 - Ask before anything outward-facing or hard to reverse: pushing, PRs, issue/ticket comments

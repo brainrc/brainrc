@@ -68,7 +68,7 @@ is never part of a run. It happens after merge, by you, Atlantis/Spacelift, or G
 
 ## Harness support
 
-| | Claude Code | OpenCode | Codex / Gemini / Cursor |
+| | Claude Code | OpenCode | Codex / Antigravity / Cursor |
 |---|---|---|---|
 | Skills + commands | ✅ | ✅ | ✅ (Cursor: skills only) |
 | Execution | subagents per role | fallback (agents not yet adapted) | fallback: role-switch in one session |

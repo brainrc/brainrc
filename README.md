@@ -2,7 +2,7 @@
 
 One Git repo for AI coding-assistant configuration (skills, agents, slash
 commands, rules, and hooks), written once and synced into Claude Code, Codex CLI, OpenCode,
-Gemini CLI, and Cursor. Skills reach every harness. Rules, commands, and agents reach only
+Antigravity CLI, and Cursor. Skills reach every harness. Rules, commands, and agents reach only
 some so far. Guard hooks are Claude Code only, and MCP servers aren't synced yet.
 Details per harness: [harness support](docs/formats.md#harness-support).
 
@@ -27,7 +27,7 @@ Try it safely first with [examples/sandbox](examples/sandbox/README.md), and gra
 
 ```
 rules/          Global instructions, as ordered markdown fragments (00-core.md, 10-git.md, ...).
-                Concatenated into CLAUDE.md / AGENTS.md / GEMINI.md.
+                Concatenated into CLAUDE.md / AGENTS.md.
 skills/<name>/  Agent Skills: spec-agent engine, ticket connectors, domain skills (terraform, aws, ...).
 agents/         Agent roles (analyst, architect, implementer, reviewers, verifier, doc-writer).
 commands/       Optional, for packs: slash commands. Core's (/work, /review, /spec-*) are skills.
@@ -81,7 +81,7 @@ Claude Code users can install the skills (including `/work`), agents, and guard 
 | Skills, agents | yes, named `ai-config:<name>` (`/ai-config:work`) | yes |
 | Claude guard hooks | yes | yes |
 | Rules (`rules/`) | no: plugins can't load instructions into every session | yes |
-| Packs, other harnesses (Codex, OpenCode, Gemini, Cursor) | no | yes |
+| Packs, other harnesses (Codex, OpenCode, Antigravity, Cursor) | no | yes |
 
 Use one path, not both: together they load every skill and hook twice. For rules with the
 plugin, copy `rules/*.md` into your own `~/.claude/CLAUDE.md`.
@@ -97,6 +97,19 @@ Codex gets the skills (`work`, `review`, `spec-*`, and the rest) and the agent f
 reads. Rules don't come with a Codex plugin: run `aicfg`, or copy `rules/*.md` into
 `~/.codex/AGENTS.md`. Whether Codex runs the plugin's guard hooks is not yet verified
 ([harness packages](docs/harness-packages.md#codex)).
+
+Antigravity CLI (`agy`) installs the repo as a plugin from the root
+`plugin.json`:
+
+```text
+agy plugin install https://github.com/bxker/ai-config
+```
+
+It gets the skills, the agent files, and the rules: each `rules/*.md` carries
+`trigger: always_on`, which Antigravity needs to load it. Guard hooks aren't included yet, so use
+agy's own permission settings. This install was built from Antigravity's public docs and issues
+and hasn't been run end to end
+([harness packages](docs/harness-packages.md#antigravity-cli)).
 
 ### Platforms
 

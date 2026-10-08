@@ -1,0 +1,145 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:50",
+    "id": "50",
+    "title": "Native package installs for every harness (step 3: Antigravity)",
+    "url": "https://github.com/bxker/ai-config/issues/50",
+    "pr": "https://github.com/bxker/ai-config/pull/54"
+  },
+  "slug": "050-antigravity",
+  "branch": "050-antigravity",
+  "base": "main",
+  "size": "standard",
+  "mode": "inline",
+  "delivery": "normal",
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate",
+      "python3 scripts/aicfg.py validate --pack examples/pack-acme"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "tests first",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC1",
+        "AC2"
+      ],
+      "review": "batch",
+      "red": "errors (missing rule_text, plugin.json)",
+      "commit": "b19c25d"
+    },
+    {
+      "id": "T2",
+      "title": "aicfg changes",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC1",
+        "AC2"
+      ],
+      "review": "batch",
+      "red": null,
+      "commit": "8c16a11"
+    },
+    {
+      "id": "T3",
+      "title": "rules frontmatter",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC2"
+      ],
+      "review": "batch",
+      "red": null,
+      "commit": "6397bd7"
+    },
+    {
+      "id": "T4",
+      "title": "real apply",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC5"
+      ],
+      "review": "batch",
+      "red": "n/a (real run)",
+      "commit": null
+    },
+    {
+      "id": "T5",
+      "title": "docs and release",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC3",
+        "AC4"
+      ],
+      "review": "batch",
+      "red": "n/a (docs)",
+      "commit": "f732f53"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-08T05:19:09Z",
+    "stage_started_at": {
+      "intake": "2026-10-08T05:19:09Z",
+      "spec": "2026-10-08T05:19:09Z",
+      "plan": "2026-10-08T05:19:43Z",
+      "implement": "2026-10-08T05:32:10Z",
+      "verify": "2026-10-08T05:35:41Z",
+      "document": "2026-10-08T05:35:41Z",
+      "deliver": "2026-10-08T05:35:41Z",
+      "done": "2026-10-08T05:39:17Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-08T05:19:09Z",
+        "approved_at": "2026-10-08T05:19:43Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-08T05:21:00Z",
+        "approved_at": "2026-10-08T05:32:10Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-08T05:35:41Z",
+        "approved_at": "2026-10-08T05:39:17Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 1
+  }
+}

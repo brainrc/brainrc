@@ -7,7 +7,7 @@
 # command = "npx"
 # args = ["-y", "@modelcontextprotocol/server-github"]
 # env_from = ["GITHUB_PERSONAL_ACCESS_TOKEN"]
-# harnesses = ["claude", "codex", "cursor", "gemini", "opencode"]
+# harnesses = ["claude", "codex", "antigravity", "cursor", "opencode"]
 
 # [servers.example-http]
 # url = "https://example.com/mcp"

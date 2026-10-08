@@ -63,7 +63,7 @@ No backup is made when the file didn't exist yet.
    enabled = false
    ```
 
-   Repeat for `codex`, `opencode`, `gemini`, and `cursor`.
+   Repeat for `codex`, `opencode`, `antigravity`, and `cursor`.
 2. Run `python3 scripts/aicfg.py apply`. It removes every link it made, including the hooks
    directory, and takes ai-config's hooks out of `~/.claude/settings.json` (backing it up
    first). Your other settings and other tools' hooks stay.

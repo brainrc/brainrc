@@ -35,11 +35,18 @@ commands = "~/.config/opencode/command"
 instructions = "~/.config/opencode/AGENTS.md"
 # agents: OpenCode's agent frontmatter differs from Claude's; needs a transform (see docs/roadmap.md)
 
-[gemini]
+[antigravity]
 enabled = true
+skills = "~/.gemini/config/skills"
+instructions = "~/.gemini/config/AGENTS.md"
+# agents: Antigravity's agent frontmatter is unverified; hooks: no safe "no objection" reply yet
+
+# Retired: Antigravity replaced Gemini CLI. Kept disabled so `apply` removes the links it made
+# here; enable it in harnesses.local.toml if your account still runs Gemini CLI.
+[gemini]
+enabled = false
 skills = "~/.gemini/skills"
 instructions = "~/.gemini/GEMINI.md"
-# commands: Gemini CLI uses TOML commands; needs a transform
 
 [cursor]
 enabled = true

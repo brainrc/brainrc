@@ -1,6 +1,6 @@
 # Spec: Codex installs ai-config from the existing plugin
 
-Ticket: gh:50 (step 2 of 6; refs) · Size: standard (5 commands become skills, spec-agent fallback, docs) · Status: draft
+Ticket: gh:50 (step 2 of 6; refs) · Size: standard (5 commands become skills, spec-agent fallback, docs) · Status: approved
 
 ## What a real Codex 0.161.0 install showed (scratch CODEX_HOME, fake HOME)
 - `codex plugin marketplace add <repo>` reads our `.claude-plugin/marketplace.json`, and

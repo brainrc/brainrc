@@ -13,3 +13,17 @@
 **Open issues:** Codex hooks unverified (needs login)
 
 **Next:** Spec gate
+
+## planner · plan · done
+2026-10-08T03:24:26Z
+
+**Did:** 5 tasks; red test first (core commands/ exists today).
+
+**Evidence:**
+- spec approved 2026-10-08T03:24:26Z (recorded right after the click)
+
+**Changed files:** `specs/050-codex/plan.md`
+
+**Open issues:** none
+
+**Next:** Plan gate

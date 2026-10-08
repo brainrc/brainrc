@@ -47,16 +47,25 @@ def set_core_version(repo: Path, version: str) -> None:
 
 
 class TempRepoCase(unittest.TestCase):
-    """Point aicfg at a throwaway copy of the repo, so tests never read local config or write dist/."""
+    """Point aicfg at a throwaway copy of the repo and AICFG_HOME, so tests never read local
+    config or write rendered files anywhere real."""
 
     def setUp(self):
         self.repo = Path(tempfile.mkdtemp())
         copy_repo(self.repo)
         self.old_repo = aicfg.REPO
         aicfg.REPO = self.repo
+        self.aicfg_home = Path(tempfile.mkdtemp()) / "ai-config"
+        self.old_aicfg_home = os.environ.get("AICFG_HOME")
+        os.environ["AICFG_HOME"] = str(self.aicfg_home)
 
     def tearDown(self):
         aicfg.REPO = self.old_repo
+        if self.old_aicfg_home is None:
+            os.environ.pop("AICFG_HOME", None)
+        else:
+            os.environ["AICFG_HOME"] = self.old_aicfg_home
+        shutil.rmtree(self.aicfg_home.parent)
         shutil.rmtree(self.repo)
 
 
@@ -116,6 +125,7 @@ class SyncFakeHomeTest(TempRepoCase):
         self.assertIn("Dry run", out)
         self.assertEqual(list(self.home.iterdir()), [])
         self.assertFalse((self.repo / "dist").exists())
+        self.assertFalse(self.aicfg_home.exists())
 
     def test_relative_symlink_into_repo_is_ok(self):
         quiet(aicfg.cmd_sync, True)
@@ -303,7 +313,7 @@ class PackSyncTest(TempRepoCase):
         self.assertTrue((skills_dir / "spec-agent").is_symlink())
         self.assertTrue((self.home / ".claude/agents/acme-reviewer.md").is_symlink())
 
-        rules = (self.repo / "dist/instructions.md").read_text()
+        rules = aicfg.rendered_instructions().read_text()
         self.assertLess(rules.index("# Security"), rules.index("- Acme rule."))
 
         hooks_link = self.home / ".claude/hooks/ai-config-acme"
@@ -333,7 +343,7 @@ class PackSyncTest(TempRepoCase):
         commands = self.settings_commands()
         self.assertFalse(any("guard_acme" in c for c in commands))
         self.assertTrue(any("guard_outward" in c for c in commands))
-        self.assertNotIn("- Acme rule.", (self.repo / "dist/instructions.md").read_text())
+        self.assertNotIn("- Acme rule.", aicfg.rendered_instructions().read_text())
         self.assertIn("No packs enabled", aicfg.extensions_file().read_text())
 
     def test_disabling_harness_prunes_its_links(self):
@@ -460,12 +470,12 @@ class DoctorTest(TempRepoCase):
 
     def test_stale_render(self):
         (self.repo / "rules/99-new.md").write_text("# New\n\n- Rule.\n")
-        self.assert_one_fail("dist/instructions.md", "apply")
+        self.assert_one_fail("instructions.md", "apply")
 
     def test_missing_render(self):
-        (self.repo / "dist/instructions.md").unlink()
+        aicfg.rendered_instructions().unlink()
         findings = self.doctor(1)
-        self.assertTrue(any("dist/instructions.md" in f[1] and "apply" in f[2] for f in findings), findings)
+        self.assertTrue(any("instructions.md" in f[1] and "apply" in f[2] for f in findings), findings)
 
     def test_missing_link(self):
         (self.skills / "spec-agent").unlink()
@@ -692,6 +702,59 @@ class PluginTest(TempRepoCase):
         code, out = quiet(aicfg.cmd_validate)
         self.assertEqual(code, 1)
         self.assertIn("aicfg.py plugin", out)
+
+
+class AicfgHomeTest(TempRepoCase):
+    def setUp(self):
+        super().setUp()
+        self.home = Path(tempfile.mkdtemp())
+        self.old_home = os.environ["HOME"]
+        os.environ["HOME"] = str(self.home)
+
+    def tearDown(self):
+        os.environ["HOME"] = self.old_home
+        shutil.rmtree(self.home)
+        super().tearDown()
+
+    def test_defaults_to_config_dir_under_home(self):
+        os.environ.pop("AICFG_HOME")
+        self.assertEqual(aicfg.aicfg_home(), self.home / ".config/ai-config")
+
+    def test_apply_renders_into_aicfg_home(self):
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        self.assertTrue((self.aicfg_home / "instructions.md").is_file())
+        self.assertTrue((self.aicfg_home / "extensions.md").is_file())
+        self.assertTrue(aicfg.extensions_file().is_file())  # deprecated in-repo copy, kept for packs
+        self.assertEqual(aicfg.link_target(self.home / ".claude/CLAUDE.md"), self.aicfg_home / "instructions.md")
+        self.assertFalse((self.repo / "dist/instructions.md").exists())
+
+    def test_old_dist_link_is_updated_and_old_file_removed(self):
+        old = self.repo / "dist/instructions.md"
+        old.parent.mkdir()
+        old.write_text("old render\n")
+        link = self.home / ".claude/CLAUDE.md"
+        link.parent.mkdir(parents=True)
+        link.symlink_to(old)
+        code, out = quiet(aicfg.cmd_sync, False)
+        self.assertRegex(out, r"UPDATE +claude +~/.claude/CLAUDE.md")
+        quiet(aicfg.cmd_sync, True)
+        self.assertEqual(aicfg.link_target(link), self.aicfg_home / "instructions.md")
+        self.assertFalse(old.parent.exists())  # the emptied dist/ goes too
+
+    def test_disabled_harness_link_to_aicfg_home_is_pruned(self):
+        quiet(aicfg.cmd_sync, True)
+        (self.repo / "harnesses.local.toml").write_text("[claude]\nenabled = false\n")
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        self.assertFalse((self.home / ".claude/CLAUDE.md").is_symlink())
+
+    def test_doctor_names_the_home_render(self):
+        quiet(aicfg.cmd_sync, True)
+        (self.repo / "rules/99-new.md").write_text("# New\n\n- Rule.\n")
+        fails = [f for f in aicfg.doctor_findings() if f[0] == "FAIL"]
+        self.assertEqual(len(fails), 1, fails)
+        self.assertIn(aicfg.tilde(self.aicfg_home / "instructions.md"), fails[0][1])
 
 
 class PythonVersionTest(unittest.TestCase):

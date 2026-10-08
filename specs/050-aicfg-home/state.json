@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:50",
+    "id": "50",
+    "title": "Native package installs for every harness (step 1: render to $AICFG_HOME)",
+    "url": "https://github.com/bxker/ai-config/issues/50",
+    "pr": "https://github.com/bxker/ai-config/pull/52"
+  },
+  "slug": "050-aicfg-home",
+  "branch": "050-aicfg-home",
+  "base": "main",
+  "size": "standard",
+  "mode": "inline",
+  "delivery": "normal",
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate",
+      "python3 scripts/aicfg.py validate --pack examples/pack-acme"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "aicfg renders to AICFG_HOME",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC5",
+        "AC7"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "4db8d33"
+    },
+    {
+      "id": "T2",
+      "title": "readers and docs",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC4",
+        "AC6"
+      ],
+      "review": "batch",
+      "red": "assertion (dist cleanup)",
+      "commit": "2919d05"
+    },
+    {
+      "id": "T3",
+      "title": "release",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC7"
+      ],
+      "review": "batch",
+      "red": "n/a (release)",
+      "commit": "2a4a3f6"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-08T02:10:49Z",
+    "stage_started_at": {
+      "intake": "2026-10-08T02:10:49Z",
+      "spec": "2026-10-08T02:10:49Z",
+      "plan": "2026-10-08T02:11:37Z",
+      "implement": "2026-10-08T02:11:37Z",
+      "verify": "2026-10-08T02:15:14Z",
+      "document": "2026-10-08T02:15:14Z",
+      "deliver": "2026-10-08T02:15:14Z",
+      "done": "2026-10-08T02:16:10Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-08T02:10:49Z",
+        "approved_at": "2026-10-08T02:11:37Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-08T02:11:37Z",
+        "approved_at": "2026-10-08T02:11:37Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-08T02:15:14Z",
+        "approved_at": "2026-10-08T02:15:44Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  }
+}

@@ -13,7 +13,7 @@ Then find the symptom below.
 
 Run `python3 scripts/aicfg.py apply`. Skills, agents, and commands are symlinks, so edits to
 existing ones show up at once, but new or removed ones need `apply`. Rules are different:
-they're rendered into `dist/instructions.md`, so **every** change to `rules/` (or a pack's
+they're rendered into `~/.config/ai-config/instructions.md` (or `$AICFG_HOME`), so **every** change to `rules/` (or a pack's
 rules) needs `apply`, edits included. Restart the harness or start a new session afterwards.
 
 If you moved the repo, the old links are broken. `doctor` names each one: delete it, then

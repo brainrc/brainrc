@@ -68,8 +68,9 @@ deliver_checks = [        # listed in the Deliver gate as done / not applicable 
 ]
 ```
 
-`apply` renders every enabled pack's extensions into
-`skills/spec-agent/references/extensions.md` (gitignored). spec-agent reads it at intake.
+`apply` renders every enabled pack's extensions into `$AICFG_HOME/extensions.md` (default
+`~/.config/ai-config/extensions.md`). spec-agent reads it at intake. The old copy at
+`skills/spec-agent/references/extensions.md` is still written but deprecated: read the new path.
 With no packs enabled, the file says so and spec-agent runs as before.
 
 A pack has at most one `[extensions.ticket]`: one connector and the refs it handles. A team

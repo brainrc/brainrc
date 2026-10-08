@@ -3,8 +3,8 @@
 
 Usage:
   aicfg.py status                show what would change (default, no writes)
-  aicfg.py apply                 render rules and pack extensions, create/refresh symlinks,
-                                 merge settings
+  aicfg.py apply                 render rules and pack extensions to $AICFG_HOME (default
+                                 ~/.config/ai-config), create/refresh symlinks, merge settings
   aicfg.py validate [--pack DIR] check frontmatter, cross-references, packs, and tripwires
                                  (used in CI); --pack checks core plus that pack only
   aicfg.py doctor                diagnose this machine's install (read-only): stale renders,
@@ -104,11 +104,29 @@ def tilde(path: Path) -> str:
     return str(path).replace(str(Path.home()), "~", 1)
 
 
-def rendered_instructions() -> Path:
+def aicfg_home() -> Path:
+    """Where apply renders rules and extensions: outside any checkout, so packaged installs can
+    read them too. $AICFG_HOME, else ~/.config/ai-config."""
+    if os.environ.get("AICFG_HOME"):
+        return expand(os.environ["AICFG_HOME"])
+    return Path.home() / ".config" / "ai-config"
+
+
+def legacy_instructions() -> Path:
+    """Where rules were rendered before 0.3.16; apply removes it and re-points links."""
     return REPO / "dist" / "instructions.md"
 
 
+def rendered_instructions() -> Path:
+    return aicfg_home() / "instructions.md"
+
+
+def home_extensions_file() -> Path:
+    return aicfg_home() / "extensions.md"
+
+
 def extensions_file() -> Path:
+    """Deprecated in-repo copy of the rendered extensions, still written for packs that read it."""
     return REPO / "skills" / "spec-agent" / "references" / "extensions.md"
 
 
@@ -424,10 +442,12 @@ def _inside_repo(path: Path) -> bool:
 def _managed_target(target: Path, roots: list[Path]) -> bool:
     """True if target is a path aicfg itself links to inside one of the source roots."""
     t = Path(os.path.abspath(target)).resolve()
+    if t == rendered_instructions().resolve():
+        return True
     for root in (r.resolve() for r in roots):
         if t.parent in {root / k for k in KINDS}:
             return True
-        if t == root / "dist" / "instructions.md":
+        if t == root / "dist" / "instructions.md":  # pre-0.3.16 render location
             return True
         if t.name == "hooks" and t.parent.parent == root / "overrides":
             return True
@@ -575,11 +595,16 @@ def cmd_sync(apply: bool) -> int:
 
     if apply:
         rendered = rendered_instructions()
-        rendered.parent.mkdir(exist_ok=True)
+        rendered.parent.mkdir(parents=True, exist_ok=True)
         rendered.write_text(render_instructions(srcs))
-        ext = extensions_file()
-        if ext.parent.is_dir():
-            ext.write_text(render_extensions(srcs))
+        extensions = render_extensions(srcs)
+        home_extensions_file().write_text(extensions)
+        if extensions_file().parent.is_dir():
+            extensions_file().write_text(extensions)
+        if legacy_instructions().is_file():
+            legacy_instructions().unlink()
+            if not any(legacy_instructions().parent.iterdir()):
+                legacy_instructions().parent.rmdir()
 
     links, stale, merges = plan(srcs)
     conflicts = changes = 0
@@ -918,11 +943,12 @@ def _doctor_sources() -> tuple[list[Source], list[Source], list[Finding]]:
 
 def _render_findings(srcs: list[Source]) -> list[Finding]:
     found = []
-    targets = [(rendered_instructions(), lambda: render_instructions(srcs))]
+    targets = [(rendered_instructions(), lambda: render_instructions(srcs)),
+               (home_extensions_file(), lambda: render_extensions(srcs))]
     if extensions_file().parent.is_dir():
         targets.append((extensions_file(), lambda: render_extensions(srcs)))
     for path, render in targets:
-        rel = str(path.relative_to(REPO))
+        rel = tilde(path) if not path.is_relative_to(REPO) else str(path.relative_to(REPO))
         if not path.is_file():
             found.append(("FAIL", f"{rel} has not been rendered", APPLY))
         elif path.read_text() != render():

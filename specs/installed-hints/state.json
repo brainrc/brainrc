@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "local",
+    "ref": "local:specs/installed-hints/ticket.md",
+    "id": "installed-hints",
+    "title": "Installed aicfg: fix hints name the installed command",
+    "url": null,
+    "pr": null
+  },
+  "slug": "installed-hints",
+  "branch": "installed-hints",
+  "base": "main",
+  "size": "small",
+  "mode": "inline",
+  "delivery": "normal",
+  "stage": "spec",
+  "gates": {
+    "spec": "pending",
+    "deliver": "pending"
+  },
+  "domains": [],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate",
+      "python3 scripts/aicfg.py validate --pack examples/pack-acme"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-09T15:48:29Z",
+    "stage_started_at": {
+      "intake": "2026-10-09T15:48:29Z",
+      "spec": "2026-10-09T15:48:29Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-09T15:48:29Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  },
+  "retries": 0
+}

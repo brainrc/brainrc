@@ -6,7 +6,7 @@
     "id": "installed-hints",
     "title": "Installed aicfg: fix hints name the installed command",
     "url": null,
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/60"
   },
   "slug": "installed-hints",
   "branch": "installed-hints",
@@ -14,10 +14,10 @@
   "size": "small",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [],
   "targets": {},
@@ -58,7 +58,8 @@
       "implement": "2026-10-09T15:59:25Z",
       "verify": "2026-10-09T16:01:15Z",
       "document": "2026-10-09T16:01:15Z",
-      "deliver": "2026-10-09T16:01:15Z"
+      "deliver": "2026-10-09T16:01:15Z",
+      "done": "2026-10-09T16:01:58Z"
     },
     "gates": {
       "spec": {
@@ -66,7 +67,8 @@
         "approved_at": "2026-10-09T15:59:25Z"
       },
       "deliver": {
-        "presented_at": "2026-10-09T16:01:15Z"
+        "presented_at": "2026-10-09T16:01:15Z",
+        "approved_at": "2026-10-09T16:01:58Z"
       }
     },
     "gate_rework": {

@@ -1,0 +1,1 @@
+- spec approval recorded at 16:11:40Z, the first command after a worker restart (the click came a few minutes earlier).

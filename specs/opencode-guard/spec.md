@@ -1,6 +1,6 @@
 # Spec: OpenCode runs ai-config's guards
 
-Ticket: gh:50 (refs) · Size: standard (JS plugin, aicfg link kind, tests across Python/Node) · Status: draft
+Ticket: gh:50 (refs) · Size: standard (JS plugin, aicfg link kind, tests across Python/Node) · Status: approved
 
 ## Background
 OpenCode plugins are JS modules loaded from `~/.config/opencode/plugins/`. `tool.execute.before`

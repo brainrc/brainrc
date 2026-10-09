@@ -86,12 +86,12 @@
     "stage_started_at": {
       "intake": "2026-10-09T13:33:29Z",
       "spec": "2026-10-09T13:33:29Z",
-      "plan": "2026-10-09T13:33:51Z"
+      "plan": "2026-10-09T13:33:54Z"
     },
     "gates": {
       "spec": {
         "presented_at": "2026-10-09T13:33:29Z",
-        "approved_at": "2026-10-09T13:33:51Z"
+        "approved_at": "2026-10-09T13:33:54Z"
       },
       "plan": {
         "presented_at": "2026-10-09T13:35:00Z"

@@ -133,7 +133,7 @@ def _pack_root(cfg: dict, key: str) -> Path:
     if "path" not in cfg:
         raise ConfigError(f"packs.toml [{key}]: missing `path`")
     root = expand(str(cfg["path"]))
-    return root if root.is_absolute() else config.REPO / root
+    return root if root.is_absolute() else config.local_dir() / root  # beside packs.local.toml
 
 
 def sources(include_disabled: bool = False) -> list[Source]:

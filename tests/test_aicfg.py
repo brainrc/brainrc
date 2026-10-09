@@ -1076,6 +1076,12 @@ class InstalledModeTest(TempRepoCase):
         self.assertEqual(aicfg.link_target(self.home / ".claude/skills/spec-agent"), self.core / "skills/spec-agent")
         self.assertEqual(aicfg.doctor_findings(), [])
 
+    def test_relative_pack_path_is_relative_to_aicfg_home(self):
+        self.aicfg_home.mkdir(parents=True)
+        shutil.copytree(REPO / "examples/pack-acme", self.aicfg_home / "packs/acme")
+        (self.aicfg_home / "packs.local.toml").write_text('[acme]\npath = "packs/acme"\n')
+        self.assertEqual([s.root for s in aicfg.sources()][-1], self.aicfg_home / "packs/acme")
+
     def test_plugin_needs_a_checkout(self):
         code, out = quiet(aicfg.cmd_plugin)
         self.assertEqual(code, 1, out)

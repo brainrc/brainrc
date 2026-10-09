@@ -1,6 +1,6 @@
 # Spec: OpenCode gets real subagents
 
-Ticket: gh:50 step 4 (refs) + gh:19 (closes) · Size: standard (render + link + doctor + docs) · Status: draft
+Ticket: gh:50 step 4 (refs) + gh:19 (closes) · Size: standard (render + link + doctor + docs) · Status: approved
 
 ## What a real OpenCode 1.18.35 showed (npm install, fake HOME)
 - Copying our agents into `~/.config/opencode/agents/` makes **the whole config invalid**:

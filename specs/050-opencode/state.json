@@ -14,9 +14,9 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "spec",
+  "stage": "plan",
   "gates": {
-    "spec": "pending",
+    "spec": "approved",
     "plan": "pending",
     "deliver": "pending"
   },
@@ -33,17 +33,93 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "tests first",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4"
+      ],
+      "review": "batch",
+      "red": null,
+      "commit": null
+    },
+    {
+      "id": "T2",
+      "title": "aicfg render and link",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3"
+      ],
+      "review": "batch",
+      "red": null,
+      "commit": null
+    },
+    {
+      "id": "T3",
+      "title": "harnesses.toml",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC1"
+      ],
+      "review": "batch",
+      "red": null,
+      "commit": null
+    },
+    {
+      "id": "T4",
+      "title": "real opencode agent list",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC4"
+      ],
+      "review": "batch",
+      "red": null,
+      "commit": null
+    },
+    {
+      "id": "T5",
+      "title": "docs and release",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC5"
+      ],
+      "review": "batch",
+      "red": null,
+      "commit": null
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-08T13:45:49Z",
     "stage_started_at": {
       "intake": "2026-10-08T13:45:49Z",
-      "spec": "2026-10-08T13:45:49Z"
+      "spec": "2026-10-08T13:45:49Z",
+      "plan": "2026-10-09T01:23:13Z"
     },
     "gates": {
       "spec": {
-        "presented_at": "2026-10-08T13:45:49Z"
+        "presented_at": "2026-10-08T13:45:49Z",
+        "approved_at": "2026-10-09T01:23:13Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-09T01:25:00Z"
       }
     },
     "gate_rework": {

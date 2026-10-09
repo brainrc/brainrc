@@ -115,7 +115,7 @@ def _managed_target(target: Path, roots: list[Path]) -> bool:
             return True
         if t == root / "dist" / "instructions.md":  # pre-0.3.16 render location
             return True
-        if t.name == "hooks" and t.parent.parent == root / "overrides":
+        if t.name in ("hooks", "plugin.js") and t.parent.parent == root / "overrides":
             return True
     return False
 
@@ -136,6 +136,8 @@ def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
                           for src in srcs for p in items(src, kind)]
         if "instructions" in h:
             links.append(Link(name, expand(h["instructions"]), rendered_instructions()))
+        if "plugin" in h:  # one file the harness loads as a plugin (OpenCode's guards)
+            links.append(Link(name, expand(h["plugin"]), config.REPO / "overrides" / name / "plugin.js"))
         fragments: list[tuple[Path, str | None]] = []
         for src in srcs:
             hooks = src.root / "overrides" / name / "hooks"
@@ -171,6 +173,8 @@ def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
                 candidates.update(d.iterdir())
         if "instructions" in h:
             candidates.add(expand(h["instructions"]))
+        if "plugin" in h:
+            candidates.add(expand(h["plugin"]))
         if "hooks_dir" in h:
             candidates.add(expand(h["hooks_dir"]))
             candidates.update(expand(pack_hooks_dir(h["hooks_dir"], s.name)) for s in every_src)

@@ -6,7 +6,7 @@
     "id": "aicfg-package",
     "title": "Split aicfg.py into a stdlib package",
     "url": null,
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/56"
   },
   "slug": "aicfg-package",
   "branch": "aicfg-package",
@@ -14,11 +14,11 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [],
   "targets": {},
@@ -99,7 +99,8 @@
       "implement": "2026-10-09T03:23:06Z",
       "verify": "2026-10-09T03:26:56Z",
       "document": "2026-10-09T03:26:56Z",
-      "deliver": "2026-10-09T03:26:56Z"
+      "deliver": "2026-10-09T03:26:56Z",
+      "done": "2026-10-09T03:27:24Z"
     },
     "gates": {
       "spec": {
@@ -111,7 +112,8 @@
         "approved_at": "2026-10-09T03:23:06Z"
       },
       "deliver": {
-        "presented_at": "2026-10-09T03:26:56Z"
+        "presented_at": "2026-10-09T03:26:56Z",
+        "approved_at": "2026-10-09T03:27:24Z"
       }
     },
     "gate_rework": {

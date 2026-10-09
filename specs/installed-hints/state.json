@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "local",
+    "ref": "local:specs/installed-hints/ticket.md",
+    "id": "installed-hints",
+    "title": "Installed aicfg: fix hints name the installed command",
+    "url": null,
+    "pr": "https://github.com/bxker/ai-config/pull/60"
+  },
+  "slug": "installed-hints",
+  "branch": "installed-hints",
+  "base": "main",
+  "size": "small",
+  "mode": "inline",
+  "delivery": "normal",
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "deliver": "approved"
+  },
+  "domains": [],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate",
+      "python3 scripts/aicfg.py validate --pack examples/pack-acme"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "installed hints",
+      "agent": "engine (inline)",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "cf6b5b6"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-09T15:48:29Z",
+    "stage_started_at": {
+      "intake": "2026-10-09T15:48:29Z",
+      "spec": "2026-10-09T15:48:29Z",
+      "implement": "2026-10-09T15:59:25Z",
+      "verify": "2026-10-09T16:01:15Z",
+      "document": "2026-10-09T16:01:15Z",
+      "deliver": "2026-10-09T16:01:15Z",
+      "done": "2026-10-09T16:01:58Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-09T15:48:29Z",
+        "approved_at": "2026-10-09T15:59:25Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-09T16:01:15Z",
+        "approved_at": "2026-10-09T16:01:58Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  },
+  "retries": 0
+}

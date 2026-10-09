@@ -11,6 +11,7 @@ from .config import (
     ConfigError,
     KINDS,
     _layered,
+    command,
     expand,
     extensions_file,
     home_extensions_file,
@@ -34,7 +35,6 @@ from .settings import settings_change
 from .validate import ROLES_FIX, check_roles_link, cmd_validate
 
 
-APPLY = "python3 scripts/aicfg.py apply"
 
 
 Finding = tuple[str, str, str]  # (FAIL | WARN, what is wrong, how to fix it)
@@ -58,7 +58,7 @@ def _doctor_sources() -> tuple[list[Source], list[Source], list[Finding]]:
             continue
         if "git" in cfg and not root.exists():
             if cfg.get("enabled", True):
-                found.append(("FAIL", f"pack {key}: not fetched yet from {cfg['git']}", APPLY))
+                found.append(("FAIL", f"pack {key}: not fetched yet from {cfg['git']}", command("apply")))
             continue
         if not cfg.get("enabled", True):
             every_src.append(Source(key, root))
@@ -80,7 +80,7 @@ def _doctor_sources() -> tuple[list[Source], list[Source], list[Finding]]:
             failed = cmd_validate(str(root))
         if failed:
             found.append(("FAIL", f"pack {src.name}: validate --pack fails",
-                          f"python3 scripts/aicfg.py validate --pack {tilde(root)}"))
+                          command(f"validate --pack {tilde(root)}")))
         srcs.append(src)
     found += [("FAIL", c, "rename one of the pair, then apply") for c in collisions(srcs)]
     return srcs, every_src, found
@@ -96,29 +96,29 @@ def _render_findings(srcs: list[Source]) -> list[Finding]:
     for path, render in targets:
         rel = tilde(path) if not path.is_relative_to(config.REPO) else str(path.relative_to(config.REPO))
         if not path.is_file():
-            found.append(("FAIL", f"{rel} has not been rendered", APPLY))
+            found.append(("FAIL", f"{rel} has not been rendered", command("apply")))
         elif path.read_text() != render():
-            found.append(("FAIL", f"{rel} is stale (sources changed since the last apply)", APPLY))
+            found.append(("FAIL", f"{rel} is stale (sources changed since the last apply)", command("apply")))
     return found
 
 
 def _link_finding(link: Link, roots: list[Path]) -> Finding | None:
     state, dest = link.state(roots), tilde(link.dest)
     if state == "create":
-        return "FAIL", f"{link.harness}: {dest} is missing", APPLY
+        return "FAIL", f"{link.harness}: {dest} is missing", command("apply")
     if state == "update":
-        return "FAIL", f"{link.harness}: {dest} points at the wrong item", APPLY
+        return "FAIL", f"{link.harness}: {dest} points at the wrong item", command("apply")
     if state == "ok":
         return None
     if not link.dest.is_symlink():
         return ("FAIL", f"{link.harness}: {dest} is a real file, not a link",
-                f"move it into the repo or a pack (or delete it), then {APPLY}")
+                f"move it into the repo or a pack (or delete it), then {command('apply')}")
     target = link_target(link.dest)
     if not target.exists():
         return ("FAIL", f"{link.harness}: {dest} is a broken link to {tilde(target)} (repo moved?)",
-                f"rm {dest} && {APPLY}")
+                f"rm {dest} && {command('apply')}")
     return ("FAIL", f"{link.harness}: {dest} links to {tilde(target)}, outside ai-config and its packs",
-            f"move that into a pack (or delete the link), then {APPLY}")
+            f"move that into a pack (or delete the link), then {command('apply')}")
 
 
 def doctor_findings() -> list[Finding]:
@@ -154,10 +154,10 @@ def doctor_findings() -> list[Finding]:
     for name, group in missing.items():  # a never-applied harness is one line, not dozens
         if len(group) > 3:
             found.append(("FAIL", f"{name}: {len(group)} links are missing, e.g. {tilde(group[0].dest)}",
-                          APPLY))
+                          command("apply")))
         else:
             found += [_link_finding(link, roots) for link in group]
-    found += [("FAIL", f"{tilde(p)} is a stale link ai-config no longer makes", f"{APPLY} (prunes it)")
+    found += [("FAIL", f"{tilde(p)} is a stale link ai-config no longer makes", f"{command('apply')} (prunes it)")
               for p in stale]
 
     # Broken links aicfg doesn't manage, in the directories it links into.
@@ -170,7 +170,7 @@ def doctor_findings() -> list[Finding]:
                     found.append(("WARN", f"{name}: {tilde(p)} is a broken link not made by ai-config",
                                   f"rm {tilde(p)}"))
 
-    found += [("FAIL", e, f"fix the JSON, then {APPLY}") for e in invalid_fragments(srcs)]
+    found += [("FAIL", e, f"fix the JSON, then {command('apply')}") for e in invalid_fragments(srcs)]
     for m in merges:
         if m.harness in skipped:
             continue
@@ -180,12 +180,12 @@ def doctor_findings() -> list[Finding]:
             continue  # reported above
         if state == "merge" and not m.fragments:
             found.append(("FAIL", f"{tilde(m.dest)} has ai-config's hooks but {m.harness} is disabled",
-                          f"{APPLY} (removes them)"))
+                          f"{command('apply')} (removes them)"))
         elif state == "merge":
-            found.append(("FAIL", f"{m.harness}: {tilde(m.dest)} is missing ai-config's hooks", APPLY))
+            found.append(("FAIL", f"{m.harness}: {tilde(m.dest)} is missing ai-config's hooks", command("apply")))
         elif state == "conflict":
             found.append(("FAIL", f"{m.harness}: {tilde(m.dest)} is invalid JSON",
-                          f"fix it by hand, then {APPLY}"))
+                          f"fix it by hand, then {command('apply')}"))
     return found
 
 

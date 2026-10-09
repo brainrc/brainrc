@@ -31,6 +31,11 @@ def installed() -> bool:
     return REPO.name == "_core"
 
 
+def command(sub: str) -> str:
+    """How to run an aicfg command here, for hints: the installed `aicfg`, or the checkout's script."""
+    return f"aicfg {sub}" if installed() else f"python3 scripts/aicfg.py {sub}"
+
+
 def local_dir() -> Path:
     """Where machine-local files live (*.local.toml, rules/*.local.md): the checkout, or
     $AICFG_HOME when installed."""

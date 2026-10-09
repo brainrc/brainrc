@@ -11,6 +11,11 @@ a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everyt
 Every merged PR bumps `VERSION` and adds its entries under that version. There is no Unreleased
 section: `main` is what users pull, so `VERSION` must always describe it exactly.
 
+## 0.3.24 (2026-10-09)
+
+- An installed `aicfg` names itself in its hints: `doctor`'s fixes and the usage text say
+  `aicfg <command>` instead of `python3 scripts/aicfg.py <command>`. A checkout is unchanged.
+
 ## 0.3.23 (2026-10-09)
 
 - Packs install without a clone (#50): a pack entry may name `git = "<url>"` (and an optional

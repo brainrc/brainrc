@@ -1082,6 +1082,15 @@ class InstalledModeTest(TempRepoCase):
         (self.aicfg_home / "packs.local.toml").write_text('[acme]\npath = "packs/acme"\n')
         self.assertEqual([s.root for s in aicfg.sources()][-1], self.aicfg_home / "packs/acme")
 
+    def test_hints_name_the_installed_command(self):
+        fixes = [fix for _, _, fix in aicfg.doctor_findings()]  # nothing applied yet
+        self.assertIn("aicfg apply", fixes)
+        self.assertFalse(any("scripts/aicfg.py" in f for f in fixes), fixes)
+        code, out = quiet(aicfg.main, ["aicfg", "bogus"])
+        self.assertEqual(code, 2)
+        self.assertIn("  aicfg status", out)
+        self.assertNotIn("aicfg.py", out)
+
     def test_plugin_needs_a_checkout(self):
         code, out = quiet(aicfg.cmd_plugin)
         self.assertEqual(code, 1, out)

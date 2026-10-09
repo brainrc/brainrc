@@ -6,7 +6,7 @@
     "id": "50",
     "title": "Native package installs (Cursor plugin)",
     "url": "https://github.com/bxker/ai-config/issues/50",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/62"
   },
   "slug": "cursor-plugin",
   "branch": "cursor-plugin",
@@ -14,11 +14,11 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": "presented"
+    "deliver": "approved"
   },
   "domains": [],
   "targets": {},
@@ -127,7 +127,8 @@
       "implement": "2026-10-09T22:04:12Z",
       "verify": "2026-10-09T22:10:46Z",
       "document": "2026-10-09T22:10:46Z",
-      "deliver": "2026-10-09T22:10:46Z"
+      "deliver": "2026-10-09T22:10:46Z",
+      "done": "2026-10-09T22:12:30Z"
     },
     "gates": {
       "spec": {
@@ -139,7 +140,8 @@
         "approved_at": "2026-10-09T22:04:12Z"
       },
       "deliver": {
-        "presented_at": "2026-10-09T22:10:46Z"
+        "presented_at": "2026-10-09T22:10:46Z",
+        "approved_at": "2026-10-09T22:11:43Z"
       }
     },
     "gate_rework": {

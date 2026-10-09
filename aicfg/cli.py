@@ -193,5 +193,5 @@ def main(argv: list[str]) -> int:
         return cmd_update()
     if cmd == "tokens" and len(argv) == 2:
         return cmd_tokens()
-    print(__doc__)
+    print(__doc__.replace("aicfg.py ", "aicfg ") if config.installed() else __doc__)
     return 2

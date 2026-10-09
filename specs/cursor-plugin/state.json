@@ -14,10 +14,10 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "spec",
+  "stage": "plan",
   "gates": {
-    "spec": "presented",
-    "plan": "pending",
+    "spec": "approved",
+    "plan": "presented",
     "deliver": "pending"
   },
   "domains": [],
@@ -33,17 +33,93 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "tests first",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T2",
+      "title": "cursor guard adapter",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC2"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T3",
+      "title": "cursor hooks merge",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC3"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T4",
+      "title": "cursor manifest and rule frontmatter",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC1"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T5",
+      "title": "schema check and baseline",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC3",
+        "AC4"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T6",
+      "title": "docs and release",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC5"
+      ],
+      "review": "batch"
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-09T21:59:46Z",
     "stage_started_at": {
       "intake": "2026-10-09T21:59:46Z",
-      "spec": "2026-10-09T21:59:46Z"
+      "spec": "2026-10-09T21:59:46Z",
+      "plan": "2026-10-09T22:03:28Z"
     },
     "gates": {
       "spec": {
-        "presented_at": "2026-10-09T22:02:27Z"
+        "presented_at": "2026-10-09T22:02:27Z",
+        "approved_at": "2026-10-09T22:03:28Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-09T22:03:28Z"
       }
     },
     "gate_rework": {

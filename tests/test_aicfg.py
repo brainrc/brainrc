@@ -1310,9 +1310,11 @@ class CursorPluginTest(TempRepoCase):
         plugin = self.manifest()
         self.assertEqual((plugin["name"], plugin["version"], plugin["license"]), ("ai-config", "1.2.3", "MIT"))
         self.assertEqual((plugin["skills"], plugin["agents"], plugin["rules"]), ("./skills/", "./agents/", "./rules/"))
-        self.assertEqual(plugin["hooks"]["version"], 1)
-        commands = [e["command"] for entries in plugin["hooks"]["hooks"].values() for e in entries]
-        self.assertEqual(set(plugin["hooks"]["hooks"]), {"beforeShellExecution", "beforeReadFile"})
+        self.assertEqual(plugin["hooks"], "./.cursor-plugin/hooks.json")
+        hooks = json.loads(aicfg.plugin_manifests()[".cursor-plugin/hooks.json"])
+        self.assertEqual(hooks["version"], 1)
+        commands = [e["command"] for entries in hooks["hooks"].values() for e in entries]
+        self.assertEqual(set(hooks["hooks"]), {"beforeShellExecution", "beforeReadFile"})
         self.assertTrue(all(c == 'python3 "${CURSOR_PLUGIN_ROOT}/overrides/cursor/hooks/guard.py"'
                             for c in commands), commands)
         self.assertNotIn("..", json.dumps(plugin))

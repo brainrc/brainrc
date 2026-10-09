@@ -97,6 +97,8 @@ def _validate_source(src: Source, agent_names: set[str], skill_names: set[str]) 
     if src.is_core:
         errors += [f"{src.rel(r)}: missing `trigger` frontmatter (Antigravity drops the rule without it)"
                    for r in markdown_files("rules", src) if not frontmatter(r).get("trigger")]
+        errors += [f"{src.rel(r)}: missing `alwaysApply: true` frontmatter (Cursor loads the rule only on request without it)"
+                   for r in markdown_files("rules", src) if str(frontmatter(r).get("alwaysApply")).lower() != "true"]
 
     for f in markdown_files("agents", src):
         rel = src.rel(f)

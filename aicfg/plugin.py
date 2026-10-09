@@ -1,4 +1,4 @@
-"""Plugin manifests: Claude Code (also read by Codex) and Antigravity."""
+"""Plugin manifests: Claude Code (also read by Codex), Cursor, and Antigravity."""
 from __future__ import annotations
 
 import json
@@ -10,6 +10,9 @@ from .plan import FragmentError, render_fragment
 
 
 PLUGIN_DIR = ".claude-plugin"
+
+
+CURSOR_PLUGIN_DIR = ".cursor-plugin"  # Cursor reads it before .claude-plugin/, whose hooks it rejects
 
 
 PLUGIN_NAME = "ai-config"
@@ -24,7 +27,8 @@ PLUGIN_DESCRIPTION = ("Skills, agents, commands, and guard hooks for spec-driven
 
 def plugin_manifests() -> dict[str, str]:
     """The plugin manifests for core, built from the repo: Claude Code's plugin and marketplace
-    (Codex reads them too) and Antigravity's root plugin.json. The repo root is the plugin."""
+    (Codex reads them too), Cursor's plugin, and Antigravity's root plugin.json. The repo root is
+    the plugin."""
     version = ".".join(map(str, core_version()))
     hooks_dir = "${CLAUDE_PLUGIN_ROOT}/overrides/claude/hooks"
     hooks = render_fragment(config.REPO / "overrides" / "claude" / "settings.fragment.json", hooks_dir)["hooks"]
@@ -35,6 +39,13 @@ def plugin_manifests() -> dict[str, str]:
                            "version": version}]}
     manifests = {f"{PLUGIN_DIR}/{name}": json.dumps(data, indent=2) + "\n"
                  for name, data in (("plugin.json", plugin), ("marketplace.json", market))}
+    cursor_hooks = render_fragment(config.REPO / "overrides" / "cursor" / "settings.fragment.json",
+                                   "${CURSOR_PLUGIN_ROOT}/overrides/cursor/hooks")
+    cursor = {"name": PLUGIN_NAME, "version": version, "description": PLUGIN_DESCRIPTION,
+              "author": PLUGIN_AUTHOR, "license": "MIT", "skills": "./skills/", "agents": "./agents/",
+              "rules": "./rules/", "hooks": f"./{CURSOR_PLUGIN_DIR}/hooks.json"}  # a file, as Cursor's own plugins do
+    manifests[f"{CURSOR_PLUGIN_DIR}/plugin.json"] = json.dumps(cursor, indent=2) + "\n"
+    manifests[f"{CURSOR_PLUGIN_DIR}/hooks.json"] = json.dumps(cursor_hooks, indent=2) + "\n"
     manifests["plugin.json"] = json.dumps({"name": PLUGIN_NAME}, indent=2) + "\n"  # Antigravity
     return manifests
 

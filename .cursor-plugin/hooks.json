@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeShellExecution": [
+      {
+        "command": "python3 \"${CURSOR_PLUGIN_ROOT}/overrides/cursor/hooks/guard.py\""
+      }
+    ],
+    "beforeReadFile": [
+      {
+        "command": "python3 \"${CURSOR_PLUGIN_ROOT}/overrides/cursor/hooks/guard.py\""
+      }
+    ]
+  }
+}

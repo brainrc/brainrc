@@ -193,8 +193,8 @@ RULES_REFINE = "They refine the rules above and never override them."
 
 
 def rule_text(path: Path) -> str:
-    """A rule's text without its frontmatter (`trigger:` is for Antigravity, which drops rules
-    without one); every other harness gets the rule as written."""
+    """A rule's text without its frontmatter (`trigger:` is for Antigravity and `alwaysApply:` for
+    Cursor's plugin, which skip rules without them); harnesses aicfg writes to get the body."""
     text = path.read_text().strip()
     if text.startswith("---\n") and (end := text.find("\n---", 4)) != -1:
         text = text[end + 4:].strip()

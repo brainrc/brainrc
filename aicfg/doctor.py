@@ -86,7 +86,7 @@ def _render_findings(srcs: list[Source]) -> list[Finding]:
     found = []
     targets = [(rendered_instructions(), lambda: render_instructions(srcs)),
                (home_extensions_file(), lambda: render_extensions(srcs))]
-    if extensions_file().parent.is_dir():
+    if extensions_file().parent.is_dir() and not config.installed():
         targets.append((extensions_file(), lambda: render_extensions(srcs)))
     targets += [(path, lambda text=text: text) for path, text in rendered_agents(srcs).items()]
     for path, render in targets:

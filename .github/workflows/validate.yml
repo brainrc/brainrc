@@ -24,6 +24,10 @@ jobs:
       - name: Validate example pack
         run: python3 scripts/aicfg.py validate --pack examples/pack-acme
       - run: python3 -m unittest discover -s tests -v
+      - name: Install aicfg as a package and validate its bundled core
+        run: |
+          python3 -m pip install .
+          cd "$RUNNER_TEMP" && aicfg validate
       - run: python3 -m unittest -q
         working-directory: examples/sandbox
       - uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9

@@ -60,6 +60,22 @@ and after you add or remove skills, agents, or commands. For Claude Code, `apply
 the guard hooks into `~/.claude/settings.json` (your other hooks are kept; a backup is written
 first, and the last 5 backups are kept).
 
+### Install without a clone
+
+`aicfg` also installs as a command, with core's skills, agents, rules, and hooks bundled:
+
+```bash
+uv tool install git+https://github.com/bxker/ai-config   # or: pipx install git+https://github.com/bxker/ai-config
+aicfg status
+aicfg apply
+```
+
+Links then point into the installed package, so `uv tool upgrade ai-config` (or `pipx upgrade
+ai-config`) updates every harness. Local files go in `~/.config/ai-config/` (`$AICFG_HOME`):
+`harnesses.local.toml`, `packs.local.toml`, and `rules/*.local.md`. Packs are still local
+directories. The fix hints `doctor` prints show the checkout command; use `aicfg <command>`.
+`plugin` needs a checkout. Contributors use the clone above.
+
 `aicfg` never overwrites a file it doesn't manage. Pre-existing files show up as
 `CONFLICT` for you to move into the repo or delete.
 

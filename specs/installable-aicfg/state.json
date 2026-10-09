@@ -1,0 +1,147 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:50",
+    "id": "50",
+    "title": "Native package installs (installable aicfg)",
+    "url": "https://github.com/bxker/ai-config/issues/50",
+    "pr": "https://github.com/bxker/ai-config/pull/58"
+  },
+  "slug": "installable-aicfg",
+  "branch": "installable-aicfg",
+  "base": "main",
+  "size": "standard",
+  "mode": "inline",
+  "delivery": "normal",
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate",
+      "python3 scripts/aicfg.py validate --pack examples/pack-acme"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "tests first",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC2",
+        "AC3",
+        "AC5"
+      ],
+      "review": "batch",
+      "red": "4 failures, 1 error",
+      "commit": "8ff0626"
+    },
+    {
+      "id": "T2",
+      "title": "aicfg changes",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC2",
+        "AC3"
+      ],
+      "review": "batch",
+      "red": "tests T1",
+      "commit": "a545a19"
+    },
+    {
+      "id": "T3",
+      "title": "pyproject and CI",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC1",
+        "AC5"
+      ],
+      "review": "batch",
+      "red": "n/a (build; CI simulated)",
+      "commit": "24a2fcd"
+    },
+    {
+      "id": "T4",
+      "title": "real uv install",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC4"
+      ],
+      "review": "batch",
+      "red": "tokens test red, then roles fix; pack path test red, then fix",
+      "commit": "4fdc544"
+    },
+    {
+      "id": "T5",
+      "title": "docs and release",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC6"
+      ],
+      "review": "batch",
+      "red": "n/a (docs)",
+      "commit": "33a05cc"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-09T14:25:02Z",
+    "stage_started_at": {
+      "intake": "2026-10-09T14:25:02Z",
+      "spec": "2026-10-09T14:25:02Z",
+      "plan": "2026-10-09T14:26:50Z",
+      "implement": "2026-10-09T14:27:52Z",
+      "verify": "2026-10-09T14:33:22Z",
+      "document": "2026-10-09T14:33:22Z",
+      "deliver": "2026-10-09T14:33:22Z",
+      "done": "2026-10-09T14:35:18Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-09T14:25:02Z",
+        "approved_at": "2026-10-09T14:26:50Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-09T14:29:00Z",
+        "approved_at": "2026-10-09T14:27:52Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-09T14:33:22Z",
+        "approved_at": "2026-10-09T14:35:18Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  },
+  "retries": 2
+}

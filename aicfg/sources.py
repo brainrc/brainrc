@@ -133,7 +133,7 @@ def _pack_root(cfg: dict, key: str) -> Path:
     if "path" not in cfg:
         raise ConfigError(f"packs.toml [{key}]: missing `path`")
     root = expand(str(cfg["path"]))
-    return root if root.is_absolute() else config.REPO / root
+    return root if root.is_absolute() else config.local_dir() / root  # beside packs.local.toml
 
 
 def sources(include_disabled: bool = False) -> list[Source]:
@@ -212,7 +212,7 @@ def render_instructions(srcs: list[Source] | None = None) -> str:
         if rules and not src.is_core:
             parts.append(f"<!-- pack: {src.name} -->\nRules from pack {src.name}. {RULES_REFINE}")
         parts += [rule_text(p) for p in rules]
-        rules_dir = src.root / "rules"
+        rules_dir = (config.local_dir() if src.is_core else src.root) / "rules"
         if rules_dir.is_dir():
             local += [(p.name, i, p) for p in rules_dir.glob("*.local.md")]
     if local:
@@ -281,7 +281,8 @@ def frontmatter(path: Path) -> dict[str, str]:
 
 def _markdown_under(root: Path) -> list[Path]:
     found = []
-    for dirpath, _dirs, files in os.walk(root):  # does not follow symlinked dirs (skills/*/roles)
+    for dirpath, dirs, files in os.walk(root):  # does not follow symlinked dirs (skills/*/roles)
+        dirs[:] = [d for d in dirs if Path(dirpath, d) != config.REPO / config.ROLES_LINK]  # copies, when installed
         found += [Path(dirpath) / f for f in files  # a dangling link is validate's own finding
                   if f.endswith(".md") and (Path(dirpath) / f).is_file()]
     return sorted(found)

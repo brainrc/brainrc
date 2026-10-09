@@ -8,11 +8,12 @@ To start one, copy the working example in [examples/pack-acme](../examples/pack-
 
 ## Enable a pack
 
-List it in `packs.local.toml` (gitignored), then apply:
+List it in `packs.local.toml` (gitignored; for an installed `aicfg`, in `~/.config/ai-config/`),
+then apply:
 
 ```toml
 [acme]
-path = "~/src/acme-ai-pack"   # ~ and $VARS expand; relative paths are relative to this repo
+path = "~/src/acme-ai-pack"   # ~ and $VARS expand; relative paths are relative to this file
 # enabled = false             # removes the pack's links and hooks on the next apply
 ```
 

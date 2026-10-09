@@ -60,6 +60,10 @@ def check_plugin() -> list[str]:
 
 def cmd_plugin() -> int:
     """Write the plugin manifests; they're committed so GitHub installs work."""
+    if config.installed():
+        print("ERROR plugin writes the repo's manifests; run it from a checkout: "
+              "python3 scripts/aicfg.py plugin")
+        return 1
     try:
         manifests = plugin_manifests()
     except ConfigError as e:

@@ -23,6 +23,9 @@ are merged (only entries owned by ai-config are replaced) and backed up first.
 """
 from __future__ import annotations
 
+import sys
+
+from . import config
 from .config import (
     ConfigError,
     extensions_file,
@@ -80,7 +83,7 @@ def cmd_sync(apply: bool) -> int:
         rendered.write_text(render_instructions(srcs))
         extensions = render_extensions(srcs)
         home_extensions_file().write_text(extensions)
-        if extensions_file().parent.is_dir():
+        if extensions_file().parent.is_dir() and not config.installed():
             extensions_file().write_text(extensions)
         for path, text in agents.items():
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -89,7 +92,7 @@ def cmd_sync(apply: bool) -> int:
             for old in rendered_agents_dir().glob("*.md"):
                 if old not in agents:
                     old.unlink()
-        if legacy_instructions().is_file():
+        if not config.installed() and legacy_instructions().is_file():
             legacy_instructions().unlink()
             if not any(legacy_instructions().parent.iterdir()):
                 legacy_instructions().parent.rmdir()
@@ -136,6 +139,11 @@ def cmd_sync(apply: bool) -> int:
         print(f"\n{conflicts} conflict(s): existing files not managed by this repo. "
               "Move them into the repo (or delete them), then re-run.")
     return 1 if conflicts else 0
+
+
+def entry() -> None:
+    """The `aicfg` console script of an installed package."""
+    sys.exit(main(sys.argv))
 
 
 def main(argv: list[str]) -> int:

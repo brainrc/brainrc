@@ -152,12 +152,10 @@ def cmd_check(project: str, case: str) -> int:
 # ---------- triggers ----------
 
 def _aicfg():
-    import importlib.util
-    spec = importlib.util.spec_from_file_location("aicfg", REPO / "scripts" / "aicfg.py")
-    module = importlib.util.module_from_spec(spec)
-    sys.modules.setdefault("aicfg", module)
-    spec.loader.exec_module(module)
-    return module
+    if str(REPO) not in sys.path:
+        sys.path.insert(0, str(REPO))
+    import aicfg  # the package at the repo root
+    return aicfg
 
 
 def load_skills() -> dict[str, str]:

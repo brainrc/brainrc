@@ -1,0 +1,132 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "local",
+    "ref": "local:specs/aicfg-package/ticket.md",
+    "id": "aicfg-package",
+    "title": "Split aicfg.py into a stdlib package",
+    "url": null,
+    "pr": "https://github.com/bxker/ai-config/pull/56"
+  },
+  "slug": "aicfg-package",
+  "branch": "aicfg-package",
+  "base": "main",
+  "size": "standard",
+  "mode": "inline",
+  "delivery": "normal",
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate",
+      "python3 scripts/aicfg.py validate --pack examples/pack-acme"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "split into package",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3"
+      ],
+      "review": "batch",
+      "red": "n/a (refactor: existing tests)",
+      "commit": "08f534d"
+    },
+    {
+      "id": "T2",
+      "title": "tests and evals",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC4"
+      ],
+      "review": "batch",
+      "red": "tests (old-Python test caught missing import)",
+      "commit": "3b89d6c"
+    },
+    {
+      "id": "T3",
+      "title": "before/after diff",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC5"
+      ],
+      "review": "batch",
+      "red": "n/a (diff)",
+      "commit": null
+    },
+    {
+      "id": "T4",
+      "title": "docs and release",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC6"
+      ],
+      "review": "batch",
+      "red": "n/a (docs)",
+      "commit": "24189fc"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-09T03:19:59Z",
+    "stage_started_at": {
+      "intake": "2026-10-09T03:19:59Z",
+      "spec": "2026-10-09T03:19:59Z",
+      "plan": "2026-10-09T03:20:32Z",
+      "implement": "2026-10-09T03:23:06Z",
+      "verify": "2026-10-09T03:26:56Z",
+      "document": "2026-10-09T03:26:56Z",
+      "deliver": "2026-10-09T03:26:56Z",
+      "done": "2026-10-09T03:27:24Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-09T03:19:59Z",
+        "approved_at": "2026-10-09T03:20:32Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-09T03:24:00Z",
+        "approved_at": "2026-10-09T03:23:06Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-09T03:26:56Z",
+        "approved_at": "2026-10-09T03:27:24Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  },
+  "retries": 0
+}

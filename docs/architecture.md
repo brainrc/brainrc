@@ -41,6 +41,10 @@ flowchart LR
 Skills, agents, commands, and hooks are symlinks, so `git pull` updates them at once. Rules and
 extensions are rendered, so re-run `apply` after changing them or enabling a pack.
 
+The code is the `aicfg/` package (`python3 scripts/aicfg.py` or `python3 -m aicfg`), one module
+per stage: `config`, `sources`, `opencode`, `plan`, `settings`, `plugin`, `tokens`, `validate`,
+`doctor`, and `cli` for the commands.
+
 ## Glossary
 
 - **Harness**: an AI coding tool ai-config syncs into: Claude Code, Codex, OpenCode, Antigravity CLI, Cursor ([support](formats.md#harness-support)).

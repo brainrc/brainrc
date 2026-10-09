@@ -36,7 +36,8 @@ overrides/      Harness-specific config (Claude guard hooks + settings fragment)
 harnesses.toml  Where each harness reads each content type.
 packs.toml      Extra source repos ("packs") layered on top; usually set in packs.local.toml.
 VERSION         Core version that packs pin with `requires_core`; changes in CHANGELOG.md.
-scripts/        aicfg.py: sync, validate, doctor, tokens (Python 3.11+, stdlib only).
+aicfg/          The aicfg package: sync, validate, doctor, plugin, tokens (Python 3.11+, stdlib only).
+scripts/        aicfg.py (runs the package), evals.py.
 docs/           spec-agent, guardrails, efficiency, formats, troubleshooting, harness packages, roadmap.
 tests/          stdlib unittest for aicfg and hooks.
 examples/       Sandbox project + tickets for trying spec-agent.

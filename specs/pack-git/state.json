@@ -14,10 +14,10 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "plan",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [],
@@ -38,8 +38,8 @@
       "id": "T1",
       "title": "tests first",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC1",
         "AC2",
@@ -48,15 +48,15 @@
         "AC5"
       ],
       "review": "batch",
-      "red": null,
-      "commit": null
+      "red": "7 of 8 red",
+      "commit": "a07297b"
     },
     {
       "id": "T2",
       "title": "implementation",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC1",
         "AC2",
@@ -64,34 +64,34 @@
         "AC4"
       ],
       "review": "batch",
-      "red": null,
-      "commit": null
+      "red": "tests T1",
+      "commit": "5787163"
     },
     {
       "id": "T3",
       "title": "real run",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC5"
       ],
       "review": "batch",
-      "red": null,
+      "red": "n/a (real run)",
       "commit": null
     },
     {
       "id": "T4",
       "title": "docs and release",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC6"
       ],
       "review": "batch",
-      "red": null,
-      "commit": null
+      "red": "n/a (docs)",
+      "commit": "c3f3b4e"
     }
   ],
   "blocked": null,
@@ -100,7 +100,11 @@
     "stage_started_at": {
       "intake": "2026-10-09T14:44:46Z",
       "spec": "2026-10-09T14:44:46Z",
-      "plan": "2026-10-09T14:45:38Z"
+      "plan": "2026-10-09T14:45:38Z",
+      "implement": "2026-10-09T14:46:19Z",
+      "verify": "2026-10-09T14:48:30Z",
+      "document": "2026-10-09T14:48:30Z",
+      "deliver": "2026-10-09T14:48:30Z"
     },
     "gates": {
       "spec": {
@@ -108,7 +112,11 @@
         "approved_at": "2026-10-09T14:45:38Z"
       },
       "plan": {
-        "presented_at": "2026-10-09T14:46:00Z"
+        "presented_at": "2026-10-09T14:46:00Z",
+        "approved_at": "2026-10-09T14:46:19Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-09T14:48:30Z"
       }
     },
     "gate_rework": {

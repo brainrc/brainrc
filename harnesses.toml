@@ -56,4 +56,6 @@ instructions = "~/.gemini/GEMINI.md"
 [cursor]
 enabled = true
 skills = "~/.cursor/skills"
+hooks_dir = "~/.cursor/hooks/ai-config"
+settings = "~/.cursor/hooks.json"
 # instructions: Cursor's global User Rules live in the Settings UI, not a file

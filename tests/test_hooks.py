@@ -3,6 +3,7 @@ import json
 import shutil
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -344,3 +345,61 @@ class OpenCodePluginTest(unittest.TestCase):
 
     def test_unmapped_tools_pass(self):
         self.assertEqual(self.call("github_create_issue", {"title": "x"}), "OK")
+
+
+CURSOR_GUARD = HOOKS.parent.parent / "cursor" / "hooks" / "guard.py"
+
+
+def cursor(payload, guard: Path = CURSOR_GUARD) -> dict:
+    """Run Cursor's guard adapter; it must always exit 0 with a JSON reply."""
+    stdin = payload if isinstance(payload, str) else json.dumps(payload)
+    result = subprocess.run([sys.executable, str(guard)], input=stdin, capture_output=True,
+                            text=True, timeout=30)
+    assert result.returncode == 0, result.stderr
+    return json.loads(result.stdout)
+
+
+def shell(command: str) -> dict:
+    return cursor({"hook_event_name": "beforeShellExecution", "command": command, "cwd": "/tmp/project"})
+
+
+def read_file(path: str, content: str = "") -> dict:
+    return cursor({"hook_event_name": "beforeReadFile", "file_path": path, "content": content})
+
+
+class CursorGuardTest(unittest.TestCase):
+    """overrides/cursor/hooks/guard.py runs the same guards for Cursor's blocking hooks."""
+
+    def test_outward_command_is_denied_with_the_reason(self):
+        reply = shell("git push origin main")
+        self.assertEqual(reply["permission"], "deny")
+        for key in ("user_message", "agent_message"):
+            self.assertIn("git push publishes commits", reply[key])
+            self.assertIn("ask the user to run it themselves", reply[key])
+
+    def test_safe_command_is_allowed(self):
+        self.assertEqual(shell("ls -la"), {"permission": "allow"})
+
+    def test_bash_naming_a_secret_file_is_denied(self):
+        self.assertEqual(shell("cat .env")["permission"], "deny")
+
+    def test_secret_file_read_is_denied(self):
+        self.assertEqual(read_file("/tmp/project/.env", "TOKEN=x")["permission"], "deny")
+
+    def test_ordinary_read_is_allowed(self):
+        self.assertEqual(read_file("/tmp/project/README.md", "# hi"), {"permission": "allow"})
+
+    def test_bad_json_and_unknown_events_are_allowed(self):
+        self.assertEqual(cursor("not json"), {"permission": "allow"})
+        self.assertEqual(cursor({"hook_event_name": "afterFileEdit", "file_path": ".env"}),
+                         {"permission": "allow"})
+
+    def test_works_through_a_symlinked_hooks_dir(self):
+        link_dir = Path(tempfile.mkdtemp())
+        try:
+            (link_dir / "ai-config").symlink_to(CURSOR_GUARD.parent)
+            reply = cursor({"hook_event_name": "beforeShellExecution", "command": "git push"},
+                           link_dir / "ai-config" / "guard.py")
+            self.assertEqual(reply["permission"], "deny")
+        finally:
+            shutil.rmtree(link_dir)

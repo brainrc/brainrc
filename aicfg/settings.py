@@ -13,7 +13,8 @@ from .plan import SettingsMerge
 
 
 def _owned(group: dict, markers: set[str] = frozenset()) -> bool:
-    for h in group.get("hooks", []):
+    # Claude groups hold their commands under "hooks"; Cursor's entries are flat {command}s.
+    for h in [group, *group.get("hooks", [])]:
         command = str(h.get("command", ""))
         if OWNED_HOOK.search(command) or any(m in command for m in markers):
             return True
@@ -23,10 +24,13 @@ def _owned(group: dict, markers: set[str] = frozenset()) -> bool:
 def merge_settings(current: dict, fragment: dict, markers: set[str] = frozenset()) -> dict:
     """Return current with ai-config's hook groups replaced by the fragment's.
 
-    Hook groups owned by other tools/plugins are kept in place and order. Only the
-    `hooks` key of the fragment is merged; other settings stay under user control.
+    Hook groups owned by other tools/plugins are kept in place and order. The fragment's other
+    keys (Cursor's `version`) are only set when missing; the rest stays under user control.
     """
     merged = copy.deepcopy(current)
+    for key, value in fragment.items():
+        if key != "hooks":
+            merged.setdefault(key, copy.deepcopy(value))
     hooks = merged.setdefault("hooks", {})
     wanted = fragment.get("hooks", {})
     for event in [*hooks, *(e for e in wanted if e not in hooks)]:  # existing first, then fragment order

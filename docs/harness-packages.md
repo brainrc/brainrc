@@ -13,7 +13,7 @@ consumer accounts on 2026-06-18; [Antigravity CLI](#antigravity-cli) replaced it
 | Codex | `.codex-plugin/` **or `.claude-plugin/`** (verified); `codex plugin marketplace add owner/repo` | no plugin route: `~/.codex/AGENTS.md` or config `developer_instructions` | yes: `PreToolUse`, `SessionStart` | TOML roles in config; not shippable in a plugin | separate plugin; no dependencies found |
 | Antigravity CLI | root `plugin.json` ([shipped](../README.md#claude-code-plugin-no-clone), unverified); `agy plugin install <git url>` | plugin `rules/*.md` with `trigger:` frontmatter | yes: `PreToolUse` ask or deny; no known "no opinion" reply | markdown, `agents/` | separate plugin; no dependencies found |
 | OpenCode | JS plugin (npm or `~/.config/opencode/plugins/`): hooks and tools only | `instructions[]` config or `AGENTS.md` | blocks by throwing; no ask | markdown files with a different frontmatter | `plugin[]`, `instructions[]`, `skills.paths` |
-| Cursor | `.cursor-plugin/plugin.json`: rules, skills, agents, commands, hooks | through the plugin | yes: allow, deny; ask reported broken | markdown | marketplace JSON (schema unconfirmed) |
+| Cursor | `.cursor-plugin/plugin.json` ([shipped](../README.md#claude-code-plugin-no-clone), unverified); symlink a checkout to `~/.cursor/plugins/local/` | plugin `rules/` with `alwaysApply: true` | yes: allow, deny; ask reported broken | markdown, `agents/` | separate plugin; a `.cursor-plugin/marketplace.json` lists several |
 
 ## Claude Code
 
@@ -87,17 +87,29 @@ was blocked here): `packages/web/src/content/docs/`.
 
 ## Cursor
 
-Evidence is weakest here: cursor.com was blocked, so claims come from search-result excerpts of
-[cursor.com/docs](https://cursor.com/docs/plugins) and the Cursor forum.
+cursor.com is blocked from where this was built, so the format comes from Cursor's official
+plugin repo, [cursor/plugins](https://github.com/cursor/plugins) (checked 2026-10-09 at `ccb5507`:
+`schemas/`, its plugins, and its `create-plugin` scaffold skill), plus hook payload types from the
+community [`cursor-hooks`](https://www.npmjs.com/package/cursor-hooks) package.
 
-- Plugins (Cursor 2.5+): `.cursor-plugin/plugin.json` can bundle rules, skills, agents, commands,
-  MCP, and hooks. Marketplace schema and local-plugin reliability are **unconfirmed**.
-- Hooks: `hooks.json` with camelCase events (`beforeShellExecution`, `preToolUse`); Claude's
-  PascalCase format is rejected. `permission: ask` was reported broken in 2.4.21.
+- Manifest: `.cursor-plugin/plugin.json`, only `name` required, unknown keys rejected. `skills`,
+  `agents`, `rules`, `commands` take relative paths; `hooks` a path or an inline object. Our
+  generated manifest validates against `schemas/plugin.schema.json`.
+- Local install: a plugin directory, or a symlink to one, at `~/.cursor/plugins/local/<name>/`.
+  A search result says Cursor falls back to `.claude-plugin/` when `.cursor-plugin/` is missing,
+  so we ship our own: Cursor rejects Claude's hook format.
+- Rules: `description`, `alwaysApply`, optional `globs` frontmatter; Cursor's examples use `.mdc`.
+  Whether a plugin loads `.md` rules is **unconfirmed**.
+- Agents: `name`, `description`, `model`, `readonly`. Whether Cursor accepts our `model: sonnet`
+  values is **unconfirmed**.
+- Hooks: `{"version": 1, "hooks": {"<event>": [{"command": ...}]}}`, user file
+  `~/.cursor/hooks.json`, `${CURSOR_PLUGIN_ROOT}` in plugin hooks. `beforeShellExecution` gets
+  `{command}`, `beforeReadFile` `{file_path, content}`; the reply is `{permission, user_message,
+  agent_message}`. `permission: ask` was reported broken in 2.4.21 and reads take only allow or deny.
 
 ## What this means
 
-1. **One generated `.claude-plugin/` may serve Claude Code, Codex, and (close) Cursor.**
+1. **One generated `.claude-plugin/` serves Claude Code and Codex; Cursor gets `.cursor-plugin/`.**
    Antigravity needs a root `plugin.json`; OpenCode needs a config dir plus a JS hook plugin.
 2. **Commands should become skills**, or be generated per harness: Codex skips `$ARGUMENTS`
    commands and Antigravity has no commands.
@@ -111,6 +123,6 @@ Evidence is weakest here: cursor.com was blocked, so claims come from search-res
 2. Codex through the existing `.claude-plugin/`: test the install, convert commands to skills.
 3. Antigravity plugin: root `plugin.json`, rule triggers (done, unverified); hooks after a live test.
 4. OpenCode: agent transform (#19, done); guard plugin (deny only) done in 0.3.25.
-5. Cursor: after confirming the format against its docs.
+5. Cursor: `.cursor-plugin/` plugin and guard hooks (deny only) done in 0.3.26; unverified in a real Cursor.
 6. Installable `aicfg` (`uv tool install` or `pipx install` from GitHub, core bundled): done in
    0.3.22. Packs by git URL, fetched by `aicfg` (`git` + `ref`, `aicfg update`): done in 0.3.23.

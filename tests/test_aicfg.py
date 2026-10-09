@@ -1243,6 +1243,97 @@ class HarnessPluginTest(TempRepoCase):
         self.assertIn("overrides/opencode/plugin.js", out)
 
 
+CURSOR_FRAGMENT = REPO / "overrides/cursor/settings.fragment.json"
+CURSOR_FOREIGN = {"command": "node /opt/other/cursor-hook.js"}
+
+
+class CursorHooksTest(TempRepoCase):
+    """[cursor] merges guard hooks into ~/.cursor/hooks.json, whose entries are flat {command}s."""
+
+    def setUp(self):
+        super().setUp()
+        self.home = Path(tempfile.mkdtemp())
+        self.old_home = os.environ["HOME"]
+        os.environ["HOME"] = str(self.home)
+        self.hooks_json = self.home / ".cursor/hooks.json"
+
+    def tearDown(self):
+        os.environ["HOME"] = self.old_home
+        shutil.rmtree(self.home)
+        super().tearDown()
+
+    def wanted(self):
+        m = aicfg.SettingsMerge("cursor", self.hooks_json, [(CURSOR_FRAGMENT, "~/.cursor/hooks/ai-config")])
+        return m.wanted(), m.markers()
+
+    def test_merge_keeps_foreign_entries_replaces_ours_and_is_idempotent(self):
+        wanted, markers = self.wanted()
+        old = {"command": "python3 ~/.cursor/hooks/ai-config/old.py"}
+        current = {"version": 1, "hooks": {"beforeShellExecution": [CURSOR_FOREIGN, old]}}
+        once = aicfg.merge_settings(current, wanted, markers)
+        shell = once["hooks"]["beforeShellExecution"]
+        self.assertEqual(shell[0], CURSOR_FOREIGN)
+        self.assertNotIn(old, shell)
+        self.assertIn('python3 "$HOME/.cursor/hooks/ai-config/guard.py"', [e["command"] for e in shell])
+        self.assertIn("beforeReadFile", once["hooks"])
+        self.assertEqual(aicfg.merge_settings(once, wanted, markers), once)
+
+    def test_a_new_file_gets_version_1_and_a_users_version_is_kept(self):
+        wanted, markers = self.wanted()
+        self.assertEqual(aicfg.merge_settings({}, wanted, markers)["version"], 1)
+        self.assertEqual(aicfg.merge_settings({"version": 2}, wanted, markers)["version"], 2)
+
+    def test_claude_fragment_adds_no_top_level_keys(self):
+        m = aicfg.SettingsMerge("claude", self.home / "s.json", [(FRAGMENT, "~/.claude/hooks/ai-config")])
+        self.assertEqual(set(aicfg.merge_settings({}, m.wanted(), m.markers())), {"hooks"})
+
+    def test_apply_writes_hooks_json_links_the_hooks_dir_and_doctor_is_clean(self):
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        data = json.loads(self.hooks_json.read_text())
+        self.assertEqual(data["version"], 1)
+        self.assertEqual(aicfg.link_target(self.home / ".cursor/hooks/ai-config"),
+                         self.repo / "overrides/cursor/hooks")
+        self.assertEqual(aicfg.doctor_findings(), [])
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(json.loads(self.hooks_json.read_text()), data)
+
+
+class CursorPluginTest(TempRepoCase):
+    """.cursor-plugin/plugin.json: Cursor's manifest, generated like the others."""
+
+    def manifest(self):
+        return json.loads(aicfg.plugin_manifests()[".cursor-plugin/plugin.json"])
+
+    def test_manifest_points_at_core_and_runs_the_cursor_guard(self):
+        set_core_version(self.repo, "1.2.3")
+        plugin = self.manifest()
+        self.assertEqual((plugin["name"], plugin["version"], plugin["license"]), ("ai-config", "1.2.3", "MIT"))
+        self.assertEqual((plugin["skills"], plugin["agents"], plugin["rules"]), ("./skills/", "./agents/", "./rules/"))
+        self.assertEqual(plugin["hooks"], "./.cursor-plugin/hooks.json")
+        hooks = json.loads(aicfg.plugin_manifests()[".cursor-plugin/hooks.json"])
+        self.assertEqual(hooks["version"], 1)
+        commands = [e["command"] for entries in hooks["hooks"].values() for e in entries]
+        self.assertEqual(set(hooks["hooks"]), {"beforeShellExecution", "beforeReadFile"})
+        self.assertTrue(all(c == 'python3 "${CURSOR_PLUGIN_ROOT}/overrides/cursor/hooks/guard.py"'
+                            for c in commands), commands)
+        self.assertNotIn("..", json.dumps(plugin))
+
+    def test_validate_reports_a_missing_cursor_manifest(self):
+        quiet(aicfg.cmd_plugin)
+        self.assertEqual(aicfg.check_plugin(), [])
+        (self.repo / ".cursor-plugin/plugin.json").unlink()
+        self.assertTrue(any(".cursor-plugin/plugin.json" in e and "missing" in e for e in aicfg.check_plugin()))
+
+    def test_rules_need_always_apply(self):
+        rule = self.repo / "rules/10-git.md"
+        rule.write_text(rule.read_text().replace("alwaysApply: true\n", ""))
+        code, out = quiet(aicfg.cmd_validate)
+        self.assertEqual(code, 1, out)
+        self.assertIn("rules/10-git.md", out)
+        self.assertIn("alwaysApply", out)
+
+
 class PackValidateTest(TempRepoCase):
     def setUp(self):
         super().setUp()

@@ -53,6 +53,12 @@ OpenCode runs the same guards through a plugin (`overrides/opencode/plugin.js`),
 difference: a plugin can't prompt, so anything the guards would ask about is blocked, and the
 model is told to ask you to run it yourself. MCP tools aren't guarded there yet.
 
-Codex, Antigravity CLI, and Cursor get the rules and workflow layers only. Use their own
+Cursor runs them through `overrides/cursor/hooks/guard.py` on `beforeShellExecution` (both
+guards) and `beforeReadFile` (secrets), from `~/.cursor/hooks.json` (`aicfg`) or the plugin's
+`.cursor-plugin/hooks.json`. Cursor's `ask` was reported broken and reads accept only allow or
+deny, so ask becomes deny there too. File writes and MCP calls aren't guarded in Cursor: it has no
+reliable pre-write hook. Not yet run in a real Cursor.
+
+Codex and Antigravity CLI get the rules and workflow layers only. Use their own
 permission/sandbox settings (e.g. Codex approval modes) alongside. Porting the hooks to tools
 that support pre-execution hooks is on the [roadmap](roadmap.md).

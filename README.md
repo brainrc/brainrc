@@ -3,7 +3,8 @@
 One Git repo for AI coding-assistant configuration (skills, agents, slash
 commands, rules, and hooks), written once and synced into Claude Code, Codex CLI, OpenCode,
 Antigravity CLI, and Cursor. Skills reach every harness. Rules, commands, and agents reach only
-some so far. Guard hooks run in Claude Code and OpenCode (deny only), and MCP servers aren't synced yet.
+some so far. Guard hooks run in Claude Code, OpenCode, and Cursor (deny only in the last two), and MCP
+servers aren't synced yet.
 Details per harness: [harness support](docs/formats.md#harness-support).
 
 It includes **spec-agent**, a spec-driven agent team that takes a ticket to a reviewed PR
@@ -127,6 +128,18 @@ It gets the skills, the agent files, and the rules: each `rules/*.md` carries
 agy's own permission settings. This install was built from Antigravity's public docs and issues
 and hasn't been run end to end
 ([harness packages](docs/harness-packages.md#antigravity-cli)).
+
+Cursor loads a checkout as a local plugin from `.cursor-plugin/`:
+
+```bash
+ln -s ~/src/ai-config ~/.cursor/plugins/local/ai-config
+```
+
+It gets the skills, the agents, the rules (each carries `alwaysApply: true`), and the guard
+hooks for shell commands and file reads, which deny instead of asking. Use the plugin or
+`aicfg`'s Cursor links, not both: `aicfg` links the same skills and hooks (Cursor has no user
+rules file, so rules come only with the plugin). Built from Cursor's official plugin repo and not
+yet run in a real Cursor ([harness packages](docs/harness-packages.md#cursor)).
 
 ### Platforms
 

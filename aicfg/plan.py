@@ -74,10 +74,16 @@ class SettingsMerge:
 
     def wanted(self) -> dict:
         hooks: dict[str, list] = {}
+        wanted: dict = {}
         for fragment, hooks_dir in self.fragments:
-            for event, groups in render_fragment(fragment, hooks_dir).get("hooks", {}).items():
+            rendered = render_fragment(fragment, hooks_dir)
+            for event, groups in rendered.get("hooks", {}).items():
                 hooks.setdefault(event, []).extend(groups)
-        return {"hooks": hooks}
+            for key, value in rendered.items():  # e.g. Cursor's "version"; the first source wins
+                if key != "hooks":
+                    wanted.setdefault(key, value)
+        wanted["hooks"] = hooks
+        return wanted
 
     def markers(self) -> set[str]:
         dirs = {hd for _, hd in self.fragments if hd} | self.extra_markers

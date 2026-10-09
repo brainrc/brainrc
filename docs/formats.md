@@ -65,11 +65,16 @@ machine. Format and extension points: [packs.md](packs.md).
 | | Claude Code | Codex | OpenCode | Antigravity CLI | Cursor |
 |---|---|---|---|---|---|
 | Skills | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Rules | ✅ CLAUDE.md | ✅ AGENTS.md | ✅ AGENTS.md | ✅ AGENTS.md | ❌ Settings UI only |
+| Rules | ✅ CLAUDE.md | ✅ AGENTS.md | ✅ AGENTS.md | ✅ AGENTS.md | ↪ plugin only (`alwaysApply`) |
 | Commands | ✅ | ✅ prompts | ✅ | ➖ none: skills are its slash commands | ⏳ |
-| Agents | ✅ subagents | ↪ role-switch fallback | ✅ subagents (rendered) | ↪ fallback | ↪ fallback |
-| Guard hooks | ✅ | ❌ rules only | ✅ plugin, deny only | ❌ | ❌ |
+| Agents | ✅ subagents | ↪ role-switch fallback | ✅ subagents (rendered) | ↪ fallback | ↪ fallback; the plugin ships them (unverified) |
+| Guard hooks | ✅ | ❌ rules only | ✅ plugin, deny only | ❌ | ✅ shell and reads, deny only |
 | MCP | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ |
+
+Cursor has no user rules file: `aicfg` links skills and merges guard hooks into
+`~/.cursor/hooks.json`, and rules arrive only through the plugin (`.cursor-plugin/`, see the
+[README](../README.md#claude-code-plugin-no-clone)), which loads each `rules/*.md` because it
+carries `alwaysApply: true`.
 
 OpenCode can't read Claude's agent frontmatter (a `tools: Read, Grep` string makes its whole config
 invalid), so `apply` links copies rendered to `$AICFG_HOME/opencode/agents/`

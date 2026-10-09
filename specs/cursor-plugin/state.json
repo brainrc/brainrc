@@ -1,0 +1,160 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:50",
+    "id": "50",
+    "title": "Native package installs (Cursor plugin)",
+    "url": "https://github.com/bxker/ai-config/issues/50",
+    "pr": "https://github.com/bxker/ai-config/pull/62"
+  },
+  "slug": "cursor-plugin",
+  "branch": "cursor-plugin",
+  "base": "main",
+  "size": "standard",
+  "mode": "inline",
+  "delivery": "normal",
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate",
+      "python3 scripts/aicfg.py validate --pack examples/pack-acme"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "tests first",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4"
+      ],
+      "review": "batch",
+      "commit": "c3a963c",
+      "red": "13 of 14 red"
+    },
+    {
+      "id": "T2",
+      "title": "cursor guard adapter",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC2"
+      ],
+      "review": "batch",
+      "commit": "30d23e5",
+      "red": "tests T1"
+    },
+    {
+      "id": "T3",
+      "title": "cursor hooks merge",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC3"
+      ],
+      "review": "batch",
+      "commit": "f18906a",
+      "red": "tests T1"
+    },
+    {
+      "id": "T4",
+      "title": "cursor manifest and rule frontmatter",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC1"
+      ],
+      "review": "batch",
+      "commit": "ce26968",
+      "red": "tests T1"
+    },
+    {
+      "id": "T5",
+      "title": "schema check and baseline",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC3",
+        "AC4"
+      ],
+      "review": "batch",
+      "commit": null,
+      "red": "n/a (evidence)"
+    },
+    {
+      "id": "T6",
+      "title": "docs and release",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC5"
+      ],
+      "review": "batch",
+      "commit": "780048f",
+      "red": "n/a (docs)"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-09T21:59:46Z",
+    "stage_started_at": {
+      "intake": "2026-10-09T21:59:46Z",
+      "spec": "2026-10-09T21:59:46Z",
+      "plan": "2026-10-09T22:03:28Z",
+      "implement": "2026-10-09T22:04:12Z",
+      "verify": "2026-10-09T22:10:46Z",
+      "document": "2026-10-09T22:10:46Z",
+      "deliver": "2026-10-09T22:10:46Z",
+      "done": "2026-10-09T22:12:30Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-09T22:02:27Z",
+        "approved_at": "2026-10-09T22:03:28Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-09T22:03:28Z",
+        "approved_at": "2026-10-09T22:04:12Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-09T22:10:46Z",
+        "approved_at": "2026-10-09T22:11:43Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 1,
+      "first_pass": 1
+    },
+    "retries": 0,
+    "interventions": 0
+  },
+  "retries": 0
+}

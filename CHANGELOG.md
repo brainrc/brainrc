@@ -11,6 +11,14 @@ a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everyt
 Every merged PR bumps `VERSION` and adds its entries under that version. There is no Unreleased
 section: `main` is what users pull, so `VERSION` must always describe it exactly.
 
+## 0.3.20 (2026-10-09)
+
+- `scripts/aicfg.py` is now the `aicfg/` package at the repo root: ten modules split along its old
+  sections (`config`, `sources`, `opencode`, `plan`, `settings`, `plugin`, `tokens`, `validate`,
+  `doctor`, `cli`), moved without rewriting. No behavior change: `python3 scripts/aicfg.py` still
+  runs every command (it's a shim), with output identical to 0.3.19; `python3 -m aicfg` works
+  too. Prepares per-harness adapters and an installable aicfg (#50).
+
 ## 0.3.19 (2026-10-09)
 
 - OpenCode gets real subagents (#19; #50, step 4). OpenCode rejects Claude's agent frontmatter

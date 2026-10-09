@@ -29,7 +29,7 @@ def merge_settings(current: dict, fragment: dict, markers: set[str] = frozenset(
     merged = copy.deepcopy(current)
     hooks = merged.setdefault("hooks", {})
     wanted = fragment.get("hooks", {})
-    for event in set(hooks) | set(wanted):
+    for event in [*hooks, *(e for e in wanted if e not in hooks)]:  # existing first, then fragment order
         kept = [g for g in hooks.get(event, []) if not _owned(g, markers)]
         groups = kept + copy.deepcopy(wanted.get(event, []))
         if groups:

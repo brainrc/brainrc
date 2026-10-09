@@ -6,7 +6,7 @@ import json
 from . import config
 from .config import ConfigError
 from .sources import core_version
-from .plan import render_fragment
+from .plan import FragmentError, render_fragment
 
 
 PLUGIN_DIR = ".claude-plugin"
@@ -43,8 +43,12 @@ def check_plugin() -> list[str]:
     """Only where the repo publishes a plugin (has .claude-plugin/), as core does."""
     if not (config.REPO / PLUGIN_DIR).is_dir():
         return []
+    try:
+        manifests = plugin_manifests()
+    except FragmentError:
+        return []  # validate reports the fragment itself
     errors = []
-    for rel, text in plugin_manifests().items():
+    for rel, text in manifests.items():
         path = config.REPO / rel
         if not path.is_file():
             errors.append(f"{rel}: missing; run `python3 scripts/aicfg.py plugin`")

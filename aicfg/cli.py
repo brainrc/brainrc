@@ -34,7 +34,7 @@ from .config import (
 )
 from .sources import check_packs, collisions, render_extensions, render_instructions, sources
 from .opencode import rendered_agents
-from .plan import plan
+from .plan import invalid_fragments, plan
 from .settings import settings_change, write_settings
 from .plugin import cmd_plugin
 from .tokens import cmd_tokens
@@ -66,6 +66,12 @@ def cmd_sync(apply: bool) -> int:
         for e in incompatible:
             print(f"ERROR {e}")
         print("\nNothing written. Update the pack or core (see CHANGELOG.md), or disable the pack.")
+        return 1
+    bad_fragments = invalid_fragments(srcs)
+    if bad_fragments:
+        for e in bad_fragments:
+            print(f"ERROR {e}")
+        print("\nNothing written. Fix the JSON, then re-run.")
         return 1
 
     if apply:

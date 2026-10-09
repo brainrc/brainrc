@@ -282,5 +282,6 @@ def frontmatter(path: Path) -> dict[str, str]:
 def _markdown_under(root: Path) -> list[Path]:
     found = []
     for dirpath, _dirs, files in os.walk(root):  # does not follow symlinked dirs (skills/*/roles)
-        found += [Path(dirpath) / f for f in files if f.endswith(".md")]
+        found += [Path(dirpath) / f for f in files  # a dangling link is validate's own finding
+                  if f.endswith(".md") and (Path(dirpath) / f).is_file()]
     return sorted(found)

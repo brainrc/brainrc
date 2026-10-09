@@ -212,7 +212,7 @@ def render_instructions(srcs: list[Source] | None = None) -> str:
         if rules and not src.is_core:
             parts.append(f"<!-- pack: {src.name} -->\nRules from pack {src.name}. {RULES_REFINE}")
         parts += [rule_text(p) for p in rules]
-        rules_dir = src.root / "rules"
+        rules_dir = (config.local_dir() if src.is_core else src.root) / "rules"
         if rules_dir.is_dir():
             local += [(p.name, i, p) for p in rules_dir.glob("*.local.md")]
     if local:

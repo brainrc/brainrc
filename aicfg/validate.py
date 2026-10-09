@@ -207,6 +207,8 @@ def check_roles_link() -> str | None:
     """spec-agent reads its role files through roles/ -> ../../agents. A checkout without symlink
     support writes a plain file instead, and every role link breaks."""
     path = config.REPO / ROLES_LINK
+    if config.installed():
+        return None  # a wheel stores the link's files as copies
     if not path.is_symlink() and not path.exists():
         return None  # not this repo's layout (e.g. a pack)
     if path.is_symlink() and os.readlink(path) == "../../agents":

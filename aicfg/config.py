@@ -14,7 +14,24 @@ except ImportError:  # Python < 3.11; say so instead of a traceback
 from pathlib import Path
 
 
-REPO = Path(__file__).resolve().parent.parent
+def find_core(pkg: Path) -> Path:
+    """Core's content: bundled as aicfg/_core when aicfg is installed (pipx, uv), else the checkout."""
+    bundled = pkg / "_core"
+    return bundled if bundled.is_dir() else pkg.parent
+
+
+REPO = find_core(Path(__file__).resolve().parent)
+
+
+def installed() -> bool:
+    """True when running from an installed package, whose files must never be written."""
+    return REPO.name == "_core"
+
+
+def local_dir() -> Path:
+    """Where machine-local files live (*.local.toml, rules/*.local.md): the checkout, or
+    $AICFG_HOME when installed."""
+    return aicfg_home() if installed() else REPO
 
 
 # Hook commands under a hooks dir named ai-config or ai-config-<pack> are owned by ai-config
@@ -87,7 +104,7 @@ def _read_toml(path: Path) -> dict:
 def _layered(name: str) -> dict[str, dict]:
     """<name>.toml with <name>.local.toml merged over it, one table at a time."""
     config = _read_toml(REPO / f"{name}.toml")
-    for key, overrides in _read_toml(REPO / f"{name}.local.toml").items():
+    for key, overrides in _read_toml(local_dir() / f"{name}.local.toml").items():
         config.setdefault(key, {}).update(overrides)
     return config
 

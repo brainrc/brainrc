@@ -1208,6 +1208,41 @@ class GitPackTest(TempRepoCase):
         self.assertTrue(any("not fetched" in what for _, what, _ in fails), fails)
 
 
+class HarnessPluginTest(TempRepoCase):
+    """A harness `plugin` key links overrides/<harness>/plugin.js (OpenCode's guard plugin)."""
+
+    def setUp(self):
+        super().setUp()
+        self.home = Path(tempfile.mkdtemp())
+        self.old_home = os.environ["HOME"]
+        os.environ["HOME"] = str(self.home)
+        self.link = self.home / ".config/opencode/plugins/ai-config-guard.js"
+
+    def tearDown(self):
+        os.environ["HOME"] = self.old_home
+        shutil.rmtree(self.home)
+        super().tearDown()
+
+    def test_apply_links_the_plugin_and_doctor_is_clean(self):
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        self.assertEqual(aicfg.link_target(self.link), self.repo / "overrides/opencode/plugin.js")
+        self.assertEqual(aicfg.doctor_findings(), [])
+
+    def test_disabling_the_harness_prunes_the_plugin(self):
+        quiet(aicfg.cmd_sync, True)
+        (self.repo / "harnesses.local.toml").write_text("[opencode]\nenabled = false\n")
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        self.assertFalse(self.link.is_symlink())
+
+    def test_validate_needs_the_plugin_file(self):
+        (self.repo / "overrides/opencode/plugin.js").unlink()
+        code, out = quiet(aicfg.cmd_validate)
+        self.assertEqual(code, 1, out)
+        self.assertIn("overrides/opencode/plugin.js", out)
+
+
 class PackValidateTest(TempRepoCase):
     def setUp(self):
         super().setUp()

@@ -78,9 +78,11 @@ was blocked here): `packages/web/src/content/docs/`.
 
 - A plugin is a JS module: hooks (`tool.execute.before`), tools, and system-prompt transforms. It
   can't ship agent, skill, or command files, so the package is a config dir plus a small plugin.
-- Agents need a transform ([#19](https://github.com/bxker/ai-config/issues/19)): Claude's
-  `tools: Read, Grep` fails OpenCode's schema (it wants a boolean map, or `permission`), `model`
-  must be `provider/model-id`, and `mode: subagent` is required.
+- Agents need a transform ([#19](https://github.com/bxker/ai-config/issues/19), shipped in 0.3.19):
+  Claude's `tools: Read, Grep` makes OpenCode's whole config invalid (verified, 1.18.35); it wants
+  `permission`, `model` as `provider/model-id`, and `mode: subagent`.
+- Guard plugin: `tool.execute.before` can block by throwing and `permission.ask` can answer a
+  prompt OpenCode already shows, but a plugin can't force a prompt, so "ask" becomes "deny".
 - Skills: native, `~/.config/opencode/skills/` (also reads `~/.claude/skills/`).
 
 ## Cursor
@@ -108,6 +110,6 @@ Evidence is weakest here: cursor.com was blocked, so claims come from search-res
 1. Render to `$AICFG_HOME`; spec-agent reads extensions from there (every harness needs it).
 2. Codex through the existing `.claude-plugin/`: test the install, convert commands to skills.
 3. Antigravity plugin: root `plugin.json`, rule triggers (done, unverified); hooks after a live test.
-4. OpenCode: config dir, agent transform (#19), JS guard plugin.
+4. OpenCode: agent transform (#19, done); JS guard plugin next.
 5. Cursor: after confirming the format against its docs.
 6. Packs as packages, starting with Claude `dependencies`.

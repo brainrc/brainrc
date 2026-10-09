@@ -4,7 +4,6 @@ Shipped work is in the [CHANGELOG](../CHANGELOG.md).
 
 Next:
 - [ ] **E2E runs**: sandbox ticket in Claude Code, then Codex/OpenCode fallback; record retros.
-- [ ] **OpenCode agent adapter**: render `agents/*.md` into OpenCode's agent format so it gets real subagents.
 - [ ] **Hooks for other tools** where pre-execution hooks exist (port `guard_outward`/`guard_secrets`).
 - [ ] **MCP registry sync**: render `mcp/servers.toml` into each tool's config (merge, like settings).
 - [ ] **Living specs** (OpenSpec-style): archive completed specs into per-domain `specs/` truth with deltas.

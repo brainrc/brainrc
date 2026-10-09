@@ -5,7 +5,9 @@
 # same instructions file, merges its hook fragments, and renders its spec-agent extensions.
 #
 # Keys per pack:
-#   path     pack repo root; ~ and $ENV_VARS expand, relative paths are relative to this repo
+#   path     pack repo root; ~ and $ENV_VARS expand, relative paths are relative to this file
+#   git      instead of path: a URL aicfg fetches into $AICFG_HOME/packs/<key> (apply, update)
+#   ref      with git: tag, branch, or commit (default: the remote's default branch)
 #   enabled  default true; set false to remove the pack's links and hooks on the next apply
 #
 # Packs usually differ per machine, so list them in packs.local.toml (gitignored):

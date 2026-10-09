@@ -11,6 +11,15 @@ a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everyt
 Every merged PR bumps `VERSION` and adds its entries under that version. There is no Unreleased
 section: `main` is what users pull, so `VERSION` must always describe it exactly.
 
+## 0.3.23 (2026-10-09)
+
+- Packs install without a clone (#50): a pack entry may name `git = "<url>"` (and an optional
+  `ref`: tag, branch, or commit) instead of `path`. `apply` fetches it once, shallow and
+  detached, into `$AICFG_HOME/packs/<key>`; a failed fetch writes nothing. `status` only shows
+  the FETCH, and `doctor` reports an unfetched pack. New `aicfg update` refetches every git pack
+  at its `ref`, then applies, and leaves a clone with local changes alone. `path` packs are
+  unchanged.
+
 ## 0.3.22 (2026-10-09)
 
 - `aicfg` installs without a clone: `uv tool install git+https://github.com/bxker/ai-config` (or

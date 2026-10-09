@@ -11,6 +11,16 @@ a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everyt
 Every merged PR bumps `VERSION` and adds its entries under that version. There is no Unreleased
 section: `main` is what users pull, so `VERSION` must always describe it exactly.
 
+## 0.3.22 (2026-10-09)
+
+- `aicfg` installs without a clone: `uv tool install git+https://github.com/bxker/ai-config` (or
+  `pipx install`) gives an `aicfg` command with core's content bundled as `aicfg/_core` (#50).
+  Installed, it keeps local files (`harnesses.local.toml`, `packs.local.toml`, `rules/*.local.md`)
+  in `$AICFG_HOME` and never writes inside the package (a relative pack `path` is relative to
+  `packs.local.toml`); `plugin` needs a checkout. A checkout
+  works as before. New `pyproject.toml` (hatchling, build-time only); CI installs the package and
+  validates its bundled core.
+
 ## 0.3.21 (2026-10-09)
 
 - `aicfg` reports these problems instead of crashing with a traceback (found by the Rust port's

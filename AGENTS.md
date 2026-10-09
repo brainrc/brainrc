@@ -20,7 +20,8 @@ These rules apply to human contributors too. Setup and PR workflow: [CONTRIBUTIN
   Review checklist / Never without approval. Register new ones in the Domains table of
   `skills/spec-agent/SKILL.md`.
 - Agents: frontmatter `model` is `haiku|sonnet|opus|inherit`; keep `tools` least-privilege.
-- Keep the `aicfg/` package (run as `scripts/aicfg.py`) and hooks stdlib-only (Python 3.11+). New guard patterns need tests
+- Keep the `aicfg/` package (run as `scripts/aicfg.py`) and hooks stdlib-only (Python 3.11+);
+  `hatchling` in `pyproject.toml` is build-time only. New guard patterns need tests
   for both the risky command and a safe near-miss in `tests/test_hooks.py`.
 - Keep files short: they are loaded into model context. Rules load every session.
 - After changes, run `python3 scripts/aicfg.py validate` and `python3 -m unittest discover -s tests`.

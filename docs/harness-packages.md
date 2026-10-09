@@ -112,4 +112,5 @@ Evidence is weakest here: cursor.com was blocked, so claims come from search-res
 3. Antigravity plugin: root `plugin.json`, rule triggers (done, unverified); hooks after a live test.
 4. OpenCode: agent transform (#19, done); JS guard plugin next.
 5. Cursor: after confirming the format against its docs.
-6. Packs as packages, starting with Claude `dependencies`.
+6. Installable `aicfg` (`uv tool install` or `pipx install` from GitHub, core bundled): done in
+   0.3.22. Next: packs as packages, starting with Claude `dependencies`.

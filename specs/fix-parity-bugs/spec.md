@@ -1,6 +1,6 @@
 # Spec: aicfg reports these problems instead of crashing
 
-Ticket: local (Rust parity findings) · Size: standard (4 bugs, 5 commands, tests) · Status: draft
+Ticket: local (Rust parity findings) · Size: standard (4 bugs, 5 commands, tests) · Status: approved
 
 ## Acceptance criteria
 - **AC1** A dangling `*.md` symlink inside a skill: `validate` exits 1 with its existing

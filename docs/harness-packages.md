@@ -110,7 +110,7 @@ Evidence is weakest here: cursor.com was blocked, so claims come from search-res
 1. Render to `$AICFG_HOME`; spec-agent reads extensions from there (every harness needs it).
 2. Codex through the existing `.claude-plugin/`: test the install, convert commands to skills.
 3. Antigravity plugin: root `plugin.json`, rule triggers (done, unverified); hooks after a live test.
-4. OpenCode: agent transform (#19, done); JS guard plugin next.
+4. OpenCode: agent transform (#19, done); guard plugin (deny only) done in 0.3.25.
 5. Cursor: after confirming the format against its docs.
 6. Installable `aicfg` (`uv tool install` or `pipx install` from GitHub, core bundled): done in
    0.3.22. Packs by git URL, fetched by `aicfg` (`git` + `ref`, `aicfg update`): done in 0.3.23.

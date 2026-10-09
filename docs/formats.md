@@ -68,7 +68,7 @@ machine. Format and extension points: [packs.md](packs.md).
 | Rules | ✅ CLAUDE.md | ✅ AGENTS.md | ✅ AGENTS.md | ✅ AGENTS.md | ❌ Settings UI only |
 | Commands | ✅ | ✅ prompts | ✅ | ➖ none: skills are its slash commands | ⏳ |
 | Agents | ✅ subagents | ↪ role-switch fallback | ✅ subagents (rendered) | ↪ fallback | ↪ fallback |
-| Guard hooks | ✅ | ❌ rules only | ❌ | ❌ | ❌ |
+| Guard hooks | ✅ | ❌ rules only | ✅ plugin, deny only | ❌ | ❌ |
 | MCP | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ |
 
 OpenCode can't read Claude's agent frontmatter (a `tools: Read, Grep` string makes its whole config

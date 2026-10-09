@@ -11,6 +11,15 @@ a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everyt
 Every merged PR bumps `VERSION` and adds its entries under that version. There is no Unreleased
 section: `main` is what users pull, so `VERSION` must always describe it exactly.
 
+## 0.3.25 (2026-10-09)
+
+- OpenCode runs ai-config's guards (#50): `apply` links `overrides/opencode/plugin.js` to
+  `~/.config/opencode/plugins/ai-config-guard.js` (new harness key `plugin`). It sends `bash`,
+  `read`, `write`, `edit`, and `grep` calls through the same Python guards as Claude Code's hooks.
+  OpenCode plugins can't prompt, so a call the guards would ask about is blocked, with the reason
+  and "ask the user to run it themselves". MCP tools aren't guarded there yet. Checked inside
+  OpenCode 1.18.35's runtime: the linked plugin loads and blocks `git push`.
+
 ## 0.3.24 (2026-10-09)
 
 - An installed `aicfg` names itself in its hints: `doctor`'s fixes and the usage text say

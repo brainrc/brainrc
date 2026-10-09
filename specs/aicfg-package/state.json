@@ -14,9 +14,9 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "spec",
+  "stage": "plan",
   "gates": {
-    "spec": "pending",
+    "spec": "approved",
     "plan": "pending",
     "deliver": "pending"
   },
@@ -33,17 +33,77 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "split into package",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3"
+      ],
+      "review": "batch",
+      "red": null,
+      "commit": null
+    },
+    {
+      "id": "T2",
+      "title": "tests and evals",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC4"
+      ],
+      "review": "batch",
+      "red": null,
+      "commit": null
+    },
+    {
+      "id": "T3",
+      "title": "before/after diff",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC5"
+      ],
+      "review": "batch",
+      "red": null,
+      "commit": null
+    },
+    {
+      "id": "T4",
+      "title": "docs and release",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC6"
+      ],
+      "review": "batch",
+      "red": null,
+      "commit": null
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-09T03:19:59Z",
     "stage_started_at": {
       "intake": "2026-10-09T03:19:59Z",
-      "spec": "2026-10-09T03:19:59Z"
+      "spec": "2026-10-09T03:19:59Z",
+      "plan": "2026-10-09T03:20:32Z"
     },
     "gates": {
       "spec": {
-        "presented_at": "2026-10-09T03:19:59Z"
+        "presented_at": "2026-10-09T03:19:59Z",
+        "approved_at": "2026-10-09T03:20:32Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-09T03:24:00Z"
       }
     },
     "gate_rework": {

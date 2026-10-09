@@ -1,6 +1,6 @@
 # Spec: aicfg becomes a package, with no behavior change
 
-Ticket: local (prep for gh:50 steps 5–6) · Size: standard (mechanical move, 1,282 lines) · Status: draft
+Ticket: local (prep for gh:50 steps 5–6) · Size: standard (mechanical move, 1,282 lines) · Status: approved
 
 ## Why
 `scripts/aicfg.py` is one 1,282-line file. Each new harness (Cursor, guard adapters) and step 6

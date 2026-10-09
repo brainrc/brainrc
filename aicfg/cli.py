@@ -12,9 +12,11 @@ Usage:
   aicfg.py plugin                write the plugin manifests (.claude-plugin/, plugin.json);
                                  validate fails when they're stale
   aicfg.py tokens                estimate the context cost of every skill, agent, and command
+  aicfg.py update                refetch packs named by `git` URL at their `ref`, then apply
 
 Sources: this repo ("core", versioned by VERSION) plus any packs listed in packs.toml /
-packs.local.toml. A pack is a repo with the same layout and a pack.toml (see docs/packs.md);
+packs.local.toml, by `path` or by `git` URL (fetched into $AICFG_HOME/packs). A pack is a
+repo with the same layout and a pack.toml (see docs/packs.md);
 its `requires_core` must match VERSION, or validate fails and apply writes nothing.
 
 Safety: never overwrites a real file or a symlink pointing outside this repo or a pack.
@@ -37,6 +39,7 @@ from .config import (
 )
 from .sources import check_packs, collisions, render_extensions, render_instructions, sources
 from .opencode import rendered_agents
+from .packs import describe, fetch_pack, git_packs
 from .plan import invalid_fragments, plan
 from .settings import settings_change, write_settings
 from .plugin import cmd_plugin
@@ -46,6 +49,20 @@ from .doctor import cmd_doctor
 
 
 def cmd_sync(apply: bool) -> int:
+    try:
+        pending = [(key, cfg, root) for key, cfg, root in git_packs() if not root.exists()]
+    except ConfigError as e:
+        print(f"ERROR {e}")
+        return 1
+    for key, cfg, root in pending:
+        print(describe(key, cfg))
+        if apply:
+            try:
+                fetch_pack(key, cfg, root)
+            except ConfigError as e:
+                print(f"ERROR {e}")
+                print("\nNothing written. Check the pack's `git` and `ref`, then re-run.")
+                return 1
     try:
         srcs = sources()
         roots = [s.root for s in sources(include_disabled=True)]
@@ -98,7 +115,7 @@ def cmd_sync(apply: bool) -> int:
                 legacy_instructions().parent.rmdir()
 
     links, stale, merges = plan(srcs)
-    conflicts = changes = 0
+    conflicts, changes = 0, len(pending)
     for link in links:
         state = link.state(roots)
         if state == "ok":
@@ -141,6 +158,19 @@ def cmd_sync(apply: bool) -> int:
     return 1 if conflicts else 0
 
 
+def cmd_update() -> int:
+    """Refetch every git pack at its `ref`, then apply."""
+    try:
+        for key, cfg, root in git_packs():
+            print(describe(key, cfg))
+            fetch_pack(key, cfg, root)
+    except ConfigError as e:
+        print(f"ERROR {e}")
+        print("\nNothing applied. Fix it, then re-run update.")
+        return 1
+    return cmd_sync(apply=True)
+
+
 def entry() -> None:
     """The `aicfg` console script of an installed package."""
     sys.exit(main(sys.argv))
@@ -159,6 +189,8 @@ def main(argv: list[str]) -> int:
         return cmd_plugin()
     if cmd == "doctor" and len(argv) == 2:
         return cmd_doctor()
+    if cmd == "update" and len(argv) == 2:
+        return cmd_update()
     if cmd == "tokens" and len(argv) == 2:
         return cmd_tokens()
     print(__doc__)

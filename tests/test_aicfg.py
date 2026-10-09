@@ -1097,6 +1097,108 @@ class InstalledModeTest(TempRepoCase):
         self.assertEqual(installed, checkout)
 
 
+def git(*args, cwd=None):
+    subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@example.com", *args],
+                   cwd=cwd, check=True, capture_output=True)
+
+
+class GitPackTest(TempRepoCase):
+    """A pack named by git URL: aicfg fetches it into $AICFG_HOME/packs/<key> (#50)."""
+
+    def setUp(self):
+        super().setUp()
+        self.home = Path(tempfile.mkdtemp())
+        self.old_home = os.environ["HOME"]
+        os.environ["HOME"] = str(self.home)
+        self.tmp = Path(tempfile.mkdtemp())
+        work = self.tmp / "work"
+        shutil.copytree(REPO / "examples/pack-acme", work)
+        git("init", "-q", cwd=work)
+        git("add", ".", cwd=work)
+        git("commit", "-qm", "v1", cwd=work)
+        git("tag", "v1", cwd=work)
+        new = work / "skills/acme-new"
+        shutil.copytree(work / "skills/acme-context", new)
+        skill = new / "SKILL.md"
+        skill.write_text(skill.read_text().replace("name: acme-context", "name: acme-new"))
+        git("add", ".", cwd=work)
+        git("commit", "-qm", "v2", cwd=work)
+        git("tag", "v2", cwd=work)
+        git("clone", "-q", "--bare", str(work), str(self.tmp / "acme.git"))
+        self.url = (self.tmp / "acme.git").as_uri()
+        self.clone = self.aicfg_home / "packs/acme"
+
+    def tearDown(self):
+        os.environ["HOME"] = self.old_home
+        shutil.rmtree(self.home)
+        shutil.rmtree(self.tmp)
+        super().tearDown()
+
+    def use(self, **keys):
+        lines = "".join(f'{k} = "{v}"\n' for k, v in keys.items())
+        (self.repo / "packs.local.toml").write_text(f"[acme]\n{lines}")
+
+    def test_apply_fetches_and_links(self):
+        self.use(git=self.url, ref="v1")
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        self.assertIn(f"FETCH     acme      {self.url} (v1)", out)
+        self.assertTrue((self.clone / "pack.toml").is_file())
+        self.assertTrue((self.home / ".claude/skills/acme-context").is_symlink())
+        self.assertFalse((self.home / ".claude/skills/acme-new").exists())
+        self.assertEqual(aicfg.doctor_findings(), [])
+
+    def test_status_does_not_fetch(self):
+        self.use(git=self.url)
+        code, out = quiet(aicfg.cmd_sync, False)
+        self.assertEqual(code, 0, out)
+        self.assertIn("FETCH", out)
+        self.assertFalse(self.clone.exists())
+
+    def test_update_moves_to_a_new_ref(self):
+        self.use(git=self.url, ref="v1")
+        quiet(aicfg.cmd_sync, True)
+        self.use(git=self.url, ref="v2")
+        code, out = quiet(aicfg.cmd_update)
+        self.assertEqual(code, 0, out)
+        self.assertTrue((self.home / ".claude/skills/acme-new").is_symlink())
+
+    def test_failed_fetch_writes_nothing(self):
+        self.use(git=(self.tmp / "missing.git").as_uri())
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 1, out)
+        self.assertIn("ERROR", out)
+        self.assertIn("Nothing written", out)
+        self.assertFalse(self.clone.exists())
+        self.assertEqual(list(self.home.iterdir()), [])
+
+    def test_update_leaves_a_changed_clone_alone(self):
+        self.use(git=self.url, ref="v1")
+        quiet(aicfg.cmd_sync, True)
+        (self.clone / "pack.toml").write_text((self.clone / "pack.toml").read_text() + "# mine\n")
+        code, out = quiet(aicfg.cmd_update)
+        self.assertEqual(code, 1, out)
+        self.assertIn("local changes", out)
+        self.assertTrue((self.clone / "pack.toml").read_text().endswith("# mine\n"))
+
+    def test_path_and_git_together_is_an_error(self):
+        self.use(git=self.url, path="somewhere")
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 1, out)
+        self.assertIn("`path` or `git`", out)
+
+    def test_url_that_looks_like_an_option_is_refused(self):
+        self.use(git="--upload-pack=touch x")
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 1, out)
+        self.assertIn("ERROR", out)
+
+    def test_doctor_flags_an_unfetched_pack(self):
+        self.use(git=self.url)
+        fails = [f for f in aicfg.doctor_findings() if f[0] == "FAIL"]
+        self.assertTrue(any("not fetched" in what for _, what, _ in fails), fails)
+
+
 class PackValidateTest(TempRepoCase):
     def setUp(self):
         super().setUp()

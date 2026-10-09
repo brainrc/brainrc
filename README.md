@@ -72,8 +72,9 @@ aicfg apply
 
 Links then point into the installed package, so `uv tool upgrade ai-config` (or `pipx upgrade
 ai-config`) updates every harness. Local files go in `~/.config/ai-config/` (`$AICFG_HOME`):
-`harnesses.local.toml`, `packs.local.toml`, and `rules/*.local.md`. Packs are still local
-directories. The fix hints `doctor` prints show the checkout command; use `aicfg <command>`.
+`harnesses.local.toml`, `packs.local.toml`, and `rules/*.local.md`. Packs are local
+directories or git URLs that `aicfg` fetches ([packs](docs/packs.md#enable-a-pack)). The fix
+hints `doctor` prints show the checkout command; use `aicfg <command>`.
 `plugin` needs a checkout. Contributors use the clone above.
 
 `aicfg` never overwrites a file it doesn't manage. Pre-existing files show up as

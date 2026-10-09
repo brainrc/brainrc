@@ -22,6 +22,19 @@ python3 scripts/aicfg.py status   # dry run
 python3 scripts/aicfg.py apply
 ```
 
+Or name it by git URL and let `aicfg` fetch it, with no clone of your own:
+
+```toml
+[acme]
+git = "git@github.com:acme/acme-ai-pack.git"   # any URL git accepts; private repos use your git credentials
+ref = "v1.2.0"                                 # tag, branch, or commit; default: the remote's default branch
+```
+
+`apply` fetches it once (shallow, detached) into `~/.config/ai-config/packs/acme`; after that it
+works offline. `aicfg update` (or `python3 scripts/aicfg.py update`) refetches every git pack at
+its `ref`, then applies; it refuses a clone with local changes. Pin a tag, and bump `ref` to
+upgrade. `doctor` reports a git pack that hasn't been fetched yet.
+
 ## Layout
 
 Same as this repo. Every folder is optional.

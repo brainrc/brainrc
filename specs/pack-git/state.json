@@ -1,0 +1,137 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:50",
+    "id": "50",
+    "title": "Native package installs (packs without a clone)",
+    "url": "https://github.com/bxker/ai-config/issues/50",
+    "pr": "https://github.com/bxker/ai-config/pull/59"
+  },
+  "slug": "pack-git",
+  "branch": "pack-git",
+  "base": "main",
+  "size": "standard",
+  "mode": "inline",
+  "delivery": "normal",
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate",
+      "python3 scripts/aicfg.py validate --pack examples/pack-acme"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "tests first",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5"
+      ],
+      "review": "batch",
+      "red": "7 of 8 red",
+      "commit": "a07297b"
+    },
+    {
+      "id": "T2",
+      "title": "implementation",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4"
+      ],
+      "review": "batch",
+      "red": "tests T1",
+      "commit": "5787163"
+    },
+    {
+      "id": "T3",
+      "title": "real run",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC5"
+      ],
+      "review": "batch",
+      "red": "n/a (real run)",
+      "commit": null
+    },
+    {
+      "id": "T4",
+      "title": "docs and release",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC6"
+      ],
+      "review": "batch",
+      "red": "n/a (docs)",
+      "commit": "c3f3b4e"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-09T14:44:46Z",
+    "stage_started_at": {
+      "intake": "2026-10-09T14:44:46Z",
+      "spec": "2026-10-09T14:44:46Z",
+      "plan": "2026-10-09T14:45:38Z",
+      "implement": "2026-10-09T14:46:19Z",
+      "verify": "2026-10-09T14:48:30Z",
+      "document": "2026-10-09T14:48:30Z",
+      "deliver": "2026-10-09T14:48:30Z",
+      "done": "2026-10-09T14:49:00Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-09T14:44:46Z",
+        "approved_at": "2026-10-09T14:45:38Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-09T14:46:00Z",
+        "approved_at": "2026-10-09T14:46:19Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-09T14:48:30Z",
+        "approved_at": "2026-10-09T14:49:00Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  },
+  "retries": 0
+}

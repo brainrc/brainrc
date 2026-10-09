@@ -130,8 +130,10 @@ def check_packs(srcs: list[Source]) -> tuple[list[str], list[str]]:
 
 
 def _pack_root(cfg: dict, key: str) -> Path:
-    if "path" not in cfg:
-        raise ConfigError(f"packs.toml [{key}]: missing `path`")
+    if ("path" in cfg) == ("git" in cfg):
+        raise ConfigError(f"packs.toml [{key}]: set `path` or `git` (one of them)")
+    if "git" in cfg:
+        return config.aicfg_home() / "packs" / key  # fetched by aicfg (aicfg/packs.py)
     root = expand(str(cfg["path"]))
     return root if root.is_absolute() else config.local_dir() / root  # beside packs.local.toml
 
@@ -145,6 +147,8 @@ def sources(include_disabled: bool = False) -> list[Source]:
         if not enabled and not include_disabled:
             continue
         root = _pack_root(cfg, key)
+        if "git" in cfg and not root.exists():
+            continue  # not fetched yet: apply fetches it, status and doctor report it
         found.append(load_pack(root, key) if enabled else Source(key, root))
     return found
 

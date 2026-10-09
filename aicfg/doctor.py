@@ -54,7 +54,11 @@ def _doctor_sources() -> tuple[list[Source], list[Source], list[Finding]]:
         try:
             root = _pack_root(cfg, key)
         except ConfigError as e:
-            found.append(("FAIL", str(e), f"add `path` to [{key}], {disable}"))
+            found.append(("FAIL", str(e), f"set `path` or `git` in [{key}], {disable}"))
+            continue
+        if "git" in cfg and not root.exists():
+            if cfg.get("enabled", True):
+                found.append(("FAIL", f"pack {key}: not fetched yet from {cfg['git']}", APPLY))
             continue
         if not cfg.get("enabled", True):
             every_src.append(Source(key, root))

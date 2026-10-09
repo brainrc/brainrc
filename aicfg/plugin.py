@@ -12,7 +12,7 @@ from .plan import FragmentError, render_fragment
 PLUGIN_DIR = ".claude-plugin"
 
 
-CURSOR_PLUGIN_DIR = ".cursor-plugin"  # Cursor reads it before .claude-plugin/, whose hooks it rejects
+CURSOR_PLUGIN_DIR = ".cursor-plugin"  # Cursor reportedly falls back to .claude-plugin/, whose hooks it rejects
 
 
 PLUGIN_NAME = "ai-config"

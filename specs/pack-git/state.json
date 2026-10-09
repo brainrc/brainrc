@@ -6,7 +6,7 @@
     "id": "50",
     "title": "Native package installs (packs without a clone)",
     "url": "https://github.com/bxker/ai-config/issues/50",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/59"
   },
   "slug": "pack-git",
   "branch": "pack-git",
@@ -14,11 +14,11 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [],
   "targets": {},
@@ -104,7 +104,8 @@
       "implement": "2026-10-09T14:46:19Z",
       "verify": "2026-10-09T14:48:30Z",
       "document": "2026-10-09T14:48:30Z",
-      "deliver": "2026-10-09T14:48:30Z"
+      "deliver": "2026-10-09T14:48:30Z",
+      "done": "2026-10-09T14:49:00Z"
     },
     "gates": {
       "spec": {
@@ -116,7 +117,8 @@
         "approved_at": "2026-10-09T14:46:19Z"
       },
       "deliver": {
-        "presented_at": "2026-10-09T14:48:30Z"
+        "presented_at": "2026-10-09T14:48:30Z",
+        "approved_at": "2026-10-09T14:49:00Z"
       }
     },
     "gate_rework": {

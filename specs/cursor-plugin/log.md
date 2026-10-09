@@ -1,2 +1,3 @@
 - intake: cursor.com is denied by the network policy and WebFetch can't resolve it. Format taken from github.com/cursor/plugins (ccb5507): plugin schema, example plugins, scaffold skill; hook payloads from the cursor-hooks npm package (community) and search excerpts.
 - spec approved (ask handling A: deny both).
+- plan approved. T1 14 tests (13 red). T2 guard.py 7/7. T3 merge, baseline: Cursor lines only. T4 manifest; switched inline hooks to a hooks.json file, as Cursor's own plugins do. T5 ajv against Cursor's schema VALID (bad manifest fails); installed wheel guard denies. T6 docs 0.3.26. Self-review: softened the fallback comment (one source) in f97326f.

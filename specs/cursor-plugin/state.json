@@ -14,11 +14,11 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "plan",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
-    "plan": "presented",
-    "deliver": "pending"
+    "plan": "approved",
+    "deliver": "presented"
   },
   "domains": [],
   "targets": {},
@@ -38,71 +38,83 @@
       "id": "T1",
       "title": "tests first",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC1",
         "AC2",
         "AC3",
         "AC4"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": "c3a963c",
+      "red": "13 of 14 red"
     },
     {
       "id": "T2",
       "title": "cursor guard adapter",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC2"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": "30d23e5",
+      "red": "tests T1"
     },
     {
       "id": "T3",
       "title": "cursor hooks merge",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC3"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": "f18906a",
+      "red": "tests T1"
     },
     {
       "id": "T4",
       "title": "cursor manifest and rule frontmatter",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC1"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": "ce26968",
+      "red": "tests T1"
     },
     {
       "id": "T5",
       "title": "schema check and baseline",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC3",
         "AC4"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": null,
+      "red": "n/a (evidence)"
     },
     {
       "id": "T6",
       "title": "docs and release",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC5"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": "780048f",
+      "red": "n/a (docs)"
     }
   ],
   "blocked": null,
@@ -111,7 +123,11 @@
     "stage_started_at": {
       "intake": "2026-10-09T21:59:46Z",
       "spec": "2026-10-09T21:59:46Z",
-      "plan": "2026-10-09T22:03:28Z"
+      "plan": "2026-10-09T22:03:28Z",
+      "implement": "2026-10-09T22:04:12Z",
+      "verify": "2026-10-09T22:10:46Z",
+      "document": "2026-10-09T22:10:46Z",
+      "deliver": "2026-10-09T22:10:46Z"
     },
     "gates": {
       "spec": {
@@ -119,7 +135,11 @@
         "approved_at": "2026-10-09T22:03:28Z"
       },
       "plan": {
-        "presented_at": "2026-10-09T22:03:28Z"
+        "presented_at": "2026-10-09T22:03:28Z",
+        "approved_at": "2026-10-09T22:04:12Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-09T22:10:46Z"
       }
     },
     "gate_rework": {
@@ -128,8 +148,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
-      "first_pass": 0
+      "total": 1,
+      "first_pass": 1
     },
     "retries": 0,
     "interventions": 0

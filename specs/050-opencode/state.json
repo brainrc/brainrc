@@ -6,7 +6,7 @@
     "id": "50",
     "title": "Native package installs (step 4: OpenCode agents, #19)",
     "url": "https://github.com/bxker/ai-config/issues/50",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/55"
   },
   "slug": "050-opencode",
   "branch": "050-opencode",
@@ -14,11 +14,11 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [],
   "targets": {},
@@ -115,7 +115,8 @@
       "implement": "2026-10-09T01:25:36Z",
       "verify": "2026-10-09T01:28:17Z",
       "document": "2026-10-09T01:28:17Z",
-      "deliver": "2026-10-09T01:28:17Z"
+      "deliver": "2026-10-09T01:28:17Z",
+      "done": "2026-10-09T01:28:41Z"
     },
     "gates": {
       "spec": {
@@ -127,7 +128,8 @@
         "approved_at": "2026-10-09T01:25:36Z"
       },
       "deliver": {
-        "presented_at": "2026-10-09T01:28:17Z"
+        "presented_at": "2026-10-09T01:28:17Z",
+        "approved_at": "2026-10-09T01:28:41Z"
       }
     },
     "gate_rework": {

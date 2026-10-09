@@ -1,6 +1,5 @@
 """Tests for scripts/aicfg.py: settings merge, sync against a fake HOME, and validation."""
 import contextlib
-import importlib.util
 import io
 import json
 import os
@@ -12,10 +11,8 @@ import unittest
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-spec = importlib.util.spec_from_file_location("aicfg", REPO / "scripts" / "aicfg.py")
-aicfg = importlib.util.module_from_spec(spec)
-sys.modules["aicfg"] = aicfg  # dataclasses look the module up while decorating
-spec.loader.exec_module(aicfg)
+sys.path.insert(0, str(REPO))
+import aicfg  # noqa: E402  (the package at the repo root)
 
 FOREIGN = {"hooks": [{"type": "command", "command": "node /opt/other/hook.js"}]}
 OURS_OLD = {"matcher": "Bash", "hooks": [{"type": "command", "command": "python3 ~/.claude/hooks/ai-config/old.py"}]}
@@ -53,14 +50,14 @@ class TempRepoCase(unittest.TestCase):
     def setUp(self):
         self.repo = Path(tempfile.mkdtemp())
         copy_repo(self.repo)
-        self.old_repo = aicfg.REPO
-        aicfg.REPO = self.repo
+        self.old_repo = aicfg.config.REPO
+        aicfg.config.REPO = self.repo
         self.aicfg_home = Path(tempfile.mkdtemp()) / "ai-config"
         self.old_aicfg_home = os.environ.get("AICFG_HOME")
         os.environ["AICFG_HOME"] = str(self.aicfg_home)
 
     def tearDown(self):
-        aicfg.REPO = self.old_repo
+        aicfg.config.REPO = self.old_repo
         if self.old_aicfg_home is None:
             os.environ.pop("AICFG_HOME", None)
         else:
@@ -556,10 +553,10 @@ class BudgetTest(TempRepoCase):
         self.pack = make_pack(Path(tempfile.mkdtemp()).resolve() / "acme-pack")
         set_core_version(self.repo, "1.2.3")
         self.core = aicfg.Source("core", self.repo)
-        self.old_budget = aicfg.CORE_ALWAYS_BUDGET
+        self.old_budget = aicfg.tokens.CORE_ALWAYS_BUDGET
 
     def tearDown(self):
-        aicfg.CORE_ALWAYS_BUDGET = self.old_budget
+        aicfg.tokens.CORE_ALWAYS_BUDGET = self.old_budget
         shutil.rmtree(self.pack.parent)
         super().tearDown()
 
@@ -569,7 +566,7 @@ class BudgetTest(TempRepoCase):
     def test_core_is_within_budget_with_no_warnings(self):
         total, items = aicfg.always_tokens(self.core)
         self.assertGreater(total, 1000)
-        self.assertLessEqual(total, aicfg.CORE_ALWAYS_BUDGET)
+        self.assertLessEqual(total, aicfg.tokens.CORE_ALWAYS_BUDGET)
         self.assertEqual(self.check(), ([], []))
 
     def test_always_tokens_counts_rules_and_descriptions(self):
@@ -582,7 +579,7 @@ class BudgetTest(TempRepoCase):
         self.assertEqual(total, sum(n for n, _ in items))
 
     def test_core_over_budget_fails_naming_the_biggest_items(self):
-        aicfg.CORE_ALWAYS_BUDGET = 100
+        aicfg.tokens.CORE_ALWAYS_BUDGET = 100
         errors, _ = self.check()
         self.assertEqual(len(errors), 1, errors)
         self.assertIn("core", errors[0])
@@ -1131,12 +1128,12 @@ class ValidateTest(unittest.TestCase):
             copy_repo(tmp)
             toml = tmp / "harnesses.toml"
             toml.write_text(toml.read_text().replace('hooks_dir = "~/.claude/hooks/ai-config"\n', ""))
-            old = aicfg.REPO
-            aicfg.REPO = tmp
+            old = aicfg.config.REPO
+            aicfg.config.REPO = tmp
             try:
                 code, out = quiet(aicfg.cmd_validate)
             finally:
-                aicfg.REPO = old
+                aicfg.config.REPO = old
             self.assertEqual(code, 1)
             self.assertIn("has no hooks_dir", out)
         finally:
@@ -1150,12 +1147,12 @@ class ValidateTest(unittest.TestCase):
             skill.write_text(skill.read_text() + "\n[agent: ghost] [x](missing.md) the `nope` skill\n")
             (tmp / "agents/verifier.md").write_text(
                 (tmp / "agents/verifier.md").read_text().replace("model: haiku", "model: gpt-9"))
-            old = aicfg.REPO
-            aicfg.REPO = tmp
+            old = aicfg.config.REPO
+            aicfg.config.REPO = tmp
             try:
                 code, out = quiet(aicfg.cmd_validate)
             finally:
-                aicfg.REPO = old
+                aicfg.config.REPO = old
             self.assertEqual(code, 1)
             for expected in ("unknown agent `ghost`", "broken link `missing.md`",
                              "unknown skill `nope`", "unknown model `gpt-9`"):

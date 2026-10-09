@@ -14,9 +14,9 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "spec",
+  "stage": "plan",
   "gates": {
-    "spec": "pending",
+    "spec": "approved",
     "plan": "pending",
     "deliver": "pending"
   },
@@ -33,17 +33,82 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "tests first",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5"
+      ],
+      "review": "batch",
+      "red": null,
+      "commit": null
+    },
+    {
+      "id": "T2",
+      "title": "implementation",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4"
+      ],
+      "review": "batch",
+      "red": null,
+      "commit": null
+    },
+    {
+      "id": "T3",
+      "title": "real run",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC5"
+      ],
+      "review": "batch",
+      "red": null,
+      "commit": null
+    },
+    {
+      "id": "T4",
+      "title": "docs and release",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC6"
+      ],
+      "review": "batch",
+      "red": null,
+      "commit": null
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-09T14:44:46Z",
     "stage_started_at": {
       "intake": "2026-10-09T14:44:46Z",
-      "spec": "2026-10-09T14:44:46Z"
+      "spec": "2026-10-09T14:44:46Z",
+      "plan": "2026-10-09T14:45:20Z"
     },
     "gates": {
       "spec": {
-        "presented_at": "2026-10-09T14:44:46Z"
+        "presented_at": "2026-10-09T14:44:46Z",
+        "approved_at": "2026-10-09T14:45:20Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-09T14:46:00Z"
       }
     },
     "gate_rework": {

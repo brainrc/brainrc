@@ -1,6 +1,6 @@
 # Spec: packs from a git URL, fetched by aicfg
 
-Ticket: gh:50 (refs) · Size: standard (config key, fetch, update command, doctor, docs) · Status: draft
+Ticket: gh:50 (refs) · Size: standard (config key, fetch, update command, doctor, docs) · Status: approved
 
 ## Acceptance criteria
 - **AC1** A pack entry may use `git = "<url>"` with an optional `ref` (tag, branch, or commit)

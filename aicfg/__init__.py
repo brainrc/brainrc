@@ -32,4 +32,4 @@ from .plugin import check_plugin, cmd_plugin, plugin_manifests
 from .tokens import always_tokens, check_budgets, cmd_tokens, estimate_tokens
 from .validate import check_roles_link, cmd_validate
 from .doctor import cmd_doctor, doctor_findings
-from .cli import cmd_sync, main
+from .cli import cmd_sync, cmd_update, main

@@ -14,9 +14,9 @@
   "size": "small",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "spec",
+  "stage": "deliver",
   "gates": {
-    "spec": "pending",
+    "spec": "approved",
     "deliver": "pending"
   },
   "domains": [],
@@ -32,17 +32,41 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "installed hints",
+      "agent": "engine (inline)",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "cf6b5b6"
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-09T15:48:29Z",
     "stage_started_at": {
       "intake": "2026-10-09T15:48:29Z",
-      "spec": "2026-10-09T15:48:29Z"
+      "spec": "2026-10-09T15:48:29Z",
+      "implement": "2026-10-09T15:59:25Z",
+      "verify": "2026-10-09T16:01:15Z",
+      "document": "2026-10-09T16:01:15Z",
+      "deliver": "2026-10-09T16:01:15Z"
     },
     "gates": {
       "spec": {
-        "presented_at": "2026-10-09T15:48:29Z"
+        "presented_at": "2026-10-09T15:48:29Z",
+        "approved_at": "2026-10-09T15:59:25Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-09T16:01:15Z"
       }
     },
     "gate_rework": {

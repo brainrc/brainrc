@@ -1,6 +1,6 @@
 # Spec: hints name the command you actually run
 
-Ticket: local · Size: small (~30 lines in doctor/config/cli, no new contract) · Status: draft
+Ticket: local · Size: small (~30 lines in doctor/config/cli, no new contract) · Status: approved
 
 ## Acceptance criteria
 - **AC1** Installed (`aicfg/_core` present), every `doctor` fix hint and the usage text say

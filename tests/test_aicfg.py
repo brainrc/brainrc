@@ -1084,6 +1084,12 @@ class InstalledModeTest(TempRepoCase):
     def test_copied_roles_are_fine_when_installed(self):
         self.assertIsNone(aicfg.check_roles_link())
 
+    def test_tokens_match_a_checkout(self):
+        _, installed = quiet(aicfg.cmd_tokens)
+        aicfg.config.REPO = self.repo
+        _, checkout = quiet(aicfg.cmd_tokens)
+        self.assertEqual(installed, checkout)
+
 
 class PackValidateTest(TempRepoCase):
     def setUp(self):

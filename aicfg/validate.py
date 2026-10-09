@@ -16,6 +16,7 @@ from .config import (
     KINDS,
     KNOWN_MODELS,
     KNOWN_TOOLS,
+    ROLES_LINK,
     REQUIRED_CONNECTOR_OPS,
     SKILL_NAME,
     _read_toml,
@@ -196,7 +197,6 @@ def _check_tripwires(src: Source) -> list[str]:
     return errors
 
 
-ROLES_LINK = Path("skills/spec-agent/roles")
 
 
 ROLES_FIX = ("enable symlinks (README, Platforms), then restore it with "

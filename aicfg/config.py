@@ -23,6 +23,9 @@ def find_core(pkg: Path) -> Path:
 REPO = find_core(Path(__file__).resolve().parent)
 
 
+ROLES_LINK = Path("skills/spec-agent/roles")  # a symlink to ../../agents; a wheel holds copies
+
+
 def installed() -> bool:
     """True when running from an installed package, whose files must never be written."""
     return REPO.name == "_core"

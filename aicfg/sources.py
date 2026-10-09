@@ -281,7 +281,8 @@ def frontmatter(path: Path) -> dict[str, str]:
 
 def _markdown_under(root: Path) -> list[Path]:
     found = []
-    for dirpath, _dirs, files in os.walk(root):  # does not follow symlinked dirs (skills/*/roles)
+    for dirpath, dirs, files in os.walk(root):  # does not follow symlinked dirs (skills/*/roles)
+        dirs[:] = [d for d in dirs if Path(dirpath, d) != config.REPO / config.ROLES_LINK]  # copies, when installed
         found += [Path(dirpath) / f for f in files  # a dangling link is validate's own finding
                   if f.endswith(".md") and (Path(dirpath) / f).is_file()]
     return sorted(found)

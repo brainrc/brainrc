@@ -70,6 +70,10 @@ def _check_references(src: Source, path: Path, agent_names: set[str], skill_name
 
 def _validate_source(src: Source, agent_names: set[str], skill_names: set[str]) -> list[str]:
     errors = []
+    if src.is_core:
+        errors += [f"overrides/{name}/plugin.js: missing, but harnesses.toml [{name}] sets `plugin`"
+                   for name, h in load_harnesses(include_disabled=True).items()
+                   if "plugin" in h and not (src.root / "overrides" / name / "plugin.js").is_file()]
     for s in skills(src):
         rel = src.rel(s)
         meta = frontmatter(s / "SKILL.md")

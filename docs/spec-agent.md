@@ -73,7 +73,7 @@ is never part of a run. It happens after merge, by you, Atlantis/Spacelift, or G
 | Skills + commands | ✅ | ✅ | ✅ (Cursor: skills only) |
 | Execution | subagents per role | subagents per role (rendered agents) | fallback: role-switch in one session |
 | Per-agent model tiers | ✅ | — | — |
-| Enforced guard hooks | ✅ | rules only | rules only |
+| Enforced guard hooks | ✅ | ✅ plugin (deny only) | rules only |
 
 ## Extending
 

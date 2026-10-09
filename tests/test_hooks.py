@@ -1,5 +1,6 @@
 """Tests for the Claude Code guard hooks (run as subprocesses, like the harness does)."""
 import json
+import shutil
 import subprocess
 import sys
 import unittest
@@ -295,3 +296,51 @@ class GuardSecretsTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+PLUGIN = HOOKS.parent.parent / "opencode" / "plugin.js"
+DRIVER = """
+const [url, call] = process.argv.slice(-2);
+const plugin = Object.values(await import(url))[0];
+const hooks = await plugin({});
+const [tool, args] = JSON.parse(call);
+try {
+  await hooks["tool.execute.before"]({ tool, sessionID: "s", callID: "c" }, { args });
+  console.log("OK");
+} catch (e) {
+  console.log("BLOCKED " + e.message);
+}
+"""
+
+
+@unittest.skipUnless(shutil.which("node"), "node is not installed")
+class OpenCodePluginTest(unittest.TestCase):
+    """overrides/opencode/plugin.js runs the same guards for OpenCode's tool calls."""
+
+    def call(self, tool: str, args: dict) -> str:
+        result = subprocess.run(["node", "--input-type=module", "-e", DRIVER, "--", PLUGIN.as_uri(),
+                                 json.dumps([tool, args])], capture_output=True, text=True, timeout=30)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        return result.stdout.strip()
+
+    def test_outward_command_is_blocked_with_the_reason(self):
+        out = self.call("bash", {"command": "git push origin main"})
+        self.assertTrue(out.startswith("BLOCKED"), out)
+        self.assertIn("git push publishes commits", out)
+        self.assertIn("ask the user to run it themselves", out)
+
+    def test_safe_command_passes(self):
+        self.assertEqual(self.call("bash", {"command": "git status"}), "OK")
+
+    def test_secret_file_read_is_blocked(self):
+        self.assertTrue(self.call("read", {"filePath": "/tmp/project/.env"}).startswith("BLOCKED"))
+
+    def test_ordinary_read_passes(self):
+        self.assertEqual(self.call("read", {"filePath": "/tmp/project/README.md"}), "OK")
+
+    def test_writing_a_private_key_is_blocked(self):
+        key = "-----BEGIN OPENSSH " + "PRIVATE KEY-----\nabc\n"
+        self.assertTrue(self.call("write", {"filePath": "notes.txt", "content": key}).startswith("BLOCKED"))
+
+    def test_unmapped_tools_pass(self):
+        self.assertEqual(self.call("github_create_issue", {"title": "x"}), "OK")

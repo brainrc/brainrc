@@ -62,6 +62,14 @@ KNOWN_MODELS = {"haiku", "sonnet", "opus", "inherit"}
 SKILL_NAME = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 EXTENSION_KEYS = {"domains", "intake_context", "ticket", "deliver_checks"}
 KINDS = ("skills", "agents", "commands")
+AGENT_FORMATS = ("claude", "opencode")  # harnesses.toml `agents_format`; claude links agents as written
+# OpenCode permission keys each Claude tool needs. An agent's missing tools become `deny`.
+OPENCODE_PERMISSIONS = {
+    "Read": ("read", "list"), "Grep": ("grep",), "Glob": ("glob",), "Edit": ("edit",),
+    "Write": ("edit",), "MultiEdit": ("edit",), "NotebookEdit": ("edit",), "Bash": ("bash",),
+    "WebFetch": ("webfetch",), "WebSearch": ("websearch",), "Task": ("task",),
+    "TodoWrite": ("todowrite",),
+}
 REQUIRED_CONNECTOR_OPS = ("fetch", "comment", "transition", "link_pr")  # references/connectors.md
 H2 = re.compile(r"^## +(.+)$", re.M)
 CORE_VERSION = re.compile(r"^([0-9]+)\.([0-9]+)\.([0-9]+)$")
@@ -119,6 +127,10 @@ def legacy_instructions() -> Path:
 
 def rendered_instructions() -> Path:
     return aicfg_home() / "instructions.md"
+
+
+def rendered_agents_dir() -> Path:
+    return aicfg_home() / "opencode" / "agents"
 
 
 def home_extensions_file() -> Path:
@@ -340,6 +352,37 @@ def render_instructions(srcs: list[Source] | None = None) -> str:
     return "\n\n".join(parts) + "\n"
 
 
+def opencode_agent(path: Path) -> str:
+    """An agent in OpenCode's format: OpenCode rejects Claude's `tools: Read, Grep` string. Tools
+    the agent lacks become `deny`; the rest are left to the user's own OpenCode permissions.
+    `model` is dropped: a subagent then uses the model of the agent that called it."""
+    text = path.read_text()
+    head, _, body = text.partition("\n---\n")
+    keep = [line for line in head.splitlines()[1:] if line.startswith(("name:", "description:"))]
+    lines = ["---", *keep, "mode: subagent"]
+    tools = frontmatter(path).get("tools")
+    if tools is not None:
+        allowed = {key for t in tools.split(",") for key in OPENCODE_PERMISSIONS.get(t.strip(), ())}
+        denied = sorted({k for keys in OPENCODE_PERMISSIONS.values() for k in keys} - allowed)
+        lines += ["permission:", *(f"  {key}: deny" for key in denied)]
+    return "\n".join(lines) + "\n---\n" + body
+
+
+def agents_format(h: dict) -> str:
+    fmt = h.get("agents_format", "claude")
+    if fmt not in AGENT_FORMATS:
+        raise ConfigError(f"harnesses.toml: unknown agents_format `{fmt}` (use one of {', '.join(AGENT_FORMATS)})")
+    return fmt
+
+
+def rendered_agents(srcs: list[Source]) -> dict[Path, str]:
+    """OpenCode copies of every agent, when an enabled harness asks for them."""
+    if not any(agents_format(h) == "opencode" for h in load_harnesses().values()):
+        return {}
+    return {rendered_agents_dir() / f.name: opencode_agent(f)
+            for src in srcs for f in markdown_files("agents", src)}
+
+
 def render_extensions(srcs: list[Source]) -> str:
     """The pack extension points spec-agent reads at intake, plan, and deliver."""
     packs = [s for s in srcs if not s.is_core]
@@ -451,7 +494,7 @@ def _inside_repo(path: Path) -> bool:
 def _managed_target(target: Path, roots: list[Path]) -> bool:
     """True if target is a path aicfg itself links to inside one of the source roots."""
     t = Path(os.path.abspath(target)).resolve()
-    if t == rendered_instructions().resolve():
+    if t == rendered_instructions().resolve() or t.parent == rendered_agents_dir().resolve():
         return True
     for root in (r.resolve() for r in roots):
         if t.parent in {root / k for k in KINDS}:
@@ -474,7 +517,9 @@ def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
         for kind in KINDS:
             if kind in h:
                 d = expand(h[kind])
-                links += [Link(name, d / p.name, p) for src in srcs for p in items(src, kind)]
+                rendered = kind == "agents" and agents_format(h) == "opencode"
+                links += [Link(name, d / p.name, rendered_agents_dir() / p.name if rendered else p)
+                          for src in srcs for p in items(src, kind)]
         if "instructions" in h:
             links.append(Link(name, expand(h["instructions"]), rendered_instructions()))
         fragments: list[tuple[Path, str | None]] = []
@@ -581,6 +626,7 @@ def cmd_sync(apply: bool) -> int:
     try:
         srcs = sources()
         roots = [s.root for s in sources(include_disabled=True)]
+        agents = rendered_agents(srcs)
     except ConfigError as e:
         print(f"ERROR {e}")
         return 1
@@ -610,6 +656,13 @@ def cmd_sync(apply: bool) -> int:
         home_extensions_file().write_text(extensions)
         if extensions_file().parent.is_dir():
             extensions_file().write_text(extensions)
+        for path, text in agents.items():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text)
+        if rendered_agents_dir().is_dir():
+            for old in rendered_agents_dir().glob("*.md"):
+                if old not in agents:
+                    old.unlink()
         if legacy_instructions().is_file():
             legacy_instructions().unlink()
             if not any(legacy_instructions().parent.iterdir()):
@@ -960,6 +1013,7 @@ def _render_findings(srcs: list[Source]) -> list[Finding]:
                (home_extensions_file(), lambda: render_extensions(srcs))]
     if extensions_file().parent.is_dir():
         targets.append((extensions_file(), lambda: render_extensions(srcs)))
+    targets += [(path, lambda text=text: text) for path, text in rendered_agents(srcs).items()]
     for path, render in targets:
         rel = tilde(path) if not path.is_relative_to(REPO) else str(path.relative_to(REPO))
         if not path.is_file():

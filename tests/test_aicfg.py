@@ -894,6 +894,74 @@ class RuleFrontmatterTest(TempRepoCase):
         self.assertIn("trigger", out)
 
 
+class OpenCodeAgentTest(TempRepoCase):
+    """OpenCode rejects Claude's agent frontmatter, so apply renders its own copies (#19)."""
+
+    def setUp(self):
+        super().setUp()
+        self.home = Path(tempfile.mkdtemp())
+        self.old_home = os.environ["HOME"]
+        os.environ["HOME"] = str(self.home)
+        self.agents = self.home / ".config/opencode/agents"
+        self.renders = self.aicfg_home / "opencode/agents"
+
+    def tearDown(self):
+        os.environ["HOME"] = self.old_home
+        shutil.rmtree(self.home)
+        super().tearDown()
+
+    def write_agent(self, name: str, meta: str) -> Path:
+        path = self.repo / "agents" / f"{name}.md"
+        path.write_text(f"---\nname: {name}\ndescription: Fixture agent.\n{meta}---\n\n## Role\nBody.\n")
+        return path
+
+    def test_tools_become_denies_and_model_is_dropped(self):
+        out = aicfg.opencode_agent(self.write_agent("fixture", "tools: Read, Grep\nmodel: sonnet\n"))
+        self.assertTrue(out.startswith("---\nname: fixture\ndescription: Fixture agent.\nmode: subagent\n"), out)
+        self.assertTrue(out.endswith("---\n\n## Role\nBody.\n"), out)
+        for key in ("edit", "bash", "glob", "webfetch", "websearch", "task", "todowrite"):
+            self.assertIn(f"\n  {key}: deny\n", out)
+        for key in ("read", "grep", "list"):
+            self.assertNotIn(f"  {key}: deny", out)
+        self.assertNotIn("model", out)
+        self.assertNotIn("tools", out)
+
+    def test_agent_without_tools_keeps_every_permission(self):
+        out = aicfg.opencode_agent(self.write_agent("open", ""))
+        self.assertNotIn("permission", out)
+        self.assertIn("mode: subagent", out)
+
+    def test_apply_links_rendered_agents(self):
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        link = self.agents / "analyst.md"
+        self.assertEqual(aicfg.link_target(link), self.renders / "analyst.md")
+        self.assertIn("mode: subagent", link.read_text())
+        self.assertEqual(aicfg.link_target(self.home / ".claude/agents/analyst.md"), self.repo / "agents/analyst.md")
+        self.assertEqual(aicfg.doctor_findings(), [])
+
+    def test_removed_agent_is_pruned(self):
+        quiet(aicfg.cmd_sync, True)
+        (self.repo / "agents/verifier.md").unlink()
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        self.assertFalse((self.agents / "verifier.md").is_symlink())
+        self.assertFalse((self.renders / "verifier.md").exists())
+
+    def test_doctor_flags_a_stale_render(self):
+        quiet(aicfg.cmd_sync, True)
+        (self.renders / "analyst.md").write_text("old\n")
+        fails = [f for f in aicfg.doctor_findings() if f[0] == "FAIL"]
+        self.assertEqual(len(fails), 1, fails)
+        self.assertIn("opencode/agents/analyst.md is stale", fails[0][1])
+
+    def test_unknown_agents_format_is_an_error(self):
+        (self.repo / "harnesses.local.toml").write_text('[opencode]\nagents_format = "nope"\n')
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 1, out)
+        self.assertIn("agents_format", out)
+
+
 class PackValidateTest(TempRepoCase):
     def setUp(self):
         super().setUp()

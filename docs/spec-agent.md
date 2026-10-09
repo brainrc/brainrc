@@ -71,7 +71,7 @@ is never part of a run. It happens after merge, by you, Atlantis/Spacelift, or G
 | | Claude Code | OpenCode | Codex / Antigravity / Cursor |
 |---|---|---|---|
 | Skills + commands | ✅ | ✅ | ✅ (Cursor: skills only) |
-| Execution | subagents per role | fallback (agents not yet adapted) | fallback: role-switch in one session |
+| Execution | subagents per role | subagents per role (rendered agents) | fallback: role-switch in one session |
 | Per-agent model tiers | ✅ | — | — |
 | Enforced guard hooks | ✅ | rules only | rules only |
 

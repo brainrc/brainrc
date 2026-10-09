@@ -11,6 +11,15 @@ a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everyt
 Every merged PR bumps `VERSION` and adds its entries under that version. There is no Unreleased
 section: `main` is what users pull, so `VERSION` must always describe it exactly.
 
+## 0.3.19 (2026-10-09)
+
+- OpenCode gets real subagents (#19; #50, step 4). OpenCode rejects Claude's agent frontmatter
+  and stops loading its config, so `apply` renders each agent (core and packs) to
+  `$AICFG_HOME/opencode/agents/` and links it from `~/.config/opencode/agents/`: `mode: subagent`,
+  a permission `deny` for each tool the agent lacks, and no `model` (the caller's model is used).
+  New `harnesses.toml` key `agents_format = "opencode"`; `doctor` flags stale renders. Verified
+  with OpenCode 1.18.35: all 9 agents load as subagents with the expected denies.
+
 ## 0.3.18 (2026-10-08)
 
 - Antigravity CLI, which replaced Gemini CLI, can install ai-config as a plugin: `agy plugin

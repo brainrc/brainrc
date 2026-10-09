@@ -1,0 +1,147 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:50",
+    "id": "50",
+    "title": "Native package installs (step 4: OpenCode agents, #19)",
+    "url": "https://github.com/bxker/ai-config/issues/50",
+    "pr": "https://github.com/bxker/ai-config/pull/55"
+  },
+  "slug": "050-opencode",
+  "branch": "050-opencode",
+  "base": "main",
+  "size": "standard",
+  "mode": "inline",
+  "delivery": "normal",
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate",
+      "python3 scripts/aicfg.py validate --pack examples/pack-acme"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "tests first",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4"
+      ],
+      "review": "batch",
+      "red": "assertion (5 of 6 red)",
+      "commit": "03c8007"
+    },
+    {
+      "id": "T2",
+      "title": "aicfg render and link",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3"
+      ],
+      "review": "batch",
+      "red": "tests T1",
+      "commit": "f2a099e"
+    },
+    {
+      "id": "T3",
+      "title": "harnesses.toml",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC1"
+      ],
+      "review": "batch",
+      "red": "tests T1",
+      "commit": "a3119de"
+    },
+    {
+      "id": "T4",
+      "title": "real opencode agent list",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC4"
+      ],
+      "review": "batch",
+      "red": "n/a (real run)",
+      "commit": null
+    },
+    {
+      "id": "T5",
+      "title": "docs and release",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC5"
+      ],
+      "review": "batch",
+      "red": "n/a (docs)",
+      "commit": "175667b"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-08T13:45:49Z",
+    "stage_started_at": {
+      "intake": "2026-10-08T13:45:49Z",
+      "spec": "2026-10-08T13:45:49Z",
+      "plan": "2026-10-09T01:23:13Z",
+      "implement": "2026-10-09T01:25:36Z",
+      "verify": "2026-10-09T01:28:17Z",
+      "document": "2026-10-09T01:28:17Z",
+      "deliver": "2026-10-09T01:28:17Z",
+      "done": "2026-10-09T01:28:41Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-08T13:45:49Z",
+        "approved_at": "2026-10-09T01:23:13Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-09T01:25:00Z",
+        "approved_at": "2026-10-09T01:25:36Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-09T01:28:17Z",
+        "approved_at": "2026-10-09T01:28:41Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  }
+}

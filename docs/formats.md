@@ -67,9 +67,15 @@ machine. Format and extension points: [packs.md](packs.md).
 | Skills | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Rules | ✅ CLAUDE.md | ✅ AGENTS.md | ✅ AGENTS.md | ✅ AGENTS.md | ❌ Settings UI only |
 | Commands | ✅ | ✅ prompts | ✅ | ➖ none: skills are its slash commands | ⏳ |
-| Agents | ✅ subagents | ↪ role-switch fallback | ↪ fallback (adapter ⏳) | ↪ fallback | ↪ fallback |
+| Agents | ✅ subagents | ↪ role-switch fallback | ✅ subagents (rendered) | ↪ fallback | ↪ fallback |
 | Guard hooks | ✅ | ❌ rules only | ❌ | ❌ | ❌ |
 | MCP | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ |
+
+OpenCode can't read Claude's agent frontmatter (a `tools: Read, Grep` string makes its whole config
+invalid), so `apply` links copies rendered to `$AICFG_HOME/opencode/agents/`
+(`agents_format = "opencode"` in `harnesses.toml`). Each copy has `mode: subagent` and a `deny` for
+every tool the agent lacks; tools it has follow your own OpenCode permissions. Lossy: `model` is
+dropped (the subagent uses its caller's model) and `mcp__*` tools aren't mapped.
 
 Antigravity CLI paths (`~/.gemini/config/`) come from its changelog and user reports, not a live
 run. It can also install ai-config as a plugin ([README](../README.md#claude-code-plugin-no-clone)).

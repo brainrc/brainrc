@@ -1,0 +1,1 @@
+- intake: cursor.com is denied by the network policy and WebFetch can't resolve it. Format taken from github.com/cursor/plugins (ccb5507): plugin schema, example plugins, scaffold skill; hook payloads from the cursor-hooks npm package (community) and search excerpts.

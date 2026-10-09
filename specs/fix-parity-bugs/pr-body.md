@@ -1,5 +1,5 @@
 ## Summary
-`aicfg` now reports four problems instead of crashing with a traceback. The Rust port's parity runs found them (see `rust/REPORT.md` on the local comparison branch).
+`aicfg` now reports four problems instead of crashing with a traceback. Parity runs from a local, experimental Rust port of aicfg found them.
 
 | problem | before | now |
 |---|---|---|

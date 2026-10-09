@@ -28,8 +28,8 @@ from .sources import (
     render_extensions,
     render_instructions,
 )
-from .opencode import rendered_agents
-from .plan import Link, link_target, plan
+from .opencode import agents_format, rendered_agents
+from .plan import FragmentError, Link, invalid_fragments, link_target, plan
 from .settings import settings_change
 from .validate import ROLES_FIX, check_roles_link, cmd_validate
 
@@ -122,6 +122,11 @@ def doctor_findings() -> list[Finding]:
     srcs, every_src, found = _doctor_sources()
     if roles := check_roles_link():
         found.append(("FAIL", roles, ROLES_FIX))
+    try:
+        for h in load_harnesses().values():
+            agents_format(h)
+    except ConfigError as e:  # renders and links depend on it, so stop here
+        return found + [("FAIL", str(e), "set agents_format to claude or opencode in harnesses.local.toml")]
     found += _render_findings(srcs)
     roots = [s.root for s in every_src]
     links, stale, merges = plan(srcs, every_src)
@@ -161,10 +166,14 @@ def doctor_findings() -> list[Finding]:
                     found.append(("WARN", f"{name}: {tilde(p)} is a broken link not made by ai-config",
                                   f"rm {tilde(p)}"))
 
+    found += [("FAIL", e, f"fix the JSON, then {APPLY}") for e in invalid_fragments(srcs)]
     for m in merges:
         if m.harness in skipped:
             continue
-        state, _ = settings_change(m)
+        try:
+            state, _ = settings_change(m)
+        except FragmentError:
+            continue  # reported above
         if state == "merge" and not m.fragments:
             found.append(("FAIL", f"{tilde(m.dest)} has ai-config's hooks but {m.harness} is disabled",
                           f"{APPLY} (removes them)"))

@@ -1,0 +1,123 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "local",
+    "ref": "local:specs/fix-parity-bugs/ticket.md",
+    "id": "fix-parity-bugs",
+    "title": "Fix the aicfg crashes the Rust parity work found",
+    "url": null,
+    "pr": "https://github.com/bxker/ai-config/pull/57"
+  },
+  "slug": "fix-parity-bugs",
+  "branch": "fix-parity-bugs",
+  "base": "main",
+  "size": "standard",
+  "mode": "inline",
+  "delivery": "normal",
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate",
+      "python3 scripts/aicfg.py validate --pack examples/pack-acme"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "tests first",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4"
+      ],
+      "review": "batch",
+      "red": "5 errors, 1 failure",
+      "commit": "a0922a5"
+    },
+    {
+      "id": "T2",
+      "title": "fixes",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4"
+      ],
+      "review": "batch",
+      "red": "tests T1",
+      "commit": "03d23e6"
+    },
+    {
+      "id": "T3",
+      "title": "diff, docs, release",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC5"
+      ],
+      "review": "batch",
+      "red": "n/a (diff, docs)",
+      "commit": "684b60f"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-09T13:33:29Z",
+    "stage_started_at": {
+      "intake": "2026-10-09T13:33:29Z",
+      "spec": "2026-10-09T13:33:29Z",
+      "plan": "2026-10-09T13:33:54Z",
+      "implement": "2026-10-09T13:50:20Z",
+      "verify": "2026-10-09T13:52:40Z",
+      "document": "2026-10-09T13:52:40Z",
+      "deliver": "2026-10-09T13:52:40Z",
+      "done": "2026-10-09T13:55:26Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-09T13:33:29Z",
+        "approved_at": "2026-10-09T13:33:54Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-09T13:35:00Z",
+        "approved_at": "2026-10-09T13:50:20Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-09T13:52:40Z",
+        "approved_at": "2026-10-09T13:55:26Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  },
+  "retries": 0
+}

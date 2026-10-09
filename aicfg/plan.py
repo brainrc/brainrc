@@ -10,12 +10,14 @@ from . import config
 from .config import (
     HOOKS_DIR_PLACEHOLDER,
     KINDS,
+    ConfigError,
     expand,
     hook_command_dir,
     load_harnesses,
     pack_hooks_dir,
     rendered_agents_dir,
     rendered_instructions,
+    tilde,
 )
 from .sources import Source, items, sources
 from .opencode import agents_format
@@ -36,11 +38,31 @@ class Link:
         return "conflict" if self.dest.exists() else "create"
 
 
+class FragmentError(ConfigError):
+    """A settings fragment that isn't valid JSON."""
+
+
 def render_fragment(fragment: Path, hooks_dir: str | None) -> dict:
     text = fragment.read_text()
     if hooks_dir:
         text = text.replace(HOOKS_DIR_PLACEHOLDER, hook_command_dir(hooks_dir))
-    return json.loads(text)
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError as e:
+        shown = fragment.relative_to(config.REPO) if fragment.is_relative_to(config.REPO) else tilde(fragment)
+        raise FragmentError(f"{shown}: invalid JSON ({e})") from None
+
+
+def invalid_fragments(srcs: list[Source]) -> list[str]:
+    """Each source's settings fragments that aren't valid JSON, as `<file>: invalid JSON (...)`."""
+    errors = []
+    for src in srcs:
+        for fragment in sorted((src.root / "overrides").glob("*/settings.fragment.json")):
+            try:
+                json.loads(fragment.read_text())
+            except json.JSONDecodeError as e:
+                errors.append(f"{src.rel(fragment)}: invalid JSON ({e})")
+    return errors
 
 
 @dataclass

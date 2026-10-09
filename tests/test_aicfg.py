@@ -959,6 +959,72 @@ class OpenCodeAgentTest(TempRepoCase):
         self.assertIn("agents_format", out)
 
 
+class CrashRegressionTest(TempRepoCase):
+    """Problems the Rust parity work found aicfg crashing on instead of reporting."""
+
+    def setUp(self):
+        super().setUp()
+        self.home = Path(tempfile.mkdtemp())
+        self.old_home = os.environ["HOME"]
+        os.environ["HOME"] = str(self.home)
+
+    def tearDown(self):
+        os.environ["HOME"] = self.old_home
+        shutil.rmtree(self.home)
+        super().tearDown()
+
+    def test_dangling_markdown_link_in_a_skill_is_reported(self):
+        (self.repo / "skills/terraform/gone.md").symlink_to(self.repo / "nowhere.md")
+        code, out = quiet(aicfg.cmd_validate)
+        self.assertEqual(code, 1, out)
+        self.assertIn("skills/terraform/gone.md: dangling symlink", out)
+        code, out = quiet(aicfg.cmd_tokens)
+        self.assertEqual(code, 0, out)
+
+    def break_fragment(self):
+        fragment = self.repo / "overrides/claude/settings.fragment.json"
+        fragment.write_text('{"hooks": {,}}\n')
+        return "overrides/claude/settings.fragment.json: invalid JSON"
+
+    def test_invalid_fragment_stops_apply_before_writing(self):
+        error = self.break_fragment()
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 1, out)
+        self.assertIn(f"ERROR {error}", out)
+        self.assertIn("Nothing written", out)
+        self.assertEqual(list(self.home.iterdir()), [])
+
+    def test_invalid_fragment_is_a_doctor_finding(self):
+        quiet(aicfg.cmd_sync, True)
+        error = self.break_fragment()
+        fails = [f[1] for f in aicfg.doctor_findings() if f[0] == "FAIL"]
+        self.assertTrue(any(error in f for f in fails), fails)
+
+    def test_invalid_fragment_in_plugin_and_validate(self):
+        (self.repo / ".claude-plugin").mkdir()
+        error = self.break_fragment()
+        code, out = quiet(aicfg.cmd_plugin)
+        self.assertEqual(code, 1, out)
+        self.assertIn("ERROR", out)
+        self.assertIn("invalid JSON", out)
+        code, out = quiet(aicfg.cmd_validate)
+        self.assertEqual(code, 1, out)
+        self.assertEqual(out.count(error), 1, out)
+
+    def test_unknown_agents_format_is_a_doctor_finding(self):
+        (self.repo / "harnesses.local.toml").write_text('[opencode]\nagents_format = "nope"\n')
+        fails = [f for f in aicfg.doctor_findings() if f[0] == "FAIL"]
+        self.assertTrue(any("agents_format" in what and "opencode" in fix for _, what, fix in fails), fails)
+
+    def test_new_hook_events_keep_fragment_order(self):
+        events = ["Stop", "SessionStart", "PostToolUse", "Notification", "UserPromptSubmit",
+                  "PreCompact", "SubagentStop", "SessionEnd"]
+        group = {"hooks": [{"type": "command", "command": "python3 ~/.claude/hooks/ai-config/x.py"}]}
+        fragment = {"hooks": {e: [group] for e in events}}
+        merged = aicfg.merge_settings({"hooks": {"PreToolUse": [FOREIGN]}}, fragment)
+        self.assertEqual(list(merged["hooks"]), ["PreToolUse", *events])
+
+
 class PackValidateTest(TempRepoCase):
     def setUp(self):
         super().setUp()

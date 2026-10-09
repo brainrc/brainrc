@@ -11,6 +11,15 @@ a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everyt
 Every merged PR bumps `VERSION` and adds its entries under that version. There is no Unreleased
 section: `main` is what users pull, so `VERSION` must always describe it exactly.
 
+## 0.3.21 (2026-10-09)
+
+- `aicfg` reports these problems instead of crashing with a traceback (found by the Rust port's
+  parity runs): a dangling `*.md` link inside a skill (`validate`'s existing finding; `tokens`
+  skips it); an invalid `overrides/<harness>/settings.fragment.json` (`status`/`apply` stop with
+  nothing written, `doctor` lists it, `plugin` prints `ERROR`, `validate` reports it once); an
+  unknown `agents_format` (a `doctor` finding). New hook events now merge in fragment order, not
+  hash order, so `settings.json` is the same on every run.
+
 ## 0.3.20 (2026-10-09)
 
 - `scripts/aicfg.py` is now the `aicfg/` package at the repo root: ten modules split along its old

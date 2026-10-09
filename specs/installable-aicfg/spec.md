@@ -1,6 +1,6 @@
 # Spec: install aicfg with pipx or uv, no clone
 
-Ticket: gh:50 (refs) · Size: standard (packaging, source location, local files, docs) · Status: draft
+Ticket: gh:50 (refs) · Size: standard (packaging, source location, local files, docs) · Status: approved
 
 ## Today
 `aicfg` finds core next to its own package (`config.REPO = aicfg/..`) and reads and writes there:

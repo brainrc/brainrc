@@ -14,9 +14,9 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "spec",
+  "stage": "plan",
   "gates": {
-    "spec": "pending",
+    "spec": "approved",
     "plan": "pending",
     "deliver": "pending"
   },
@@ -33,17 +33,92 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "tests first",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC2",
+        "AC3",
+        "AC5"
+      ],
+      "review": "batch",
+      "red": null,
+      "commit": null
+    },
+    {
+      "id": "T2",
+      "title": "aicfg changes",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC2",
+        "AC3"
+      ],
+      "review": "batch",
+      "red": null,
+      "commit": null
+    },
+    {
+      "id": "T3",
+      "title": "pyproject and CI",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC1",
+        "AC5"
+      ],
+      "review": "batch",
+      "red": null,
+      "commit": null
+    },
+    {
+      "id": "T4",
+      "title": "real uv install",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC4"
+      ],
+      "review": "batch",
+      "red": null,
+      "commit": null
+    },
+    {
+      "id": "T5",
+      "title": "docs and release",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC6"
+      ],
+      "review": "batch",
+      "red": null,
+      "commit": null
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-09T14:25:02Z",
     "stage_started_at": {
       "intake": "2026-10-09T14:25:02Z",
-      "spec": "2026-10-09T14:25:02Z"
+      "spec": "2026-10-09T14:25:02Z",
+      "plan": "2026-10-09T14:26:50Z"
     },
     "gates": {
       "spec": {
-        "presented_at": "2026-10-09T14:25:02Z"
+        "presented_at": "2026-10-09T14:25:02Z",
+        "approved_at": "2026-10-09T14:26:50Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-09T14:29:00Z"
       }
     },
     "gate_rework": {

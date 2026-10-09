@@ -6,7 +6,7 @@
     "id": "50",
     "title": "Native package installs (installable aicfg)",
     "url": "https://github.com/bxker/ai-config/issues/50",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/58"
   },
   "slug": "installable-aicfg",
   "branch": "installable-aicfg",
@@ -14,11 +14,11 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [],
   "targets": {},
@@ -114,7 +114,8 @@
       "implement": "2026-10-09T14:27:52Z",
       "verify": "2026-10-09T14:33:22Z",
       "document": "2026-10-09T14:33:22Z",
-      "deliver": "2026-10-09T14:33:22Z"
+      "deliver": "2026-10-09T14:33:22Z",
+      "done": "2026-10-09T14:35:18Z"
     },
     "gates": {
       "spec": {
@@ -126,7 +127,8 @@
         "approved_at": "2026-10-09T14:27:52Z"
       },
       "deliver": {
-        "presented_at": "2026-10-09T14:33:22Z"
+        "presented_at": "2026-10-09T14:33:22Z",
+        "approved_at": "2026-10-09T14:35:18Z"
       }
     },
     "gate_rework": {

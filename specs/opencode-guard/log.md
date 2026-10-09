@@ -1,1 +1,2 @@
 - spec approval recorded at 16:11:40Z, the first command after a worker restart (the click came a few minutes earlier).
+- plan approved. T1 9 tests (8 red; prune passed trivially). T2 plugin.js, Node tests OK. T3 `plugin` key, 169 OK. T4 real OpenCode: config lists it; `/session/:id/shell` bypasses plugin hooks (user commands, by design); a probe in OpenCode's Bun runtime loaded ours and it blocked git push. T5 docs, 0.3.25.

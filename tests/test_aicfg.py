@@ -1025,6 +1025,66 @@ class CrashRegressionTest(TempRepoCase):
         self.assertEqual(list(merged["hooks"]), ["PreToolUse", *events])
 
 
+class InstalledModeTest(TempRepoCase):
+    """aicfg installed with pipx/uv: core comes bundled as aicfg/_core and is never written to."""
+
+    def setUp(self):
+        super().setUp()
+        self.pkg = Path(tempfile.mkdtemp()) / "aicfg"
+        self.core = self.pkg / "_core"
+        copy_repo(self.core)
+        roles = self.core / "skills/spec-agent/roles"
+        roles.unlink()
+        shutil.copytree(self.core / "agents", roles)  # wheels copy the link's files
+        aicfg.config.REPO = self.core
+        self.home = Path(tempfile.mkdtemp())
+        self.old_home = os.environ["HOME"]
+        os.environ["HOME"] = str(self.home)
+
+    def tearDown(self):
+        os.environ["HOME"] = self.old_home
+        shutil.rmtree(self.home)
+        shutil.rmtree(self.pkg.parent)
+        super().tearDown()
+
+    def files(self) -> list[str]:
+        return sorted(str(p.relative_to(self.core)) for p in self.core.rglob("*"))
+
+    def test_bundled_core_is_found_next_to_the_package(self):
+        self.assertEqual(aicfg.config.find_core(self.pkg), self.core)
+        self.assertEqual(aicfg.config.find_core(self.repo / "aicfg"), self.repo)
+        self.assertTrue(aicfg.config.installed())
+
+    def test_local_files_live_in_aicfg_home(self):
+        self.aicfg_home.mkdir(parents=True)
+        (self.aicfg_home / "harnesses.local.toml").write_text("[cursor]\nenabled = false\n")
+        (self.core / "harnesses.local.toml").write_text("[codex]\nenabled = false\n")
+        harnesses = aicfg.config.load_harnesses()
+        self.assertNotIn("cursor", harnesses)
+        self.assertIn("codex", harnesses)
+        (self.aicfg_home / "rules").mkdir()
+        (self.aicfg_home / "rules/99-mine.local.md").write_text("- My local rule.\n")
+        self.assertIn("- My local rule.", aicfg.render_instructions())
+
+    def test_apply_never_writes_inside_the_package(self):
+        (self.core / "skills/spec-agent/references/extensions.md").unlink(missing_ok=True)
+        before = self.files()
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        self.assertEqual(self.files(), before)
+        self.assertTrue((self.aicfg_home / "extensions.md").is_file())
+        self.assertEqual(aicfg.link_target(self.home / ".claude/skills/spec-agent"), self.core / "skills/spec-agent")
+        self.assertEqual(aicfg.doctor_findings(), [])
+
+    def test_plugin_needs_a_checkout(self):
+        code, out = quiet(aicfg.cmd_plugin)
+        self.assertEqual(code, 1, out)
+        self.assertIn("checkout", out)
+
+    def test_copied_roles_are_fine_when_installed(self):
+        self.assertIsNone(aicfg.check_roles_link())
+
+
 class PackValidateTest(TempRepoCase):
     def setUp(self):
         super().setUp()

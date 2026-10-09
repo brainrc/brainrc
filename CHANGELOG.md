@@ -11,6 +11,18 @@ a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everyt
 Every merged PR bumps `VERSION` and adds its entries under that version. There is no Unreleased
 section: `main` is what users pull, so `VERSION` must always describe it exactly.
 
+## 0.3.26 (2026-10-09)
+
+- Cursor installs ai-config as a plugin (#50): `aicfg plugin` also writes
+  `.cursor-plugin/plugin.json` (skills, agents, rules) and `.cursor-plugin/hooks.json`. Symlink a
+  checkout to `~/.cursor/plugins/local/ai-config`. Core rules gain `alwaysApply: true`, which
+  `validate` now requires.
+- Cursor runs ai-config's guards: `overrides/cursor/hooks/guard.py` sends `beforeShellExecution`
+  and `beforeReadFile` through the same Python guards, and asks become denials. `apply` links it
+  to `~/.cursor/hooks/ai-config` and merges it into `~/.cursor/hooks.json` (`[cursor]` gains
+  `hooks_dir` and `settings`; the merge now recognizes Cursor's flat hook entries). The manifest
+  validates against Cursor's published schema; not yet run in a real Cursor.
+
 ## 0.3.25 (2026-10-09)
 
 - OpenCode runs ai-config's guards (#50): `apply` links `overrides/opencode/plugin.js` to

@@ -14,13 +14,15 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "spec",
+  "stage": "plan",
   "gates": {
-    "spec": "presented",
-    "plan": "pending",
+    "spec": "approved",
+    "plan": "presented",
     "deliver": "pending"
   },
-  "domains": [],
+  "domains": [
+    "scripting"
+  ],
   "targets": {},
   "commands": {
     "test": "python3 -m unittest discover -s tests -q",
@@ -33,17 +35,93 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "tests first",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T2",
+      "title": "registry and validate",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC1",
+        "AC2"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T3",
+      "title": "adapters and merge",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC3"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T4",
+      "title": "apply and doctor wiring",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC3"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T5",
+      "title": "real CLIs and baseline",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC4"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T6",
+      "title": "docs and release",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC5"
+      ],
+      "review": "batch"
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-10T03:57:42Z",
     "stage_started_at": {
       "intake": "2026-10-10T03:57:42Z",
-      "spec": "2026-10-10T03:57:42Z"
+      "spec": "2026-10-10T03:57:42Z",
+      "plan": "2026-10-10T19:02:41Z"
     },
     "gates": {
       "spec": {
-        "presented_at": "2026-10-10T04:00:45Z"
+        "presented_at": "2026-10-10T04:00:45Z",
+        "approved_at": "2026-10-10T19:02:41Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-10T19:02:41Z"
       }
     },
     "gate_rework": {

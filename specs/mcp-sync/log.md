@@ -1,1 +1,2 @@
 - intake: formats checked with Claude Code 2.1.296 (claude mcp add/list + probe server), Codex 0.161.0 (codex mcp add/get), OpenCode 1.18.35 (probe under opencode mcp list).
+- spec approved 19:02:41Z (first command after the click, after a worker restart); Cursor left out (A).

@@ -32,6 +32,7 @@ from .sources import (
 from .opencode import agents_format, rendered_agents
 from .plan import FragmentError, Link, invalid_fragments, link_target, plan
 from .settings import settings_change
+from .mcp import check_servers, mcp_change, mcp_plan
 from .validate import ROLES_FIX, check_roles_link, cmd_validate
 
 
@@ -186,6 +187,26 @@ def doctor_findings() -> list[Finding]:
         elif state == "conflict":
             found.append(("FAIL", f"{m.harness}: {tilde(m.dest)} is invalid JSON",
                           f"fix it by hand, then {command('apply')}"))
+    found += _mcp_findings(srcs, skipped)
+    return found
+
+
+def _mcp_findings(srcs: list[Source], skipped: set[str]) -> list[Finding]:
+    if errors := check_servers(srcs):
+        return [("FAIL", e, f"fix mcp/servers.toml, then {command('apply')}") for e in errors]
+    found = []
+    for s in mcp_plan(srcs):
+        if s.harness in skipped:
+            continue
+        state, _, clashing, _ = mcp_change(s)
+        found += [("WARN", f"{s.harness}: your own MCP server `{n}` in {tilde(s.dest)} shadows ai-config's",
+                   f"rename or remove yours, then {command('apply')}") for n in clashing]
+        if state == "invalid":
+            found.append(("FAIL", f"{s.harness}: {tilde(s.dest)} can't be parsed, so its MCP servers aren't synced",
+                          f"fix it by hand, then {command('apply')}"))
+        elif state == "merge":
+            found.append(("FAIL", f"{s.harness}: {tilde(s.dest)} doesn't match ai-config's MCP servers",
+                          command("apply")))
     return found
 
 

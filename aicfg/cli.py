@@ -4,6 +4,7 @@ Usage:
   aicfg.py status                show what would change (default, no writes)
   aicfg.py apply                 render rules and pack extensions to $AICFG_HOME (default
                                  ~/.config/ai-config), create/refresh symlinks, merge settings
+                                 and MCP servers (mcp/servers.toml)
   aicfg.py validate [--pack DIR] check frontmatter, cross-references, packs, and tripwires
                                  (used in CI); --pack checks core plus that pack only
   aicfg.py doctor                diagnose this machine's install (read-only): stale renders,
@@ -41,6 +42,7 @@ from .sources import check_packs, collisions, render_extensions, render_instruct
 from .opencode import rendered_agents
 from .packs import describe, fetch_pack, git_packs
 from .plan import invalid_fragments, plan
+from .mcp import check_servers, mcp_change, mcp_plan, record_owned, write_mcp
 from .settings import settings_change, write_settings
 from .plugin import cmd_plugin
 from .tokens import cmd_tokens
@@ -92,6 +94,12 @@ def cmd_sync(apply: bool) -> int:
         for e in bad_fragments:
             print(f"ERROR {e}")
         print("\nNothing written. Fix the JSON, then re-run.")
+        return 1
+    bad_servers = check_servers(srcs)
+    if bad_servers:
+        for e in bad_servers:
+            print(f"ERROR {e}")
+        print("\nNothing written. Fix mcp/servers.toml, then re-run.")
         return 1
 
     if apply:
@@ -147,6 +155,22 @@ def cmd_sync(apply: bool) -> int:
         changes += 1
         if apply:
             write_settings(m.dest, merged)
+    for s in mcp_plan(srcs):
+        state, text, clashing, owned = mcp_change(s)
+        for name in clashing:
+            conflicts += 1
+            print(f"{'CONFLICT':9} {s.harness:9} {tilde(s.dest)}  (your own MCP server `{name}`; "
+                  "rename it or remove it to let ai-config manage it)")
+        if state == "invalid":
+            conflicts += 1
+            print(f"{'CONFLICT':9} {s.harness:9} {tilde(s.dest)}  (can't parse it, fix by hand)")
+        elif state == "merge":
+            changes += 1
+            print(f"{'MERGE':9} {s.harness:9} {tilde(s.dest)}  (mcp)")
+            if apply:
+                write_mcp(s, text, owned)
+        elif apply:
+            record_owned(s, owned)  # e.g. adopt entries that already match after lost state
 
     if not changes and not conflicts:
         print("Everything in sync.")

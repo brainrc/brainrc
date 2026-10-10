@@ -11,6 +11,19 @@ a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everyt
 Every merged PR bumps `VERSION` and adds its entries under that version. There is no Unreleased
 section: `main` is what users pull, so `VERSION` must always describe it exactly.
 
+## 0.3.27 (2026-10-10)
+
+- MCP servers sync (#21): `apply` merges `mcp/servers.toml` into `~/.claude.json`,
+  `~/.codex/config.toml` (a marked block), and `~/.config/opencode/opencode.json` (new harness key
+  `mcp`). `env_from` is written as a reference each harness expands (`${NAME}`, `env_vars`,
+  `{env:NAME}`), never as a value. Only servers ai-config wrote are replaced or removed; a server
+  you defined under the same name is reported as a conflict and left alone. `validate` checks the
+  registry (and rejects an `env` table), `doctor` reports drift, and a disabled harness loses its
+  servers. Checked with the real CLIs: Claude Code and OpenCode connect to a probe server and pass
+  its variable; Codex lists it. Core's registry stays empty, so nothing changes until you add one.
+- **[pack contract]** Packs may ship `mcp/servers.toml`; server names must start with the pack's
+  `prefix`.
+
 ## 0.3.26 (2026-10-09)
 
 - Cursor installs ai-config as a plugin (#50): `aicfg plugin` also writes

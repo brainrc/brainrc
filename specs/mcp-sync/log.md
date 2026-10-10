@@ -1,2 +1,3 @@
 - intake: formats checked with Claude Code 2.1.296 (claude mcp add/list + probe server), Codex 0.161.0 (codex mcp add/get), OpenCode 1.18.35 (probe under opencode mcp list).
 - spec approved 19:02:41Z (first command after the click, after a worker restart); Cursor left out (A).
+- plan approved 19:03:56Z. T1 17 tests (15 red). T2-T4 mcp.py + wiring in one commit, 17/17, suite 200. T5 real CLIs: claude and opencode connect to a probe and pass the var; codex get shows it forwarded; claude mcp add entry kept; removal clean. T6 docs 0.3.27. Self-review: no findings (JSONC opencode.json is reported as unparseable and left alone).

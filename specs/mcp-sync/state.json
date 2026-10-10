@@ -14,11 +14,11 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "plan",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
-    "plan": "presented",
-    "deliver": "pending"
+    "plan": "approved",
+    "deliver": "presented"
   },
   "domains": [
     "scripting"
@@ -40,71 +40,83 @@
       "id": "T1",
       "title": "tests first",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC1",
         "AC2",
         "AC3",
         "AC4"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": "9a46198",
+      "red": "15 of 17 red"
     },
     {
       "id": "T2",
       "title": "registry and validate",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC1",
         "AC2"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": "ac94565",
+      "red": "tests T1"
     },
     {
       "id": "T3",
       "title": "adapters and merge",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC3"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": "ac94565",
+      "red": "tests T1"
     },
     {
       "id": "T4",
       "title": "apply and doctor wiring",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC3"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": "ac94565",
+      "red": "tests T1"
     },
     {
       "id": "T5",
       "title": "real CLIs and baseline",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC4"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": null,
+      "red": "n/a (real CLIs)"
     },
     {
       "id": "T6",
       "title": "docs and release",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC5"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": "078943e",
+      "red": "n/a (docs)"
     }
   ],
   "blocked": null,
@@ -113,7 +125,11 @@
     "stage_started_at": {
       "intake": "2026-10-10T03:57:42Z",
       "spec": "2026-10-10T03:57:42Z",
-      "plan": "2026-10-10T19:02:41Z"
+      "plan": "2026-10-10T19:02:41Z",
+      "implement": "2026-10-10T19:03:56Z",
+      "verify": "2026-10-10T19:10:00Z",
+      "document": "2026-10-10T19:10:00Z",
+      "deliver": "2026-10-10T19:10:00Z"
     },
     "gates": {
       "spec": {
@@ -121,7 +137,11 @@
         "approved_at": "2026-10-10T19:02:41Z"
       },
       "plan": {
-        "presented_at": "2026-10-10T19:02:41Z"
+        "presented_at": "2026-10-10T19:02:41Z",
+        "approved_at": "2026-10-10T19:03:56Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-10T19:10:00Z"
       }
     },
     "gate_rework": {
@@ -130,8 +150,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
-      "first_pass": 0
+      "total": 1,
+      "first_pass": 1
     },
     "retries": 0,
     "interventions": 0

@@ -33,7 +33,8 @@ a link. `aicfg` never overwrites it. Look at it, then either:
 - delete it if you don't need it,
 
 and run `apply` again. `CONFLICT` on a settings file means it isn't valid JSON: fix it by
-hand.
+hand. `CONFLICT` naming an MCP server means your harness config already defines a server of that
+name: rename or remove yours (or the registry's), then run `apply`.
 
 ## Pack errors
 
@@ -65,8 +66,8 @@ No backup is made when the file didn't exist yet.
 
    Repeat for `codex`, `opencode`, `antigravity`, and `cursor`.
 2. Run `python3 scripts/aicfg.py apply`. It removes every link it made, including the hooks
-   directory, and takes ai-config's hooks out of `~/.claude/settings.json` (backing it up
-   first). Your other settings and other tools' hooks stay.
+   directory, takes ai-config's hooks out of `~/.claude/settings.json`, and removes the MCP
+   servers it added (backing each file up first). Your other settings, hooks, and servers stay.
 3. Delete the repo.
 
 ## A guard hook blocked something safe, or missed something risky

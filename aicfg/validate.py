@@ -7,6 +7,7 @@ import os
 import re
 from pathlib import Path
 
+from .mcp import check_servers
 from . import config
 from .config import (
     ConfigError,
@@ -254,6 +255,7 @@ def cmd_validate(pack: str | None = None) -> int:
     for src in srcs:
         errors += _validate_source(src, agent_names, skill_names)
     errors += check_connectors(srcs)
+    errors += check_servers(srcs)
     warnings = []
     try:
         errors += check_changelog(core_version())

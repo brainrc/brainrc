@@ -1,14 +1,15 @@
-# Canonical MCP server registry. Not synced yet (see docs/roadmap.md).
+# Canonical MCP server registry. `aicfg apply` merges these servers into Claude Code,
+# Codex, and OpenCode (format: docs/formats.md#mcp-servers-mcpserverstoml).
 #
-# Secrets: NEVER put values here. `env_from` names environment variables that
-# must exist on the machine; adapters will pass them through at render time.
+# Secrets: NEVER put values here. `env_from` names environment variables that must exist
+# on the machine; each harness reads them when it starts the server. Packs: names start
+# with the pack prefix.
 
 # [servers.github]
 # command = "npx"
 # args = ["-y", "@modelcontextprotocol/server-github"]
 # env_from = ["GITHUB_PERSONAL_ACCESS_TOKEN"]
-# harnesses = ["claude", "codex", "antigravity", "cursor", "opencode"]
+# harnesses = ["claude", "codex", "opencode"]
 
 # [servers.example-http]
 # url = "https://example.com/mcp"
-# transport = "http"

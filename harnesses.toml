@@ -12,6 +12,8 @@
 #                as {{hooks_dir}}, so moving it keeps hook commands working
 #   settings     JSON file; hooks from overrides/<harness>/settings.fragment.json are
 #                merged in (entries owned by other tools are preserved; backup first)
+#   mcp          the harness's MCP config file; servers from mcp/servers.toml are merged in
+#                (claude, codex, opencode only; your own servers are never overwritten)
 #
 # Paths expand ~ and $ENV_VARS. Override per machine in harnesses.local.toml
 # (gitignored) — e.g. `[cursor] enabled = false`.
@@ -24,12 +26,14 @@ commands = "~/.claude/commands"
 instructions = "~/.claude/CLAUDE.md"
 hooks_dir = "~/.claude/hooks/ai-config"
 settings = "~/.claude/settings.json"
+mcp = "~/.claude.json"
 
 [codex]
 enabled = true
 skills = "~/.codex/skills"
 commands = "~/.codex/prompts"
 instructions = "~/.codex/AGENTS.md"
+mcp = "~/.codex/config.toml"
 
 [opencode]
 enabled = true
@@ -39,6 +43,7 @@ agents = "~/.config/opencode/agents"
 agents_format = "opencode"
 plugin = "~/.config/opencode/plugins/ai-config-guard.js"
 instructions = "~/.config/opencode/AGENTS.md"
+mcp = "~/.config/opencode/opencode.json"
 
 [antigravity]
 enabled = true

@@ -55,6 +55,28 @@ then each enabled pack's rules as a labelled block (in `packs.toml` order), then
 `*.local.md` rules. Filename order applies within each group. Later rules refine earlier ones
 and must not contradict them. Keep them tool-neutral.
 
+## MCP servers: `mcp/servers.toml`
+
+```toml
+[servers.github]
+command = "npx"
+args = ["-y", "@modelcontextprotocol/server-github"]
+env_from = ["GITHUB_PERSONAL_ACCESS_TOKEN"]   # names only; the value stays in your environment
+harnesses = ["claude", "codex"]               # optional; default: every harness with an `mcp` file
+
+[servers.docs]
+url = "https://docs.example.com/mcp"          # HTTP instead of `command`
+```
+
+`apply` writes each server into the harness's own config: `~/.claude.json` (`mcpServers`),
+`~/.codex/config.toml` (a marked `[mcp_servers]` block), and `~/.config/opencode/opencode.json`
+(`mcp`). `env_from` becomes a reference the harness expands when it starts the server
+(`${NAME}`, `env_vars`, `{env:NAME}`), so no value is written anywhere; `validate` rejects an
+`env` table. Only servers ai-config wrote are replaced or removed (tracked in
+`$AICFG_HOME/mcp-owned.json`). A server you defined yourself under the same name is reported as a
+conflict and left alone. Claude Code rewrites `~/.claude.json` while it runs, so apply MCP changes
+with it closed. Cursor and Antigravity aren't supported yet.
+
 ## Packs: `pack.toml`
 
 A separate repo with the same layout plus a `pack.toml`, layered on top of this one per
@@ -69,7 +91,7 @@ machine. Format and extension points: [packs.md](packs.md).
 | Commands | ✅ | ✅ prompts | ✅ | ➖ none: skills are its slash commands | ⏳ |
 | Agents | ✅ subagents | ↪ role-switch fallback | ✅ subagents (rendered) | ↪ fallback | ↪ fallback; the plugin ships them (unverified) |
 | Guard hooks | ✅ | ❌ rules only | ✅ plugin, deny only | ❌ | ✅ shell and reads, deny only |
-| MCP | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ |
+| MCP | ✅ `~/.claude.json` | ✅ `config.toml` | ✅ `opencode.json` | ⏳ | ⏳ |
 
 Cursor has no user rules file: `aicfg` links skills and merges guard hooks into
 `~/.cursor/hooks.json`, and rules arrive only through the plugin (`.cursor-plugin/`, see the

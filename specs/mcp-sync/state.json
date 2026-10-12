@@ -1,0 +1,162 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:21",
+    "id": "21",
+    "title": "Roadmap: MCP registry sync",
+    "url": "https://github.com/bxker/ai-config/issues/21",
+    "pr": "https://github.com/bxker/ai-config/pull/64"
+  },
+  "slug": "mcp-sync",
+  "branch": "mcp-sync",
+  "base": "main",
+  "size": "standard",
+  "mode": "inline",
+  "delivery": "normal",
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -q",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/aicfg.py validate",
+      "python3 scripts/aicfg.py validate --pack examples/pack-acme"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "tests first",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4"
+      ],
+      "review": "batch",
+      "commit": "9a46198",
+      "red": "15 of 17 red"
+    },
+    {
+      "id": "T2",
+      "title": "registry and validate",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC1",
+        "AC2"
+      ],
+      "review": "batch",
+      "commit": "ac94565",
+      "red": "tests T1"
+    },
+    {
+      "id": "T3",
+      "title": "adapters and merge",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC3"
+      ],
+      "review": "batch",
+      "commit": "ac94565",
+      "red": "tests T1"
+    },
+    {
+      "id": "T4",
+      "title": "apply and doctor wiring",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC3"
+      ],
+      "review": "batch",
+      "commit": "ac94565",
+      "red": "tests T1"
+    },
+    {
+      "id": "T5",
+      "title": "real CLIs and baseline",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC4"
+      ],
+      "review": "batch",
+      "commit": null,
+      "red": "n/a (real CLIs)"
+    },
+    {
+      "id": "T6",
+      "title": "docs and release",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC5"
+      ],
+      "review": "batch",
+      "commit": "078943e",
+      "red": "n/a (docs)"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-10T03:57:42Z",
+    "stage_started_at": {
+      "intake": "2026-10-10T03:57:42Z",
+      "spec": "2026-10-10T03:57:42Z",
+      "plan": "2026-10-10T19:02:41Z",
+      "implement": "2026-10-10T19:03:56Z",
+      "verify": "2026-10-10T19:10:00Z",
+      "document": "2026-10-10T19:10:00Z",
+      "deliver": "2026-10-10T19:10:00Z",
+      "done": "2026-10-12T04:52:00Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-10T04:00:45Z",
+        "approved_at": "2026-10-10T19:02:41Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-10T19:02:41Z",
+        "approved_at": "2026-10-10T19:03:56Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-10T19:10:00Z",
+        "approved_at": "2026-10-12T04:51:02Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 1,
+      "first_pass": 1
+    },
+    "retries": 0,
+    "interventions": 0
+  },
+  "retries": 0
+}

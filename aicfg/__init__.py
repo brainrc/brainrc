@@ -4,7 +4,7 @@ Run it with `python3 scripts/aicfg.py <command>` or `python3 -m aicfg <command>`
 `aicfg.cli`. Below are the names tests and scripts/evals.py use. Shared state such as `REPO`
 lives in the module that owns it (`aicfg.config.REPO`), so patch it there.
 """
-from . import cli, config, doctor, opencode, plan, plugin, settings, tokens, validate  # noqa: F401
+from . import cli, config, doctor, mcp, opencode, plan, plugin, settings, tokens, validate  # noqa: F401
 from .config import (
     BACKUPS_KEPT,
     HOOKS_DIR_PLACEHOLDER,

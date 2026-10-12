@@ -20,7 +20,7 @@ spec-agent now keeps **living specs**, after OpenSpec (closes #23): `specs/livin
 - [x] AC6 docs and OpenSpec credit
 
 ## Testing
-- `python3 -m unittest discover -s tests` → OK (210, 9 new in `tests/test_living_specs.py`).
+- `python3 -m unittest discover -s tests` → OK (209, 9 new in `tests/test_living_specs.py`).
 - **Sandbox, two tickets in a row** (inline, in a scratch copy):
   - Ticket 001 created `specs/living/cli.md`.
   - After merging it, ticket 003's spec MODIFIED a requirement 001 had ADDED, added another, and created a `farewell` area.

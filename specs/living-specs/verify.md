@@ -9,5 +9,5 @@
 | AC5 tests | `tests/test_living_specs.py` 9 tests (add/modify/remove across areas, 10 failure cases each leaving files untouched, same spec twice is an error, `check`, options, template comments). Sandbox, inline, in a scratch copy: 001 then 003 (run 1 merged to main first). Run 2 MODIFIED `Default output` from run 1, ADDED `Version flag`, created `farewell`; re-applying run 1 failed with nothing written. `sandbox-001` eval: 11/11 before the merge, 12/13 after (the only failure is `main_untouched`, from the merge this two-run test needs); the two new checks pass. `sandbox-003`: its `main_untouched` fails for the same reason and its waves check because this run was inline, not subagent. | pass |
 | AC6 docs | `docs/spec-agent.md` Living specs section, OpenSpec credit extended, `docs/evals.md`, roadmap, CHANGELOG 0.3.28, VERSION. | pass |
 
-Full suite 210 OK; `validate` core and pack OK. Deviation from the spec: none. Sandbox gates
+Full suite 209 OK; `validate` core and pack OK. Deviation from the spec: none. Sandbox gates
 were approved by the engine itself for the test run; nothing in it was pushed.

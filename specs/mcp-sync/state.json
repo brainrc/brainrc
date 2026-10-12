@@ -6,7 +6,7 @@
     "id": "21",
     "title": "Roadmap: MCP registry sync",
     "url": "https://github.com/bxker/ai-config/issues/21",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/64"
   },
   "slug": "mcp-sync",
   "branch": "mcp-sync",
@@ -14,11 +14,11 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": "presented"
+    "deliver": "approved"
   },
   "domains": [
     "scripting"
@@ -129,7 +129,8 @@
       "implement": "2026-10-10T19:03:56Z",
       "verify": "2026-10-10T19:10:00Z",
       "document": "2026-10-10T19:10:00Z",
-      "deliver": "2026-10-10T19:10:00Z"
+      "deliver": "2026-10-10T19:10:00Z",
+      "done": "2026-10-12T04:52:00Z"
     },
     "gates": {
       "spec": {
@@ -141,7 +142,8 @@
         "approved_at": "2026-10-10T19:03:56Z"
       },
       "deliver": {
-        "presented_at": "2026-10-10T19:10:00Z"
+        "presented_at": "2026-10-10T19:10:00Z",
+        "approved_at": "2026-10-12T04:51:02Z"
       }
     },
     "gate_rework": {

@@ -49,3 +49,14 @@ kind = "branch"
 [[check]]
 kind = "no_files"
 glob = ".env*"
+
+# Living specs: the spec states its requirement delta and the document stage applied it.
+[[check]]
+kind = "file"
+path = "{spec}/spec.md"
+matches = '^#### ADDED: '
+
+[[check]]
+kind = "command"
+run = ["grep", "-rq", "--include=*.md", "shout", "specs/living"]
+exit = 0

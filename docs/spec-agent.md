@@ -37,6 +37,18 @@ gets them. In the Claude Code plugin they're `/ai-config:work`; in Codex, call t
 5. **Cheap by default.** Domain knowledge loads only for the stacks touched, command output stays
    in files, routine roles use cheaper models. See [efficiency.md](efficiency.md).
 
+## Living specs
+
+Each run's `specs/<slug>/` describes one change; `specs/living/<area>.md` describes how the
+system behaves now, one file per capability area (`cli`, `export`). The analyst reads the areas
+a ticket touches and writes the spec's `## Requirement changes`: ADDED, MODIFIED, and REMOVED
+requirements against them, or `None.` In the document stage the engine applies that delta with
+`skills/spec-agent/scripts/living_specs.py apply`, so the Deliver gate's diff shows the
+behavior change next to the code. The script checks every block first (a MODIFIED or REMOVED
+target must exist, an ADDED one must not) and writes nothing if any fails. Each requirement names
+the run that last changed it. Formats: `templates/spec.md` and `templates/living.md`. Projects
+that already have runs start with no living specs; the first run that touches an area creates it.
+
 ## Roles (`agents/`)
 
 | Agent | Model | Job |
@@ -91,4 +103,5 @@ is never part of a run. It happens after merge, by you, Atlantis/Spacelift, or G
 ## Credits
 
 Stage structure inspired by GitHub's [spec-kit](https://github.com/github/spec-kit); small
-artifacts and change-focused specs by [OpenSpec](https://github.com/Fission-AI/OpenSpec).
+artifacts, change-focused specs, and living specs updated by ADDED/MODIFIED/REMOVED deltas by
+[OpenSpec](https://github.com/Fission-AI/OpenSpec).

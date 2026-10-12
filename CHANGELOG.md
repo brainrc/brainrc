@@ -11,6 +11,16 @@ a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everyt
 Every merged PR bumps `VERSION` and adds its entries under that version. There is no Unreleased
 section: `main` is what users pull, so `VERSION` must always describe it exactly.
 
+## 0.3.28 (2026-10-12)
+
+- Living specs in spec-agent (#23, after OpenSpec): `specs/living/<area>.md` records how each
+  capability area behaves now. The analyst reads the areas a ticket touches and writes the
+  spec's new `## Requirement changes` section (ADDED, MODIFIED, REMOVED, or `None.`); the
+  document stage applies it with `skills/spec-agent/scripts/living_specs.py`, which checks every
+  block first and writes nothing on an unknown target or a duplicate. Each requirement names the
+  run that last changed it. Checked on sandbox tickets 001 then 003: the second run modified a
+  requirement the first added.
+
 ## 0.3.27 (2026-10-10)
 
 - MCP servers sync (#21): `apply` merges `mcp/servers.toml` into `~/.claude.json`,

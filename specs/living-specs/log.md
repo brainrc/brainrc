@@ -1,0 +1,1 @@
+- intake: read issue #23, spec-agent lifecycle/state/templates, analyst and doc-writer roles, sandbox and evals.

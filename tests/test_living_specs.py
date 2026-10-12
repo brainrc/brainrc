@@ -115,6 +115,14 @@ class LivingSpecsTest(unittest.TestCase):
                 self.assertTrue(result.stderr.strip(), why)
                 self.assertEqual({p.name: p.read_text() for p in self.living.iterdir()}, before)
 
+    def test_template_guidance_comments_are_ignored(self):
+        template = (SCRIPT.parent.parent / "templates/spec.md").read_text()
+        guidance = template[template.index("## Requirement changes"):].split("### Area")[0]
+        self.assertIn("<!--", guidance)
+        self.apply("004-docs", "# Spec\n\n" + guidance + "None.\n")
+        self.apply("001-shout", RUN1.replace("## Requirement changes\n", guidance))
+        self.assertIn("### Shout flag", self.area("cli"))
+
     def test_missing_section_is_an_error(self):
         result = self.apply("010-old", "# Spec\n\n## Acceptance criteria\n- **AC1**: x\n", ok=False)
         self.assertIn("## Requirement changes", result.stderr)

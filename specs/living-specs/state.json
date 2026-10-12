@@ -14,11 +14,11 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "plan",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
-    "plan": "presented",
-    "deliver": "pending"
+    "plan": "approved",
+    "deliver": "presented"
   },
   "domains": [
     "scripting"
@@ -40,60 +40,84 @@
       "id": "T1",
       "title": "tests first",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC4",
         "AC5"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": "b740e1d",
+      "red": "8 of 8 red"
     },
     {
       "id": "T2",
       "title": "living_specs.py",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC4"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": "6fc86ef",
+      "red": "tests T1"
     },
     {
       "id": "T3",
       "title": "workflow docs",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC1",
         "AC2",
         "AC3",
         "AC4"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": "df8b2f9",
+      "red": "n/a (docs)"
     },
     {
       "id": "T4",
       "title": "sandbox two-ticket run",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC5"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": "e1b9cad",
+      "red": "n/a (sandbox run)"
     },
     {
       "id": "T5",
       "title": "docs and release",
       "agent": "implementer",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "criteria": [
         "AC6"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": "0de3db8",
+      "red": "n/a (docs)"
+    },
+    {
+      "id": "F1",
+      "title": "template guidance in a comment the script skips",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "criteria": [
+        "AC2",
+        "AC4"
+      ],
+      "review": "batch",
+      "red": "n/a (review fix)",
+      "commit": "9e95d5e"
     }
   ],
   "blocked": null,
@@ -102,7 +126,11 @@
     "stage_started_at": {
       "intake": "2026-10-12T06:14:15Z",
       "spec": "2026-10-12T06:14:15Z",
-      "plan": "2026-10-12T06:16:40Z"
+      "plan": "2026-10-12T06:16:40Z",
+      "implement": "2026-10-12T06:24:21Z",
+      "verify": "2026-10-12T06:30:33Z",
+      "document": "2026-10-12T06:30:33Z",
+      "deliver": "2026-10-12T06:30:33Z"
     },
     "gates": {
       "spec": {
@@ -110,7 +138,11 @@
         "approved_at": "2026-10-12T06:16:40Z"
       },
       "plan": {
-        "presented_at": "2026-10-12T06:16:40Z"
+        "presented_at": "2026-10-12T06:16:40Z",
+        "approved_at": "2026-10-12T06:24:21Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-12T06:30:33Z"
       }
     },
     "gate_rework": {
@@ -119,11 +151,12 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
+      "total": 1,
       "first_pass": 0
     },
     "retries": 0,
     "interventions": 0
   },
-  "retries": 0
+  "retries": 0,
+  "living": []
 }

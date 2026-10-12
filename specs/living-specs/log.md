@@ -1,2 +1,3 @@
 - intake: read issue #23, spec-agent lifecycle/state/templates, analyst and doc-writer roles, sandbox and evals.
 - spec approved 2026-10-12T06:16:40Z: truth in specs/living/ (A), script applies deltas (A).
+- plan approved 06:24:21Z (after a restart). T1 8 red; T2 script 8/8; T3 workflow docs; T4 sandbox 001 then 003 inline in scratch (evidence in verify.md); T5 docs 0.3.28. Review: template guidance would break the parser if kept → F1 comment + parser skips comments (+1 test). This repo's own run has no product behavior to record: living = [] (spec-agent itself isn't modeled as an area here).

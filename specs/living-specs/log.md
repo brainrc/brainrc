@@ -1,1 +1,2 @@
 - intake: read issue #23, spec-agent lifecycle/state/templates, analyst and doc-writer roles, sandbox and evals.
+- spec approved 2026-10-12T06:16:40Z: truth in specs/living/ (A), script applies deltas (A).

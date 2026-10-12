@@ -14,10 +14,10 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "spec",
+  "stage": "plan",
   "gates": {
-    "spec": "presented",
-    "plan": "pending",
+    "spec": "approved",
+    "plan": "presented",
     "deliver": "pending"
   },
   "domains": [
@@ -35,17 +35,82 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "tests first",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC4",
+        "AC5"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T2",
+      "title": "living_specs.py",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC4"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T3",
+      "title": "workflow docs",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T4",
+      "title": "sandbox two-ticket run",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC5"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T5",
+      "title": "docs and release",
+      "agent": "implementer",
+      "status": "pending",
+      "attempts": 0,
+      "criteria": [
+        "AC6"
+      ],
+      "review": "batch"
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-12T06:14:15Z",
     "stage_started_at": {
       "intake": "2026-10-12T06:14:15Z",
-      "spec": "2026-10-12T06:14:15Z"
+      "spec": "2026-10-12T06:14:15Z",
+      "plan": "2026-10-12T06:16:40Z"
     },
     "gates": {
       "spec": {
-        "presented_at": "2026-10-12T06:15:28Z"
+        "presented_at": "2026-10-12T06:15:28Z",
+        "approved_at": "2026-10-12T06:16:40Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-12T06:16:40Z"
       }
     },
     "gate_rework": {

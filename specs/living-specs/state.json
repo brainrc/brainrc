@@ -6,7 +6,7 @@
     "id": "23",
     "title": "Roadmap: living specs",
     "url": "https://github.com/bxker/ai-config/issues/23",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/65"
   },
   "slug": "living-specs",
   "branch": "living-specs",
@@ -14,11 +14,11 @@
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": "presented"
+    "deliver": "approved"
   },
   "domains": [
     "scripting"
@@ -130,7 +130,8 @@
       "implement": "2026-10-12T06:24:21Z",
       "verify": "2026-10-12T06:30:33Z",
       "document": "2026-10-12T06:30:33Z",
-      "deliver": "2026-10-12T06:30:33Z"
+      "deliver": "2026-10-12T06:30:33Z",
+      "done": "2026-10-12T06:31:30Z"
     },
     "gates": {
       "spec": {
@@ -142,7 +143,8 @@
         "approved_at": "2026-10-12T06:24:21Z"
       },
       "deliver": {
-        "presented_at": "2026-10-12T06:30:33Z"
+        "presented_at": "2026-10-12T06:30:33Z",
+        "approved_at": "2026-10-12T06:30:57Z"
       }
     },
     "gate_rework": {

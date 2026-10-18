@@ -4,6 +4,18 @@ Real spec-agent runs on the [sandbox](../examples/sandbox/README.md), graded wit
 `python3 scripts/evals.py check` ([evals](evals.md)). Add a section per session, newest first.
 CONTRIBUTING.md § Releases says when a run is required.
 
+## 2026-10-18 · Claude Code · subagent mode, ticket 003, re-runs
+
+**v0.3.30: 9/11.** The engine asked for `resize standard` itself and dispatched with the
+`Worktree:` line, but left `task_minutes` and `wall_minutes` null after T1 retried. The narrow
+Bash allowlist also denied the verifier, doc-writer, architect, and T1's implementer, and the
+engine ran their checks itself. The timing rule lived only in efficiency.md; it moved into
+SKILL.md's Implement stage.
+
+**With that fix: 11/11.** Same setup, but Bash allowed in the scratch sandbox (guard hooks still
+on); no denials. The engine recorded `finished_at` for both tasks and `metrics.waves` of 1.0
+task-min in 0.6 wall-min, and the retro reported it.
+
 ## 2026-10-18 · Claude Code · subagent mode, ticket 003
 
 **Setup.** Headless Claude Code (`claude -p`) after `aicfg apply`, so the 9 role agents loaded as

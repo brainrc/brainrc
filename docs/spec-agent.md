@@ -5,6 +5,15 @@ request: **spec → plan → implement → verify → document → deliver**, ru
 skill with a team of small, reusable agents. You approve at three gates. Everything else runs
 on its own.
 
+> **Best effort outside Claude Code.** The design assumes each role starts with a fresh context
+> and that hooks enforce the guardrails. That is fully true only in Claude Code. OpenCode runs
+> real subagents, but without per-role models, and its hooks block instead of asking. Codex,
+> Antigravity CLI, and Cursor have no named subagents, so the engine
+> [switches roles in one session](../skills/spec-agent/references/fallback.md): reviewers have
+> seen the implementer's reasoning, and the guardrails are instructions, not hooks. The fallback
+> limits what reviewers read, and for standard and large runs it recommends a fresh session for
+> review ([below](#harness-support)).
+
 ```
 /work gh:42
   intake ─► analyst ─► ⛔ SPEC ─► architect ─► ⛔ PLAN ─► implementer ×N ─► reviewers ─►
@@ -85,7 +94,17 @@ is never part of a run. It happens after merge, by you, Atlantis/Spacelift, or G
 | Skills + commands | ✅ | ✅ | ✅ (Cursor: skills only) |
 | Execution | subagents per role | subagents per role (rendered agents) | fallback: role-switch in one session |
 | Per-agent model tiers | ✅ | — | — |
-| Enforced guard hooks | ✅ | ✅ plugin (deny only) | rules only |
+| Enforced guard hooks | ✅ | ✅ plugin (deny only) | rules only (Cursor: shell and reads, deny only) |
+| Independent reviewers | ✅ fresh context | ✅ fresh context | ⚠️ same session; reviewers read only spec, diff, and their role's inputs |
+| Status | supported, E2E-tested | supported | best effort |
+
+In fallback mode, the reviewer and verifier roles read only `spec.md`, the diff (`git diff
+<base>...HEAD`), and the inputs their role file names. They never read `log.md` or the
+implementer's handoffs, and the verifier re-runs every command it cites,
+so the reasoning that produced the change can't argue for it. That narrows what a reviewer
+reads; it doesn't make the context fresh, because the session still contains the earlier roles.
+For standard and large runs the engine stops before batched review and recommends
+`/spec-resume` in a new session. That is the only way to get an independent review there.
 
 ## Extending
 

@@ -29,6 +29,7 @@ from .opencode import opencode_agent
 from .plan import Link, SettingsMerge, link_target, render_fragment
 from .settings import _owned, merge_settings
 from .plugin import check_plugin, cmd_plugin, plugin_manifests
+from .release import check_fragments, cmd_release, next_version, parse_fragment
 from .tokens import always_tokens, check_budgets, cmd_tokens, estimate_tokens
 from .validate import check_roles_link, cmd_validate
 from .doctor import cmd_doctor, doctor_findings

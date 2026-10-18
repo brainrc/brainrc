@@ -25,6 +25,6 @@ These rules apply to human contributors too. Setup and PR workflow: [CONTRIBUTIN
   for both the risky command and a safe near-miss in `tests/test_hooks.py`.
 - Keep files short: they are loaded into model context. Rules load every session.
 - After changes, run `python3 scripts/aicfg.py validate` and `python3 -m unittest discover -s tests`.
-- Every PR bumps `VERSION` (semver, policy in `CHANGELOG.md`) and adds its entries under that
-  version in `CHANGELOG.md`. No Unreleased section. Then run `python3 scripts/aicfg.py plugin`.
+- Every PR adds one fragment, `changelog.d/<branch>.md` (`bump:` + bullets, see its README).
+  Don't edit `VERSION` or `CHANGELOG.md`: the release workflow folds fragments in and tags on merge.
 - Don't edit `dist/`, `.claude-plugin/`, `.cursor-plugin/`, or the root `plugin.json`; they're generated.

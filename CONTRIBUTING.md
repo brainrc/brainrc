@@ -21,9 +21,10 @@ check for home-directory paths on every commit.
 1. Branch from `main`.
 2. Make the change. Content that only fits your team or employer belongs in a pack, not here
    ([packs](docs/packs.md), [tutorial](docs/tutorial.md)).
-3. Bump `VERSION` and add your entry under it in `CHANGELOG.md` (the policy is at the top of
-   the changelog), then run `python3 scripts/aicfg.py plugin` to update the plugin manifests.
-   `validate` fails if any of them disagree.
+3. Add a changelog fragment, `changelog.d/<branch>.md`, with its `bump` (`patch` or `minor`,
+   policy at the top of `CHANGELOG.md`) and your entry ([format](changelog.d/README.md)).
+   Don't edit `VERSION` or `CHANGELOG.md`; the release does. If `validate` says the plugin
+   manifests are stale (you changed hooks), run `python3 scripts/aicfg.py plugin`.
 4. Run the checks:
 
    ```bash
@@ -36,7 +37,22 @@ check for home-directory paths on every commit.
 5. Open a pull request that says why, what changed, and how to verify it, with `Closes #N`
    for the issue. CI runs the same checks.
 
-If another open PR also bumps `VERSION`, the second one to merge takes the next number.
+PRs are **squash-merged**: one commit per change on `main`, titled by the PR. A spec-agent
+branch's checkpoint commits stay on the branch; its `specs/<slug>/` folder carries the record.
+
+## Releases
+
+Every merge to `main` is a release. `.github/workflows/release.yml` runs
+`python3 scripts/aicfg.py release`, which folds the fragments into `CHANGELOG.md`, bumps
+`VERSION` by the largest `bump`, and regenerates the plugin manifests. It then commits
+`Release vX.Y.Z` and tags `vX.Y.Z`. Users pin a tag ([install](docs/install.md)). If `main` is
+protected, add GitHub Actions to the rule's bypass list so the workflow can push its release
+commit and tag.
+
+Before merging a PR whose fragment says `bump: minor` (or one that changes spec-agent's roles,
+references, or templates), run the sandbox evals in Claude Code and grade them
+([evals](docs/evals.md)). Record the run in [docs/e2e-runs.md](docs/e2e-runs.md). Unit tests
+show that the syncer works, and only evals show that the agent still behaves.
 
 ## Using spec-agent
 

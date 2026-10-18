@@ -55,11 +55,13 @@ def _field(data: dict, dotted: str):
 def _criteria(verify: str) -> list[tuple[str, str]]:
     """(criterion, result) rows from verify.md's Acceptance criteria table."""
     section = verify.split("## Acceptance criteria", 1)[-1].split("\n## ", 1)[0]
-    rows = []
+    rows, result = [], -1  # the Result column by header, else the last one
     for line in section.splitlines():
         cells = [c.strip() for c in line.strip().strip("|").split("|")]
-        if len(cells) >= 2 and re.fullmatch(r"AC\d+", cells[0]):
-            rows.append((cells[0], cells[-1]))
+        if "Result" in cells and not rows:
+            result = cells.index("Result")
+        elif len(cells) >= 2 and re.fullmatch(r"AC\d+", cells[0]):
+            rows.append((cells[0], cells[result] if result < len(cells) else cells[-1]))
     return rows
 
 

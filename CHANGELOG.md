@@ -12,6 +12,13 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.3.31 (2026-10-18)
+
+- spec-agent: the wave-timing rule (set `finished_at` per handoff, write all four
+  `metrics.waves` fields before landing or retry) moves into SKILL.md's Implement stage. In
+  efficiency.md alone, a v0.3.30 run of sandbox ticket 003 left `task_minutes` and
+  `wall_minutes` null.
+
 ## 0.3.30 (2026-10-18)
 
 - spec-agent parallel waves, from the first subagent-mode run of sandbox ticket 003

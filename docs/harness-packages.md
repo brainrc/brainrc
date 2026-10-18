@@ -9,11 +9,11 @@ consumer accounts on 2026-06-18; [Antigravity CLI](#antigravity-cli) replaced it
 
 | Harness | Package and install | Rules without a clone | Hooks | Agents | Packs |
 |---|---|---|---|---|---|
-| Claude Code | `.claude-plugin/` ([shipped](../README.md#claude-code-plugin-no-clone)); `/plugin install` | `SessionStart` hook output (10,000-char cap) | yes: allow, ask, deny | yes, as `ai-config:<name>` | plugin `dependencies` with semver ranges |
+| Claude Code | `.claude-plugin/` ([shipped](install.md#claude-code)); `/plugin install` | `SessionStart` hook output (10,000-char cap) | yes: allow, ask, deny | yes, as `ai-config:<name>` | plugin `dependencies` with semver ranges |
 | Codex | `.codex-plugin/` **or `.claude-plugin/`** (verified); `codex plugin marketplace add owner/repo` | no plugin route: `~/.codex/AGENTS.md` or config `developer_instructions` | yes: `PreToolUse`, `SessionStart` | TOML roles in config; not shippable in a plugin | separate plugin; no dependencies found |
-| Antigravity CLI | root `plugin.json` ([shipped](../README.md#claude-code-plugin-no-clone), unverified); `agy plugin install <git url>` | plugin `rules/*.md` with `trigger:` frontmatter | yes: `PreToolUse` ask or deny; no known "no opinion" reply | markdown, `agents/` | separate plugin; no dependencies found |
+| Antigravity CLI | root `plugin.json` ([shipped](install.md#antigravity-cli), unverified); `agy plugin install <git url>` | plugin `rules/*.md` with `trigger:` frontmatter | yes: `PreToolUse` ask or deny; no known "no opinion" reply | markdown, `agents/` | separate plugin; no dependencies found |
 | OpenCode | JS plugin (npm or `~/.config/opencode/plugins/`): hooks and tools only | `instructions[]` config or `AGENTS.md` | blocks by throwing; no ask | markdown files with a different frontmatter | `plugin[]`, `instructions[]`, `skills.paths` |
-| Cursor | `.cursor-plugin/plugin.json` ([shipped](../README.md#claude-code-plugin-no-clone), unverified); symlink a checkout to `~/.cursor/plugins/local/` | plugin `rules/` with `alwaysApply: true` | yes: allow, deny; ask reported broken | markdown, `agents/` | separate plugin; a `.cursor-plugin/marketplace.json` lists several |
+| Cursor | `.cursor-plugin/plugin.json` ([shipped](install.md#cursor), unverified); symlink a checkout to `~/.cursor/plugins/local/` | plugin `rules/` with `alwaysApply: true` | yes: allow, deny; ask reported broken | markdown, `agents/` | separate plugin; a `.cursor-plugin/marketplace.json` lists several |
 
 ## Claude Code
 

@@ -4,6 +4,36 @@ Real spec-agent runs on the [sandbox](../examples/sandbox/README.md), graded wit
 `python3 scripts/evals.py check` ([evals](evals.md)). Add a section per session, newest first.
 CONTRIBUTING.md § Releases says when a run is required.
 
+## 2026-10-18 · Claude Code · subagent mode, ticket 003
+
+**Setup.** Headless Claude Code (`claude -p`) after `aicfg apply`, so the 9 role agents loaded as
+named subagents. `acceptEdits` with a Bash allowlist (`git`, `python3`, a few read-only tools);
+worktrees under a `TMPDIR` passed with `--add-dir`. A person answered each gate.
+
+**Result: pass, 9/9** on the case as it was then. One wave of width 2: both implementers ran at
+once in their own worktrees and landed in plan order; review passed first time; 4/4 criteria.
+
+| Implement agent | Start | End | Time |
+|---|---|---|---|
+| T2 `--version` | 02:05:35 | 02:05:49 | 14s |
+| T1 `farewell.py`, attempt 1 (blocked) | 02:05:38 | 02:05:55 | 17s |
+| T1 retry, alone | 03:17:35 | 03:17:56 | 21s |
+
+The wave did 31s of agent work in 20s wall clock. With both first attempts landing, two tasks of
+this size save about 15s (40% of implement time); the saving grows with task size.
+
+**Fixed after the run:**
+- The ticket sizes `small`, which runs inline, so it never reached a wave until the driver said
+  `resize standard`. The ticket, sandbox README, and case now say so.
+- T1's retry kept its first `started_at` (72 minutes of it blocked, waiting for the user), and the
+  engine then left `task_minutes` and `wall_minutes` out. Waves now measure first attempts only,
+  a retry resets `started_at`, and the case requires both fields (`present`, new in `evals.py`).
+- Claude Code's subagent tool takes no working directory. Wave dispatch now passes the worktree
+  as `Project root` plus a `Worktree:` line: `cd` in every command, write files with file tools.
+
+**Harness, not engine:** T1 attempt 1 was blocked because the allowlist denied its
+`cd … && cat > file <<EOF` call; T2 used the Write tool and passed.
+
 ## 2026-10-18 · Claude Code · 0.3.29
 
 **Setup.** Headless Claude Code (`claude -p`), with ai-config loaded via `--plugin-dir` (skills,

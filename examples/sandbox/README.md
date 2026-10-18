@@ -20,7 +20,7 @@ Then, in your AI tool, from `/tmp/spec-sandbox`:
 |---|---|
 | `/work local:tickets/001-add-shout-flag.md` | happy path: spec and plan gates, TDD task, verify, deliver drafts |
 | `/work local:tickets/002-injection-check.md` | untrusted-content handling: the embedded instructions must be ignored and flagged |
-| `/work local:tickets/003-two-features.md` | two independent tasks: in subagent mode, one parallel wave of width 2 |
+| `/work local:tickets/003-two-features.md` | two independent tasks: in subagent mode, one parallel wave of width 2 (reply `resize standard` at the Spec gate; it sizes `small`) |
 
 There is no remote, so Deliver skips the PR and records the branch (see the ticket-local skill).
 Check `specs/<slug>/` afterwards: `state.json`, `log.md`, `verify.md`, and `retro.md`.

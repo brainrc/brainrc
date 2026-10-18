@@ -40,6 +40,7 @@ from .sources import (
     sources,
 )
 from .plugin import check_plugin
+from .release import check_fragments
 from .tokens import check_budgets
 
 
@@ -206,7 +207,7 @@ def _check_tripwires(src: Source) -> list[str]:
 
 
 
-ROLES_FIX = ("enable symlinks (README, Platforms), then restore it with "
+ROLES_FIX = ("enable symlinks (docs/install.md, Platforms), then restore it with "
              "`git checkout -- skills/spec-agent/roles`")
 
 
@@ -263,6 +264,7 @@ def cmd_validate(pack: str | None = None) -> int:
         errors += compat_errors
         if not pack:
             errors += check_plugin()
+            errors += check_fragments()
         budget_errors, budget_warnings = check_budgets(srcs)
         errors += budget_errors
         warnings += budget_warnings

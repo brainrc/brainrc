@@ -8,8 +8,39 @@ extensions, the rendered `extensions.md`, naming and layout rules. While the ver
 a breaking pack-contract change bumps MINOR. After `1.0`, it bumps MAJOR. Everything else
 (new skills, fixes, docs) bumps PATCH.
 
-Every merged PR bumps `VERSION` and adds its entries under that version. There is no Unreleased
-section: `main` is what users pull, so `VERSION` must always describe it exactly.
+Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, the release
+workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
+There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
+
+## 0.3.29 (2026-10-18)
+
+- E2E: sandbox tickets 001 and 002 run through `/work` in headless Claude Code and pass
+  `evals.py check` on this commit, 001 twice and 002 three times
+  ([docs/e2e-runs.md](docs/e2e-runs.md)). Fixes from five rounds:
+  - A ticket that adds behavior creates its living-spec area when none exists. The spec
+    template and the spec step say so; runs wrote `None.` while the rule was only in the
+    analyst role.
+  - Artifacts follow their templates' headings and columns, inline mode included (SKILL.md
+    § Always and the verify step). Inline `verify.md` came out off-template.
+  - An approval counts only for the gate it answers. One run took an earlier "unattended run"
+    message as approval of its Deliver gate.
+- `evals.py`'s `verify` check reads the `Result` column by its header instead of taking the last
+  column.
+- Harness honesty: README and docs/spec-agent.md say Codex, Antigravity CLI, and Cursor are best
+  effort (roles share one session). Fallback reviewers read only the spec, the diff, and their
+  role's inputs, and standard or large runs stop before review to suggest a fresh session
+  (`review_context` in `state.json` and `retro.md`).
+- docs/guardrails.md: known gaps of pattern hooks, and a recommended setup with read-only
+  credentials and a sandbox for runs that touch infrastructure.
+- docs/post-deliver.md: design for a `watch` stage after delivery (CI, review comments,
+  post-merge verify, retro). The roadmap puts the metrics rollup first.
+- README leads with spec-agent; install, plugins, per-harness details, and layout move to
+  docs/install.md.
+- Releases: PRs add a fragment in `changelog.d/` instead of editing `VERSION` and
+  `CHANGELOG.md`. New `aicfg.py release` folds the fragments in, and `.github/workflows/release.yml`
+  runs it on every merge to `main` and tags `vX.Y.Z`. `validate` checks fragments. PRs are
+  squash-merged, and minor releases or spec-agent behavior changes need an eval run first
+  (CONTRIBUTING.md § Releases). This is the last hand-edited version.
 
 ## 0.3.28 (2026-10-12)
 

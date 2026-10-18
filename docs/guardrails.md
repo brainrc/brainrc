@@ -42,10 +42,49 @@ as a real run.
 - ask before reading or grepping them, including Bash commands that name one (`cat .env`,
   `--env-file=.env`)
 
-Both are stdlib Python, tested in `tests/test_hooks.py`. The hooks are pattern-based: they catch
-accidents and skipped gates, not a determined adversary. Known gaps: shell aliases (`k`, `tf`),
-scripts that run mutations internally, and MCP tools whose names carry no verb (e.g. `batch`).
-Harness permission modes still apply.
+Both are stdlib Python, tested in `tests/test_hooks.py`. Harness permission modes still apply.
+
+## Known gaps
+
+The hooks match command text. They catch accidents and skipped gates, not a model (or a
+prompt-injected ticket) set on getting around them. Matching text can't close these gaps:
+
+- **Aliases and wrappers**: `k delete …`, `tf apply`, a `Makefile` target, a shell function.
+- **Indirect execution**: a script, test, or build step that mutates internally
+  (`python deploy.py`, `go run ./cmd/migrate`, a `boto3` or Kubernetes client call).
+- **MCP tools with no verb in the name** (`batch`, `run`, `execute`), and MCP servers that
+  are themselves write-capable.
+- **Credentials already in the environment**: if the shell has an admin AWS profile, a kube
+  context with cluster-admin, or a Terraform backend it can write, one missed pattern is
+  enough to change real infrastructure.
+
+So the hooks are a seatbelt. What stops a write is the **credentials**: a run should hold none
+that can apply, mutate a cluster, or write to a cloud account.
+
+### Recommended setup for runs that touch infrastructure
+
+1. **Read-only credentials by default.** spec-agent's live evidence (plan, diff, describe) needs
+   reads only (`targets` in `state.json`). Give runs credentials that can do nothing else:
+   - AWS: a dedicated profile that assumes a role with `ReadOnlyAccess` (or a narrower
+     `ViewOnlyAccess` plus the specific reads you need). Export only that
+     `AWS_PROFILE`; keep admin profiles out of the run's shell and `~/.aws/config` if you can.
+   - Kubernetes: a kube context whose user is bound to the built-in `view` ClusterRole, in a
+     separate kubeconfig (`KUBECONFIG=~/.kube/ai-readonly`). `view` can't read Secrets.
+   - Terraform/Terragrunt: plan with the read-only role and `-lock=false`, against a backend
+     the role can read but not write. Applies happen in CI (Atlantis, Spacelift, a pipeline)
+     after merge, with credentials the agent never sees.
+   - GitHub: a fine-grained token limited to the repos in play, without admin or
+     workflow-write scope. Deliver needs only contents and pull-request write.
+2. **Sandbox the run.** Run the harness in a devcontainer, VM, or the harness's own sandbox
+   (Claude Code's sandboxed Bash, Codex `workspace-write` sandbox mode), with only the
+   read-only credentials mounted and network egress limited to what the run needs.
+3. **Keep write paths out of reach.** Production kube contexts, state buckets, and break-glass
+   roles should not exist on the machine the agent runs on. If they must, use a separate OS
+   user or profile for agent sessions.
+4. **Hooks still on.** They catch the honest mistakes early and prompt before outward actions,
+   which keeps the Deliver gate meaningful.
+
+With this setup, a bypassed hook produces an access-denied error rather than a change.
 
 ## Gaps by tool
 

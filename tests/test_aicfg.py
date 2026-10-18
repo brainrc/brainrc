@@ -66,6 +66,56 @@ class TempRepoCase(unittest.TestCase):
         shutil.rmtree(self.repo)
 
 
+class ReleaseTest(TempRepoCase):
+    def fragment(self, name: str, bump: str, entry: str) -> None:
+        d = self.repo / "changelog.d"
+        d.mkdir(exist_ok=True)
+        (d / name).write_text(f"---\nbump: {bump}\n---\n{entry}\n")
+
+    def test_next_version(self):
+        self.assertEqual(aicfg.next_version((0, 3, 9), "patch"), (0, 3, 10))
+        self.assertEqual(aicfg.next_version((0, 3, 9), "minor"), (0, 4, 0))
+        self.assertEqual(aicfg.next_version((0, 3, 9), "major"), (1, 0, 0))
+
+    def test_release_takes_the_largest_bump_and_removes_fragments(self):
+        set_core_version(self.repo, "0.3.9")
+        (self.repo / "changelog.d").mkdir()
+        (self.repo / "changelog.d/README.md").write_text("How to write a fragment.\n")
+        self.fragment("a-fix.md", "patch", "- Fixed a thing.")
+        self.fragment("b-contract.md", "minor", "- **[pack contract]** New key.")
+        code, out = quiet(aicfg.cmd_release)
+        self.assertEqual(code, 0, out)
+        self.assertEqual((self.repo / "VERSION").read_text(), "0.4.0\n")
+        changelog = (self.repo / "CHANGELOG.md").read_text()
+        self.assertRegex(changelog, r"## 0\.4\.0 \(\d{4}-\d\d-\d\d\)\n\n- Fixed a thing\.\n- \*\*\[pack contract\]")
+        self.assertLess(changelog.index("## 0.4.0"), changelog.index("## 0.3.9"))
+        self.assertEqual([p.name for p in (self.repo / "changelog.d").iterdir()], ["README.md"])
+        from aicfg.sources import check_changelog, core_version
+        self.assertEqual(check_changelog(core_version()), [])
+
+    def test_dry_run_and_no_fragments_write_nothing(self):
+        set_core_version(self.repo, "0.3.9")
+        code, out = quiet(aicfg.cmd_release)
+        self.assertIn("nothing to release", out)
+        self.fragment("a.md", "patch", "- Fixed.")
+        code, out = quiet(aicfg.cmd_release, True)
+        self.assertIn("Would release 0.3.10", out)
+        self.assertEqual((self.repo / "VERSION").read_text(), "0.3.9\n")
+        self.assertTrue((self.repo / "changelog.d/a.md").is_file())
+
+    def test_bad_fragments_fail_validation_and_release(self):
+        set_core_version(self.repo, "0.3.9")
+        self.fragment("a.md", "huge", "- Fixed.")
+        self.fragment("b.md", "patch", "Not a bullet.")
+        (self.repo / "changelog.d/c.md").write_text("- No frontmatter.\n")
+        errors = aicfg.check_fragments()
+        self.assertEqual(len(errors), 3, errors)
+        self.assertTrue(any("a.md" in e and "bump" in e for e in errors), errors)
+        code, out = quiet(aicfg.cmd_release)
+        self.assertEqual(code, 1)
+        self.assertEqual((self.repo / "VERSION").read_text(), "0.3.9\n")
+
+
 class MergeSettingsTest(unittest.TestCase):
     def setUp(self):
         self.fragment = aicfg.render_fragment(FRAGMENT, "~/.claude/hooks/ai-config")

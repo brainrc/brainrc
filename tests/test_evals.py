@@ -133,8 +133,24 @@ class CheckTest(unittest.TestCase):
     def test_state_mismatch_fails(self):
         self.assert_fails(ALL_KINDS.replace('equals = "done"', 'equals = "deliver"'), "stage")
 
+    def test_state_present(self):
+        present = ALL_KINDS.replace('equals = "done"', 'present = true')
+        code, out = self.run_case(present)
+        self.assertEqual(code, 0, out)
+        self.assert_fails(present.replace('field = "stage"', 'field = "metrics.waves.task_minutes"'), "missing")
+
     def test_failed_criterion_fails(self):
         (self.project / "specs/001-demo/verify.md").write_text(VERIFY.replace("manual run | pass", "manual run | fail"))
+        self.assert_fails(ALL_KINDS, "AC2")
+
+    def test_result_column_found_by_header(self):
+        reordered = ("## Acceptance criteria\n| Criterion | Result | Evidence |\n|---|---|---|\n"
+                     "| AC1 | pass | `test_a` |\n| AC2 | {} | manual run |\n")
+        verify = self.project / "specs/001-demo/verify.md"
+        verify.write_text(reordered.format("pass"))
+        code, out = self.run_case(ALL_KINDS)
+        self.assertIn("PASS verify: 2 criteria all pass", out)
+        verify.write_text(reordered.format("fail"))
         self.assert_fails(ALL_KINDS, "AC2")
 
     def test_missing_pattern_fails(self):

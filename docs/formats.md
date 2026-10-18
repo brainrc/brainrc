@@ -33,7 +33,7 @@ System prompt...
 ```
 
 spec-agent reads these files through `skills/spec-agent/roles`, a symlink to `../../agents`.
-Keep it a symlink: `validate` fails otherwise ([Platforms](../README.md#platforms)).
+Keep it a symlink: `validate` fails otherwise ([Platforms](install.md#platforms)).
 
 ## Commands: `commands/<name>.md`
 
@@ -95,7 +95,7 @@ machine. Format and extension points: [packs.md](packs.md).
 
 Cursor has no user rules file: `aicfg` links skills and merges guard hooks into
 `~/.cursor/hooks.json`, and rules arrive only through the plugin (`.cursor-plugin/`, see the
-[README](../README.md#claude-code-plugin-no-clone)), which loads each `rules/*.md` because it
+[install](install.md#cursor)), which loads each `rules/*.md` because it
 carries `alwaysApply: true`.
 
 OpenCode can't read Claude's agent frontmatter (a `tools: Read, Grep` string makes its whole config
@@ -105,6 +105,6 @@ every tool the agent lacks; tools it has follow your own OpenCode permissions. L
 dropped (the subagent uses its caller's model) and `mcp__*` tools aren't mapped.
 
 Antigravity CLI paths (`~/.gemini/config/`) come from its changelog and user reports, not a live
-run. It can also install ai-config as a plugin ([README](../README.md#claude-code-plugin-no-clone)).
+run. It can also install ai-config as a plugin ([install](install.md#antigravity-cli)).
 
 Harness paths change often. If one moves, update `harnesses.toml`.

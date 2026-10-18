@@ -12,6 +12,8 @@ Usage:
                                  on any problem, each with its fix
   aicfg.py plugin                write the plugin manifests (.claude-plugin/, plugin.json);
                                  validate fails when they're stale
+  aicfg.py release [--dry-run]   fold changelog.d/ fragments into CHANGELOG.md, bump VERSION,
+                                 and rewrite the plugin manifests (the release workflow runs it)
   aicfg.py tokens                estimate the context cost of every skill, agent, and command
   aicfg.py update                refetch packs named by `git` URL at their `ref`, then apply
 
@@ -45,6 +47,7 @@ from .plan import invalid_fragments, plan
 from .mcp import check_servers, mcp_change, mcp_plan, record_owned, write_mcp
 from .settings import settings_change, write_settings
 from .plugin import cmd_plugin
+from .release import cmd_release
 from .tokens import cmd_tokens
 from .validate import cmd_validate
 from .doctor import cmd_doctor
@@ -211,6 +214,8 @@ def main(argv: list[str]) -> int:
             return cmd_validate(argv[3])
     if cmd == "plugin" and len(argv) == 2:
         return cmd_plugin()
+    if cmd == "release" and (len(argv) == 2 or argv[2:] == ["--dry-run"]):
+        return cmd_release(dry_run=len(argv) == 3)
     if cmd == "doctor" and len(argv) == 2:
         return cmd_doctor()
     if cmd == "update" and len(argv) == 2:

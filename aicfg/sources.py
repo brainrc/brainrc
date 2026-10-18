@@ -61,7 +61,7 @@ def core_version() -> tuple[int, ...]:
 
 
 def check_changelog(core: tuple[int, ...]) -> list[str]:
-    """Every PR bumps VERSION and adds its entries under it: no Unreleased, newest entry = VERSION."""
+    """main is what users pull: no Unreleased, newest entry = VERSION (release keeps them in step)."""
     version = ".".join(map(str, core))
     path = config.REPO / "CHANGELOG.md"
     if not path.is_file():
@@ -75,7 +75,7 @@ def check_changelog(core: tuple[int, ...]) -> list[str]:
         errors.append(f"CHANGELOG.md: no `## X.Y.Z` heading (expected `## {version}`)")
     elif m.group(1) != version:
         errors.append(f"CHANGELOG.md: newest version {m.group(1)} doesn't match VERSION {version}. "
-                      "Every PR bumps both.")
+                      "`aicfg.py release` updates both.")
     return errors
 
 

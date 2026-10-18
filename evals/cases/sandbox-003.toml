@@ -1,5 +1,6 @@
 # Ticket 003 (two independent slices): in subagent mode the run should land both tasks from one
-# parallel wave, keep every criterion green, and leave main alone.
+# parallel wave, keep every criterion green, and leave main alone. It sizes `small` (inline), so
+# the driver must answer `resize standard` at the Spec gate.
 ticket_ref = "local:tickets/003-two-features.md"
 
 [[check]]
@@ -11,6 +12,16 @@ equals = "done"
 kind = "state"
 field = "metrics.waves.max_width"
 equals = 2
+
+[[check]]
+kind = "state"
+field = "metrics.waves.task_minutes"
+present = true
+
+[[check]]
+kind = "state"
+field = "metrics.waves.wall_minutes"
+present = true
 
 [[check]]
 kind = "verify"

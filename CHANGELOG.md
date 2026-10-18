@@ -12,6 +12,14 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.3.32 (2026-10-18)
+
+- spec-agent: dispatch puts the skills a role file names on a new `Role skills:` line with
+  absolute paths (doc-writer: pr-description, doc-types, unslop, runbook; security-reviewer:
+  security-checklist). Roles have no skill tool, so the doc-writer couldn't load them.
+- spec-agent: `specs/<slug>/.runs/` ignores itself with its own `.gitignore` (`*`) instead of
+  an intake edit to `.git/info/exclude`, which Claude Code protects and every E2E run was denied.
+
 ## 0.3.31 (2026-10-18)
 
 - spec-agent: the wave-timing rule (set `finished_at` per handoff, write all four

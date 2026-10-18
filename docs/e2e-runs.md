@@ -4,6 +4,16 @@ Real spec-agent runs on the [sandbox](../examples/sandbox/README.md), graded wit
 `python3 scripts/evals.py check` ([evals](evals.md)). Add a section per session, newest first.
 CONTRIBUTING.md § Releases says when a run is required.
 
+## 2026-10-18 · Claude Code · ticket 003, role skills and `.runs/`
+
+**Result: 11/11**, same setup as the re-runs below. The doc-writer's dispatch carried the new
+`Role skills:` line; it read pr-description, doc-types, and unslop, and ran unslop on both drafts
+(before, it reported them missing). `.runs/` got its own `.gitignore` (`*`): no `.git/info/exclude`
+edit, no denial, and a clean tree at the end.
+
+**Open:** the analyst wrote a prose line under `## Requirement changes`, `living_specs.py`
+rejected it, and the engine edited `spec.md` after approval. Same in the previous run.
+
 ## 2026-10-18 · Claude Code · subagent mode, ticket 003, re-runs
 
 **v0.3.30: 9/11.** The engine asked for `resize standard` itself and dispatched with the

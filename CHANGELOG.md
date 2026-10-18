@@ -12,6 +12,16 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.3.30 (2026-10-18)
+
+- spec-agent parallel waves, from the first subagent-mode run of sandbox ticket 003
+  (`docs/e2e-runs.md`): wave dispatch passes the worktree as `Project root` plus a `Worktree:`
+  line, since subagent tools may not take a working directory; wave metrics count first attempts
+  only, so a blocked retry no longer drops `task_minutes` and `wall_minutes`. Refs #25.
+- Sandbox ticket 003 and its eval case say the ticket sizes `small` and needs `resize standard`
+  to reach a wave; the case also requires the wave timings.
+- `evals.py`: a `state` check can test that a field is `present`.
+
 ## 0.3.29 (2026-10-18)
 
 - E2E: sandbox tickets 001 and 002 run through `/work` in headless Claude Code and pass

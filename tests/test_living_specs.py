@@ -115,6 +115,17 @@ class LivingSpecsTest(unittest.TestCase):
                 self.assertTrue(result.stderr.strip(), why)
                 self.assertEqual({p.name: p.read_text() for p in self.living.iterdir()}, before)
 
+    def test_a_note_before_the_first_area_is_ignored(self):
+        note = "## Requirement changes\nNo `specs/living/` exists yet, so this creates the area.\n\n"
+        self.apply("001-shout", RUN1.replace("## Requirement changes\n", note))
+        self.assertIn("### Shout flag", self.area("cli"))
+        self.assertNotIn("exists yet", self.area("cli"))
+
+    def test_text_between_an_area_and_its_blocks_is_still_an_error(self):
+        body = "### Area: cli\nPurpose: x.\nA stray line.\n#### ADDED: X\nText.\n"
+        result = self.apply("009-bad", f"# Spec\n\n## Requirement changes\n{body}", ok=False)
+        self.assertIn("stray line", result.stderr)
+
     def test_template_guidance_comments_are_ignored(self):
         template = (SCRIPT.parent.parent / "templates/spec.md").read_text()
         guidance = template[template.index("## Requirement changes"):].split("### Area")[0]

@@ -12,6 +12,13 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.3.33 (2026-10-19)
+
+- spec-agent: `living_specs.py` ignores a note before the first `### Area:` under
+  `## Requirement changes` (two sandbox runs wrote one, apply rejected it, and the engine edited
+  `spec.md` after approval). The engine also runs `living_specs.py check` before presenting the
+  Spec gate, so a malformed delta is fixed before it is approved.
+
 ## 0.3.32 (2026-10-18)
 
 - spec-agent: dispatch puts the skills a role file names on a new `Role skills:` line with

@@ -62,8 +62,8 @@
       "id": "T2",
       "title": "Criteria passed and past blocked stops",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "scripts/retro_metrics.py",
         "tests/test_retro_metrics.py"
@@ -75,14 +75,17 @@
       "review": "batch",
       "after": [
         "T1"
-      ]
+      ],
+      "wave": 2,
+      "worktree": "/tmp/claude-0/-home-user-ai-config/bb6b11af-d4d6-51ac-beaf-b202f60c9428/scratchpad/spec-agent/024-metrics-rollup/T2",
+      "started_at": "2026-10-21T02:51:22Z"
     },
     {
       "id": "T3",
       "title": "Aggregates",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "scripts/retro_aggregate.py",
         "tests/test_retro_aggregate.py"
@@ -95,7 +98,10 @@
       "review": "batch",
       "after": [
         "T1"
-      ]
+      ],
+      "wave": 2,
+      "worktree": "/tmp/claude-0/-home-user-ai-config/bb6b11af-d4d6-51ac-beaf-b202f60c9428/scratchpad/spec-agent/024-metrics-rollup/T3",
+      "started_at": "2026-10-21T02:51:22Z"
     },
     {
       "id": "T4",

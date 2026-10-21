@@ -35,3 +35,24 @@
 **Open issues:** new external contract (pointer file + CLI) called out.
 
 **Next:** Plan gate.
+
+## test-writer · T1 · done
+2026-10-21
+
+**Did:** 17 subprocess contract tests in tests/test_active_run.py (temp AICFG_HOME/HOME/cwd). Applied review: nothing-found read asserts exit 1 + stderr; blank and file pointers fall back to cwd specs; longer first slug in the replace test; type hint fixed.
+
+**Evidence:**
+- `python3 -m unittest -q tests.test_active_run` → 17 not passing (14 failed, 3 errors): script absent. red: compile-only (accepted).
+
+**Changed files:** `tests/test_active_run.py`
+
+## code-reviewer · T1 · done
+2026-10-21
+
+**Findings:**
+- MEDIUM test_active_run.py:144 nothing-found test passed vacuously → assert exit 1 + stderr (fixed)
+- MEDIUM no blank/file pointer tests → added (fixed)
+- LOW equal-length paths in replace test → fixed
+- LOW wrong type hint → fixed
+
+**Next:** T2.

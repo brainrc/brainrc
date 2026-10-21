@@ -37,7 +37,7 @@
       "id": "T1",
       "title": "Contract tests for active_run.py",
       "agent": "test-writer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "tests/test_active_run.py"
@@ -52,14 +52,16 @@
         "AC10",
         "AC11"
       ],
-      "review": "each"
+      "review": "each",
+      "red": "compile-only",
+      "commit": "13b0732"
     },
     {
       "id": "T2",
       "title": "Implement active_run.py write|read",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "skills/spec-agent/scripts/active_run.py"
       ],
@@ -125,8 +127,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
-      "first_pass": 0
+      "total": 1,
+      "first_pass": 1
     },
     "retries": 0,
     "interventions": 0

@@ -53,3 +53,6 @@ T1 d8ab616, T2 2b894dd, T3 4626334. Full suite 322 OK, validate OK (T3 broken li
 
 ## engine · wave 2 landed
 T4 395c969, T5 7786c6d, T6 ece5df5. 326 OK, validate OK. Batched review: code-reviewer + security-reviewer.
+
+## security-reviewer · batched · done
+**Findings:** no CRITICAL/HIGH. MEDIUM check name used unsanitized in .runs/ and fixture-log paths (slugify to [A-Za-z0-9._-]); LOW Push gate approval not tied to a head sha (record sha, push only it, no force, re-present if HEAD moved); LOW SPEC_PR_STATUS_FIXTURE unvalidated in real runs (restrict to examples/ or evals/ paths). Clean: log text can't push; C-task files bounded by the diff; gh reads read-only; no secrets. Engine: all three go to F1.

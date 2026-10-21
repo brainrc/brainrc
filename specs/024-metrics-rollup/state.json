@@ -6,7 +6,7 @@
     "id": "24",
     "title": "Roadmap: metrics rollup across runs (retro_report.py + ccusage cost)",
     "url": "https://github.com/bxker/ai-config/issues/24",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/82"
   },
   "slug": "024-metrics-rollup",
   "branch": "024-metrics-rollup",
@@ -14,7 +14,7 @@
   "size": "standard",
   "mode": "subagent",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -236,7 +236,8 @@
       "implement": "2026-10-21T02:48:29Z",
       "verify": "2026-10-21T03:03:19Z",
       "document": "2026-10-21T03:05:03Z",
-      "deliver": "2026-10-21T03:07:06Z"
+      "deliver": "2026-10-21T03:07:06Z",
+      "done": "2026-10-21T03:21:30Z"
     },
     "gates": {
       "spec": {
@@ -262,7 +263,7 @@
       "first_pass": 1
     },
     "retries": 0,
-    "interventions": 0,
+    "interventions": 1,
     "waves": {
       "count": 2,
       "max_width": 2,

@@ -8,3 +8,10 @@
 **Changed files:** `specs/074-campaign-ordered-shape/spec.md`
 
 **Open issues:** 4 questions (merge detection, GitHub depends-on via gh/MCP, --shape ordered without links, eval reach into children).
+
+## analyst · record gate answers · done
+2026-10-21
+
+**Did:** Decisions recorded; AC15 merge detection on resume, AC16 GitHub dependency source + body fallback, AC17 --shape ordered without links, AC18 campaign eval check; new area evals. Open questions: None.
+
+**Evidence:** 18 criteria; engine living_specs check exit 0.

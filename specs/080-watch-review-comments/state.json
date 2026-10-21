@@ -15,10 +15,10 @@
   "size": "standard",
   "mode": "subagent",
   "delivery": "normal",
-  "stage": "plan",
+  "stage": "implement",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [
@@ -38,8 +38,8 @@
       "id": "T1",
       "title": "watch.md review handling, rounds cap, Push gate with replies",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "skills/spec-agent/references/watch.md"
       ],
@@ -54,14 +54,15 @@
         "AC11"
       ],
       "review": "each",
-      "wave": 1
+      "wave": 1,
+      "started_at": "2026-10-21T15:58:11Z"
     },
     {
       "id": "T2",
       "title": "state.md: review_rounds, threads, thread_log, thread key",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "skills/spec-agent/references/state.md"
       ],
@@ -71,14 +72,15 @@
         "AC11"
       ],
       "review": "batch",
-      "wave": 1
+      "wave": 1,
+      "started_at": "2026-10-21T15:58:11Z"
     },
     {
       "id": "T3",
       "title": "Optional thread id in connector contract and ticket-github",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "skills/spec-agent/references/connectors.md",
         "skills/ticket-github/SKILL.md"
@@ -88,14 +90,15 @@
         "AC11"
       ],
       "review": "each",
-      "wave": 1
+      "wave": 1,
+      "started_at": "2026-10-21T15:58:11Z"
     },
     {
       "id": "T4",
       "title": "Injection fixture, ticket 009, sandbox-006, grading tests",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "examples/sandbox/pr_status/review-comment-injection.json",
         "examples/sandbox/tickets/009-watch-review-comment.md",
@@ -108,7 +111,8 @@
         "AC10"
       ],
       "review": "batch",
-      "wave": 1
+      "wave": 1,
+      "started_at": "2026-10-21T15:58:11Z"
     },
     {
       "id": "T5",
@@ -158,7 +162,8 @@
     "stage_started_at": {
       "intake": "2026-10-21T14:54:02Z",
       "spec": "2026-10-21T14:54:02Z",
-      "plan": "2026-10-21T15:48:14Z"
+      "plan": "2026-10-21T15:48:14Z",
+      "implement": "2026-10-21T15:58:11Z"
     },
     "gates": {
       "spec": {
@@ -166,7 +171,8 @@
         "approved_at": "2026-10-21T15:48:14Z"
       },
       "plan": {
-        "presented_at": "2026-10-21T15:50:36Z"
+        "presented_at": "2026-10-21T15:50:36Z",
+        "approved_at": "2026-10-21T15:58:11Z"
       }
     },
     "gate_rework": {

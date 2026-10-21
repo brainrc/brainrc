@@ -10,3 +10,6 @@ Recommended answers to Q1-Q5 folded into Open questions.
 
 ## architect · plan · done
 **Did:** plan.md (79 lines), 6 tasks in 2 waves; review handling in watch.md § Review comments (cap 110 lines). **Open issues:** optional thread id; watch.thread_log[] with hashed keys; no-id replies shown for the user to post. **Next:** Plan gate.
+
+## engine · plan gate · approved 2026-10-21T15:58:11Z
+Wave 1 start: T1-T4.

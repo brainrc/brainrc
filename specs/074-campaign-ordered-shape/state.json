@@ -45,6 +45,9 @@
       "spec": {
         "presented_at": "2026-10-21T03:27:48Z",
         "approved_at": "2026-10-21T03:33:30Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-21T03:36:25Z"
       }
     },
     "gate_rework": {

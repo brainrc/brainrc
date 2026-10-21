@@ -47,3 +47,9 @@ T1 d8ab616, T2 2b894dd, T3 4626334. Full suite 322 OK, validate OK (T3 broken li
 
 ## code-reviewer · T4 · changes-requested
 **Findings:** HIGH SKILL.md "These words also approve the Push gate" reads as earlier wording approving it; HIGH lifecycle § 7 done-checkpoint push vs new guardrail "only an approved Push gate"; LOW watch.md "rejected" vs state.md changes-requested (to F1). **Next:** T4 attempt 2: Push gate takes the same approval words and rule; guardrail scoped to fix commits, the run-artifact done checkpoint stays under the Deliver approval.
+
+## implementer · T4 attempt 2 · done
+**Did:** Push gate answered the same way (approval words, only replies after presentation); guardrail scoped to fix-commit pushes, done checkpoint under Deliver approval; lifecycle 6b "fix-commit push". **Evidence:** validate OK; 322 OK. Engine read the diff: both HIGHs resolved; batched review re-covers it.
+
+## engine · wave 2 landed
+T4 395c969, T5 7786c6d, T6 ece5df5. 326 OK, validate OK. Batched review: code-reviewer + security-reviewer.

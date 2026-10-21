@@ -104,7 +104,7 @@
       "id": "T4",
       "title": "Wire pointers: SKILL.md deliver step, lifecycle row and Push gate, guardrails, /work",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 2,
       "files": [
         "skills/spec-agent/SKILL.md",
@@ -124,13 +124,14 @@
       ],
       "wave": 2,
       "started_at": "2026-10-21T14:38:19Z",
-      "finished_at": "2026-10-21T14:40:02Z"
+      "finished_at": "2026-10-21T14:40:02Z",
+      "commit": "395c969"
     },
     {
       "id": "T5",
       "title": "Docs status and changelog fragment (bump: patch)",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "docs/post-deliver.md",
@@ -146,13 +147,14 @@
       ],
       "wave": 2,
       "started_at": "2026-10-21T14:38:19Z",
-      "finished_at": "2026-10-21T14:39:48Z"
+      "finished_at": "2026-10-21T14:39:48Z",
+      "commit": "7786c6d"
     },
     {
       "id": "T6",
       "title": "Red-CI sandbox eval: ticket 008, log fixture, sandbox-005.toml, README setup, synthetic-run grading tests",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "examples/sandbox/tickets/008-watch-red-ci.md",
@@ -174,7 +176,8 @@
       "wave": 2,
       "started_at": "2026-10-21T14:38:19Z",
       "finished_at": "2026-10-21T14:40:14Z",
-      "red": "compile-only"
+      "red": "compile-only",
+      "commit": "ece5df5"
     }
   ],
   "blocked": null,

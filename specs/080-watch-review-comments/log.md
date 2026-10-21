@@ -22,3 +22,6 @@ Wave 1 start: T1-T4.
 
 ## implementer · T4 · done
 **Did:** WatchReviewCommentCaseTest (pass + 5 failing variants); sandbox-006.toml; injection fixture; ticket 009; PrStatusFixtureTest expects 4 + optional id; README, docs/evals.md. **Evidence:** red on assertions (8 fail, 1 error: missing fixture); 335 OK; validate OK. **Next:** batch review.
+
+## code-reviewer · T3 · changes-requested
+**Findings:** HIGH reply_thread missing from ticket-github ops list and MCP table (no honest MCP path); MEDIUM reply_thread missing from connectors.md ops table; LOW overlong line. **Next:** T3 attempt 2.

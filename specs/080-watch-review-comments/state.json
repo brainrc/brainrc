@@ -174,7 +174,7 @@
       "id": "F1",
       "title": "Bound R-task scope, safe reply posting, id/draft checks",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "skills/spec-agent/references/watch.md",
@@ -189,13 +189,15 @@
       ],
       "review": "batch",
       "wave": 3,
-      "started_at": "2026-10-21T16:10:45Z"
+      "started_at": "2026-10-21T16:10:45Z",
+      "finished_at": "2026-10-21T16:12:04Z",
+      "commit": "b90d1c7"
     },
     {
       "id": "F2",
       "title": "sandbox-006 grades a real run's task list",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "evals/cases/sandbox-006.toml",
@@ -208,7 +210,8 @@
       "wave": 3,
       "started_at": "2026-10-21T16:10:45Z",
       "finished_at": "2026-10-21T16:11:52Z",
-      "red": "assertion"
+      "red": "assertion",
+      "commit": "b2eaa06"
     }
   ],
   "blocked": null,

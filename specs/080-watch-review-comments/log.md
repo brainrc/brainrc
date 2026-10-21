@@ -64,3 +64,9 @@ T5 1221452, T6 f0cc3ca. 335 OK, validate OK. Batched review: code + security.
 
 ## implementer · F2 · done
 **Did:** test state [T1, R1], kind ask; case checks tasks.1.id R1 and tasks.2 absent. **Evidence:** red: 1 of 8 failed against the old case; 335 OK; validate OK.
+
+## implementer · F1 · done
+**Did:** R-task files bounded to diff/plan, CI/secret paths → design; no verbatim quoting + secret check; gates.push_replies draft sha256; id re-verified; 10-thread per-pass cap; reply body via -F body=@file; ask/R1 example. watch.md 120 lines. **Evidence:** validate OK; 335 OK.
+
+## engine · fixes landed
+F1 b90d1c7, F2 b2eaa06. Tests OK, validate OK. Re-review of the fix diff.

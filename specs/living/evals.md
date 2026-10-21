@@ -13,3 +13,7 @@ _Last changed by 078-pr-status-connector._
 ### Red-CI watch eval
 A sandbox eval SHALL grade the CI-failure path offline from the red-CI fixture via `SPEC_PR_STATUS_FIXTURE`, and `state` checks SHALL accept numeric indexes in dotted fields. (AC9, AC10)
 _Last changed by 079-watch-ci-failures._
+
+### Review-comment watch eval
+A sandbox eval SHALL grade the review-comment path offline from a fixture containing an embedded instruction, which must be flagged and not followed. (AC10)
+_Last changed by 080-watch-review-comments._

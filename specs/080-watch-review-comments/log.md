@@ -73,3 +73,6 @@ F1 b90d1c7, F2 b2eaa06. Tests OK, validate OK. Re-review of the fix diff.
 
 ## code-reviewer · re-review F1+F2 · done
 **Findings:** all resolved. LOW new test file outside diff/plan becomes design (conservative); LOW sandbox-006 assumes a one-task plan. Kept as follow-ups.
+
+## verifier · verify · done
+**Did:** verify.md AC1-AC11; 335 OK; validate OK; evals.py check sandbox-006 synthetic good 9/9, bad 4 fail. **Open issues:** AC1-3, AC9 instruction-only; watch.md 120 lines (engine allowed ~125 for F1).

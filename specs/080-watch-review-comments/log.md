@@ -16,3 +16,6 @@ Wave 1 start: T1-T4.
 
 ## implementer · T2 · done
 **Did:** state.md: review_rounds, threads, thread_log, key rule, no raw text. **Evidence:** validate OK; 328 OK (docs only). **Next:** batch review.
+
+## implementer · T3 · done
+**Did:** optional thread id in connectors.md; ticket-github query + mapping emit id; MCP "if present"; reply_thread section (outward, after approved Push gate). **Evidence:** validate OK; 328 OK (docs only). **Next:** review (each).

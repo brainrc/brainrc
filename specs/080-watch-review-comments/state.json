@@ -80,7 +80,7 @@
       "id": "T3",
       "title": "Optional thread id in connector contract and ticket-github",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "review",
       "attempts": 1,
       "files": [
         "skills/spec-agent/references/connectors.md",
@@ -92,7 +92,8 @@
       ],
       "review": "each",
       "wave": 1,
-      "started_at": "2026-10-21T15:58:11Z"
+      "started_at": "2026-10-21T15:58:11Z",
+      "finished_at": "2026-10-21T16:00:09Z"
     },
     {
       "id": "T4",

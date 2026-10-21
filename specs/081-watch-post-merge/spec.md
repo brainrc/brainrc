@@ -1,6 +1,6 @@
 # Spec: watch post-merge verify and the retro's After delivery section
 
-Ticket: gh:81 · Size: standard · Status: draft
+Ticket: gh:81 · Size: standard · Status: approved
 
 ## Problem
 `watch` currently reports `merged` and `closed` and stops (watch.md), so a run never learns whether
@@ -57,9 +57,10 @@ The system SHALL report duration, gate rework, first-pass rate, retries, interve
 A sandbox eval SHALL grade the merged path offline from the merged fixture, checking post-merge fields, `verify-merged.md`, and the retro's After delivery section. (AC9)
 
 ## Open questions
-1. Under the fixture (no remote) a `merge_commit_sha` cannot resolve locally; AC2 falls back to the local `state.base` tip. Is that acceptable, or should the fixture eval skip the checkout and only grade state? *Matters for how real the eval is.*
-2. `metrics.pr_opened_at` does not exist today (nothing records the PR open time). Prefer the connector's PR `created_at` over the local clock when available? *Affects time_to_merge accuracy.*
-3. Should a regression set `blocked` or only be reported? Spec assumes report only and `stage: done`. *Decides whether the run is left open.*
+Resolved at the Spec gate (recommended answers accepted):
+1. Under the fixture the merge sha can't resolve, so verify falls back to the `state.base` tip (AC2); the eval grades state from a synthetic run folder.
+2. `metrics.pr_opened_at` is the local `date -u` when `link_pr` records `ticket.pr`. (AC6)
+3. A regression is reported only; the run ends at `stage: done`. (AC3)
 
 ## Proposed split
 (large only)

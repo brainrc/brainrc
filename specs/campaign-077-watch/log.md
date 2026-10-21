@@ -6,3 +6,6 @@
 - Dependencies: API `blocked_by` empty for every child (`issue_dependencies_summary.blocked_by: 0`),
   so source is `body` (`Depends on #N` lines). Edges: 79←78, 80←79, 81←80. No cycle, no out-of-epic link.
 - Order (Kahn): 78, 79, 80, 81.
+
+## 2026-10-21T04:52:53Z · Campaign gate approved
+- Child 1 gh:78 started: specs/078-pr-status-connector/ on branch 078-pr-status-connector (from main).

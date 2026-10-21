@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:78",
+    "id": "78",
+    "title": "watch 1/4: pr_status connector operation",
+    "url": "https://github.com/bxker/ai-config/issues/78",
+    "pr": null
+  },
+  "slug": "078-pr-status-connector",
+  "branch": "078-pr-status-connector",
+  "base": "main",
+  "campaign": "specs/campaign-077-watch",
+  "size": "standard",
+  "mode": "subagent",
+  "delivery": "normal",
+  "stage": "spec",
+  "gates": {
+    "spec": "pending",
+    "plan": "pending",
+    "deliver": "pending"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/aicfg.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-21T04:52:22Z",
+    "stage_started_at": {
+      "intake": "2026-10-21T04:52:22Z",
+      "spec": "2026-10-21T04:52:53Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-21T04:54:02Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "retries": 0,
+    "reviews": {
+      "first_pass": 0,
+      "total": 0
+    }
+  },
+  "living": []
+}

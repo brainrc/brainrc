@@ -24,8 +24,8 @@ on its own.
 loop. It reads the PR's checks; a red check caused by this diff becomes a fix task `C<n>`, run
 through the usual implement and review loop, then a **Push gate** (diff stat, commits, the
 failing check) before anything is pushed. External failures are only noted. Review comments and
-merge handling are not built yet. Details: [post-deliver.md](post-deliver.md). Offline evals
-set `SPEC_PR_STATUS_FIXTURE` to a `pr_status` fixture file instead of calling the connector.
+merge handling are not built yet. Details: [post-deliver.md](post-deliver.md). In a sandbox copy with
+no git remote, `SPEC_PR_STATUS_FIXTURE` names a `pr_status` fixture file read instead of the connector.
 
 ## Commands
 

@@ -19,7 +19,7 @@
       "depends_on": [
         "gh:78"
       ],
-      "status": "in_progress",
+      "status": "verified",
       "slug": "079-watch-ci-failures",
       "branch": "079-watch-ci-failures",
       "pr": null
@@ -30,9 +30,9 @@
       "depends_on": [
         "gh:79"
       ],
-      "status": "todo",
-      "slug": null,
-      "branch": null,
+      "status": "in_progress",
+      "slug": "080-watch-review-comments",
+      "branch": "080-watch-review-comments",
       "pr": null
     },
     {

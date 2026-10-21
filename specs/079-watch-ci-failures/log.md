@@ -74,3 +74,6 @@ F1 91b2b1a, F2 84f1dd2. 328 OK, validate OK. Re-review of the fix diff: code + s
 
 ## verifier · verify · done
 **Did:** verify.md: AC1-AC10; 328 OK; validate OK; evals.py check sandbox-005 on synthetic good (6/6 pass) and bad (3 fail) projects. **Open issues:** AC1-AC8 doc-verified; non-blocking: no summary file check in sandbox-005; watch.md:50 raw-log wording; fixture read is prose only. **Next:** document.
+
+## doc-writer · document · done
+**Did:** fixed 3 doc drifts (spec-agent.md fixture sentence, post-deliver.md summarize step + head_sha); pr-body.md (2 of 4, <PREDECESSOR_PR> placeholder), ticket-comment.md. **Evidence:** validate OK; 328 OK.

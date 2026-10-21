@@ -18,7 +18,7 @@
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [
     "scripting"
@@ -248,7 +248,8 @@
         "approved_at": "2026-10-21T02:48:29Z"
       },
       "deliver": {
-        "presented_at": "2026-10-21T03:07:06Z"
+        "presented_at": "2026-10-21T03:07:06Z",
+        "approved_at": "2026-10-21T03:16:49Z"
       }
     },
     "gate_rework": {

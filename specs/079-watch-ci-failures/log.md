@@ -7,3 +7,6 @@ Campaign gh:77 child 2 of 4. Intake 2026-10-21T05:10:55Z: size standard, mode su
 
 ## engine · spec gate · approved 2026-10-21T13:18:15Z
 Recommended answers to Q1-Q5 and the AC9 verification note folded into Open questions.
+
+## architect · plan · done
+**Did:** plan.md, 6 tasks in 2 waves; new references/watch.md. **Evidence:** state.json parses. **Open issues:** state schema grows; env var SPEC_PR_STATUS_FIXTURE; sibling-log fixture convention; security triggers: push gating, untrusted CI logs. **Next:** Plan gate.

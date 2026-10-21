@@ -1,6 +1,6 @@
 # Spec: Campaign ordered shape
 
-Ticket: gh:74 · Size: set by the engine · Status: approved
+Ticket: gh:74 · Size: standard · Status: approved
 
 ## Problem
 `/work --campaign` accepts only near-identical tickets. An epic of different, dependent children fails the template check and every child is rejected as a deviant, so the user sequences runs and PRs by hand. Campaigns need a second shape that builds children in dependency order and delivers them as one reviewed stack.

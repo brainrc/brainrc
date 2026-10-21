@@ -14,7 +14,7 @@
   "size": "standard",
   "mode": "subagent",
   "delivery": "normal",
-  "stage": "implement",
+  "stage": "verify",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -86,7 +86,7 @@
       "id": "T3",
       "title": "Document the pointer contract and write moments; changelog fragment",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 2,
       "files": [
         "skills/spec-agent/references/state.md",
@@ -101,7 +101,8 @@
         "AC7",
         "AC12"
       ],
-      "review": "each"
+      "review": "each",
+      "commit": "5b654fb"
     }
   ],
   "blocked": null,
@@ -111,7 +112,8 @@
       "intake": "2026-10-21T01:26:35Z",
       "spec": "2026-10-21T01:27:06Z",
       "plan": "2026-10-21T01:29:23Z",
-      "implement": "2026-10-21T01:33:05Z"
+      "implement": "2026-10-21T01:33:05Z",
+      "verify": "2026-10-21T01:40:44Z"
     },
     "gates": {
       "spec": {
@@ -129,7 +131,7 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 3,
+      "total": 4,
       "first_pass": 2
     },
     "retries": 1,

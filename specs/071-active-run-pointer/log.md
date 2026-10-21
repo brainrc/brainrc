@@ -93,3 +93,18 @@
 **Findings:**
 - HIGH SKILL.md:75,84, state.md:110,127,131, lifecycle.md:37 `write specs/<slug>` is relative; with cwd reset to the session dir it silently records a nonexistent path → require the absolute run path
 - LOW state.md section says absolute but the call passes relative → fixed by the above
+
+## implementer · T3 · done (attempt 2)
+2026-10-21
+
+**Did:** All six `active_run.py write` calls pass `<project root>/specs/<slug>`; state.md says the path must be absolute because the shell's directory may not be the repo.
+
+**Evidence:** validate OK; full suite 234 OK.
+
+## code-reviewer · T3 · done (re-review of the fix)
+2026-10-21
+
+**Findings:**
+- HIGH relative path → resolved
+- LOW absolute/relative mismatch → resolved
+- LOW (optional) `write()` doesn't check the directory exists → follow-up, script out of T3 scope

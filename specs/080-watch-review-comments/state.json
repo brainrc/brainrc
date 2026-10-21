@@ -114,7 +114,9 @@
       ],
       "review": "batch",
       "wave": 1,
-      "started_at": "2026-10-21T15:58:11Z"
+      "started_at": "2026-10-21T15:58:11Z",
+      "finished_at": "2026-10-21T16:00:33Z",
+      "red": "assertion"
     },
     {
       "id": "T5",

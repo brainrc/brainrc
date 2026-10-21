@@ -19,3 +19,6 @@ Wave 1 start: T1-T4.
 
 ## implementer · T3 · done
 **Did:** optional thread id in connectors.md; ticket-github query + mapping emit id; MCP "if present"; reply_thread section (outward, after approved Push gate). **Evidence:** validate OK; 328 OK (docs only). **Next:** review (each).
+
+## implementer · T4 · done
+**Did:** WatchReviewCommentCaseTest (pass + 5 failing variants); sandbox-006.toml; injection fixture; ticket 009; PrStatusFixtureTest expects 4 + optional id; README, docs/evals.md. **Evidence:** red on assertions (8 fail, 1 error: missing fixture); 335 OK; validate OK. **Next:** batch review.

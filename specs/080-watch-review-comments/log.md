@@ -33,3 +33,9 @@ Wave 1 start: T1-T4.
 **Did:** watch.md § Review comments; Resume pass R-tasks + new-thread collection; Push gate lists pushes and replies. 110 lines. **Evidence:** validate OK; 328 OK (docs only). **Next:** review (each).
 - Engine: T1 again wrote watch.md in the project root despite the explicit worktree instruction; moved into the T1 worktree, root restored. Retro finding: the worktree rule needs enforcement (e.g. a guard hook), not just prompt text.
 - Correction: the line above is wrong. T1 had worked in its worktree. The engine misread `git -C <worktree> status` output as the root's, then copied the root's unchanged watch.md over T1's edits, destroying them. Reviewer stopped; T1 asked to re-apply its edits (counts as the same attempt; engine error, not a task failure).
+
+## implementer · T1 (re-applied) · done
+**Did:** re-applied watch.md changes; reply op named reply_thread. 110 lines. **Evidence:** validate OK; unit tests OK. **Next:** review (each).
+
+## code-reviewer · T1 · changes-requested
+**Findings:** HIGH <key8> collides for GitHub node ids (PRRT_kwD prefix); MEDIUM total counted before round cap; MEDIUM thread_log vs task/draft write order (crash safety); MEDIUM one shared Push gate per pass (AC4/Q5); MEDIUM kind for fully malicious thread; LOW reply-only gate wording, wrap, grammar. **Next:** T1 attempt 2.

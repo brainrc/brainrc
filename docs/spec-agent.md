@@ -49,7 +49,7 @@ gets them. In the Claude Code plugin they're `/ai-config:work`; in Codex, call t
 ## Campaigns
 
 `/work --campaign <epic | query | refs> [--shape playbook|ordered]` runs many related tickets.
-Two shapes, detected from the children's links (`--shape` overrides):
+Two shapes, detected from the template check plus the children's depends-on links (`--shape` overrides):
 
 - **playbook**: near-identical tickets. One shared playbook, approved at one Campaign gate, then
   batches with one Deliver gate per batch.
@@ -58,6 +58,10 @@ Two shapes, detected from the children's links (`--shape` overrides):
   Spec and Plan gates. One Deliver gate covers all children, then PRs open sequentially: only the
   first at once. Resuming (`/work --campaign` or `/spec-resume`) opens the next after its
   predecessor's PR is merged.
+
+To express dependencies, use GitHub issue dependencies or a `Depends on #N` line in the child's
+body. For local tickets, use `depends_on: [local:...]` in the child's frontmatter, and list the
+children in the epic's `children:` (their order is the epic order).
 
 Details: [campaign.md](../skills/spec-agent/references/campaign.md).
 

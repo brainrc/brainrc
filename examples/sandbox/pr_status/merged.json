@@ -1,0 +1,10 @@
+{
+  "head_sha": "c0ffee1234567890abcdef1234567890abcdef12",
+  "updated_at": "2026-01-16T09:00:00Z",
+  "state": "merged",
+  "checks": [
+    {"name": "lint", "conclusion": "success"},
+    {"name": "unit-tests", "conclusion": "success"}
+  ],
+  "unresolved_threads": []
+}

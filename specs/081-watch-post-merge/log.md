@@ -7,3 +7,6 @@ Campaign gh:77 child 4 of 4. Intake 2026-10-21T16:18:38Z: size standard, mode su
 
 ## engine · spec gate · approved 2026-10-21T16:34:11Z
 Recommended answers to Q1-Q3 folded into Open questions.
+
+## architect · plan · done
+**Did:** plan.md (71 lines), 6 tasks in 2 waves. **Open issues:** pr_status optional merged_at/merge_commit_sha; --json schema_version 1→2; sandbox-007 graded on a synthetic folder; Total min now includes merge wait (follow-up). **Next:** Plan gate.

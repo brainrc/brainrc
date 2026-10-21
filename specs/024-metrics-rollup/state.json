@@ -14,10 +14,10 @@
   "size": "standard",
   "mode": "subagent",
   "delivery": "normal",
-  "stage": "plan",
+  "stage": "implement",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [
@@ -32,14 +32,144 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "RunRecord and per-run metrics",
+      "agent": "implementer",
+      "status": "in_progress",
+      "attempts": 1,
+      "files": [
+        "scripts/retro_metrics.py",
+        "tests/test_retro_metrics.py"
+      ],
+      "criteria": [
+        "AC4",
+        "AC5",
+        "AC6",
+        "AC7",
+        "AC8",
+        "AC18"
+      ],
+      "review": "batch",
+      "wave": 1,
+      "worktree": "/tmp/claude-0/-home-user-ai-config/bb6b11af-d4d6-51ac-beaf-b202f60c9428/scratchpad/spec-agent/024-metrics-rollup/T1",
+      "started_at": "2026-10-21T02:48:29Z"
+    },
+    {
+      "id": "T2",
+      "title": "Criteria passed and past blocked stops",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "scripts/retro_metrics.py",
+        "tests/test_retro_metrics.py"
+      ],
+      "criteria": [
+        "AC9",
+        "AC17"
+      ],
+      "review": "batch",
+      "after": [
+        "T1"
+      ]
+    },
+    {
+      "id": "T3",
+      "title": "Aggregates",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "scripts/retro_aggregate.py",
+        "tests/test_retro_aggregate.py"
+      ],
+      "criteria": [
+        "AC3",
+        "AC9",
+        "AC19"
+      ],
+      "review": "batch",
+      "after": [
+        "T1"
+      ]
+    },
+    {
+      "id": "T4",
+      "title": "ccusage period totals",
+      "agent": "implementer",
+      "status": "in_progress",
+      "attempts": 1,
+      "files": [
+        "scripts/retro_ccusage.py",
+        "tests/test_retro_ccusage.py"
+      ],
+      "criteria": [
+        "AC13",
+        "AC14"
+      ],
+      "review": "batch",
+      "wave": 1,
+      "worktree": "/tmp/claude-0/-home-user-ai-config/bb6b11af-d4d6-51ac-beaf-b202f60c9428/scratchpad/spec-agent/024-metrics-rollup/T4",
+      "started_at": "2026-10-21T02:48:29Z"
+    },
+    {
+      "id": "T5",
+      "title": "CLI and output",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "scripts/retro_report.py",
+        "tests/test_retro_report.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC10",
+        "AC11",
+        "AC12",
+        "AC13",
+        "AC14",
+        "AC15"
+      ],
+      "review": "batch",
+      "after": [
+        "T2",
+        "T3",
+        "T4"
+      ]
+    },
+    {
+      "id": "T6",
+      "title": "Docs, roadmap, changelog fragment",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "docs/efficiency.md",
+        "docs/roadmap.md",
+        "changelog.d/024-metrics-rollup.md"
+      ],
+      "criteria": [
+        "AC11",
+        "AC16"
+      ],
+      "review": "batch",
+      "after": [
+        "T5"
+      ]
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-21T02:25:43Z",
     "stage_started_at": {
       "intake": "2026-10-21T02:25:43Z",
       "spec": "2026-10-21T02:26:15Z",
-      "plan": "2026-10-21T02:40:06Z"
+      "plan": "2026-10-21T02:40:06Z",
+      "implement": "2026-10-21T02:48:29Z"
     },
     "gates": {
       "spec": {
@@ -47,7 +177,8 @@
         "approved_at": "2026-10-21T02:40:06Z"
       },
       "plan": {
-        "presented_at": "2026-10-21T02:46:31Z"
+        "presented_at": "2026-10-21T02:46:31Z",
+        "approved_at": "2026-10-21T02:48:29Z"
       }
     },
     "gate_rework": {

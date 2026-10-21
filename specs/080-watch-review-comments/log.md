@@ -58,3 +58,6 @@ T5 1221452, T6 f0cc3ca. 335 OK, validate OK. Batched review: code + security.
 
 ## security-reviewer · batched · done
 **Findings:** no CRITICAL/HIGH. MEDIUM R-task files not bounded to PR diff/spec scope (outside or CI/secret-adjacent → design, stop); MEDIUM reply body quoting (use -F body=@file; no verbatim thread text; secret scan); LOW draft hash at gate; LOW per-pass cap + list handed-back threads; LOW verify thread id belongs to this PR; LOW test uses kind "R". Engine: MEDIUMs + cheap LOWs to fix task F1.
+
+## code-reviewer · batched · changes-requested
+**Findings:** T1 fixes resolved. HIGH sandbox-006 tasks.1 absent fails a real run (T1 at tasks[0], R1 at tasks[1]); MEDIUM test thread_log kind "R"; LOW examples pair ask with C2. **Next:** F1 (watch/ticket-github/state: security MEDIUMs + LOWs + example) and F2 (sandbox-006 + tests), wave 3.

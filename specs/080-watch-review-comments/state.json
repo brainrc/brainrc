@@ -169,6 +169,44 @@
       "started_at": "2026-10-21T16:06:59Z",
       "finished_at": "2026-10-21T16:08:06Z",
       "commit": "f0cc3ca"
+    },
+    {
+      "id": "F1",
+      "title": "Bound R-task scope, safe reply posting, id/draft checks",
+      "agent": "implementer",
+      "status": "in_progress",
+      "attempts": 1,
+      "files": [
+        "skills/spec-agent/references/watch.md",
+        "skills/ticket-github/SKILL.md",
+        "skills/spec-agent/references/state.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC4",
+        "AC7"
+      ],
+      "review": "batch",
+      "wave": 3,
+      "started_at": "2026-10-21T16:10:45Z"
+    },
+    {
+      "id": "F2",
+      "title": "sandbox-006 grades a real run's task list",
+      "agent": "implementer",
+      "status": "in_progress",
+      "attempts": 1,
+      "files": [
+        "evals/cases/sandbox-006.toml",
+        "tests/test_evals.py"
+      ],
+      "criteria": [
+        "AC10"
+      ],
+      "review": "batch",
+      "wave": 3,
+      "started_at": "2026-10-21T16:10:45Z"
     }
   ],
   "blocked": null,
@@ -197,8 +235,8 @@
     },
     "retries": 2,
     "reviews": {
-      "first_pass": 0,
-      "total": 2
+      "first_pass": 1,
+      "total": 4
     },
     "waves": {
       "count": 2,

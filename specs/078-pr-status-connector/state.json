@@ -33,7 +33,83 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Contract: pr_status in connectors.md + changelog fragment",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "skills/spec-agent/references/connectors.md",
+        "changelog.d/078-pr-status-connector.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC6",
+        "AC9"
+      ],
+      "review": "each",
+      "wave": 1
+    },
+    {
+      "id": "T2",
+      "title": "ticket-github ## pr_status (gh + GraphQL + MCP, read-only); align post-deliver.md",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "skills/ticket-github/SKILL.md",
+        "docs/post-deliver.md"
+      ],
+      "criteria": [
+        "AC3",
+        "AC6",
+        "AC9"
+      ],
+      "review": "each",
+      "wave": 1
+    },
+    {
+      "id": "T3",
+      "title": "Validate tests: connectors with and without pr_status",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC4",
+        "AC5",
+        "AC9"
+      ],
+      "review": "batch",
+      "wave": 1
+    },
+    {
+      "id": "T4",
+      "title": "Sandbox pr_status fixtures + offline shape test",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "examples/sandbox/pr_status/red-ci.json",
+        "examples/sandbox/pr_status/review-comment.json",
+        "examples/sandbox/pr_status/merged.json",
+        "examples/sandbox/README.md",
+        "tests/test_evals.py"
+      ],
+      "criteria": [
+        "AC7",
+        "AC8",
+        "AC9"
+      ],
+      "review": "batch",
+      "wave": 1
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-21T04:52:22Z",
@@ -46,6 +122,9 @@
       "spec": {
         "presented_at": "2026-10-21T04:54:02Z",
         "approved_at": "2026-10-21T04:55:53Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-21T04:57:29Z"
       }
     },
     "gate_rework": {

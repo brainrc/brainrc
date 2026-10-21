@@ -7,3 +7,6 @@ Campaign gh:77 child 1 of 4. Intake 2026-10-21T04:52:53Z: size standard, mode su
 
 ## engine · spec gate · approved 2026-10-21T04:55:53Z
 User approved with the recommended answers to Q1-Q4; engine folded them into AC1, AC3, AC7 and the Open questions section.
+
+## architect · plan · done
+**Did:** plan.md, 4 tasks, all wave 1 (disjoint files); shape fixed in plan. **Evidence:** state.json parses. **Changed files:** plan.md, state.json **Open issues:** contract callout (additive). **Next:** Plan gate.

@@ -183,7 +183,7 @@
       "id": "F1",
       "title": "watch.md/state.md/lifecycle.md review and security fixes",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "skills/spec-agent/references/watch.md",
@@ -200,13 +200,14 @@
       "review": "batch",
       "wave": 3,
       "started_at": "2026-10-21T14:44:27Z",
-      "finished_at": "2026-10-21T14:46:05Z"
+      "finished_at": "2026-10-21T14:46:05Z",
+      "commit": "91b2b1a"
     },
     {
       "id": "F2",
       "title": "Sandbox fixture path and stricter sandbox-005 case",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "examples/sandbox/README.md",
@@ -222,7 +223,10 @@
       ],
       "review": "batch",
       "wave": 3,
-      "started_at": "2026-10-21T14:44:27Z"
+      "started_at": "2026-10-21T14:44:27Z",
+      "finished_at": "2026-10-21T14:47:32Z",
+      "red": "assertion",
+      "commit": "84f1dd2"
     }
   ],
   "blocked": null,

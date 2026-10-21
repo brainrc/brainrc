@@ -62,3 +62,9 @@ T4 395c969, T5 7786c6d, T6 ece5df5. 326 OK, validate OK. Batched review: code-re
 
 ## implementer · F1 · done
 **Did:** 8 fixes in watch.md (78 lines); state.md gates.push_sha + approved_at before push; lifecycle retro at end of deliver. **Evidence:** validate OK; 326 OK (docs only). **Next:** re-review of the fix diff.
+
+## implementer · F2 · done
+**Did:** fixture path pr_status/red-ci.json everywhere; README notes no-remote rule; evals.py present=false; sandbox-005 asserts watch.ci_failures.1 absent; docs. **Evidence:** red on assertions; 328 OK; validate OK.
+
+## engine · fixes landed
+F1 91b2b1a, F2 84f1dd2. 328 OK, validate OK. Re-review of the fix diff: code + security.

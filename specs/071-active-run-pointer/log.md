@@ -118,3 +118,12 @@
 - `.runs/test.log` → 234 OK; `.runs/validate.log` → OK; `.runs/ac1-cli.log` → read printed the repo-a run, exit 0
 
 **Changed files:** `specs/071-active-run-pointer/verify.md`
+
+## doc-writer · document · done
+2026-10-21
+
+**Did:** "Active run pointer" section in docs/spec-agent.md for tool authors, linking the state.md contract; pr-body.md (Refs #71: the mod part is outside this repo) and ticket-comment.md.
+
+**Evidence:** test_active_run 17 OK; full suite 234 OK; validate OK. Nothing posted.
+
+**Changed files:** `docs/spec-agent.md`, `specs/071-active-run-pointer/pr-body.md`, `specs/071-active-run-pointer/ticket-comment.md`

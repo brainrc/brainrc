@@ -68,3 +68,6 @@ T4 395c969, T5 7786c6d, T6 ece5df5. 326 OK, validate OK. Batched review: code-re
 
 ## engine · fixes landed
 F1 91b2b1a, F2 84f1dd2. 328 OK, validate OK. Re-review of the fix diff: code + security.
+
+## code-reviewer · re-review F1+F2 · done
+**Findings:** all resolved; LOW spec/plan cite repo path for the fixture; LOW push_sha stale between reset and presentation (harmless, re-recorded). Engine: clarified AC9 path in spec.md (change to the approved spec, to be named at the Deliver gate); plan.md left as history.

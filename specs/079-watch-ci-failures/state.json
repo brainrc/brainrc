@@ -15,7 +15,7 @@
   "size": "standard",
   "mode": "subagent",
   "delivery": "normal",
-  "stage": "implement",
+  "stage": "verify",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -236,7 +236,8 @@
       "intake": "2026-10-21T05:10:55Z",
       "spec": "2026-10-21T05:10:55Z",
       "plan": "2026-10-21T13:18:15Z",
-      "implement": "2026-10-21T14:32:59Z"
+      "implement": "2026-10-21T14:32:59Z",
+      "verify": "2026-10-21T14:49:37Z"
     },
     "gates": {
       "spec": {
@@ -255,8 +256,8 @@
     },
     "retries": 2,
     "reviews": {
-      "first_pass": 1,
-      "total": 4
+      "first_pass": 2,
+      "total": 5
     },
     "waves": {
       "count": 2,
@@ -265,5 +266,8 @@
       "wall_minutes": 4.2
     }
   },
-  "living": []
+  "living": [],
+  "spec_changes_after_approval": [
+    "AC9 fixture path clarified to the sandbox-relative path (review LOW)"
+  ]
 }

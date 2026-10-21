@@ -66,3 +66,26 @@
 2026-10-21
 
 T1 and T4 landed in plan order; worktrees removed. metrics.waves: width 2, 3.6 task-min in 2.2 wall-min.
+
+## implementer · T2 · done
+2026-10-21
+
+**Did:** criteria_passed ("n/m") from verify.md Result column by header, retro row fallback; blocked_stops list = current reason + log.md headers with status blocked. Adjusted T1's identity test: blocked_stops is now [] not None.
+
+**Evidence:** red 9 assertion failures; `tests.test_retro_metrics` 32 OK; full suite 273 OK (worktree).
+
+**Changed files:** `scripts/retro_metrics.py`, `tests/test_retro_metrics.py`
+
+## implementer · T3 · done
+2026-10-21
+
+**Did:** `aggregate(records)` by size, mode, domain (multi counts under each; none group), final stage; {avg, n} over known values; durations over done runs only; blocked-stop counts and reasons.
+
+**Evidence:** red 12/13 vs stub (4 failures, 8 KeyError errors); `tests.test_retro_aggregate` 13 OK; full suite 276 OK; validate OK (worktree).
+
+**Changed files:** `scripts/retro_aggregate.py`, `tests/test_retro_aggregate.py`
+
+## engine · wave 2 · landed
+2026-10-21
+
+T2 and T3 landed in order; integration check aggregates all 36 real runs. metrics.waves now: 2 waves, width 2, 6.3 task-min in 3.7 wall-min.

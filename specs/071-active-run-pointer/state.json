@@ -6,7 +6,7 @@
     "id": "71",
     "title": "spec-agent: record the active run's path so tools outside the run's repo can find it",
     "url": "https://github.com/bxker/ai-config/issues/71",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/72"
   },
   "slug": "071-active-run-pointer",
   "branch": "071-active-run-pointer",
@@ -14,7 +14,7 @@
   "size": "standard",
   "mode": "subagent",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -115,7 +115,8 @@
       "implement": "2026-10-21T01:33:05Z",
       "verify": "2026-10-21T01:40:44Z",
       "document": "2026-10-21T01:42:29Z",
-      "deliver": "2026-10-21T01:44:29Z"
+      "deliver": "2026-10-21T01:44:29Z",
+      "done": "2026-10-21T01:51:49Z"
     },
     "gates": {
       "spec": {
@@ -138,7 +139,7 @@
     },
     "reviews": {
       "total": 4,
-      "first_pass": 2
+      "first_pass": 3
     },
     "retries": 1,
     "interventions": 0

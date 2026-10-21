@@ -36,7 +36,9 @@ requirement. No daemon and no polling loop in the engine.
 
 **Connector contract.** One new optional operation, `pr_status`: CI check results on the head
 commit, review threads (unresolved, with author and body), and merge state. `ticket-github`
-implements it with `gh pr view --json statusCheckRollup,reviews,state` (read-only).
+implements it with two read-only calls: `gh pr view <n> --json statusCheckRollup,headRefOid,state,updatedAt`
+(checks, head SHA, state, updated_at) and `gh api graphql` `reviewThreads` (unresolved only, via
+`isResolved`); see its `## pr_status` section for the queries and mapping.
 Connectors without it skip `watch`, and the run ends at `done` as today.
 
 ### CI failure

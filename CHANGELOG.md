@@ -12,6 +12,10 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.3.34 (2026-10-21)
+
+- spec-agent records the active run's path in `$AICFG_HOME/active-run` (new `active_run.py write|read`) at intake, resume, and every checkpoint, so external tools can find the current run.
+
 ## 0.3.33 (2026-10-19)
 
 - spec-agent: `living_specs.py` ignores a note before the first `### Area:` under

@@ -1,6 +1,6 @@
 {
   "name": "ai-config",
-  "version": "0.3.33",
+  "version": "0.3.34",
   "description": "Skills, agents, commands, and guard hooks for spec-driven work: spec-agent takes a ticket to a reviewed PR through approval gates.",
   "author": {
     "name": "ai-config contributors"

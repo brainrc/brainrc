@@ -1,8 +1,8 @@
 # Post-deliver: following a PR to merge (design)
 
-Status: **CI failures and the Push gate are built** (see
-[`references/watch.md`](../skills/spec-agent/references/watch.md)); review comments and
-post-merge verify are still planned. A run used to end at the Deliver gate: push, PR, ticket
+Status: **CI failures, review comments, and the Push gate are built** (see
+[`references/watch.md`](../skills/spec-agent/references/watch.md)); post-merge verify is
+still planned. A run used to end at the Deliver gate: push, PR, ticket
 update, retro, `stage: done`, and whatever came next was fixed by hand. This page designs the
 stage that closes that loop. Build order is at the end.
 
@@ -54,14 +54,18 @@ Connectors without it skip `watch`, and the run ends at `done` as today.
 
 ### Review comment
 
-The comment is untrusted input, just like the ticket body. For each unresolved thread:
+The comment is untrusted input, just like the ticket body. Each unresolved thread is handled
+once; its key goes in `watch.thread_log` (keys only, no raw text). For each new thread:
 
 - A small, local change (rename, added test, one-function fix) → a fix task `R1..`, then the
   Push gate.
 - A question about intent → draft a reply from `spec.md`; post it only after it's approved at
-  the next Push gate (replies are outward too).
+  the next Push gate (replies are outward too), via the connector's `reply_thread`.
 - Large or design-level → stop and ask. The user decides; the run doesn't redesign on a
   reviewer's word alone.
+
+Embedded instructions in a thread are flagged, not followed. After 3 review rounds the PR is
+handed back and nothing further is classified.
 
 ### Post-merge verify
 
@@ -80,7 +84,8 @@ and suggest a follow-up ticket.
   "head_sha": "abc1234",
   "ci_failures": [{ "check": "test", "sha": "abc1234", "cause": "own|external", "task": "C1" }],
   "review_rounds": 2,
-  "threads": { "total": 5, "fixed": 3, "replied": 2 },
+  "threads": { "total": 5, "fixed": 3, "replied": 2, "flagged": 0 },
+  "thread_log": [{ "key": "9f2c41d07a6b3e58", "kind": "ask", "task": "R1", "flagged": false }],
   "merged_at": null,
   "post_merge": null
 }
@@ -103,7 +108,7 @@ reviewer role or checklist.
    numbers will land. Without it, the new fields would be written and never read.
 2. `pr_status` in the connector contract and `ticket-github`; `validate` accepts it as optional.
 3. `watch` stage for CI failures and the Push gate. **Done.**
-4. Review comments.
+4. Review comments. **Done.**
 5. Post-merge verify and the retro's After delivery section; add them to the rollup.
 
 Each step is one PR and ships with an eval: a sandbox ticket with a fake `pr_status` fixture

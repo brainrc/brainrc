@@ -23,8 +23,10 @@ on its own.
 **`watch`** (normal delivery, connector with `pr_status`) runs on `/spec-resume`, never in a
 loop. It reads the PR's checks; a red check caused by this diff becomes a fix task `C<n>`, run
 through the usual implement and review loop, then a **Push gate** (diff stat, commits, the
-failing check) before anything is pushed. External failures are only noted. Review comments and
-merge handling are not built yet. Details: [post-deliver.md](post-deliver.md). In a sandbox copy with
+failing check) before anything is pushed. External failures are only noted. Unresolved review threads are handled once each: a small
+ask becomes a fix task `R<n>`, a question gets a drafted reply, and a design-level ask stops for
+you. Replies post only after the same Push gate, and after 3 review rounds the PR is handed back.
+Merge handling is not built yet. Details: [post-deliver.md](post-deliver.md). In a sandbox copy with
 no git remote, `SPEC_PR_STATUS_FIXTURE` names a `pr_status` fixture file read instead of the connector.
 
 ## Commands

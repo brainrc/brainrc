@@ -1,0 +1,276 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:24",
+    "id": "24",
+    "title": "Roadmap: metrics rollup across runs (retro_report.py + ccusage cost)",
+    "url": "https://github.com/bxker/ai-config/issues/24",
+    "pr": null
+  },
+  "slug": "024-metrics-rollup",
+  "branch": "024-metrics-rollup",
+  "base": "main",
+  "size": "standard",
+  "mode": "subagent",
+  "delivery": "normal",
+  "stage": "deliver",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/aicfg.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "RunRecord and per-run metrics",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "scripts/retro_metrics.py",
+        "tests/test_retro_metrics.py"
+      ],
+      "criteria": [
+        "AC4",
+        "AC5",
+        "AC6",
+        "AC7",
+        "AC8",
+        "AC18"
+      ],
+      "review": "batch",
+      "wave": 1,
+      "started_at": "2026-10-21T02:48:29Z",
+      "finished_at": "2026-10-21T02:50:43Z",
+      "commit": "fee4bd1",
+      "red": "assertion"
+    },
+    {
+      "id": "T2",
+      "title": "Criteria passed and past blocked stops",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "scripts/retro_metrics.py",
+        "tests/test_retro_metrics.py"
+      ],
+      "criteria": [
+        "AC9",
+        "AC17"
+      ],
+      "review": "batch",
+      "after": [
+        "T1"
+      ],
+      "wave": 2,
+      "started_at": "2026-10-21T02:51:22Z",
+      "finished_at": "2026-10-21T02:52:34Z",
+      "commit": "351ebde",
+      "red": "assertion"
+    },
+    {
+      "id": "T3",
+      "title": "Aggregates",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "scripts/retro_aggregate.py",
+        "tests/test_retro_aggregate.py"
+      ],
+      "criteria": [
+        "AC3",
+        "AC9",
+        "AC19"
+      ],
+      "review": "batch",
+      "after": [
+        "T1"
+      ],
+      "wave": 2,
+      "started_at": "2026-10-21T02:51:22Z",
+      "finished_at": "2026-10-21T02:52:51Z",
+      "commit": "6934ea5",
+      "red": "assertion"
+    },
+    {
+      "id": "T4",
+      "title": "ccusage period totals",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "scripts/retro_ccusage.py",
+        "tests/test_retro_ccusage.py"
+      ],
+      "criteria": [
+        "AC13",
+        "AC14"
+      ],
+      "review": "batch",
+      "wave": 1,
+      "started_at": "2026-10-21T02:48:29Z",
+      "finished_at": "2026-10-21T02:49:52Z",
+      "commit": "1b1337b",
+      "red": "assertion"
+    },
+    {
+      "id": "T5",
+      "title": "CLI and output",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "scripts/retro_report.py",
+        "tests/test_retro_report.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC10",
+        "AC11",
+        "AC12",
+        "AC13",
+        "AC14",
+        "AC15"
+      ],
+      "review": "batch",
+      "after": [
+        "T2",
+        "T3",
+        "T4"
+      ],
+      "commit": "3b9387e",
+      "red": "assertion"
+    },
+    {
+      "id": "F1",
+      "title": "Fix blocked-stop double count and negative agent time",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "scripts/retro_aggregate.py",
+        "tests/test_retro_aggregate.py",
+        "scripts/retro_metrics.py",
+        "tests/test_retro_metrics.py",
+        "tests/test_retro_report.py"
+      ],
+      "criteria": [
+        "AC9",
+        "AC18"
+      ],
+      "review": "batch",
+      "commit": "e3fc355",
+      "red": "assertion"
+    },
+    {
+      "id": "T6",
+      "title": "Docs, roadmap, changelog fragment",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "docs/efficiency.md",
+        "docs/roadmap.md",
+        "changelog.d/024-metrics-rollup.md"
+      ],
+      "criteria": [
+        "AC11",
+        "AC16"
+      ],
+      "review": "batch",
+      "after": [
+        "T5"
+      ],
+      "commit": "63bdce0"
+    },
+    {
+      "id": "F2",
+      "title": "Batched review fixes: blocked-stop dedupe, wait over total, ccusage date range, doc wording",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "scripts/retro_metrics.py",
+        "tests/test_retro_metrics.py",
+        "scripts/retro_aggregate.py",
+        "tests/test_retro_aggregate.py",
+        "scripts/retro_report.py",
+        "tests/test_retro_report.py",
+        "docs/efficiency.md"
+      ],
+      "criteria": [
+        "AC8",
+        "AC9",
+        "AC13",
+        "AC16",
+        "AC18"
+      ],
+      "review": "batch",
+      "commit": "b8d6fa4",
+      "red": "assertion"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-21T02:25:43Z",
+    "stage_started_at": {
+      "intake": "2026-10-21T02:25:43Z",
+      "spec": "2026-10-21T02:26:15Z",
+      "plan": "2026-10-21T02:40:06Z",
+      "implement": "2026-10-21T02:48:29Z",
+      "verify": "2026-10-21T03:03:19Z",
+      "document": "2026-10-21T03:05:03Z",
+      "deliver": "2026-10-21T03:07:06Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-21T02:38:07Z",
+        "approved_at": "2026-10-21T02:40:06Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-21T02:46:31Z",
+        "approved_at": "2026-10-21T02:48:29Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-21T03:07:06Z",
+        "approved_at": "2026-10-21T03:16:49Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 1,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 2,
+      "first_pass": 1
+    },
+    "retries": 0,
+    "interventions": 0,
+    "waves": {
+      "count": 2,
+      "max_width": 2,
+      "task_minutes": 6.3,
+      "wall_minutes": 3.7
+    }
+  },
+  "living": [
+    "metrics-report"
+  ]
+}

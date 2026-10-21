@@ -21,6 +21,48 @@
 
 Measure with the metrics in each run's `retro.md`, plus token/cost tools below.
 
+## Metrics rollup
+
+`scripts/retro_report.py` rolls up `specs/*/state.json` across runs. It is offline and read-only.
+
+```
+python3 scripts/retro_report.py [--root DIR]... [--json] [--ccusage]
+```
+
+`--root` (repeatable, default `.`) is a project root holding `specs/*/state.json`, or a specs dir.
+Output is a Markdown table per run plus averages overall and by size, mode, domain, and final stage.
+Minutes throughout. `unknown` means not recorded and is never counted as 0; averages show `n`, the runs where the value is known.
+
+| Number | Meaning |
+|---|---|
+| Total min | start of run to done; unknown for in-progress or blocked runs |
+| Gate wait min | time parked at approval gates, waiting on a human; unknown if it exceeds total (inconsistent timestamps), with a warning, so it stays out of averages |
+| Agent min | total minus gate wait: time the agent worked |
+| First-pass | share of review passes that found nothing to fix; the aggregate is the average of per-run rates (with `n`) |
+| Retries | each time a task goes back to the implementer |
+| Interventions | each time the user has to step in outside a gate (answering a blocked stop, correcting the agent mid-stage) |
+| Wave ratio | summed task minutes over wall minutes of parallel waves (above 1 means parallelism paid off) |
+| Blocked stops | a run's current `blocked` reason plus each past `blocked` handoff in its `log.md`; counted once per stop, with the reasons listed per group |
+| Criteria | passed/total acceptance criteria |
+| Warnings | inconsistent state, e.g. stages out of order; the run still counts |
+
+Tokens and cost are not in `state.json`. They come only from `--ccusage`, which runs
+`ccusage daily --json` for the date range of the reported runs, widened by one day on each side (ccusage buckets by local day, run stamps are UTC), and gives one **period total**, not a
+per-run figure. Without the flag, or if ccusage is missing, fails, or the runs have no dates, tokens and cost stay `null`. The ccusage
+flags and JSON shape are assumed from its docs and untested against a real install.
+
+### JSON schema (`--json`, `schema_version` 1)
+
+One document on stdout. Unknown values are `null`.
+
+| Field | Content |
+|---|---|
+| `schema_version` | `1`; bumped on breaking changes |
+| `runs[]` | one record per run: `path`, `slug`, `size`, `mode`, `domains`, `stage`, `blocked_reason`, `total_minutes`, `wait_minutes`, `agent_minutes`, `stage_minutes` (per stage), `gate_rework` (per gate), `first_pass_rate` (0-1), `retries`, `interventions`, `waves`, `wave_ratio`, `criteria_passed`, `blocked_stops`, `warnings` |
+| `skipped[]` | runs that could not be read: `path`, `reason` |
+| `aggregates` | `runs`, `overall`, `by_size`, `by_mode`, `by_domain`, `by_stage`, `domain_note`, `blocked_stops`; each group has `runs`, `averages` (`{avg, n}` per field), `stage_minutes` and `gate_rework` (`{avg, n}` per key), and `blocked_stops` (`count`, `reasons`) |
+| `usage` | `requested`, `available`, `since`, `until`, `tokens`, `cost`, `note` |
+
 ## Optional external tools (researched 2026-09)
 
 None are required. Evaluate against your own `retro.md` numbers before adopting. Savings

@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:81",
+    "id": "81",
+    "title": "watch 4/4: post-merge verify and the retro's After delivery section",
+    "url": "https://github.com/bxker/ai-config/issues/81",
+    "pr": null
+  },
+  "slug": "081-watch-post-merge",
+  "branch": "081-watch-post-merge",
+  "base": "080-watch-review-comments",
+  "campaign": "specs/campaign-077-watch",
+  "size": "standard",
+  "mode": "subagent",
+  "delivery": "normal",
+  "stage": "spec",
+  "gates": {
+    "spec": "pending",
+    "plan": "pending",
+    "deliver": "pending"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/aicfg.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-21T16:18:38Z",
+    "stage_started_at": {
+      "intake": "2026-10-21T16:18:38Z",
+      "spec": "2026-10-21T16:18:38Z"
+    },
+    "gates": {},
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "retries": 0,
+    "reviews": {
+      "first_pass": 0,
+      "total": 0
+    }
+  },
+  "living": []
+}

@@ -115,3 +115,10 @@ T5, T6 landed. metrics.waves: 3 waves, width 2, 7.2 task-min in 4.0 wall-min.
 2026-10-21
 
 **Findings:** all HIGH/MEDIUM resolved; LOW repository.full_name may be absent → fixed (repository_url).
+
+## verifier · verify · done
+2026-10-21
+
+**Did:** Suite 314 OK, validate OK, CampaignCheckTest 8 OK; standalone fixtures: correct ordered campaign passes sandbox-004 (campaign, main_untouched, command); wrong order fails (exit 1). 18 criteria mapped.
+
+**Open issues:** AC1-12, 14-17 verified by reading only; no ordered campaign has run.

@@ -14,7 +14,7 @@
   "size": "standard",
   "mode": "subagent",
   "delivery": "normal",
-  "stage": "verify",
+  "stage": "document",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -209,7 +209,8 @@
       "spec": "2026-10-21T03:26:33Z",
       "plan": "2026-10-21T03:33:30Z",
       "implement": "2026-10-21T03:40:41Z",
-      "verify": "2026-10-21T03:51:06Z"
+      "verify": "2026-10-21T03:51:06Z",
+      "document": "2026-10-21T04:07:18Z"
     },
     "gates": {
       "spec": {
@@ -238,5 +239,11 @@
       "task_minutes": 7.2,
       "wall_minutes": 4.0
     }
-  }
+  },
+  "living": [
+    "campaign-mode",
+    "ticket-connectors",
+    "run-pointer",
+    "evals"
+  ]
 }

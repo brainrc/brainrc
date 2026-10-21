@@ -158,3 +158,12 @@ Two defects from integration: (1) blocked-stop double count (T2/T3 parallel cont
 **Evidence:** suite 306 OK; test_retro_* 72 OK; validate OK; all CLI runs exit 0.
 
 **Open issues:** AC14 by stub tests only (ccusage not installed).
+
+## doc-writer · document · done
+2026-10-21
+
+**Did:** efficiency.md: added Blocked stops meaning, aggregates JSON row lists stage_minutes, gate_rework, blocked_stops. pr-body.md (Closes #24) and ticket-comment.md.
+
+**Evidence:** validate OK; drafts have no absolute paths.
+
+**Open issues:** ccusage shape untested (AC14 stub-only); docs/install.md lists scripts by hand and omits retro_* (out of scope).

@@ -14,7 +14,7 @@
   "size": "standard",
   "mode": "subagent",
   "delivery": "normal",
-  "stage": "document",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -235,7 +235,8 @@
       "plan": "2026-10-21T02:40:06Z",
       "implement": "2026-10-21T02:48:29Z",
       "verify": "2026-10-21T03:03:19Z",
-      "document": "2026-10-21T03:05:03Z"
+      "document": "2026-10-21T03:05:03Z",
+      "deliver": "2026-10-21T03:07:06Z"
     },
     "gates": {
       "spec": {
@@ -245,6 +246,9 @@
       "plan": {
         "presented_at": "2026-10-21T02:46:31Z",
         "approved_at": "2026-10-21T02:48:29Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-21T03:07:06Z"
       }
     },
     "gate_rework": {

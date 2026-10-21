@@ -23,3 +23,12 @@
 **Evidence:** engine `living_specs.py check` exit 0.
 
 **Changed files:** `specs/024-metrics-rollup/spec.md`
+
+## analyst · record gate answers · done
+2026-10-21
+
+**Did:** Recorded 7 answers as decisions; added AC17 (criteria-passed source), AC18 (invalid timestamps), AC19 (denominators). Open questions: None. Status approved.
+
+**Evidence:** 19 criteria; engine living_specs check exit 0.
+
+**Changed files:** `specs/024-metrics-rollup/spec.md`

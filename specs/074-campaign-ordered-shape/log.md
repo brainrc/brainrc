@@ -103,3 +103,15 @@ T5, T6 landed. metrics.waves: 3 waves, width 2, 7.2 task-min in 4.0 wall-min.
 - LOW ticket-local: merged status / no remote = user "merged"
 - LOW changelog fragment incomplete; Depends on first number per line undocumented
 - epic ticket 004 text addresses the agent and gives away the eval answer
+
+## implementer · F1 · done
+2026-10-21
+
+**Did:** All 10 review items; then the re-review LOW (repository_url instead of repository.full_name).
+
+**Evidence:** validate OK; full suite OK (engine).
+
+## code-reviewer · F1 re-review · done
+2026-10-21
+
+**Findings:** all HIGH/MEDIUM resolved; LOW repository.full_name may be absent → fixed (repository_url).

@@ -14,7 +14,7 @@
   "size": "standard",
   "mode": "subagent",
   "delivery": "normal",
-  "stage": "implement",
+  "stage": "verify",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -177,7 +177,7 @@
       "id": "F1",
       "title": "Batched review fixes",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "skills/spec-agent/references/campaign.md",
@@ -197,7 +197,8 @@
         "AC15",
         "AC16"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": "3df37d1"
     }
   ],
   "blocked": null,
@@ -207,7 +208,8 @@
       "intake": "2026-10-21T03:24:30Z",
       "spec": "2026-10-21T03:26:33Z",
       "plan": "2026-10-21T03:33:30Z",
-      "implement": "2026-10-21T03:40:41Z"
+      "implement": "2026-10-21T03:40:41Z",
+      "verify": "2026-10-21T03:51:06Z"
     },
     "gates": {
       "spec": {
@@ -225,8 +227,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 1,
-      "first_pass": 0
+      "total": 2,
+      "first_pass": 1
     },
     "retries": 0,
     "interventions": 0,

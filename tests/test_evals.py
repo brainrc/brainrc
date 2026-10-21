@@ -490,6 +490,22 @@ class WatchRedCiCaseTest(unittest.TestCase):
         self.assertEqual(code, 1, out)
         self.assertRegex(out, "FAIL .*gates.push")
 
+    def test_second_ci_failure_entry_fails(self):
+        self.state["watch"]["ci_failures"].append(
+            {"check": "unit-tests", "sha": "3f2a9c1", "cause": "own", "task": "C2"})
+        code, out = self.check()
+        self.assertEqual(code, 1, out)
+        self.assertRegex(out, "FAIL .*ci_failures.1")
+
+    def test_present_false_passes_when_absent_and_fails_when_set(self):
+        case = self.tmp / "absent.toml"
+        case.write_text('ticket_ref = "local:tickets/008-watch-red-ci.md"\n[[check]]\nkind = "state"\nfield = "watch.ci_failures.1"\npresent = false\n')
+        self.state_path.write_text(json.dumps(self.state))
+        self.assertEqual(quiet(evals.cmd_check, str(self.project), str(case))[0], 0)
+        self.state["watch"]["ci_failures"].append({"check": "x"})
+        self.state_path.write_text(json.dumps(self.state))
+        self.assertEqual(quiet(evals.cmd_check, str(self.project), str(case))[0], 1)
+
     def test_fixture_log_names_a_file_the_ticket_touches(self):
         log = (REPO / "examples/sandbox/pr_status/red-ci.unit-tests.log").read_text()
         self.assertIn("greet.py", log)

@@ -122,6 +122,8 @@ def run_check(check: dict, project: Path, run: Path, state: dict) -> tuple[bool,
     kind = check.get("kind")
     if kind == "state":
         value, field = _field(state, check["field"]), check["field"]
+        if check.get("present") is False:
+            return value is None, f"state {field} " + ("absent" if value is None else f"= {value!r}, expected absent")
         if check.get("present"):
             return value is not None, f"state {field} " + ("present" if value is not None else "missing")
         allowed = check["in"] if "in" in check else [check["equals"]]

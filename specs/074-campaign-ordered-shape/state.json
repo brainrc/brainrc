@@ -131,7 +131,7 @@
       "id": "T5",
       "title": "Sandbox epic and sandbox-004",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "examples/sandbox/tickets/004-greeting-epic.md",
@@ -149,14 +149,15 @@
         "T1"
       ],
       "wave": 3,
-      "worktree": "/tmp/claude-0/-home-user-ai-config/bb6b11af-d4d6-51ac-beaf-b202f60c9428/scratchpad/spec-agent/074-campaign-ordered-shape/T5",
-      "started_at": "2026-10-21T03:44:56Z"
+      "started_at": "2026-10-21T03:44:56Z",
+      "finished_at": "2026-10-21T03:45:53Z",
+      "commit": "e978a58"
     },
     {
       "id": "T6",
       "title": "Docs and changelog fragment",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "docs/spec-agent.md",
@@ -168,9 +169,9 @@
       ],
       "review": "batch",
       "wave": 3,
-      "worktree": "/tmp/claude-0/-home-user-ai-config/bb6b11af-d4d6-51ac-beaf-b202f60c9428/scratchpad/spec-agent/074-campaign-ordered-shape/T6",
       "started_at": "2026-10-21T03:44:56Z",
-      "finished_at": "2026-10-21T03:45:45Z"
+      "finished_at": "2026-10-21T03:45:45Z",
+      "commit": "dffe315"
     }
   ],
   "blocked": null,
@@ -204,10 +205,10 @@
     "retries": 0,
     "interventions": 0,
     "waves": {
-      "count": 2,
+      "count": 3,
       "max_width": 2,
-      "task_minutes": 5.4,
-      "wall_minutes": 3.0
+      "task_minutes": 7.2,
+      "wall_minutes": 4.0
     }
   }
 }

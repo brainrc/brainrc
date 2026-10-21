@@ -66,3 +66,22 @@ T1, T2 landed in order. metrics.waves: width 2, 3.5 task-min in 1.9 wall-min (T1
 2026-10-21
 
 T3, T4 landed; cross-reference `campaign.md § Ordered shape` resolves. metrics.waves: 2 waves, 5.4 task-min in 3.0 wall-min.
+
+## implementer · T5 · done
+2026-10-21
+
+**Did:** epic 004 (children listed 007, 005, 006), children 005 greeting param, 006 --greeting (depends_on 005), 007 --shout (depends_on 006); sandbox-004.toml (campaign order, main_untouched, unittest); README row.
+
+**Evidence:** full suite 314 OK; validate OK (worktree).
+
+## implementer · T6 · done
+2026-10-21
+
+**Did:** docs/spec-agent.md Campaigns section (both shapes, --shape, sources, stack gate, sequential PRs, resume); docs/evals.md campaign row; changelog fragment.
+
+**Evidence:** validate OK; full suite 314 OK (worktree).
+
+## engine · wave 3 · landed
+2026-10-21
+
+T5, T6 landed. metrics.waves: 3 waves, width 2, 7.2 task-min in 4.0 wall-min.

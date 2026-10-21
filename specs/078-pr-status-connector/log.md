@@ -10,3 +10,6 @@ User approved with the recommended answers to Q1-Q4; engine folded them into AC1
 
 ## architect · plan · done
 **Did:** plan.md, 4 tasks, all wave 1 (disjoint files); shape fixed in plan. **Evidence:** state.json parses. **Changed files:** plan.md, state.json **Open issues:** contract callout (additive). **Next:** Plan gate.
+
+## engine · plan gate · approved 2026-10-21T05:00:58Z
+Wave 1 start: T1-T4 in worktrees.

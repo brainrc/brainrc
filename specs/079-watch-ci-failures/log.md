@@ -4,3 +4,6 @@ Campaign gh:77 child 2 of 4. Intake 2026-10-21T05:10:55Z: size standard, mode su
 
 ## analyst · spec · done
 **Did:** spec.md, 10 ACs, 5 open questions; new living area run-lifecycle + evals block. **Evidence:** engine ran living_specs.py check: exit 0. **Next:** Spec gate.
+
+## engine · spec gate · approved 2026-10-21T13:18:15Z
+Recommended answers to Q1-Q5 and the AC9 verification note folded into Open questions.

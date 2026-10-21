@@ -1,6 +1,6 @@
 # Spec: watch 2/4: `watch` stage for CI failures, with a Push gate
 
-Ticket: gh:79 · Size: standard · Status: draft
+Ticket: gh:79 · Size: standard · Status: approved
 
 ## Problem
 After the Deliver gate a run ends, so red CI on the run's PR is fixed by hand and never counted
@@ -53,8 +53,10 @@ A run SHALL NOT push a watch fix without approval at a Push gate showing diff st
 A sandbox eval SHALL grade the CI-failure path offline from the red-CI fixture via `SPEC_PR_STATUS_FIXTURE`, and `state` checks SHALL accept numeric indexes in dotted fields. (AC9, AC10)
 
 ## Open questions
-1. No `specs/living/` file covers run stages or gates; this spec creates `run-lifecycle` as a new area. Is that the right area name and split, *it decides where later children (#80, #81) add their requirements*.
-2. Should the Push gate be a `gates.push` entry (reset to `pending` for each push) or a log entry only, *the eval (AC9) and resume need something checkable*; this spec assumes `gates.push`, with rework counted in `gate_rework`.
-3. Does "names nothing in the diff" compare against `git diff <base>...HEAD` file paths, *a vague match makes the own/external split unreliable*? Assumed yes.
-4. Is an environment variable the right fixture hook, or should the sandbox ticket carry the path, *the eval must run without editing engine config*? Assumed env var.
-5. When the user rejects the Push gate, does the run stay at `watch` (assumed) or become `blocked`, *it affects resume behavior*.
+Resolved at the Spec gate (recommended answers accepted):
+1. New living area `run-lifecycle`; #80 and #81 add to it.
+2. The Push gate is `gates.push`, reset to `pending` for each push; rework counts in `gate_rework.push`. (AC7, AC9)
+3. "Names nothing in the diff" means no exact path match against `git diff <base>...HEAD --name-only`. (AC5)
+4. The fixture hook is the `SPEC_PR_STATUS_FIXTURE` environment variable. (AC9)
+5. A rejected Push gate keeps the run at `watch`; fix commits stay local. (AC7)
+6. AC9 is verified against a synthetic run folder (eval case + grading tests), not a full nested sandbox run.

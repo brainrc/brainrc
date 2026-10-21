@@ -24,3 +24,26 @@
 **Changed files:** `specs/074-campaign-ordered-shape/plan.md`
 
 **Open issues:** contract additions (optional dependencies op, campaign.json fields, campaign eval kind).
+
+## implementer · T1 · done
+2026-10-21
+
+**Did:** `campaign` check kind, `find_campaign`, `cmd_check` fallback, per the pinned Eval shape; 8 tests.
+
+**Evidence:** red 7 failures + 1 error; full suite 314 OK; validate OK (worktree).
+
+**Changed files:** `scripts/evals.py`, `tests/test_evals.py`
+
+**Open issues:** docs/evals.md needs a campaign row (added to T6's files).
+
+## implementer · T2 · done
+2026-10-21
+
+**Did:** optional read-only `dependencies` op (pinned shape) in connectors.md; ticket-local `depends_on:`/`children:`; ticket-github API blocked_by, `Depends on #N` body fallback (numbers only), sub_issues order, read-only PR merge check, MCP equivalents.
+
+**Evidence:** validate OK; full suite 306 OK (worktree). Doc-only.
+
+## engine · wave 1 · landed
+2026-10-21
+
+T1, T2 landed in order. metrics.waves: width 2, 3.5 task-min in 1.9 wall-min (T1's finished_at recorded at landing, about a minute late).

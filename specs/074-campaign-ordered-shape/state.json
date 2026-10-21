@@ -37,7 +37,7 @@
       "id": "T1",
       "title": "campaign eval check kind",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "scripts/evals.py",
@@ -48,14 +48,16 @@
       ],
       "review": "batch",
       "wave": 1,
-      "worktree": "/tmp/claude-0/-home-user-ai-config/bb6b11af-d4d6-51ac-beaf-b202f60c9428/scratchpad/spec-agent/074-campaign-ordered-shape/T1",
-      "started_at": "2026-10-21T03:40:41Z"
+      "started_at": "2026-10-21T03:40:41Z",
+      "finished_at": "2026-10-21T03:42:36Z",
+      "commit": "7a519ea",
+      "red": "assertion"
     },
     {
       "id": "T2",
       "title": "Connector dependencies op",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "skills/spec-agent/references/connectors.md",
@@ -69,16 +71,16 @@
       ],
       "review": "batch",
       "wave": 1,
-      "worktree": "/tmp/claude-0/-home-user-ai-config/bb6b11af-d4d6-51ac-beaf-b202f60c9428/scratchpad/spec-agent/074-campaign-ordered-shape/T2",
       "started_at": "2026-10-21T03:40:41Z",
-      "finished_at": "2026-10-21T03:42:19Z"
+      "finished_at": "2026-10-21T03:42:19Z",
+      "commit": "39e63ad"
     },
     {
       "id": "T3",
       "title": "campaign.md ordered shape, SKILL.md, work skill",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "skills/spec-agent/references/campaign.md",
         "skills/spec-agent/SKILL.md",
@@ -99,14 +101,17 @@
         "AC15",
         "AC17"
       ],
-      "review": "batch"
+      "review": "batch",
+      "wave": 2,
+      "worktree": "/tmp/claude-0/-home-user-ai-config/bb6b11af-d4d6-51ac-beaf-b202f60c9428/scratchpad/spec-agent/074-campaign-ordered-shape/T3",
+      "started_at": "2026-10-21T03:43:14Z"
     },
     {
       "id": "T4",
       "title": "state.md campaign resume",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "skills/spec-agent/references/state.md"
       ],
@@ -115,7 +120,10 @@
         "AC12",
         "AC15"
       ],
-      "review": "batch"
+      "review": "batch",
+      "wave": 2,
+      "worktree": "/tmp/claude-0/-home-user-ai-config/bb6b11af-d4d6-51ac-beaf-b202f60c9428/scratchpad/spec-agent/074-campaign-ordered-shape/T4",
+      "started_at": "2026-10-21T03:43:14Z"
     },
     {
       "id": "T5",
@@ -147,7 +155,8 @@
       "attempts": 0,
       "files": [
         "docs/spec-agent.md",
-        "changelog.d/074-campaign-ordered-shape.md"
+        "changelog.d/074-campaign-ordered-shape.md",
+        "docs/evals.md"
       ],
       "criteria": [
         "AC14"
@@ -184,6 +193,12 @@
       "first_pass": 0
     },
     "retries": 0,
-    "interventions": 0
+    "interventions": 0,
+    "waves": {
+      "count": 1,
+      "max_width": 2,
+      "task_minutes": 3.5,
+      "wall_minutes": 1.9
+    }
   }
 }

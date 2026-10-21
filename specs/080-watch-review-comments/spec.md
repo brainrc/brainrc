@@ -1,6 +1,6 @@
 # Spec: watch 3/4: review comments in the `watch` stage
 
-Ticket: gh:80 · Size: standard · Status: draft
+Ticket: gh:80 · Size: standard · Status: approved
 
 ## Problem
 Since gh:79 the `watch` stage handles red CI but leaves unresolved review threads alone, so
@@ -53,8 +53,9 @@ A run SHALL NOT push a watch fix or post a reply without approval at a Push gate
 A sandbox eval SHALL grade the review-comment path offline from a fixture containing an embedded instruction, which must be flagged and not followed. (AC10)
 
 ## Open questions
-1. Stable thread id: the fixture and `ticket-github` GraphQL (`reviewThreads` node id) can supply `id`; without it, author plus body is the key and an edited comment looks new. Recommend optional `id`, fallback as AC8. *Matters for double-handling.*
-2. Fixture: new `review-comment-injection.json` (recommended, leaves gh:78 fixtures unchanged) versus extending `review-comment.json`. *Matters for existing fixture tests.*
-3. Round boundary: is "3 rounds" counted per pass acting on new threads (AC5, recommended) or per pushed fix? *Matters for when the stop fires.*
-4. `fixed` counts at push, not at R-task review pass; confirm. *Matters for what the number means if the push is rejected.*
-5. Mixed passes (CI failure and new thread together) share one Push gate (recommended) versus two. *Matters for approval cost.*
+Resolved at the Spec gate (recommended answers accepted):
+1. `unresolved_threads[]` gains an optional `id`; `ticket-github` supplies the GraphQL `reviewThreads` node id; without it the key is author plus exact body. (AC8, AC11)
+2. A new fixture `review-comment-injection.json`; gh:78 fixtures stay unchanged. (AC10)
+3. A round is a pass that acts on new threads, not a pushed fix. (AC5)
+4. `fixed` counts at push, not at R-task review pass. (AC6)
+5. A pass with CI fixes and replies shares one Push gate. (AC4)

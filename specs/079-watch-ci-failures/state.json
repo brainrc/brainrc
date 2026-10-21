@@ -15,7 +15,7 @@
   "size": "standard",
   "mode": "subagent",
   "delivery": "normal",
-  "stage": "verify",
+  "stage": "document",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -237,7 +237,8 @@
       "spec": "2026-10-21T05:10:55Z",
       "plan": "2026-10-21T13:18:15Z",
       "implement": "2026-10-21T14:32:59Z",
-      "verify": "2026-10-21T14:49:37Z"
+      "verify": "2026-10-21T14:49:37Z",
+      "document": "2026-10-21T14:51:40Z"
     },
     "gates": {
       "spec": {
@@ -266,7 +267,10 @@
       "wall_minutes": 4.2
     }
   },
-  "living": [],
+  "living": [
+    "run-lifecycle",
+    "evals"
+  ],
   "spec_changes_after_approval": [
     "AC9 fixture path clarified to the sandbox-relative path (review LOW)"
   ]

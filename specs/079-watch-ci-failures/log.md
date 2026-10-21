@@ -71,3 +71,6 @@ F1 91b2b1a, F2 84f1dd2. 328 OK, validate OK. Re-review of the fix diff: code + s
 
 ## code-reviewer · re-review F1+F2 · done
 **Findings:** all resolved; LOW spec/plan cite repo path for the fixture; LOW push_sha stale between reset and presentation (harmless, re-recorded). Engine: clarified AC9 path in spec.md (change to the approved spec, to be named at the Deliver gate); plan.md left as history.
+
+## verifier · verify · done
+**Did:** verify.md: AC1-AC10; 328 OK; validate OK; evals.py check sandbox-005 on synthetic good (6/6 pass) and bad (3 fail) projects. **Open issues:** AC1-AC8 doc-verified; non-blocking: no summary file check in sandbox-005; watch.md:50 raw-log wording; fixture read is prose only. **Next:** document.

@@ -9,3 +9,7 @@ _Last changed by 074-campaign-ordered-shape._
 ### PR status fixture
 The sandbox SHALL ship offline `pr_status` fixtures for red CI, review comment, and merged, in the connector return shape, for reuse by later evals. (AC7, AC8)
 _Last changed by 078-pr-status-connector._
+
+### Red-CI watch eval
+A sandbox eval SHALL grade the CI-failure path offline from the red-CI fixture via `SPEC_PR_STATUS_FIXTURE`, and `state` checks SHALL accept numeric indexes in dotted fields. (AC9, AC10)
+_Last changed by 079-watch-ci-failures._

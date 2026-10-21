@@ -23,3 +23,6 @@ Wave 1 start: T1, T2, T3.
 
 ## implementer · T3 · blocked
 **Did:** state.md: watch object, stage watch, gates.push, post_deliver_retries, metrics.gates.push, gate_rework.push, Resume step 5 → watch.md § Resume pass. **Evidence:** validate fails only on broken links to watch.md (T2's new file, not in T3's worktree); 12 tests fail, unconfirmed. **Next:** engine lands T2 with T3 and re-runs checks. Planning finding: T3 links to a T2 file in the same wave.
+
+## code-reviewer · T2 · changes-requested
+**Findings:** HIGH checked_at/head_sha advanced before failure handling (blocked/crashed failures never retried); HIGH no resume rule for pending/rejected Push gate or open C-task; MEDIUM local-clock checked_at vs PR updated_at; MEDIUM summary vs "paths in the log"; MEDIUM external stop scope; LOW base check-run match/pagination; LOW post-push head_sha/checked_at. **Next:** T2 attempt 2.

@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:76",
+    "id": "76",
+    "title": "Metrics rollup: aggregate spec-agent runs across projects (scripts/retro_report.py)",
+    "url": "https://github.com/bxker/ai-config/issues/76",
+    "pr": null
+  },
+  "slug": "076-metrics-rollup",
+  "branch": "076-metrics-rollup",
+  "base": "main",
+  "size": "standard",
+  "mode": "subagent",
+  "delivery": "normal",
+  "stage": "spec",
+  "gates": {
+    "spec": "pending",
+    "plan": "pending",
+    "deliver": "pending"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/aicfg.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-21T02:25:43Z",
+    "stage_started_at": {
+      "intake": "2026-10-21T02:25:43Z",
+      "spec": "2026-10-21T02:26:15Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-21T02:27:33Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  }
+}

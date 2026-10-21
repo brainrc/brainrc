@@ -7,6 +7,7 @@ never 0. Invalid timestamps add a warning and the affected values are None: noth
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -40,8 +41,8 @@ class RunRecord:
     interventions: int | None = None
     waves: dict | None = None
     wave_ratio: float | None = None
-    criteria_passed: str | None = None  # filled in T2
-    blocked_stops: list | None = None  # filled in T2
+    criteria_passed: str | None = None  # "n/m" or None
+    blocked_stops: list | None = None  # one reason per stop: current block, then past log blocks
     warnings: list = field(default_factory=list)
 
 
@@ -127,6 +128,57 @@ def _per_stage(starts: dict, waits: dict | None, state_gates: dict, warnings: li
     return out
 
 
+def _read(path: Path) -> str | None:
+    try:
+        return path.read_text(encoding="utf-8")
+    except (OSError, ValueError):
+        return None
+
+
+def _cells(line: str) -> list:
+    return [c.strip() for c in line.strip().strip("|").split("|")]
+
+
+def _verify_criteria(text: str) -> str | None:
+    """"passed/total" from the Acceptance criteria table's Result column (found by header)."""
+    section = text.split("## Acceptance criteria", 1)[1].split("\n## ", 1)[0] if "## Acceptance criteria" in text else ""
+    result, rows = None, []
+    for line in section.splitlines():
+        cells = _cells(line)
+        if result is None and "Result" in cells:
+            result = cells.index("Result")
+        elif result is not None and result < len(cells) and re.fullmatch(r"AC\d+", cells[0]):
+            rows.append(cells[result])
+    if not rows:
+        return None
+    return f"{sum(r.lower().startswith('pass') for r in rows)}/{len(rows)}"
+
+
+def _retro_criteria(text: str) -> str | None:
+    for line in text.splitlines():
+        cells = _cells(line)
+        if len(cells) >= 2 and cells[0] == "Criteria passed" and re.fullmatch(r"\d+/\d+", cells[1]):
+            return cells[1]
+    return None
+
+
+def _criteria_passed(run_dir: Path) -> str | None:
+    verify, retro = _read(run_dir / "verify.md"), _read(run_dir / "retro.md")
+    return (verify and _verify_criteria(verify)) or (retro and _retro_criteria(retro)) or None
+
+
+def _past_blocks(log: str) -> list:
+    """Reasons (first line of Open issues, else "unknown") for each `blocked` handoff header."""
+    out = []
+    for section in re.split(r"(?m)^(?=## )", log):
+        if not re.match(r"## [^\n]+ \u00b7 [^\n]+ \u00b7 blocked[ \t]*$", section.split("\n", 1)[0]):
+            continue
+        m = re.search(r"(?m)^\*\*Open issues:\*\*[ \t]*(.*)$", section)
+        reason = m.group(1).strip() if m else ""
+        out.append(reason if reason and reason.lower() != "none" else "unknown")
+    return out
+
+
 def load_run(run_dir: Path, label: str | None = None) -> RunRecord | Skipped:
     """Load `<run_dir>/state.json`. `label` is the path shown in output (default: run_dir)."""
     run_dir = Path(run_dir)
@@ -151,6 +203,10 @@ def load_run(run_dir: Path, label: str | None = None) -> RunRecord | Skipped:
     if blocked:
         reason = blocked.get("reason") if isinstance(blocked, dict) else None
         rec.blocked_reason = reason if isinstance(reason, str) and reason else "unknown"
+
+    log = _read(run_dir / "log.md")
+    rec.blocked_stops = ([rec.blocked_reason] if rec.blocked_reason else []) + (_past_blocks(log) if log else [])
+    rec.criteria_passed = _criteria_passed(run_dir)
 
     metrics = _dict(state.get("metrics")) or {}
     warnings = rec.warnings

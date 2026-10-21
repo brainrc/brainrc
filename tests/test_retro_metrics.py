@@ -101,7 +101,7 @@ class RetroMetricsTest(unittest.TestCase):
         self.assertEqual(rec.domains, ["scripting", "docs"])
         self.assertIsNone(rec.blocked_reason)
         self.assertIsNone(rec.criteria_passed)
-        self.assertIsNone(rec.blocked_stops)
+        self.assertEqual(rec.blocked_stops, [])
 
     def test_path_label(self):
         run = self.write(COMPLETE)
@@ -269,6 +269,73 @@ class RetroMetricsTest(unittest.TestCase):
         self.assertIsNone(rec.agent_minutes)
         for v in (rec.stage_minutes or {}).values():
             self.assertTrue(v is None or v >= 0)
+
+    # AC17
+    def run_with(self, verify=None, retro=None, log=None, state=COMPLETE) -> RunRecord:
+        run = self.write(state)
+        for name, text in (("verify.md", verify), ("retro.md", retro), ("log.md", log)):
+            if text is not None:
+                (run / name).write_text(text)
+        rec = load_run(run)
+        self.assertIsInstance(rec, RunRecord, rec)
+        return rec
+
+    VERIFY = ("# Verify: x\n\n## Checks\n| Check | Command | Result |\n|---|---|---|\n"
+              "| Tests | `t` | pass |\n\n## Acceptance criteria\n"
+              "| Criterion | Evidence | Result |\n|---|---|---|\n"
+              "| AC1 | e | pass |\n| AC2 | e | fail |\n| AC3 | e | pass |\n\n## Notes\n")
+    RETRO = "## Metrics\n| Metric | Value |\n|---|---|\n| Criteria passed | 5/6 |\n"
+
+    def test_criteria_from_verify_table(self):
+        self.assertEqual(self.run_with(verify=self.VERIFY).criteria_passed, "2/3")
+
+    def test_criteria_result_column_found_by_header(self):
+        v = ("## Acceptance criteria\n| Criterion | Result | Evidence |\n|---|---|---|\n"
+             "| AC1 | pass | fail mentioned here |\n| AC2 | fail | pass in evidence |\n")
+        self.assertEqual(self.run_with(verify=v).criteria_passed, "1/2")
+
+    def test_criteria_verify_wins_over_retro(self):
+        self.assertEqual(self.run_with(verify=self.VERIFY, retro=self.RETRO).criteria_passed, "2/3")
+
+    def test_criteria_retro_fallback(self):
+        self.assertEqual(self.run_with(retro=self.RETRO).criteria_passed, "5/6")
+        no_table = "# Verify: x\n\n## Checks\n| Check | Result |\n|---|---|\n| T | pass |\n"
+        self.assertEqual(self.run_with(verify=no_table, retro=self.RETRO).criteria_passed, "5/6")
+
+    def test_criteria_without_result_header_is_unknown(self):
+        v = "## Acceptance criteria\n| Criterion | Evidence | Outcome |\n|---|---|---|\n| AC1 | e | pass |\n"
+        self.assertIsNone(self.run_with(verify=v).criteria_passed)
+
+    def test_criteria_unknown(self):
+        self.assertIsNone(self.run_with().criteria_passed)
+        placeholder = "| Criteria passed | <n>/<n> |\n"
+        self.assertIsNone(self.run_with(retro=placeholder).criteria_passed)
+
+    # AC9
+    LOG = ("## implementer \u00b7 T1 \u00b7 done\n2026-10-01T10:00:00Z\n\n**Open issues:** none\n\n"
+           "## implementer \u00b7 T2 \u00b7 blocked\n2026-10-01T10:05:00Z\n\n"
+           "**Did:** x\n\n**Open issues:** needs creds\n\n**Next:** ask\n\n"
+           "## reviewer \u00b7 T2 \u00b7 blocked\n2026-10-01T10:09:00Z\n\n**Did:** y\n\n"
+           "## reviewer \u00b7 T3 \u00b7 changes-requested\n2026-10-01T10:10:00Z\n")
+
+    def test_blocked_stops_from_log(self):
+        rec = self.run_with(log=self.LOG)
+        self.assertEqual(rec.blocked_stops, ["needs creds", "unknown"])
+
+    def test_blocked_stops_current_plus_past(self):
+        st = copy.deepcopy(COMPLETE)
+        st["blocked"] = {"reason": "waiting", "stage": "implement"}
+        rec = self.run_with(log=self.LOG, state=st)
+        self.assertEqual(rec.blocked_stops, ["waiting", "needs creds", "unknown"])
+
+    def test_blocked_stops_no_log_only_current(self):
+        st = copy.deepcopy(COMPLETE)
+        st["blocked"] = {"reason": "waiting"}
+        self.assertEqual(self.run_with(state=st).blocked_stops, ["waiting"])
+
+    def test_blocked_word_outside_header_not_counted(self):
+        log = "## implementer \u00b7 T1 \u00b7 done\n\n**Did:** was blocked \u00b7 but fixed\n"
+        self.assertEqual(self.run_with(log=log).blocked_stops, [])
 
 
 if __name__ == "__main__":

@@ -12,6 +12,11 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.3.35 (2026-10-21)
+
+- Add `scripts/retro_report.py`: offline rollup of run metrics across `specs/*/state.json` (Markdown or `--json`), with optional period-total tokens and cost via `--ccusage`.
+- Document the rollup, what each number means, and the JSON schema in `docs/efficiency.md`; roadmap item moved to Done.
+
 ## 0.3.34 (2026-10-21)
 
 - spec-agent records the active run's path in `$AICFG_HOME/active-run` (new `active_run.py write|read`) at intake, resume, and every checkpoint, so external tools can find the current run.

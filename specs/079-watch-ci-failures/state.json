@@ -38,7 +38,7 @@
       "id": "T1",
       "title": "Numeric index segments in eval state checks (test-first)",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "scripts/evals.py",
@@ -52,13 +52,14 @@
       "wave": 1,
       "started_at": "2026-10-21T14:32:59Z",
       "finished_at": "2026-10-21T14:34:45Z",
-      "red": "assertion"
+      "red": "assertion",
+      "commit": "d8ab616"
     },
     {
       "id": "T2",
       "title": "references/watch.md: enter, fixture hook, resume pass, CI triage, C-tasks, Push gate",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 2,
       "files": [
         "skills/spec-agent/references/watch.md"
@@ -75,13 +76,14 @@
       "review": "each",
       "wave": 1,
       "started_at": "2026-10-21T14:32:59Z",
-      "finished_at": "2026-10-21T14:34:37Z"
+      "finished_at": "2026-10-21T14:34:37Z",
+      "commit": "2b894dd"
     },
     {
       "id": "T3",
       "title": "state.md schema and Resume at watch",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "skills/spec-agent/references/state.md"
@@ -94,14 +96,16 @@
       "review": "batch",
       "wave": 1,
       "started_at": "2026-10-21T14:32:59Z",
-      "finished_at": "2026-10-21T14:35:19Z"
+      "finished_at": "2026-10-21T14:35:19Z",
+      "commit": "4626334",
+      "red": null
     },
     {
       "id": "T4",
       "title": "Wire pointers: SKILL.md deliver step, lifecycle row and Push gate, guardrails, /work",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "skills/spec-agent/SKILL.md",
         "skills/spec-agent/references/lifecycle.md",
@@ -118,14 +122,15 @@
       "after": [
         "T2"
       ],
-      "wave": 2
+      "wave": 2,
+      "started_at": "2026-10-21T14:38:19Z"
     },
     {
       "id": "T5",
       "title": "Docs status and changelog fragment (bump: patch)",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "docs/post-deliver.md",
         "docs/spec-agent.md",
@@ -138,14 +143,15 @@
       "after": [
         "T2"
       ],
-      "wave": 2
+      "wave": 2,
+      "started_at": "2026-10-21T14:38:19Z"
     },
     {
       "id": "T6",
       "title": "Red-CI sandbox eval: ticket 008, log fixture, sandbox-005.toml, README setup, synthetic-run grading tests",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "examples/sandbox/tickets/008-watch-red-ci.md",
         "examples/sandbox/pr_status/red-ci.unit-tests.log",
@@ -163,7 +169,8 @@
       "after": [
         "T1"
       ],
-      "wave": 2
+      "wave": 2,
+      "started_at": "2026-10-21T14:38:19Z"
     }
   ],
   "blocked": null,

@@ -26,3 +26,12 @@ Wave 1 start: T1, T2, T3.
 
 ## code-reviewer · T2 · changes-requested
 **Findings:** HIGH checked_at/head_sha advanced before failure handling (blocked/crashed failures never retried); HIGH no resume rule for pending/rejected Push gate or open C-task; MEDIUM local-clock checked_at vs PR updated_at; MEDIUM summary vs "paths in the log"; MEDIUM external stop scope; LOW base check-run match/pagination; LOW post-push head_sha/checked_at. **Next:** T2 attempt 2.
+
+## implementer · T2 attempt 2 · done
+**Did:** all 7 findings fixed (71 lines): resume order C-task → push gate → change check; no-change exit requires every failure recorded; checked_at from pr_status.updated_at, set after the pass; summary lists paths; base match by name; externals recorded then stop. **Evidence:** validate OK; 321 OK. **Next:** re-review.
+
+## code-reviewer · T2 attempt 2 · done
+**Findings:** all 7 resolved; no push path bypasses the gate. MEDIUM crash between C-task review and gates.push reset strands commits; LOW mixed external/own "end the pass" wording; LOW set approved before pushing. Engine: no CRITICAL/HIGH, so T2 lands; the MEDIUM and LOWs go to fix task F1 after the batched review.
+
+## engine · wave 1 landed 2026-10-21T14:38:19Z
+T1 d8ab616, T2 2b894dd, T3 4626334. Full suite 322 OK, validate OK (T3 broken links cleared). Wave 2 start: T4, T5, T6.

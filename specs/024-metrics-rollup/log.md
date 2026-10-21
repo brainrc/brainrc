@@ -14,3 +14,12 @@
 2026-10-21
 
 **Did:** gh:76 was a duplicate of gh:24 (closed as duplicate). Run moved to gh:24: branch and folder renamed to 024-metrics-rollup, ticket.md refetched with #76 criteria folded in as a comment.
+
+## analyst · spec revise for gh:24 · done
+2026-10-21
+
+**Did:** Added domain grouping, blocked-stop reporting, Markdown table default, tokens via --ccusage only (no new state.json fields), docs in docs/efficiency.md. 16 criteria, 7 open questions.
+
+**Evidence:** engine `living_specs.py check` exit 0.
+
+**Changed files:** `specs/024-metrics-rollup/spec.md`

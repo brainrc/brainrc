@@ -13,3 +13,9 @@ Recommended answers to Q1-Q5 and the AC9 verification note folded into Open ques
 
 ## engine · plan gate · approved 2026-10-21T14:32:59Z
 Wave 1 start: T1, T2, T3.
+
+## implementer · T2 · done
+**Did:** references/watch.md (~55 lines; Enter, Fixture hook, Resume pass, CI failure, Push gate); head sha as watch.head_sha. **Evidence:** validate OK; 321 OK (docs only). **Changed files:** skills/spec-agent/references/watch.md **Next:** review (each).
+
+## implementer · T1 · done
+**Did:** _field indexes lists on digit segments (out of range/negative -> None); test_state_numeric_index_segment; docs/evals.md note. **Evidence:** red on assertion; 322 OK; validate OK. **Changed files:** scripts/evals.py, tests/test_evals.py, docs/evals.md **Next:** batch review.

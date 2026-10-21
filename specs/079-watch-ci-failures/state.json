@@ -50,13 +50,15 @@
       ],
       "review": "batch",
       "wave": 1,
-      "started_at": "2026-10-21T14:32:59Z"
+      "started_at": "2026-10-21T14:32:59Z",
+      "finished_at": "2026-10-21T14:34:45Z",
+      "red": "assertion"
     },
     {
       "id": "T2",
       "title": "references/watch.md: enter, fixture hook, resume pass, CI triage, C-tasks, Push gate",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "review",
       "attempts": 1,
       "files": [
         "skills/spec-agent/references/watch.md"
@@ -72,7 +74,8 @@
       ],
       "review": "each",
       "wave": 1,
-      "started_at": "2026-10-21T14:32:59Z"
+      "started_at": "2026-10-21T14:32:59Z",
+      "finished_at": "2026-10-21T14:34:37Z"
     },
     {
       "id": "T3",

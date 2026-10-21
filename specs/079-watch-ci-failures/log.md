@@ -56,3 +56,6 @@ T4 395c969, T5 7786c6d, T6 ece5df5. 326 OK, validate OK. Batched review: code-re
 
 ## security-reviewer · batched · done
 **Findings:** no CRITICAL/HIGH. MEDIUM check name used unsanitized in .runs/ and fixture-log paths (slugify to [A-Za-z0-9._-]); LOW Push gate approval not tied to a head sha (record sha, push only it, no force, re-present if HEAD moved); LOW SPEC_PR_STATUS_FIXTURE unvalidated in real runs (restrict to examples/ or evals/ paths). Clean: log text can't push; C-task files bounded by the diff; gh reads read-only; no secrets. Engine: all three go to F1.
+
+## code-reviewer · batched · changes-requested
+**Findings:** HIGH fixture path examples/sandbox/pr_status/red-ci.json wrong from the sandbox copy (README, ticket 008, sandbox-005, docs/evals); MEDIUM watch Enter needs no PR under the fixture hook; MEDIUM sandbox-005 passes with an extra entry; LOW lifecycle row 7 retro timing. F1 items confirmed. **Next:** F1 (watch/state/lifecycle) + F2 (sandbox/evals), wave 3, parallel.

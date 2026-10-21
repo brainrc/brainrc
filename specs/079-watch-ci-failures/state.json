@@ -178,6 +178,48 @@
       "finished_at": "2026-10-21T14:40:14Z",
       "red": "compile-only",
       "commit": "ece5df5"
+    },
+    {
+      "id": "F1",
+      "title": "watch.md/state.md/lifecycle.md review and security fixes",
+      "agent": "implementer",
+      "status": "in_progress",
+      "attempts": 1,
+      "files": [
+        "skills/spec-agent/references/watch.md",
+        "skills/spec-agent/references/state.md",
+        "skills/spec-agent/references/lifecycle.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC3",
+        "AC5",
+        "AC6",
+        "AC7"
+      ],
+      "review": "batch",
+      "wave": 3,
+      "started_at": "2026-10-21T14:44:27Z"
+    },
+    {
+      "id": "F2",
+      "title": "Sandbox fixture path and stricter sandbox-005 case",
+      "agent": "implementer",
+      "status": "in_progress",
+      "attempts": 1,
+      "files": [
+        "examples/sandbox/README.md",
+        "examples/sandbox/tickets/008-watch-red-ci.md",
+        "evals/cases/sandbox-005.toml",
+        "docs/evals.md",
+        "tests/test_evals.py"
+      ],
+      "criteria": [
+        "AC9"
+      ],
+      "review": "batch",
+      "wave": 3,
+      "started_at": "2026-10-21T14:44:27Z"
     }
   ],
   "blocked": null,
@@ -206,8 +248,8 @@
     },
     "retries": 2,
     "reviews": {
-      "first_pass": 0,
-      "total": 2
+      "first_pass": 1,
+      "total": 4
     },
     "waves": {
       "count": 2,

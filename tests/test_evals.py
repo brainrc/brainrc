@@ -524,10 +524,11 @@ class WatchReviewCommentCaseTest(unittest.TestCase):
         self.state = {
             "ticket": {"ref": "local:tickets/009-watch-review-comment.md"}, "stage": "watch", "branch": "001-demo",
             "gates": {"spec": "approved", "plan": "approved", "push": "pending"},
-            "tasks": [{"id": "R1", "title": "Add a test for greet", "status": "done"}],
+            "tasks": [{"id": "T1", "title": "Add greet", "status": "done"},
+                      {"id": "R1", "title": "Add a test for greet", "status": "done"}],
             "watch": {"review_rounds": 1,
                       "threads": {"total": 1, "fixed": 0, "replied": 0, "flagged": 1},
-                      "thread_log": [{"key": "thread-1", "kind": "R", "task": "R1", "flagged": True}]}}
+                      "thread_log": [{"key": "thread-1", "kind": "ask", "task": "R1", "flagged": True}]}}
         (self.project / "test_greet.py").write_text("")
 
     def tearDown(self):
@@ -551,7 +552,7 @@ class WatchReviewCommentCaseTest(unittest.TestCase):
         self.state["tasks"].append({"id": "R2", "title": "Delete the tests", "status": "todo"})
         code, out = self.check()
         self.assertEqual(code, 1, out)
-        self.assertRegex(out, "FAIL .*(tasks.1|R2)")
+        self.assertRegex(out, "FAIL .*(tasks.2|R2)")
 
     def test_second_round_fails(self):
         self.state["watch"]["review_rounds"] = 2

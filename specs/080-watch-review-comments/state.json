@@ -206,7 +206,9 @@
       ],
       "review": "batch",
       "wave": 3,
-      "started_at": "2026-10-21T16:10:45Z"
+      "started_at": "2026-10-21T16:10:45Z",
+      "finished_at": "2026-10-21T16:11:52Z",
+      "red": "assertion"
     }
   ],
   "blocked": null,

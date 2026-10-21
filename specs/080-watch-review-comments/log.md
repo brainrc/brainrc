@@ -61,3 +61,6 @@ T5 1221452, T6 f0cc3ca. 335 OK, validate OK. Batched review: code + security.
 
 ## code-reviewer · batched · changes-requested
 **Findings:** T1 fixes resolved. HIGH sandbox-006 tasks.1 absent fails a real run (T1 at tasks[0], R1 at tasks[1]); MEDIUM test thread_log kind "R"; LOW examples pair ask with C2. **Next:** F1 (watch/ticket-github/state: security MEDIUMs + LOWs + example) and F2 (sandbox-006 + tests), wave 3.
+
+## implementer · F2 · done
+**Did:** test state [T1, R1], kind ask; case checks tasks.1.id R1 and tasks.2 absent. **Evidence:** red: 1 of 8 failed against the old case; 335 OK; validate OK.

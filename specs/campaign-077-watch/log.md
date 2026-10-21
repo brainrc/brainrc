@@ -16,3 +16,7 @@
 
 ## 2026-10-21T14:54:02Z · child 2 gh:79 verified
 - Drafts ready. Child 3 gh:80 starts on 080-watch-review-comments from 079-watch-ci-failures.
+
+## 2026-10-21T16:18:38Z · child 3 gh:80 verified
+- Drafts ready. Child 4 gh:81 starts on 081-watch-post-merge from 080-watch-review-comments.
+- Finding: engine error in child 3 (misread worktree status, overwrote T1 edits; recovered by re-apply).

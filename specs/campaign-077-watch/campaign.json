@@ -30,7 +30,7 @@
       "depends_on": [
         "gh:79"
       ],
-      "status": "in_progress",
+      "status": "verified",
       "slug": "080-watch-review-comments",
       "branch": "080-watch-review-comments",
       "pr": null
@@ -41,9 +41,9 @@
       "depends_on": [
         "gh:80"
       ],
-      "status": "todo",
-      "slug": null,
-      "branch": null,
+      "status": "in_progress",
+      "slug": "081-watch-post-merge",
+      "branch": "081-watch-post-merge",
       "pr": null
     }
   ],

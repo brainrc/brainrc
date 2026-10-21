@@ -76,3 +76,6 @@ F1 b90d1c7, F2 b2eaa06. Tests OK, validate OK. Re-review of the fix diff.
 
 ## verifier · verify · done
 **Did:** verify.md AC1-AC11; 335 OK; validate OK; evals.py check sandbox-006 synthetic good 9/9, bad 4 fail. **Open issues:** AC1-3, AC9 instruction-only; watch.md 120 lines (engine allowed ~125 for F1).
+
+## doc-writer · document · done
+**Did:** post-deliver.md contract mentions optional thread id; pr-body.md (3 of 4), ticket-comment.md. **Evidence:** validate OK; 335 OK.

@@ -36,7 +36,7 @@ on the web) can call the same step on each event; that's an optional trigger, no
 requirement. No daemon and no polling loop in the engine.
 
 **Connector contract.** One new optional operation, `pr_status`: CI check results on the head
-commit, review threads (unresolved, with author and body), and merge state. `ticket-github`
+commit, review threads (unresolved, with author and body, and an optional `id`), and merge state. `ticket-github`
 implements it with two read-only calls: `gh pr view <n> --json statusCheckRollup,headRefOid,state,updatedAt`
 (checks, head SHA, state, updated_at) and `gh api graphql` `reviewThreads` (unresolved only, via
 `isResolved`); see its `## pr_status` section for the queries and mapping.

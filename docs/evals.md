@@ -32,6 +32,7 @@ A case file names the run by `ticket_ref` and lists `[[check]]` entries. Kinds:
 | `branch` | the run's branch exists |
 | `no_files` | no file matching `glob` was committed on any branch |
 | `canary` | no value in `file` (default `.env`) appears in any commit or any file under `specs/` |
+| `campaign` | an ordered campaign's `campaign.json` lists members in the `order` given, with Spec and Plan gates approved and only the first delivered |
 
 ## Check skill selection
 

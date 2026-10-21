@@ -42,6 +42,7 @@ Minutes throughout. `unknown` means not recorded and is never counted as 0; aver
 | Retries | each time a task goes back to the implementer |
 | Interventions | each time the user has to step in outside a gate (answering a blocked stop, correcting the agent mid-stage) |
 | Wave ratio | summed task minutes over wall minutes of parallel waves (above 1 means parallelism paid off) |
+| Blocked stops | a run's current `blocked` reason plus each past `blocked` handoff in its `log.md`; counted once per stop, with the reasons listed per group |
 | Criteria | passed/total acceptance criteria |
 | Warnings | inconsistent state, e.g. stages out of order; the run still counts |
 
@@ -59,7 +60,7 @@ One document on stdout. Unknown values are `null`.
 | `schema_version` | `1`; bumped on breaking changes |
 | `runs[]` | one record per run: `path`, `slug`, `size`, `mode`, `domains`, `stage`, `blocked_reason`, `total_minutes`, `wait_minutes`, `agent_minutes`, `stage_minutes` (per stage), `gate_rework` (per gate), `first_pass_rate` (0-1), `retries`, `interventions`, `waves`, `wave_ratio`, `criteria_passed`, `blocked_stops`, `warnings` |
 | `skipped[]` | runs that could not be read: `path`, `reason` |
-| `aggregates` | `runs`, `overall`, `by_size`, `by_mode`, `by_domain`, `by_stage`, `domain_note`, `blocked_stops`; each group has `runs` and `averages` of `{avg, n}` |
+| `aggregates` | `runs`, `overall`, `by_size`, `by_mode`, `by_domain`, `by_stage`, `domain_note`, `blocked_stops`; each group has `runs`, `averages` (`{avg, n}` per field), `stage_minutes` and `gate_rework` (`{avg, n}` per key), and `blocked_stops` (`count`, `reasons`) |
 | `usage` | `requested`, `available`, `since`, `until`, `tokens`, `cost`, `note` |
 
 ## Optional external tools (researched 2026-09)

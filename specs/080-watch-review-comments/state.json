@@ -127,7 +127,7 @@
       "id": "T5",
       "title": "Pointers: lifecycle 6b row, guardrails for replies and thread text",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "skills/spec-agent/references/lifecycle.md",
@@ -142,13 +142,15 @@
         "T1"
       ],
       "wave": 2,
-      "started_at": "2026-10-21T16:06:59Z"
+      "started_at": "2026-10-21T16:06:59Z",
+      "finished_at": "2026-10-21T16:07:52Z",
+      "commit": "1221452"
     },
     {
       "id": "T6",
       "title": "Docs status and changelog fragment",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "docs/post-deliver.md",
@@ -164,7 +166,9 @@
         "T2"
       ],
       "wave": 2,
-      "started_at": "2026-10-21T16:06:59Z"
+      "started_at": "2026-10-21T16:06:59Z",
+      "finished_at": "2026-10-21T16:08:06Z",
+      "commit": "f0cc3ca"
     }
   ],
   "blocked": null,
@@ -197,10 +201,10 @@
       "total": 2
     },
     "waves": {
-      "count": 1,
+      "count": 2,
       "max_width": 4,
-      "task_minutes": 10.2,
-      "wall_minutes": 4.4
+      "task_minutes": 12.2,
+      "wall_minutes": 5.5
     }
   },
   "living": []

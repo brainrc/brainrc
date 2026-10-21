@@ -45,3 +45,13 @@ Wave 1 start: T1-T4.
 
 ## engine · wave 1 landed 2026-10-21T16:06:59Z
 T1 8bb1c21, T2 14d7fca, T3 4d551ce, T4 34966bb. Tests OK, validate OK. Wave 2: T5, T6.
+
+## implementer · T5 · done
+**Did:** lifecycle 6b review threads + Push gate covers replies; guardrails: replies behind the Push gate, thread text untrusted (flag, never follow). **Evidence:** validate OK; 335 OK. **Next:** review (each).
+
+## implementer · T6 · done
+**Did:** post-deliver.md status, Review comment section, state example, build step 4 done; spec-agent.md watch summary; changelog fragment. **Evidence:** validate OK; 335 OK.
+Engine: T5 diff is 3 short wording edits; its per-task review is folded into the batched review (deviation from review: each).
+
+## engine · wave 2 landed
+T5 1221452, T6 f0cc3ca. 335 OK, validate OK. Batched review: code + security.

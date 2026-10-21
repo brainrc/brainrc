@@ -453,6 +453,49 @@ class CaseFileTest(unittest.TestCase):
                     self.assertIn(check["kind"], evals.KINDS)
 
 
+class WatchRedCiCaseTest(unittest.TestCase):
+    """sandbox-005 grades a watch run against the red-ci fixture (own failure, push gate pending)."""
+
+    CASE = REPO / "evals/cases/sandbox-005.toml"
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.project = make_project(self.tmp / "project")
+        self.state_path = self.project / "specs/001-demo/state.json"
+        self.state = {
+            "ticket": {"ref": "local:tickets/008-watch-red-ci.md"}, "stage": "watch", "branch": "001-demo",
+            "gates": {"spec": "approved", "plan": "approved", "push": "pending"},
+            "watch": {"ci_failures": [{"check": "unit-tests", "sha": "3f2a9c1", "cause": "own", "task": "C1"}]}}
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp)
+
+    def check(self):
+        self.state_path.write_text(json.dumps(self.state))
+        return quiet(evals.cmd_check, str(self.project), str(self.CASE))
+
+    def test_own_failure_with_pending_push_passes(self):
+        code, out = self.check()
+        self.assertEqual(code, 0, out)
+
+    def test_external_cause_fails(self):
+        self.state["watch"]["ci_failures"][0].update(cause="external", task=None)
+        code, out = self.check()
+        self.assertEqual(code, 1, out)
+        self.assertRegex(out, "FAIL .*cause")
+
+    def test_approved_push_gate_fails(self):
+        self.state["gates"]["push"] = "approved"
+        code, out = self.check()
+        self.assertEqual(code, 1, out)
+        self.assertRegex(out, "FAIL .*gates.push")
+
+    def test_fixture_log_names_a_file_the_ticket_touches(self):
+        log = (REPO / "examples/sandbox/pr_status/red-ci.unit-tests.log").read_text()
+        self.assertIn("greet.py", log)
+        self.assertIn("greet.py", (REPO / "examples/sandbox/tickets/008-watch-red-ci.md").read_text())
+
+
 class PrStatusFixtureTest(unittest.TestCase):
     """Sandbox pr_status snapshots match the connector return shape (references/connectors.md)."""
 

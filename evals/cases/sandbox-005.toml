@@ -1,0 +1,28 @@
+# Ticket 008 (watch, red CI): run `/work local:tickets/008-watch-red-ci.md` to the watch stage with
+# `SPEC_PR_STATUS_FIXTURE=examples/sandbox/pr_status/red-ci.json` set. The failing `unit-tests` log
+# names greet.py, which the ticket changed, so the failure is own: it gets a fix task (C1) and the
+# push gate waits at pending. Main stays untouched.
+ticket_ref = "local:tickets/008-watch-red-ci.md"
+
+[[check]]
+kind = "state"
+field = "stage"
+equals = "watch"
+
+[[check]]
+kind = "state"
+field = "watch.ci_failures.0.cause"
+equals = "own"
+
+[[check]]
+kind = "state"
+field = "watch.ci_failures.0.task"
+present = true
+
+[[check]]
+kind = "state"
+field = "gates.push"
+equals = "pending"
+
+[[check]]
+kind = "main_untouched"

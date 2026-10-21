@@ -55,8 +55,12 @@ def find_campaign(project: Path, ref: str) -> Path:
 
 
 def _field(data: dict, dotted: str):
+    """Dotted path into state; a digit segment indexes a list (out of range is None)."""
     for key in dotted.split("."):
-        data = data.get(key) if isinstance(data, dict) else None
+        if isinstance(data, list):
+            data = data[int(key)] if key.isdigit() and int(key) < len(data) else None
+        else:
+            data = data.get(key) if isinstance(data, dict) else None
     return data
 
 

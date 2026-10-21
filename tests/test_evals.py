@@ -139,6 +139,18 @@ class CheckTest(unittest.TestCase):
         self.assertEqual(code, 0, out)
         self.assert_fails(present.replace('field = "stage"', 'field = "metrics.waves.task_minutes"'), "missing")
 
+    def test_state_numeric_index_segment(self):
+        path = self.project / "specs/001-demo/state.json"
+        data = json.loads(path.read_text())
+        data["watch"] = {"ci_failures": [{"cause": "own"}]}
+        path.write_text(json.dumps(data))
+        case = ALL_KINDS.replace('field = "stage"', 'field = "watch.ci_failures.0.cause"').replace(
+            'equals = "done"', 'equals = "own"')
+        code, out = self.run_case(case)
+        self.assertEqual(code, 0, out)
+        self.assert_fails(case.replace("ci_failures.0", "ci_failures.1"), "ci_failures.1.cause = None")
+        self.assert_fails(case.replace("ci_failures.0", "ci_failures.-1"), "ci_failures.-1.cause = None")
+
     def test_failed_criterion_fails(self):
         (self.project / "specs/001-demo/verify.md").write_text(VERIFY.replace("manual run | pass", "manual run | fail"))
         self.assert_fails(ALL_KINDS, "AC2")

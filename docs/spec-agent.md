@@ -58,6 +58,15 @@ target must exist, an ADDED one must not) and writes nothing if any fails. Each 
 the run that last changed it. Formats: `templates/spec.md` and `templates/living.md`. Projects
 that already have runs start with no living specs; the first run that touches an area creates it.
 
+## Active run pointer
+
+For tools outside the run's repo (a pack repo, a workspace root), spec-agent writes the active
+run's absolute path to `$AICFG_HOME/active-run` (default `~/.config/ai-config/active-run`) at
+intake, on resume, and at every checkpoint commit. The file is one line. It is not cleared when
+a run finishes, and the last write wins across sessions. A tool reads it through
+`skills/spec-agent/scripts/active_run.py read`, or falls back to `<cwd>/specs/` when the file
+is absent. The contract is in [state.md](../skills/spec-agent/references/state.md#active-run-pointer).
+
 ## Roles (`agents/`)
 
 | Agent | Model | Job |

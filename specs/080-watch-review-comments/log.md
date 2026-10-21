@@ -13,3 +13,6 @@ Recommended answers to Q1-Q5 folded into Open questions.
 
 ## engine · plan gate · approved 2026-10-21T15:58:11Z
 Wave 1 start: T1-T4.
+
+## implementer · T2 · done
+**Did:** state.md: review_rounds, threads, thread_log, key rule, no raw text. **Evidence:** validate OK; 328 OK (docs only). **Next:** batch review.

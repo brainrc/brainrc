@@ -73,6 +73,25 @@ class RetroMetricsTest(unittest.TestCase):
         self.assertEqual(rec.agent_minutes, 120)
         self.assertEqual(rec.warnings, [])
 
+    # AC18
+    def test_wait_exceeding_total_flags_negative_agent_time(self):
+        st = copy.deepcopy(COMPLETE)
+        st["metrics"]["gates"]["spec"] = {"presented_at": "2026-10-01T10:00:00Z",
+                                          "approved_at": "2026-10-01T12:40:00Z"}
+        rec = self.load(st)
+        self.assertEqual(rec.total_minutes, 170)
+        self.assertIsNone(rec.agent_minutes)
+        self.assertTrue(any("agent" in w and "negative" in w for w in rec.warnings), rec.warnings)
+
+    def test_wait_exceeding_stage_span_flags_negative_stage_minutes(self):
+        st = copy.deepcopy(COMPLETE)
+        st["metrics"]["gates"]["spec"] = {"presented_at": "2026-10-01T10:00:00Z",
+                                          "approved_at": "2026-10-01T10:40:00Z"}
+        rec = self.load(st)
+        self.assertIsNone(rec.stage_minutes["spec"])
+        self.assertTrue(all(v is None or v >= 0 for v in rec.stage_minutes.values()))
+        self.assertTrue(any("spec" in w and "negative" in w for w in rec.warnings), rec.warnings)
+
     def test_per_stage_excludes_gate_wait(self):
         rec = self.load(COMPLETE)
         self.assertEqual(

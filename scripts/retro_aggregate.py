@@ -28,8 +28,8 @@ def _avg_by_key(dicts: list) -> dict:
 
 
 def blocked_reasons(r) -> list:
-    """Current block plus past blocks (str or {'reason': str} entries); unknown if none recorded."""
-    reasons = [r.blocked_reason] if r.blocked_reason else []
+    """One reason per stop from `blocked_stops` (it already lists the current block first)."""
+    reasons = []
     for stop in r.blocked_stops or []:
         reason = stop.get("reason") if isinstance(stop, dict) else stop
         reasons.append(reason if isinstance(reason, str) and reason else "unknown")

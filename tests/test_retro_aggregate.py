@@ -106,7 +106,7 @@ class AggregateTest(unittest.TestCase):
     def test_blocked_stops_current_and_past_with_reasons(self):
         a = aggregate([
             rec("a", size="small", mode="auto", domains=["scripting"], stage="plan",
-                blocked_reason="needs input", blocked_stops=["old failure"]),
+                blocked_reason="needs input", blocked_stops=["needs input", "old failure"]),
             rec("b", size="standard", mode="auto", domains=["docs"], blocked_stops=[]),
             rec("c", size="standard", mode="guided", blocked_stops=None),
             rec("d", size="standard", mode="auto", blocked_stops=["old failure"]),
@@ -122,6 +122,13 @@ class AggregateTest(unittest.TestCase):
                          ["needs input", "old failure"])
         self.assertEqual(a["by_domain"]["docs"]["blocked_stops"]["count"], 0)
         self.assertEqual(a["by_domain"]["none"]["blocked_stops"]["count"], 1)
+
+    def test_current_block_in_blocked_stops_counts_once(self):
+        # loader puts the current block first in blocked_stops: one current + one past = 2
+        a = aggregate([rec("a", stage="plan", blocked_reason="now",
+                           blocked_stops=["now", "old"])])
+        self.assertEqual(a["blocked_stops"]["count"], 2)
+        self.assertEqual(a["blocked_stops"]["reasons"], ["now", "old"])
 
     def test_blocked_stop_entries_may_be_dicts_with_reason(self):
         a = aggregate([rec("a", blocked_stops=[{"reason": "r1"}])])

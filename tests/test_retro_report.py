@@ -108,7 +108,8 @@ class ReportTest(unittest.TestCase):
         self.assertIsNone(runs["002-old"]["total_minutes"])
         self.assertIsNone(runs["002-old"]["retries"])
         self.assertEqual(runs["004-blocked"]["blocked_reason"], "needs decision")
-        self.assertIn("count", doc["aggregates"]["blocked_stops"])
+        self.assertEqual(doc["aggregates"]["blocked_stops"]["count"], 2)  # current + one past
+        self.assertEqual(doc["aggregates"]["blocked_stops"]["reasons"], ["needs decision", "earlier snag"])
         self.assertIn("usage", doc)
 
     def test_markdown_default(self):

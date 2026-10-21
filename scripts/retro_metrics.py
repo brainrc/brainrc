@@ -124,7 +124,14 @@ def _per_stage(starts: dict, waits: dict | None, state_gates: dict, warnings: li
                 wait = 0 if state_gates.get(prev) == "skipped" else None
         else:
             wait = 0
-        out[prev] = None if wait is None else _minutes(starts[prev], starts[nxt]) - wait
+        if wait is None:
+            out[prev] = None
+            continue
+        mins = _minutes(starts[prev], starts[nxt]) - wait
+        if mins < 0:
+            warnings.append(f"stage {prev}: gate wait exceeds stage duration (negative minutes)")
+            mins = None
+        out[prev] = mins
     return out
 
 
@@ -226,7 +233,11 @@ def load_run(run_dir: Path, label: str | None = None) -> RunRecord | Skipped:
         if waits is not None and None not in waits.values():
             rec.wait_minutes = sum(waits.values())
             if rec.total_minutes is not None:
-                rec.agent_minutes = rec.total_minutes - rec.wait_minutes
+                agent = rec.total_minutes - rec.wait_minutes
+                if agent < 0:
+                    warnings.append("agent time is negative (gate wait exceeds total duration)")
+                else:
+                    rec.agent_minutes = agent
         rec.stage_minutes = per_stage
 
     rec.gate_rework = _dict(metrics.get("gate_rework"))

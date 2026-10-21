@@ -41,7 +41,11 @@
       "intake": "2026-10-21T16:18:38Z",
       "spec": "2026-10-21T16:18:38Z"
     },
-    "gates": {},
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-21T16:19:42Z"
+      }
+    },
     "gate_rework": {
       "spec": 0,
       "plan": 0,

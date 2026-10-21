@@ -169,7 +169,8 @@
       "review": "batch",
       "wave": 3,
       "worktree": "/tmp/claude-0/-home-user-ai-config/bb6b11af-d4d6-51ac-beaf-b202f60c9428/scratchpad/spec-agent/074-campaign-ordered-shape/T6",
-      "started_at": "2026-10-21T03:44:56Z"
+      "started_at": "2026-10-21T03:44:56Z",
+      "finished_at": "2026-10-21T03:45:45Z"
     }
   ],
   "blocked": null,

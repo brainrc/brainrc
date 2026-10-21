@@ -108,3 +108,13 @@
 - HIGH relative path → resolved
 - LOW absolute/relative mismatch → resolved
 - LOW (optional) `write()` doesn't check the directory exists → follow-up, script out of T3 scope
+
+## verifier · verify · done
+2026-10-21
+
+**Did:** Full suite, verbose test_active_run, validate, and the AC1 CLI scenario (write from session-b, read from cwd-c, temp HOME/AICFG_HOME). All 12 criteria mapped in verify.md; all pass.
+
+**Evidence:**
+- `.runs/test.log` → 234 OK; `.runs/validate.log` → OK; `.runs/ac1-cli.log` → read printed the repo-a run, exit 0
+
+**Changed files:** `specs/071-active-run-pointer/verify.md`

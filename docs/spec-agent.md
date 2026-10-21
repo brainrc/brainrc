@@ -17,8 +17,15 @@ on its own.
 ```
 /work gh:42
   intake ─► analyst ─► ⛔ SPEC ─► architect ─► ⛔ PLAN ─► implementer ×N ─► reviewers ─►
-  verifier ─► doc-writer ─► ⛔ DELIVER ─► push · PR · ticket update ─► retro
+  verifier ─► doc-writer ─► ⛔ DELIVER ─► push · PR · ticket update ─► retro ─► watch
 ```
+
+**`watch`** (normal delivery, connector with `pr_status`) runs on `/spec-resume`, never in a
+loop. It reads the PR's checks; a red check caused by this diff becomes a fix task `C<n>`, run
+through the usual implement and review loop, then a **Push gate** (diff stat, commits, the
+failing check) before anything is pushed. External failures are only noted. Review comments and
+merge handling are not built yet. Details: [post-deliver.md](post-deliver.md). Offline evals
+set `SPEC_PR_STATUS_FIXTURE` to a `pr_status` fixture file instead of calling the connector.
 
 ## Commands
 

@@ -1,9 +1,10 @@
 # Post-deliver: following a PR to merge (design)
 
-Status: **design, not built.** Today a run ends at the Deliver gate: push, PR, ticket update,
-retro, `stage: done`. Whatever happens next (red CI, review comments, a broken merge) gets
-fixed by hand, and the retro never learns about it. This page designs a stage that closes that
-loop. Build order is at the end.
+Status: **CI failures and the Push gate are built** (see
+[`references/watch.md`](../skills/spec-agent/references/watch.md)); review comments and
+post-merge verify are still planned. A run used to end at the Deliver gate: push, PR, ticket
+update, retro, `stage: done`, and whatever came next was fixed by hand. This page designs the
+stage that closes that loop. Build order is at the end.
 
 ## Goals
 
@@ -100,7 +101,7 @@ reviewer role or checklist.
    per stage. It needs no new state, gives a baseline today, and is the place the `watch`
    numbers will land. Without it, the new fields would be written and never read.
 2. `pr_status` in the connector contract and `ticket-github`; `validate` accepts it as optional.
-3. `watch` stage for CI failures and the Push gate.
+3. `watch` stage for CI failures and the Push gate. **Done.**
 4. Review comments.
 5. Post-merge verify and the retro's After delivery section; add them to the rollup.
 

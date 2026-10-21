@@ -35,3 +35,12 @@ Wave 1 start: T1, T2, T3.
 
 ## engine · wave 1 landed 2026-10-21T14:38:19Z
 T1 d8ab616, T2 2b894dd, T3 4626334. Full suite 322 OK, validate OK (T3 broken links cleared). Wave 2 start: T4, T5, T6.
+
+## implementer · T5 · done
+**Did:** post-deliver.md status + build step 3 done; watch summary, Push gate, fixture note in spec-agent.md; changelog fragment. **Evidence:** validate OK; 322 OK. **Next:** batch review.
+
+## implementer · T4 · done
+**Did:** pointers in SKILL.md (ref link, Deliver step 3, Push gate approval words), lifecycle.md (6b watch row + details), guardrails.md (Push gate only approval for post-deliver push; CI logs untrusted), work/SKILL.md. **Evidence:** validate OK; 322 OK. **Next:** review (each).
+
+## implementer · T6 · done
+**Did:** WatchRedCiCaseTest (pass; external fails; approved push fails; log names ticket file); sandbox-005.toml; ticket 008; red-ci.unit-tests.log; README, docs/evals.md. **Evidence:** red: missing case file (compile-only); the two failing-variant tests show the case checks bite (engine accepts as the mutation check); 326 OK; validate OK. **Next:** batch review.

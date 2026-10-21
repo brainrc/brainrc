@@ -104,7 +104,7 @@
       "id": "T4",
       "title": "Wire pointers: SKILL.md deliver step, lifecycle row and Push gate, guardrails, /work",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "review",
       "attempts": 1,
       "files": [
         "skills/spec-agent/SKILL.md",
@@ -123,7 +123,8 @@
         "T2"
       ],
       "wave": 2,
-      "started_at": "2026-10-21T14:38:19Z"
+      "started_at": "2026-10-21T14:38:19Z",
+      "finished_at": "2026-10-21T14:40:02Z"
     },
     {
       "id": "T5",
@@ -144,7 +145,8 @@
         "T2"
       ],
       "wave": 2,
-      "started_at": "2026-10-21T14:38:19Z"
+      "started_at": "2026-10-21T14:38:19Z",
+      "finished_at": "2026-10-21T14:39:48Z"
     },
     {
       "id": "T6",
@@ -170,7 +172,9 @@
         "T1"
       ],
       "wave": 2,
-      "started_at": "2026-10-21T14:38:19Z"
+      "started_at": "2026-10-21T14:38:19Z",
+      "finished_at": "2026-10-21T14:40:14Z",
+      "red": "compile-only"
     }
   ],
   "blocked": null,
@@ -203,10 +207,10 @@
       "total": 1
     },
     "waves": {
-      "count": 1,
+      "count": 2,
       "max_width": 3,
-      "task_minutes": 5.7,
-      "wall_minutes": 2.3
+      "task_minutes": 10.8,
+      "wall_minutes": 4.2
     }
   },
   "living": []

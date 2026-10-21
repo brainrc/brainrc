@@ -15,10 +15,10 @@
   "size": "standard",
   "mode": "subagent",
   "delivery": "normal",
-  "stage": "plan",
+  "stage": "implement",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [
@@ -38,8 +38,8 @@
       "id": "T1",
       "title": "Numeric index segments in eval state checks (test-first)",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "scripts/evals.py",
         "tests/test_evals.py",
@@ -49,14 +49,15 @@
         "AC10"
       ],
       "review": "batch",
-      "wave": 1
+      "wave": 1,
+      "started_at": "2026-10-21T14:32:59Z"
     },
     {
       "id": "T2",
       "title": "references/watch.md: enter, fixture hook, resume pass, CI triage, C-tasks, Push gate",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "skills/spec-agent/references/watch.md"
       ],
@@ -70,14 +71,15 @@
         "AC7"
       ],
       "review": "each",
-      "wave": 1
+      "wave": 1,
+      "started_at": "2026-10-21T14:32:59Z"
     },
     {
       "id": "T3",
       "title": "state.md schema and Resume at watch",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "skills/spec-agent/references/state.md"
       ],
@@ -87,7 +89,8 @@
         "AC8"
       ],
       "review": "batch",
-      "wave": 1
+      "wave": 1,
+      "started_at": "2026-10-21T14:32:59Z"
     },
     {
       "id": "T4",
@@ -165,7 +168,8 @@
     "stage_started_at": {
       "intake": "2026-10-21T05:10:55Z",
       "spec": "2026-10-21T05:10:55Z",
-      "plan": "2026-10-21T13:18:15Z"
+      "plan": "2026-10-21T13:18:15Z",
+      "implement": "2026-10-21T14:32:59Z"
     },
     "gates": {
       "spec": {
@@ -173,7 +177,8 @@
         "approved_at": "2026-10-21T13:18:15Z"
       },
       "plan": {
-        "presented_at": "2026-10-21T13:21:05Z"
+        "presented_at": "2026-10-21T13:21:05Z",
+        "approved_at": "2026-10-21T14:32:59Z"
       }
     },
     "gate_rework": {

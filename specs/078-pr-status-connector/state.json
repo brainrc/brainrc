@@ -115,7 +115,9 @@
       ],
       "review": "batch",
       "wave": 1,
-      "started_at": "2026-10-21T05:00:58Z"
+      "started_at": "2026-10-21T05:00:58Z",
+      "finished_at": "2026-10-21T05:04:26Z",
+      "red": "assertion"
     }
   ],
   "blocked": null,
@@ -146,6 +148,12 @@
     "reviews": {
       "first_pass": 0,
       "total": 1
+    },
+    "waves": {
+      "count": 1,
+      "max_width": 4,
+      "task_minutes": 8.2,
+      "wall_minutes": 3.5
     }
   },
   "living": []

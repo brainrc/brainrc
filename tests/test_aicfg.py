@@ -1521,6 +1521,19 @@ class ConnectorCheckTest(TempRepoCase):
         code, out = quiet(aicfg.cmd_validate)
         self.assertEqual(code, 0, out)
 
+    def test_pr_status_is_optional_for_connectors(self):
+        write_skill(self.repo, "ticket-with", "## fetch\n\n## comment / transition / link_pr\n\n## pr_status\n")
+        write_skill(self.repo, "ticket-without", "## fetch\n\n## comment / transition / link_pr\n")
+        code, out = quiet(aicfg.cmd_validate)
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("pr_status", out)
+
+    def test_pr_status_does_not_replace_required_operations(self):
+        write_skill(self.repo, "ticket-z", "## fetch\n\n## comment / transition\n\n## pr_status\n")
+        code, out = quiet(aicfg.cmd_validate)
+        self.assertEqual(code, 1)
+        self.assertIn("skills/ticket-z/SKILL.md: connector missing `##` sections for link_pr", out)
+
     def test_pack_connector_missing_operations_fails(self):
         pack = make_pack(Path(tempfile.mkdtemp()).resolve() / "acme-pack",
                          PACK_TOML.replace('connector = "ticket-github"', 'connector = "acme-tickets"'))

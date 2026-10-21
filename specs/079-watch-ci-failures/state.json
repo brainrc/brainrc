@@ -212,10 +212,12 @@
         "examples/sandbox/tickets/008-watch-red-ci.md",
         "evals/cases/sandbox-005.toml",
         "docs/evals.md",
-        "tests/test_evals.py"
+        "tests/test_evals.py",
+        "scripts/evals.py"
       ],
       "criteria": [
-        "AC9"
+        "AC9",
+        "AC10"
       ],
       "review": "batch",
       "wave": 3,

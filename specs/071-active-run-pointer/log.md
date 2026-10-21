@@ -56,3 +56,26 @@
 - LOW wrong type hint → fixed
 
 **Next:** T2.
+
+## implementer · T2 · done
+2026-10-21
+
+**Did:** Stub first (11 assertion failures + 6 errors against it), then `active_run.py`: `write` via temp file + `os.replace`, creates the home, warns and exits 0 on `OSError`/`RuntimeError`; `read` prefers the pointer, else newest `specs/*/state.json` by mtime (skipping entries whose stat fails), else stderr note + exit 1. Review fixes applied.
+
+**Evidence:**
+- `python3 -m unittest -q tests.test_active_run` → 17 OK
+- full suite (engine) → 234 OK; `aicfg.py validate` → OK
+- red: assertion (against the stub)
+
+**Changed files:** `skills/spec-agent/scripts/active_run.py`
+
+## code-reviewer · T2 · done
+2026-10-21
+
+**Findings:**
+- MEDIUM active_run.py:34,52 `Path.home()` raises RuntimeError without HOME/passwd → caught in write and read (fixed, untested: tests fenced)
+- LOW active_run.py:58 stat() in sort key can raise → skip entries (fixed)
+- LOW fd leak if fdopen fails → negligible, not fixed
+- LOW relative AICFG_HOME resolves against cwd → matches aicfg_home(), no change
+
+**Next:** T3.

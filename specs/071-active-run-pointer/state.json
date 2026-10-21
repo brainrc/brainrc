@@ -60,7 +60,7 @@
       "id": "T2",
       "title": "Implement active_run.py write|read",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "skills/spec-agent/scripts/active_run.py"
@@ -78,14 +78,16 @@
       "review": "each",
       "after": [
         "T1"
-      ]
+      ],
+      "red": "assertion",
+      "commit": "6498929"
     },
     {
       "id": "T3",
       "title": "Document the pointer contract and write moments; changelog fragment",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "skills/spec-agent/references/state.md",
         "skills/spec-agent/references/lifecycle.md",
@@ -127,8 +129,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 1,
-      "first_pass": 1
+      "total": 2,
+      "first_pass": 2
     },
     "retries": 0,
     "interventions": 0

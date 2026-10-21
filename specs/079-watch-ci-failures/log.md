@@ -59,3 +59,6 @@ T4 395c969, T5 7786c6d, T6 ece5df5. 326 OK, validate OK. Batched review: code-re
 
 ## code-reviewer · batched · changes-requested
 **Findings:** HIGH fixture path examples/sandbox/pr_status/red-ci.json wrong from the sandbox copy (README, ticket 008, sandbox-005, docs/evals); MEDIUM watch Enter needs no PR under the fixture hook; MEDIUM sandbox-005 passes with an extra entry; LOW lifecycle row 7 retro timing. F1 items confirmed. **Next:** F1 (watch/state/lifecycle) + F2 (sandbox/evals), wave 3, parallel.
+
+## implementer · F1 · done
+**Did:** 8 fixes in watch.md (78 lines); state.md gates.push_sha + approved_at before push; lifecycle retro at end of deliver. **Evidence:** validate OK; 326 OK (docs only). **Next:** re-review of the fix diff.

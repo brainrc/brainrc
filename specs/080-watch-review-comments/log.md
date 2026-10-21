@@ -31,3 +31,5 @@ Wave 1 start: T1-T4.
 
 ## implementer · T1 · done
 **Did:** watch.md § Review comments; Resume pass R-tasks + new-thread collection; Push gate lists pushes and replies. 110 lines. **Evidence:** validate OK; 328 OK (docs only). **Next:** review (each).
+- Engine: T1 again wrote watch.md in the project root despite the explicit worktree instruction; moved into the T1 worktree, root restored. Retro finding: the worktree rule needs enforcement (e.g. a guard hook), not just prompt text.
+- Correction: the line above is wrong. T1 had worked in its worktree. The engine misread `git -C <worktree> status` output as the root's, then copied the root's unchanged watch.md over T1's edits, destroying them. Reviewer stopped; T1 asked to re-apply its edits (counts as the same attempt; engine error, not a task failure).

@@ -37,3 +37,6 @@ Wave 1 start: T1-T4 in worktrees.
 
 ## verifier · verify · done
 **Did:** verify.md: AC1-AC9 pass. **Evidence:** 321 tests OK; 11 targeted OK; validate OK (.runs/). **Open issues:** gh commands verified by reading only (offline); no `closed` fixture (not required). **Next:** document.
+
+## doc-writer · document · done
+**Did:** folded review LOWs (owner/repo source, ghost author; changelog bullets); pr_status in docs/spec-agent.md ops list; pr-body.md, ticket-comment.md. **Evidence:** validate OK; 321 OK. **Next:** campaign: child 1 waits for the stack Deliver gate; child 2 starts.

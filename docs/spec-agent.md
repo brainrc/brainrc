@@ -144,6 +144,7 @@ For standard and large runs the engine stops before batched review and recommend
   `transition`, `link_pr` per the
   [connector contract](../skills/spec-agent/references/connectors.md). `validate` checks the
   headings. Existing ones: `ticket-local`, `ticket-github`, `ticket-jira`.
+  Optional: `pr_status` (read-only; without it `watch` skips).
 
 `python3 scripts/aicfg.py validate` checks that every agent, skill, and link referenced exists.
 

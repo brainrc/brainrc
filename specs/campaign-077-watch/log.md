@@ -9,3 +9,6 @@
 
 ## 2026-10-21T04:52:53Z · Campaign gate approved
 - Child 1 gh:78 started: specs/078-pr-status-connector/ on branch 078-pr-status-connector (from main).
+
+## 2026-10-21T05:10:30Z · child 1 gh:78 verified
+- Drafts ready; waits for the stack Deliver gate. Child 2 gh:79 starts on 079-watch-ci-failures from 078-pr-status-connector.

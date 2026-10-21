@@ -31,3 +31,6 @@ Wave 1 start: T1-T4 in worktrees.
 
 ## implementer · T2 attempt 2 · done
 **Did:** gh pr view for checks/sha/state/updated_at + GraphQL reviewThreads only; totalCount cap note; -f owner/repo; MCP mapping. **Evidence:** validate OK; 314 OK. **Changed files:** skills/ticket-github/SKILL.md, docs/post-deliver.md **Next:** fix diff joins the batched review with T3, T4.
+
+## code-reviewer · batched review T2 fix, T3, T4 · done
+**Findings:** earlier T2 findings resolved; LOW owner/repo source + null author in ticket-github pr_status; LOW test enums copied from doc; LOW changelog fragment omits ticket-github and fixtures. No CRITICAL/HIGH. Engine: the two doc LOWs go to the doc-writer at document; the enum LOW stays as is (small, stable enums).

@@ -114,3 +114,12 @@ Two defects from integration: (1) blocked-stop double count (T2/T3 parallel cont
 **Evidence:** red on assertions (3 != 2; -30.0 / -10.0 not None); full suite 300 OK; validate OK; smoke has no negative minutes.
 
 **Changed files:** retro_aggregate.py, retro_metrics.py, test_retro_aggregate.py, test_retro_metrics.py, test_retro_report.py
+
+## implementer · T6 · done
+2026-10-21
+
+**Did:** Metrics rollup section in docs/efficiency.md (usage, meanings, JSON schema v1, tokens via --ccusage only, ccusage shape untested); roadmap item to Done; patch fragment.
+
+**Evidence:** validate OK; full suite 300 OK.
+
+**Changed files:** docs/efficiency.md, docs/roadmap.md, changelog.d/024-metrics-rollup.md

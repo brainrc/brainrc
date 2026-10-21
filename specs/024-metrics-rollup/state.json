@@ -182,7 +182,7 @@
       "id": "T6",
       "title": "Docs, roadmap, changelog fragment",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "docs/efficiency.md",
@@ -196,7 +196,8 @@
       "review": "batch",
       "after": [
         "T5"
-      ]
+      ],
+      "commit": "63bdce0"
     }
   ],
   "blocked": null,

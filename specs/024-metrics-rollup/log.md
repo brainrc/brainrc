@@ -137,3 +137,15 @@ Two defects from integration: (1) blocked-stop double count (T2/T3 parallel cont
 - MEDIUM retro_report.py:115-135 UTC dates vs ccusage local-day buckets → widen range by a day, note it
 - LOW docs First-pass is an average of per-run rates → say so
 - LOW no test for blocked run + blocked handoff in log.md
+
+## implementer · F2 · done
+2026-10-21
+
+**Did:** Blocked-stop dedupe (structural: if state.blocked is set and log's last handoff is blocked, it's the current one); wait > total → wait and agent unknown with a warning; ccusage range ±1 day; docs fixed (Total min, Retries/Interventions per state.md, First-pass as average of per-run rates).
+
+**Evidence:** red on assertions (6, then 3); full suite 306 OK; validate OK; smoke no negative minutes.
+
+## code-reviewer · F2 re-review · done
+2026-10-21
+
+**Findings:** HIGHs resolved; remaining MEDIUM (dedupe by timestamp/reason could miss) resolved by the structural rule (engine-checked; scoped tests OK). LOW accepted: none left open.

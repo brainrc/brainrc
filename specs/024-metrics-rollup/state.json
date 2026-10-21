@@ -14,7 +14,7 @@
   "size": "standard",
   "mode": "subagent",
   "delivery": "normal",
-  "stage": "implement",
+  "stage": "verify",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -203,7 +203,7 @@
       "id": "F2",
       "title": "Batched review fixes: blocked-stop dedupe, wait over total, ccusage date range, doc wording",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "scripts/retro_metrics.py",
@@ -221,7 +221,9 @@
         "AC16",
         "AC18"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": "b8d6fa4",
+      "red": "assertion"
     }
   ],
   "blocked": null,
@@ -231,7 +233,8 @@
       "intake": "2026-10-21T02:25:43Z",
       "spec": "2026-10-21T02:26:15Z",
       "plan": "2026-10-21T02:40:06Z",
-      "implement": "2026-10-21T02:48:29Z"
+      "implement": "2026-10-21T02:48:29Z",
+      "verify": "2026-10-21T03:03:19Z"
     },
     "gates": {
       "spec": {
@@ -249,8 +252,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 1,
-      "first_pass": 0
+      "total": 2,
+      "first_pass": 1
     },
     "retries": 0,
     "interventions": 0,

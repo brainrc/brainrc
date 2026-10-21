@@ -15,7 +15,7 @@
   "size": "standard",
   "mode": "subagent",
   "delivery": "normal",
-  "stage": "verify",
+  "stage": "document",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -132,7 +132,8 @@
       "spec": "2026-10-21T04:52:53Z",
       "plan": "2026-10-21T04:55:53Z",
       "implement": "2026-10-21T05:00:58Z",
-      "verify": "2026-10-21T05:07:15Z"
+      "verify": "2026-10-21T05:07:15Z",
+      "document": "2026-10-21T05:08:40Z"
     },
     "gates": {
       "spec": {
@@ -161,5 +162,8 @@
       "wall_minutes": 3.5
     }
   },
-  "living": []
+  "living": [
+    "ticket-connectors",
+    "evals"
+  ]
 }

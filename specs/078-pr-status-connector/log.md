@@ -34,3 +34,6 @@ Wave 1 start: T1-T4 in worktrees.
 
 ## code-reviewer · batched review T2 fix, T3, T4 · done
 **Findings:** earlier T2 findings resolved; LOW owner/repo source + null author in ticket-github pr_status; LOW test enums copied from doc; LOW changelog fragment omits ticket-github and fixtures. No CRITICAL/HIGH. Engine: the two doc LOWs go to the doc-writer at document; the enum LOW stays as is (small, stable enums).
+
+## verifier · verify · done
+**Did:** verify.md: AC1-AC9 pass. **Evidence:** 321 tests OK; 11 targeted OK; validate OK (.runs/). **Open issues:** gh commands verified by reading only (offline); no `closed` fixture (not required). **Next:** document.

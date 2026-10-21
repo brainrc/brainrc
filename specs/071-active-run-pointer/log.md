@@ -79,3 +79,17 @@
 - LOW relative AICFG_HOME resolves against cwd → matches aicfg_home(), no change
 
 **Next:** T3.
+
+## implementer · T3 · done (attempt 1)
+2026-10-21
+
+**Did:** state.md `## Active run pointer` section; write calls in state.md checkpoint rule and Resume, lifecycle.md intake, SKILL.md Run steps 1 and 3; changelog fragment.
+
+**Evidence:** validate OK; full suite 234 OK.
+
+## code-reviewer · T3 · changes-requested
+2026-10-21
+
+**Findings:**
+- HIGH SKILL.md:75,84, state.md:110,127,131, lifecycle.md:37 `write specs/<slug>` is relative; with cwd reset to the session dir it silently records a nonexistent path → require the absolute run path
+- LOW state.md section says absolute but the call passes relative → fixed by the above

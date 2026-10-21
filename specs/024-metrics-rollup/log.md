@@ -89,3 +89,19 @@ T1 and T4 landed in plan order; worktrees removed. metrics.waves: width 2, 3.6 t
 2026-10-21
 
 T2 and T3 landed in order; integration check aggregates all 36 real runs. metrics.waves now: 2 waves, width 2, 6.3 task-min in 3.7 wall-min.
+
+## implementer · T5 · done
+2026-10-21
+
+**Did:** CLI with --root (repeatable, deduped), Markdown default, --json (schema_version, runs, skipped, aggregates, period usage), --ccusage wiring; stub test proves ccusage is never invoked without the flag.
+
+**Evidence:** red: stub gave empty output; `tests.test_retro_report` 11 OK; full suite 297 OK; validate OK; smoke `--root specs` exit 0, no home paths.
+
+**Changed files:** `scripts/retro_report.py`, `tests/test_retro_report.py`
+
+**Open issues:** retro_aggregate.blocked_reasons adds blocked_reason and blocked_stops, which already holds the current block → double count (AC9); T5 test only checks the key exists.
+
+## engine · F1 added
+2026-10-21
+
+Two defects from integration: (1) blocked-stop double count (T2/T3 parallel contract mismatch); (2) smoke shows negative agent time for 010 and 026 (gate wait > total from out-of-order timestamps), which AC18 says must be excluded.

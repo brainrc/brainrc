@@ -132,7 +132,7 @@
       "id": "T5",
       "title": "CLI and output",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "scripts/retro_report.py",
@@ -153,7 +153,28 @@
         "T2",
         "T3",
         "T4"
-      ]
+      ],
+      "commit": "3b9387e",
+      "red": "assertion"
+    },
+    {
+      "id": "F1",
+      "title": "Fix blocked-stop double count and negative agent time",
+      "agent": "implementer",
+      "status": "in_progress",
+      "attempts": 1,
+      "files": [
+        "scripts/retro_aggregate.py",
+        "tests/test_retro_aggregate.py",
+        "scripts/retro_metrics.py",
+        "tests/test_retro_metrics.py",
+        "tests/test_retro_report.py"
+      ],
+      "criteria": [
+        "AC9",
+        "AC18"
+      ],
+      "review": "batch"
     },
     {
       "id": "T6",

@@ -19,3 +19,4 @@ Wave 1 start: T1, T2, T3.
 
 ## implementer · T1 · done
 **Did:** _field indexes lists on digit segments (out of range/negative -> None); test_state_numeric_index_segment; docs/evals.md note. **Evidence:** red on assertion; 322 OK; validate OK. **Changed files:** scripts/evals.py, tests/test_evals.py, docs/evals.md **Next:** batch review.
+- Engine: T2 wrote watch.md in the project root instead of its worktree (scope breach of the worktree rule, file itself in scope); moved into the T2 worktree before review.

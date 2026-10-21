@@ -104,8 +104,8 @@
       "id": "T4",
       "title": "Wire pointers: SKILL.md deliver step, lifecycle row and Push gate, guardrails, /work",
       "agent": "implementer",
-      "status": "review",
-      "attempts": 1,
+      "status": "in_progress",
+      "attempts": 2,
       "files": [
         "skills/spec-agent/SKILL.md",
         "skills/spec-agent/references/lifecycle.md",
@@ -201,10 +201,10 @@
       "plan": 0,
       "deliver": 0
     },
-    "retries": 1,
+    "retries": 2,
     "reviews": {
       "first_pass": 0,
-      "total": 1
+      "total": 2
     },
     "waves": {
       "count": 2,

@@ -44,3 +44,6 @@ T1 d8ab616, T2 2b894dd, T3 4626334. Full suite 322 OK, validate OK (T3 broken li
 
 ## implementer · T6 · done
 **Did:** WatchRedCiCaseTest (pass; external fails; approved push fails; log names ticket file); sandbox-005.toml; ticket 008; red-ci.unit-tests.log; README, docs/evals.md. **Evidence:** red: missing case file (compile-only); the two failing-variant tests show the case checks bite (engine accepts as the mutation check); 326 OK; validate OK. **Next:** batch review.
+
+## code-reviewer · T4 · changes-requested
+**Findings:** HIGH SKILL.md "These words also approve the Push gate" reads as earlier wording approving it; HIGH lifecycle § 7 done-checkpoint push vs new guardrail "only an approved Push gate"; LOW watch.md "rejected" vs state.md changes-requested (to F1). **Next:** T4 attempt 2: Push gate takes the same approval words and rule; guardrail scoped to fix commits, the run-artifact done checkpoint stays under the Deliver approval.

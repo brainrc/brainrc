@@ -1,0 +1,150 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:71",
+    "id": "71",
+    "title": "spec-agent: record the active run's path so tools outside the run's repo can find it",
+    "url": "https://github.com/bxker/ai-config/issues/71",
+    "pr": "https://github.com/bxker/ai-config/pull/72"
+  },
+  "slug": "071-active-run-pointer",
+  "branch": "071-active-run-pointer",
+  "base": "main",
+  "size": "standard",
+  "mode": "subagent",
+  "delivery": "normal",
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/aicfg.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Contract tests for active_run.py",
+      "agent": "test-writer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "tests/test_active_run.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC5",
+        "AC8",
+        "AC9",
+        "AC10",
+        "AC11"
+      ],
+      "review": "each",
+      "red": "compile-only",
+      "commit": "13b0732"
+    },
+    {
+      "id": "T2",
+      "title": "Implement active_run.py write|read",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "skills/spec-agent/scripts/active_run.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC5",
+        "AC8",
+        "AC9",
+        "AC10",
+        "AC11"
+      ],
+      "review": "each",
+      "after": [
+        "T1"
+      ],
+      "red": "assertion",
+      "commit": "6498929"
+    },
+    {
+      "id": "T3",
+      "title": "Document the pointer contract and write moments; changelog fragment",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 2,
+      "files": [
+        "skills/spec-agent/references/state.md",
+        "skills/spec-agent/references/lifecycle.md",
+        "skills/spec-agent/SKILL.md",
+        "changelog.d/071-active-run-pointer.md"
+      ],
+      "criteria": [
+        "AC4",
+        "AC5",
+        "AC6",
+        "AC7",
+        "AC12"
+      ],
+      "review": "each",
+      "commit": "5b654fb"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-21T01:26:35Z",
+    "stage_started_at": {
+      "intake": "2026-10-21T01:26:35Z",
+      "spec": "2026-10-21T01:27:06Z",
+      "plan": "2026-10-21T01:29:23Z",
+      "implement": "2026-10-21T01:33:05Z",
+      "verify": "2026-10-21T01:40:44Z",
+      "document": "2026-10-21T01:42:29Z",
+      "deliver": "2026-10-21T01:44:29Z",
+      "done": "2026-10-21T01:51:49Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-21T01:28:03Z",
+        "approved_at": "2026-10-21T01:29:23Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-21T01:31:02Z",
+        "approved_at": "2026-10-21T01:33:05Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-21T01:44:29Z",
+        "approved_at": "2026-10-21T01:47:34Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 4,
+      "first_pass": 3
+    },
+    "retries": 1,
+    "interventions": 0
+  },
+  "living": [
+    "run-pointer"
+  ]
+}

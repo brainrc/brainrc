@@ -70,3 +70,6 @@ T5 1221452, T6 f0cc3ca. 335 OK, validate OK. Batched review: code + security.
 
 ## engine · fixes landed
 F1 b90d1c7, F2 b2eaa06. Tests OK, validate OK. Re-review of the fix diff.
+
+## code-reviewer · re-review F1+F2 · done
+**Findings:** all resolved. LOW new test file outside diff/plan becomes design (conservative); LOW sandbox-006 assumes a one-task plan. Kept as follow-ups.

@@ -28,3 +28,6 @@ Wave 1 start: T1-T4 in worktrees.
 
 ## implementer · T4 · done
 **Did:** PrStatusFixtureTest (6 tests); three fixtures under examples/sandbox/pr_status/; README line. **Evidence:** red: 7 assertion failures (fixtures missing); green: 319 OK; validate OK. **Changed files:** tests/test_evals.py, examples/sandbox/README.md, examples/sandbox/pr_status/{red-ci,review-comment,merged}.json **Next:** batch review.
+
+## implementer · T2 attempt 2 · done
+**Did:** gh pr view for checks/sha/state/updated_at + GraphQL reviewThreads only; totalCount cap note; -f owner/repo; MCP mapping. **Evidence:** validate OK; 314 OK. **Changed files:** skills/ticket-github/SKILL.md, docs/post-deliver.md **Next:** fix diff joins the batched review with T3, T4.

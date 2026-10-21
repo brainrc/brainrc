@@ -35,18 +35,18 @@ Minutes throughout. `unknown` means not recorded and is never counted as 0; aver
 
 | Number | Meaning |
 |---|---|
-| Total min | start of run to now or done (duration averages use done runs only) |
-| Gate wait min | time parked at approval gates, waiting on a human |
+| Total min | start of run to done; unknown for in-progress or blocked runs |
+| Gate wait min | time parked at approval gates, waiting on a human; unknown if it exceeds total (inconsistent timestamps), with a warning, so it stays out of averages |
 | Agent min | total minus gate wait: time the agent worked |
-| First-pass | share of review passes that found nothing to fix |
-| Retries | tasks re-dispatched after review findings |
-| Interventions | times a human had to step in mid-stage |
+| First-pass | share of review passes that found nothing to fix; the aggregate is the average of per-run rates (with `n`) |
+| Retries | each time a task goes back to the implementer |
+| Interventions | each time the user has to step in outside a gate (answering a blocked stop, correcting the agent mid-stage) |
 | Wave ratio | summed task minutes over wall minutes of parallel waves (above 1 means parallelism paid off) |
 | Criteria | passed/total acceptance criteria |
 | Warnings | inconsistent state, e.g. stages out of order; the run still counts |
 
 Tokens and cost are not in `state.json`. They come only from `--ccusage`, which runs
-`ccusage daily --json` for the date range of the reported runs and gives one **period total**, not a
+`ccusage daily --json` for the date range of the reported runs, widened by one day on each side (ccusage buckets by local day, run stamps are UTC), and gives one **period total**, not a
 per-run figure. Without the flag, or if ccusage is missing, fails, or the runs have no dates, tokens and cost stay `null`. The ccusage
 flags and JSON shape are assumed from its docs and untested against a real install.
 

@@ -81,7 +81,8 @@ class RetroMetricsTest(unittest.TestCase):
         rec = self.load(st)
         self.assertEqual(rec.total_minutes, 170)
         self.assertIsNone(rec.agent_minutes)
-        self.assertTrue(any("agent" in w and "negative" in w for w in rec.warnings), rec.warnings)
+        self.assertIsNone(rec.wait_minutes)  # excluded from averages
+        self.assertTrue(any("agent" in w and "exceeds total" in w for w in rec.warnings), rec.warnings)
 
     def test_wait_exceeding_stage_span_flags_negative_stage_minutes(self):
         st = copy.deepcopy(COMPLETE)
@@ -252,6 +253,16 @@ class RetroMetricsTest(unittest.TestCase):
         self.assertEqual(rec.total_minutes, 170)  # not adjusted
         self.assertIsNone(rec.stage_minutes["plan"])
 
+    def test_wait_exceeds_total_is_unknown(self):
+        st = copy.deepcopy(COMPLETE)
+        g = st["metrics"]["gates"]["plan"]
+        g["presented_at"], g["approved_at"] = "2026-10-01T10:00:00Z", "2026-10-02T10:00:00Z"
+        rec = self.load(st)
+        self.assertTrue(any("exceeds total" in w for w in rec.warnings), rec.warnings)
+        self.assertIsNone(rec.wait_minutes)
+        self.assertIsNone(rec.agent_minutes)
+        self.assertEqual(rec.total_minutes, 170)
+
     def test_out_of_order_stages(self):
         st = copy.deepcopy(COMPLETE)
         st["metrics"]["stage_started_at"]["implement"] = "2026-10-01T10:20:00Z"
@@ -345,7 +356,40 @@ class RetroMetricsTest(unittest.TestCase):
         st = copy.deepcopy(COMPLETE)
         st["blocked"] = {"reason": "waiting", "stage": "implement"}
         rec = self.run_with(log=self.LOG, state=st)
-        self.assertEqual(rec.blocked_stops, ["waiting", "needs creds", "unknown"])
+        self.assertEqual(rec.blocked_stops, ["waiting", "needs creds", "unknown"])  # last handoff is not blocked
+
+    def test_blocked_run_whose_last_handoff_is_the_block_counts_once(self):
+        st = copy.deepcopy(COMPLETE)
+        st["blocked"] = {"reason": "needs creds", "since": "2026-10-01T10:05:00Z"}
+        log = self.LOG.split("## reviewer")[0]  # last handoff is the implementer block
+        self.assertEqual(self.run_with(log=log, state=st).blocked_stops, ["needs creds"])
+
+    def test_blocked_run_with_one_earlier_block_counts_twice(self):
+        st = copy.deepcopy(COMPLETE)
+        st["blocked"] = {"reason": "waiting", "since": "2026-10-01T10:09:00Z"}
+        log = self.LOG.split("## reviewer \u00b7 T3")[0]
+        self.assertEqual(self.run_with(log=log, state=st).blocked_stops, ["waiting", "needs creds"])
+
+    def test_last_blocked_handoff_is_current_despite_older_stamp_and_other_reason(self):
+        st = copy.deepcopy(COMPLETE)
+        st["blocked"] = {"reason": "other words", "since": "2026-10-01T11:00:00Z"}
+        log = "## implementer \u00b7 T2 \u00b7 blocked\n2026-10-01T10:05:00Z\n\n**Open issues:** now\n"
+        self.assertEqual(self.run_with(log=log, state=st).blocked_stops, ["other words"])
+
+    def test_earlier_block_then_done_then_blocked_last_counts_twice(self):
+        st = copy.deepcopy(COMPLETE)
+        st["blocked"] = {"reason": "cur"}
+        log = ("## implementer \u00b7 T1 \u00b7 blocked\n\n**Open issues:** old\n\n"
+               "## implementer \u00b7 T1 \u00b7 done\n\n**Open issues:** none\n\n"
+               "## implementer \u00b7 T2 \u00b7 blocked\n\n**Open issues:** now\n")
+        self.assertEqual(self.run_with(log=log, state=st).blocked_stops, ["cur", "old"])
+
+    def test_blocked_state_but_last_handoff_done_keeps_all_log_blocks(self):
+        st = copy.deepcopy(COMPLETE)
+        st["blocked"] = {"reason": "engine stop"}
+        log = ("## implementer \u00b7 T1 \u00b7 blocked\n\n**Open issues:** old\n\n"
+               "## implementer \u00b7 T1 \u00b7 done\n\n**Open issues:** none\n")
+        self.assertEqual(self.run_with(log=log, state=st).blocked_stops, ["engine stop", "old"])
 
     def test_blocked_stops_no_log_only_current(self):
         st = copy.deepcopy(COMPLETE)

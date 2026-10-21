@@ -11,7 +11,7 @@ import json
 import os
 import sys
 from dataclasses import asdict
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -69,7 +69,8 @@ def run_dates(run_dirs: list) -> tuple | None:
                 continue
             if ts.tzinfo is not None:
                 days.append(ts.astimezone(timezone.utc).date())
-    return (min(days), max(days)) if days else None
+    # ccusage buckets by local day, stamps are UTC: widen by a day each side
+    return (min(days) - timedelta(days=1), max(days) + timedelta(days=1)) if days else None
 
 
 def usage(requested: bool, dates: tuple | None) -> dict:

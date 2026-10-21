@@ -50,7 +50,8 @@ class ReportTest(unittest.TestCase):
         self.run_dir(root, "002-old", OLD)
         self.run_dir(root, "003-wip", INPROG)
         d = self.run_dir(root, "004-blocked", BLOCKED)
-        (d / "log.md").write_text("## implementer · T1 · blocked\n**Open issues:** earlier snag\n")
+        (d / "log.md").write_text("## implementer · T1 · blocked\n**Open issues:** earlier snag\n\n"
+                                    "## implementer · T2 · blocked\n**Open issues:** needs decision\n")
         self.run_dir(root, "005-bad", None, raw="{not json")
 
     def stub(self, body: str):
@@ -170,12 +171,13 @@ class ReportTest(unittest.TestCase):
         self.assertIn("5.5", r.stdout)
         self.assertIn("period total", r.stdout.lower())
         args = self.calls.read_text()
-        self.assertIn("--since 20261001", args)
-        self.assertIn("--until 20261002", args)
+        self.assertIn("--since 20260930", args)
+        self.assertIn("--until 20261003", args)
         doc = json.loads(self.cli("--root", ".", "--json", "--ccusage").stdout)
         self.assertEqual(doc["usage"]["tokens"], 1234)
         self.assertEqual(doc["usage"]["cost"], 5.5)
-        self.assertEqual(doc["usage"]["since"], "2026-10-01")
+        self.assertEqual(doc["usage"]["since"], "2026-09-30")  # run dates widened by a day each side
+        self.assertEqual(doc["usage"]["until"], "2026-10-03")
 
     def test_output_has_no_absolute_paths_beyond_root(self):
         self.fixtures(self.tmp)

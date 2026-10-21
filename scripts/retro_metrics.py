@@ -174,16 +174,32 @@ def _criteria_passed(run_dir: Path) -> str | None:
     return (verify and _verify_criteria(verify)) or (retro and _retro_criteria(retro)) or None
 
 
-def _past_blocks(log: str) -> list:
-    """Reasons (first line of Open issues, else "unknown") for each `blocked` handoff header."""
+_HANDOFF = re.compile(r"## [^\n]+ \u00b7 [^\n]+ \u00b7 ([^\n \t]+)[ \t]*$")
+
+
+def _log_handoffs(log: str) -> list:
+    """(status, reason) per handoff header, oldest first.
+
+    Reason is the first line of Open issues, else "unknown".
+    """
     out = []
     for section in re.split(r"(?m)^(?=## )", log):
-        if not re.match(r"## [^\n]+ \u00b7 [^\n]+ \u00b7 blocked[ \t]*$", section.split("\n", 1)[0]):
+        m = _HANDOFF.match(section.split("\n", 1)[0])
+        if not m:
             continue
-        m = re.search(r"(?m)^\*\*Open issues:\*\*[ \t]*(.*)$", section)
-        reason = m.group(1).strip() if m else ""
-        out.append(reason if reason and reason.lower() != "none" else "unknown")
+        issues = re.search(r"(?m)^\*\*Open issues:\*\*[ \t]*(.*)$", section)
+        reason = issues.group(1).strip() if issues else ""
+        out.append((m.group(1), reason if reason and reason.lower() != "none" else "unknown"))
     return out
+
+
+def _past_blocks(log: str, current) -> list:
+    """Reasons of `blocked` handoffs. When state.blocked is set and the last handoff is blocked,
+    that handoff is the current block (handoff.md), so it is not a past one."""
+    handoffs = _log_handoffs(log)
+    if current and handoffs and handoffs[-1][0] == "blocked":
+        handoffs.pop()
+    return [reason for status, reason in handoffs if status == "blocked"]
 
 
 def load_run(run_dir: Path, label: str | None = None) -> RunRecord | Skipped:
@@ -212,7 +228,7 @@ def load_run(run_dir: Path, label: str | None = None) -> RunRecord | Skipped:
         rec.blocked_reason = reason if isinstance(reason, str) and reason else "unknown"
 
     log = _read(run_dir / "log.md")
-    rec.blocked_stops = ([rec.blocked_reason] if rec.blocked_reason else []) + (_past_blocks(log) if log else [])
+    rec.blocked_stops = ([rec.blocked_reason] if rec.blocked_reason else []) + (_past_blocks(log, blocked) if log else [])
     rec.criteria_passed = _criteria_passed(run_dir)
 
     metrics = _dict(state.get("metrics")) or {}
@@ -231,13 +247,13 @@ def load_run(run_dir: Path, label: str | None = None) -> RunRecord | Skipped:
             else:
                 rec.total_minutes = total
         if waits is not None and None not in waits.values():
-            rec.wait_minutes = sum(waits.values())
-            if rec.total_minutes is not None:
-                agent = rec.total_minutes - rec.wait_minutes
-                if agent < 0:
-                    warnings.append("agent time is negative (gate wait exceeds total duration)")
-                else:
-                    rec.agent_minutes = agent
+            wait = sum(waits.values())
+            if rec.total_minutes is not None and wait > rec.total_minutes:
+                warnings.append("gate wait exceeds total duration: wait and agent time unknown")
+            else:
+                rec.wait_minutes = wait
+                if rec.total_minutes is not None:
+                    rec.agent_minutes = rec.total_minutes - wait
         rec.stage_minutes = per_stage
 
     rec.gate_rework = _dict(metrics.get("gate_rework"))

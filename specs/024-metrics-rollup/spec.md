@@ -1,6 +1,6 @@
 # Spec: Metrics rollup across spec-agent runs
 
-Ticket: gh:76 · Size: standard · Status: draft
+Ticket: gh:24 · Size: standard · Status: draft
 
 ## Problem
 Each spec-agent run records metrics in `state.json` and `retro.md`, but nothing reads them across runs. There is no baseline, so the owner cannot tell whether a change to a role or rule helped. Later post-deliver fields (`watch`, outcomes, understanding, session tokens) also need a place to land. Older runs lack newer fields, so any rollup must distinguish "unknown" from zero.

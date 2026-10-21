@@ -2,14 +2,14 @@
   "version": 1,
   "ticket": {
     "source": "github",
-    "ref": "gh:76",
-    "id": "76",
-    "title": "Metrics rollup: aggregate spec-agent runs across projects (scripts/retro_report.py)",
-    "url": "https://github.com/bxker/ai-config/issues/76",
+    "ref": "gh:24",
+    "id": "24",
+    "title": "Roadmap: metrics rollup across runs (retro_report.py + ccusage cost)",
+    "url": "https://github.com/bxker/ai-config/issues/24",
     "pr": null
   },
-  "slug": "076-metrics-rollup",
-  "branch": "076-metrics-rollup",
+  "slug": "024-metrics-rollup",
+  "branch": "024-metrics-rollup",
   "base": "main",
   "size": "standard",
   "mode": "subagent",
@@ -41,12 +41,10 @@
       "spec": "2026-10-21T02:26:15Z"
     },
     "gates": {
-      "spec": {
-        "presented_at": "2026-10-21T02:27:33Z"
-      }
+      "spec": {}
     },
     "gate_rework": {
-      "spec": 0,
+      "spec": 1,
       "plan": 0,
       "deliver": 0
     },

@@ -123,3 +123,17 @@ Two defects from integration: (1) blocked-stop double count (T2/T3 parallel cont
 **Evidence:** validate OK; full suite 300 OK.
 
 **Changed files:** docs/efficiency.md, docs/roadmap.md, changelog.d/024-metrics-rollup.md
+
+## code-reviewer · batched review · changes-requested
+2026-10-21
+
+**Evidence:** full suite 300 OK; stdlib-only; ccusage only under --ccusage (argv + timeout); JSON matches docs.
+
+**Findings:**
+- HIGH docs/efficiency.md "Total min" says "to now or done"; code gives done only (AC8) → fix text
+- HIGH retro_metrics.py:215 / retro_aggregate.py:287 current block also appears as the latest log.md blocked handoff (handoff.md:36) → counted twice; dedupe + test
+- MEDIUM retro_metrics.py:233 wait_minutes kept when > total, enters Avg gate wait (AC18) → None with warning
+- MEDIUM docs Interventions/Retries wording drifts from state.md:112,114 → use state.md wording
+- MEDIUM retro_report.py:115-135 UTC dates vs ccusage local-day buckets → widen range by a day, note it
+- LOW docs First-pass is an average of per-run rates → say so
+- LOW no test for blocked run + blocked handoff in log.md

@@ -105,3 +105,12 @@ T2 and T3 landed in order; integration check aggregates all 36 real runs. metric
 2026-10-21
 
 Two defects from integration: (1) blocked-stop double count (T2/T3 parallel contract mismatch); (2) smoke shows negative agent time for 010 and 026 (gate wait > total from out-of-order timestamps), which AC18 says must be excluded.
+
+## implementer · F1 · done
+2026-10-21
+
+**Did:** blocked_reasons reads only blocked_stops (current + 1 past = 2); negative agent and per-stage minutes become unknown with a warning. Updated the aggregate fixture that listed the current block separately.
+
+**Evidence:** red on assertions (3 != 2; -30.0 / -10.0 not None); full suite 300 OK; validate OK; smoke has no negative minutes.
+
+**Changed files:** retro_aggregate.py, retro_metrics.py, test_retro_aggregate.py, test_retro_metrics.py, test_retro_report.py

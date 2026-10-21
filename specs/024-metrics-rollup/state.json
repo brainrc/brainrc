@@ -161,7 +161,7 @@
       "id": "F1",
       "title": "Fix blocked-stop double count and negative agent time",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "scripts/retro_aggregate.py",
@@ -174,14 +174,16 @@
         "AC9",
         "AC18"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": "e3fc355",
+      "red": "assertion"
     },
     {
       "id": "T6",
       "title": "Docs, roadmap, changelog fragment",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "docs/efficiency.md",
         "docs/roadmap.md",

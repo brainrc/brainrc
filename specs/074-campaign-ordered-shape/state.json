@@ -14,10 +14,10 @@
   "size": "standard",
   "mode": "subagent",
   "delivery": "normal",
-  "stage": "plan",
+  "stage": "implement",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [
@@ -32,14 +32,136 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "campaign eval check kind",
+      "agent": "implementer",
+      "status": "in_progress",
+      "attempts": 1,
+      "files": [
+        "scripts/evals.py",
+        "tests/test_evals.py"
+      ],
+      "criteria": [
+        "AC18"
+      ],
+      "review": "batch",
+      "wave": 1,
+      "worktree": "/tmp/claude-0/-home-user-ai-config/bb6b11af-d4d6-51ac-beaf-b202f60c9428/scratchpad/spec-agent/074-campaign-ordered-shape/T1",
+      "started_at": "2026-10-21T03:40:41Z"
+    },
+    {
+      "id": "T2",
+      "title": "Connector dependencies op",
+      "agent": "implementer",
+      "status": "in_progress",
+      "attempts": 1,
+      "files": [
+        "skills/spec-agent/references/connectors.md",
+        "skills/ticket-local/SKILL.md",
+        "skills/ticket-github/SKILL.md"
+      ],
+      "criteria": [
+        "AC5",
+        "AC16",
+        "AC17"
+      ],
+      "review": "batch",
+      "wave": 1,
+      "worktree": "/tmp/claude-0/-home-user-ai-config/bb6b11af-d4d6-51ac-beaf-b202f60c9428/scratchpad/spec-agent/074-campaign-ordered-shape/T2",
+      "started_at": "2026-10-21T03:40:41Z"
+    },
+    {
+      "id": "T3",
+      "title": "campaign.md ordered shape, SKILL.md, work skill",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "skills/spec-agent/references/campaign.md",
+        "skills/spec-agent/SKILL.md",
+        "skills/work/SKILL.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC6",
+        "AC7",
+        "AC8",
+        "AC9",
+        "AC10",
+        "AC11",
+        "AC12",
+        "AC15",
+        "AC17"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T4",
+      "title": "state.md campaign resume",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "skills/spec-agent/references/state.md"
+      ],
+      "criteria": [
+        "AC6",
+        "AC12",
+        "AC15"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T5",
+      "title": "Sandbox epic and sandbox-004",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "examples/sandbox/tickets/004-greeting-epic.md",
+        "examples/sandbox/tickets/005-*.md",
+        "examples/sandbox/tickets/006-*.md",
+        "examples/sandbox/tickets/007-*.md",
+        "examples/sandbox/README.md",
+        "evals/cases/sandbox-004.toml"
+      ],
+      "criteria": [
+        "AC13"
+      ],
+      "review": "batch",
+      "after": [
+        "T1"
+      ]
+    },
+    {
+      "id": "T6",
+      "title": "Docs and changelog fragment",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "docs/spec-agent.md",
+        "changelog.d/074-campaign-ordered-shape.md"
+      ],
+      "criteria": [
+        "AC14"
+      ],
+      "review": "batch"
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-21T03:24:30Z",
     "stage_started_at": {
       "intake": "2026-10-21T03:24:30Z",
       "spec": "2026-10-21T03:26:33Z",
-      "plan": "2026-10-21T03:33:30Z"
+      "plan": "2026-10-21T03:33:30Z",
+      "implement": "2026-10-21T03:40:41Z"
     },
     "gates": {
       "spec": {
@@ -47,7 +169,8 @@
         "approved_at": "2026-10-21T03:33:30Z"
       },
       "plan": {
-        "presented_at": "2026-10-21T03:36:25Z"
+        "presented_at": "2026-10-21T03:36:25Z",
+        "approved_at": "2026-10-21T03:40:41Z"
       }
     },
     "gate_rework": {

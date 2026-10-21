@@ -32,3 +32,12 @@
 **Evidence:** 19 criteria; engine living_specs check exit 0.
 
 **Changed files:** `specs/024-metrics-rollup/spec.md`
+
+## architect · plan · done
+2026-10-21
+
+**Did:** 6 tasks across four stdlib modules (retro_metrics, retro_aggregate, retro_ccusage, retro_report); waves T1+T4, then T2+T3, then T5, then T6 (docs, review batch).
+
+**Changed files:** `specs/024-metrics-rollup/plan.md`
+
+**Open issues:** public contract: CLI + JSON schema_version 1.

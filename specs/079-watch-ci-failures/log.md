@@ -20,3 +20,6 @@ Wave 1 start: T1, T2, T3.
 ## implementer · T1 · done
 **Did:** _field indexes lists on digit segments (out of range/negative -> None); test_state_numeric_index_segment; docs/evals.md note. **Evidence:** red on assertion; 322 OK; validate OK. **Changed files:** scripts/evals.py, tests/test_evals.py, docs/evals.md **Next:** batch review.
 - Engine: T2 wrote watch.md in the project root instead of its worktree (scope breach of the worktree rule, file itself in scope); moved into the T2 worktree before review.
+
+## implementer · T3 · blocked
+**Did:** state.md: watch object, stage watch, gates.push, post_deliver_retries, metrics.gates.push, gate_rework.push, Resume step 5 → watch.md § Resume pass. **Evidence:** validate fails only on broken links to watch.md (T2's new file, not in T3's worktree); 12 tests fail, unconfirmed. **Next:** engine lands T2 with T3 and re-runs checks. Planning finding: T3 links to a T2 file in the same wave.

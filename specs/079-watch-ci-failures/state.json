@@ -93,7 +93,8 @@
       ],
       "review": "batch",
       "wave": 1,
-      "started_at": "2026-10-21T14:32:59Z"
+      "started_at": "2026-10-21T14:32:59Z",
+      "finished_at": "2026-10-21T14:35:19Z"
     },
     {
       "id": "T4",
@@ -193,6 +194,12 @@
     "reviews": {
       "first_pass": 0,
       "total": 0
+    },
+    "waves": {
+      "count": 1,
+      "max_width": 3,
+      "task_minutes": 5.7,
+      "wall_minutes": 2.3
     }
   },
   "living": []

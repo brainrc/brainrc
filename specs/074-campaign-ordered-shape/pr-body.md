@@ -44,3 +44,5 @@ Spec: `specs/074-campaign-ordered-shape/spec.md` · Plan: `specs/074-campaign-or
 Closes #74
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+https://claude.ai/code/session_01BdiJDGmXUuJTx5qC4ADnaF

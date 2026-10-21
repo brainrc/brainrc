@@ -122,3 +122,12 @@ T5, T6 landed. metrics.waves: 3 waves, width 2, 7.2 task-min in 4.0 wall-min.
 **Did:** Suite 314 OK, validate OK, CampaignCheckTest 8 OK; standalone fixtures: correct ordered campaign passes sandbox-004 (campaign, main_untouched, command); wrong order fails (exit 1). 18 criteria mapped.
 
 **Open issues:** AC1-12, 14-17 verified by reading only; no ordered campaign has run.
+
+## doc-writer · document · done
+2026-10-21
+
+**Did:** pr-body.md (Closes #74), ticket-comment.md; docs/spec-agent.md Campaigns: shape from template check + links, how to express dependencies.
+
+**Evidence:** validate OK.
+
+**Open issues:** sandbox-004 fixtures are in gitignored .runs; no ordered campaign has run end to end.

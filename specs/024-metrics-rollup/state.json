@@ -37,7 +37,7 @@
       "id": "T1",
       "title": "RunRecord and per-run metrics",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "scripts/retro_metrics.py",
@@ -53,8 +53,10 @@
       ],
       "review": "batch",
       "wave": 1,
-      "worktree": "/tmp/claude-0/-home-user-ai-config/bb6b11af-d4d6-51ac-beaf-b202f60c9428/scratchpad/spec-agent/024-metrics-rollup/T1",
-      "started_at": "2026-10-21T02:48:29Z"
+      "started_at": "2026-10-21T02:48:29Z",
+      "finished_at": "2026-10-21T02:50:43Z",
+      "commit": "fee4bd1",
+      "red": "assertion"
     },
     {
       "id": "T2",
@@ -99,7 +101,7 @@
       "id": "T4",
       "title": "ccusage period totals",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "scripts/retro_ccusage.py",
@@ -111,9 +113,10 @@
       ],
       "review": "batch",
       "wave": 1,
-      "worktree": "/tmp/claude-0/-home-user-ai-config/bb6b11af-d4d6-51ac-beaf-b202f60c9428/scratchpad/spec-agent/024-metrics-rollup/T4",
       "started_at": "2026-10-21T02:48:29Z",
-      "finished_at": "2026-10-21T02:49:52Z"
+      "finished_at": "2026-10-21T02:49:52Z",
+      "commit": "1b1337b",
+      "red": "assertion"
     },
     {
       "id": "T5",
@@ -192,6 +195,12 @@
       "first_pass": 0
     },
     "retries": 0,
-    "interventions": 0
+    "interventions": 0,
+    "waves": {
+      "count": 1,
+      "max_width": 2,
+      "task_minutes": 3.6,
+      "wall_minutes": 2.2
+    }
   }
 }

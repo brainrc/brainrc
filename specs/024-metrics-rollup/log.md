@@ -41,3 +41,28 @@
 **Changed files:** `specs/024-metrics-rollup/plan.md`
 
 **Open issues:** public contract: CLI + JSON schema_version 1.
+
+## implementer · T1 · done
+2026-10-21
+
+**Did:** `load_run` → RunRecord/Skipped; durations, per-stage, rework, first-pass, retries, interventions, waves; unknown = None; bad timestamps flagged, not clamped; durations only for done runs.
+
+**Evidence:** red 18/22 assertion failures vs stub; `tests.test_retro_metrics` 22 OK; full suite 256 OK (worktree).
+
+**Changed files:** `scripts/retro_metrics.py`, `tests/test_retro_metrics.py`
+
+## implementer · T4 · done
+2026-10-21
+
+**Did:** `period_totals(since, until)` via `ccusage daily --json --since --until` (argv, timeout, no shell); any failure → available: False with a note.
+
+**Evidence:** red 7 errors (KeyError) vs stub; `tests.test_retro_ccusage` 7 OK; full suite 241 OK (worktree).
+
+**Changed files:** `scripts/retro_ccusage.py`, `tests/test_retro_ccusage.py`
+
+**Open issues:** ccusage flag names and JSON shape assumed (ccusage not installed here).
+
+## engine · wave 1 · landed
+2026-10-21
+
+T1 and T4 landed in plan order; worktrees removed. metrics.waves: width 2, 3.6 task-min in 2.2 wall-min.

@@ -39,3 +39,9 @@ Wave 1 start: T1-T4.
 
 ## code-reviewer · T1 · changes-requested
 **Findings:** HIGH <key8> collides for GitHub node ids (PRRT_kwD prefix); MEDIUM total counted before round cap; MEDIUM thread_log vs task/draft write order (crash safety); MEDIUM one shared Push gate per pass (AC4/Q5); MEDIUM kind for fully malicious thread; LOW reply-only gate wording, wrap, grammar. **Next:** T1 attempt 2.
+
+## implementer · T1 attempt 2 · done
+**Did:** h8 = sha256(key)[:8] file names; count only on log write, cap writes nothing; task/draft before log entry in one write; one Push gate per pass; kind none; reply-only/after-push wording. 115 lines. **Evidence:** validate OK; tests OK. Engine: added `none` to state.md kind list in the T2 worktree (one-word consistency edit). Batched review re-covers T1.
+
+## engine · wave 1 landed 2026-10-21T16:06:59Z
+T1 8bb1c21, T2 14d7fca, T3 4d551ce, T4 34966bb. Tests OK, validate OK. Wave 2: T5, T6.

@@ -38,7 +38,7 @@
       "id": "T1",
       "title": "watch.md review handling, rounds cap, Push gate with replies",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 2,
       "files": [
         "skills/spec-agent/references/watch.md"
@@ -56,13 +56,14 @@
       "review": "each",
       "wave": 1,
       "started_at": "2026-10-21T15:58:11Z",
-      "finished_at": "2026-10-21T16:02:36Z"
+      "finished_at": "2026-10-21T16:02:36Z",
+      "commit": "8bb1c21"
     },
     {
       "id": "T2",
       "title": "state.md: review_rounds, threads, thread_log, thread key",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "skills/spec-agent/references/state.md"
@@ -75,13 +76,14 @@
       "review": "batch",
       "wave": 1,
       "started_at": "2026-10-21T15:58:11Z",
-      "finished_at": "2026-10-21T15:59:40Z"
+      "finished_at": "2026-10-21T15:59:40Z",
+      "commit": "14d7fca"
     },
     {
       "id": "T3",
       "title": "Optional thread id in connector contract and ticket-github",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 2,
       "files": [
         "skills/spec-agent/references/connectors.md",
@@ -94,13 +96,14 @@
       "review": "each",
       "wave": 1,
       "started_at": "2026-10-21T15:58:11Z",
-      "finished_at": "2026-10-21T16:00:09Z"
+      "finished_at": "2026-10-21T16:00:09Z",
+      "commit": "4d551ce"
     },
     {
       "id": "T4",
       "title": "Injection fixture, ticket 009, sandbox-006, grading tests",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "examples/sandbox/pr_status/review-comment-injection.json",
@@ -117,14 +120,15 @@
       "wave": 1,
       "started_at": "2026-10-21T15:58:11Z",
       "finished_at": "2026-10-21T16:00:33Z",
-      "red": "assertion"
+      "red": "assertion",
+      "commit": "34966bb"
     },
     {
       "id": "T5",
       "title": "Pointers: lifecycle 6b row, guardrails for replies and thread text",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "skills/spec-agent/references/lifecycle.md",
         "skills/spec-agent/references/guardrails.md"
@@ -137,14 +141,15 @@
       "after": [
         "T1"
       ],
-      "wave": 2
+      "wave": 2,
+      "started_at": "2026-10-21T16:06:59Z"
     },
     {
       "id": "T6",
       "title": "Docs status and changelog fragment",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "docs/post-deliver.md",
         "docs/spec-agent.md",
@@ -158,7 +163,8 @@
         "T1",
         "T2"
       ],
-      "wave": 2
+      "wave": 2,
+      "started_at": "2026-10-21T16:06:59Z"
     }
   ],
   "blocked": null,

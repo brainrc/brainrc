@@ -149,3 +149,12 @@ Two defects from integration: (1) blocked-stop double count (T2/T3 parallel cont
 2026-10-21
 
 **Findings:** HIGHs resolved; remaining MEDIUM (dedupe by timestamp/reason could miss) resolved by the structural rule (engine-checked; scoped tests OK). LOW accepted: none left open.
+
+## verifier · verify · done
+2026-10-21
+
+**Did:** Suite, validate, new tests, CLI checks (help, Markdown, JSON, multi-root, skipped run, ccusage absent). AC1-AC19 mapped in verify.md; all pass.
+
+**Evidence:** suite 306 OK; test_retro_* 72 OK; validate OK; all CLI runs exit 0.
+
+**Open issues:** AC14 by stub tests only (ccusage not installed).

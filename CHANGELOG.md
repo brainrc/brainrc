@@ -12,6 +12,12 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.3.36 (2026-10-21)
+
+- Add the `ordered` campaign shape (children built and merged in dependency order), the `--shape` flag, and a `dependencies` connector op (ticket-github, ticket-local).
+- Document campaign shapes in docs/spec-agent.md and the `campaign` eval check kind in docs/evals.md.
+- Add a sandbox epic (`004-greeting-epic`) with out-of-order children to try the ordered shape.
+
 ## 0.3.35 (2026-10-21)
 
 - Add `scripts/retro_report.py`: offline rollup of run metrics across `specs/*/state.json` (Markdown or `--json`), with optional period-total tokens and cost via `--ccusage`.

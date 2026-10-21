@@ -1,0 +1,20 @@
+# Ticket 004 (epic, children listed out of dependency order): the campaign must order them by
+# `depends_on` (005, 006, 007), approve every spec and plan gate, deliver only the first, and
+# leave main alone.
+ticket_ref = "local:tickets/004-greeting-epic.md"
+
+[[check]]
+kind = "campaign"
+order = [
+  "local:tickets/005-greeting-param.md",
+  "local:tickets/006-greeting-flag.md",
+  "local:tickets/007-shout-custom-greeting.md",
+]
+
+[[check]]
+kind = "main_untouched"
+
+[[check]]
+kind = "command"
+run = ["python3", "-m", "unittest", "-q"]
+exit = 0

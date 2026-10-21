@@ -198,6 +198,95 @@ class CheckTest(unittest.TestCase):
         self.assertIn("no run found", out)
 
 
+CAMPAIGN_REFS = ["local:tickets/005-a.md", "local:tickets/006-b.md", "local:tickets/007-c.md"]
+CAMPAIGN_CASE = '''
+ticket_ref = "local:tickets/004-epic.md"
+
+[[check]]
+kind = "campaign"
+order = ["local:tickets/005-a.md", "local:tickets/006-b.md", "local:tickets/007-c.md"]
+'''
+
+
+class CampaignCheckTest(unittest.TestCase):
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.project = self.tmp / "project"
+        self.project.mkdir()
+        self.dir = self.project / "specs/campaign-004-epic"
+        self.dir.mkdir(parents=True)
+        members = []
+        for i, ref in enumerate(CAMPAIGN_REFS, 1):
+            slug = f"{i + 4:03d}-{'abc'[i - 1]}"
+            run = self.project / "specs" / slug
+            run.mkdir()
+            (run / "state.json").write_text(json.dumps({
+                "ticket": {"ref": ref}, "gates": {"spec": "approved", "plan": "approved"}}))
+            members.append({"ref": ref, "order": i, "depends_on": CAMPAIGN_REFS[i - 2:i - 1], "slug": slug,
+                            "branch": slug, "status": "delivered" if i == 1 else "waiting",
+                            "pr": "https://example.com/pr/1" if i == 1 else None})
+        self.data = {"ref": "local:tickets/004-epic.md", "shape": "ordered", "dependency_source": "frontmatter",
+                     "started_at": "2026-01-01T00:00:00Z", "members": members}
+        self.write()
+        self.case = self.tmp / "case.toml"
+        self.case.write_text(CAMPAIGN_CASE)
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp)
+
+    def write(self):
+        (self.dir / "campaign.json").write_text(json.dumps(self.data))
+
+    def check(self):
+        return quiet(evals.cmd_check, str(self.project), str(self.case))
+
+    def assert_fails(self, expected: str):
+        self.write()
+        code, out = self.check()
+        self.assertEqual(code, 1, out)
+        self.assertRegex(out, rf"FAIL .*{expected}")
+
+    def test_good_campaign_passes(self):
+        code, out = self.check()
+        self.assertEqual(code, 0, out)
+        self.assertIn("PASS campaign", out)
+
+    def test_find_campaign(self):
+        self.assertEqual(evals.find_campaign(self.project, "local:tickets/004-epic.md"), self.dir)
+        with self.assertRaises(evals.EvalError):
+            evals.find_campaign(self.project, "local:tickets/404.md")
+
+    def test_members_are_sorted_by_order_before_comparing(self):
+        self.data["members"].reverse()
+        self.write()
+        code, out = self.check()
+        self.assertEqual(code, 0, out)
+
+    def test_wrong_order_fails(self):
+        a, b = self.data["members"][:2]
+        a["order"], b["order"] = 2, 1
+        self.assert_fails("order")
+
+    def test_unapproved_plan_gate_fails(self):
+        state = self.project / "specs/006-b/state.json"
+        data = json.loads(state.read_text())
+        data["gates"]["plan"] = "pending"
+        state.write_text(json.dumps(data))
+        self.assert_fails("006-b")
+
+    def test_second_member_delivered_fails(self):
+        self.data["members"][1].update(status="delivered", pr="https://example.com/pr/2")
+        self.assert_fails("pr")
+
+    def test_first_member_without_pr_fails(self):
+        self.data["members"][0]["pr"] = None
+        self.assert_fails("first")
+
+    def test_waiting_member_with_status_delivered_but_no_pr_fails(self):
+        self.data["members"][2]["status"] = "delivered"
+        self.assert_fails("status")
+
+
 CANARY_CASE = '''
 ticket_ref = "local:tickets/001-demo.md"
 

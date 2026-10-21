@@ -1,0 +1,254 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:74",
+    "id": "74",
+    "title": "Campaign mode: ordered shape for an epic of dependent tickets",
+    "url": "https://github.com/bxker/ai-config/issues/74",
+    "pr": null
+  },
+  "slug": "074-campaign-ordered-shape",
+  "branch": "074-campaign-ordered-shape",
+  "base": "main",
+  "size": "standard",
+  "mode": "subagent",
+  "delivery": "normal",
+  "stage": "deliver",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/aicfg.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "campaign eval check kind",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "scripts/evals.py",
+        "tests/test_evals.py"
+      ],
+      "criteria": [
+        "AC18"
+      ],
+      "review": "batch",
+      "wave": 1,
+      "started_at": "2026-10-21T03:40:41Z",
+      "finished_at": "2026-10-21T03:42:36Z",
+      "commit": "7a519ea",
+      "red": "assertion"
+    },
+    {
+      "id": "T2",
+      "title": "Connector dependencies op",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "skills/spec-agent/references/connectors.md",
+        "skills/ticket-local/SKILL.md",
+        "skills/ticket-github/SKILL.md"
+      ],
+      "criteria": [
+        "AC5",
+        "AC16",
+        "AC17"
+      ],
+      "review": "batch",
+      "wave": 1,
+      "started_at": "2026-10-21T03:40:41Z",
+      "finished_at": "2026-10-21T03:42:19Z",
+      "commit": "39e63ad"
+    },
+    {
+      "id": "T3",
+      "title": "campaign.md ordered shape, SKILL.md, work skill",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "skills/spec-agent/references/campaign.md",
+        "skills/spec-agent/SKILL.md",
+        "skills/work/SKILL.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC6",
+        "AC7",
+        "AC8",
+        "AC9",
+        "AC10",
+        "AC11",
+        "AC12",
+        "AC15",
+        "AC17"
+      ],
+      "review": "batch",
+      "wave": 2,
+      "started_at": "2026-10-21T03:43:14Z",
+      "finished_at": "2026-10-21T03:44:23Z",
+      "commit": "80ff0a6"
+    },
+    {
+      "id": "T4",
+      "title": "state.md campaign resume",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "skills/spec-agent/references/state.md"
+      ],
+      "criteria": [
+        "AC6",
+        "AC12",
+        "AC15"
+      ],
+      "review": "batch",
+      "wave": 2,
+      "started_at": "2026-10-21T03:43:14Z",
+      "finished_at": "2026-10-21T03:43:58Z",
+      "commit": "c597145"
+    },
+    {
+      "id": "T5",
+      "title": "Sandbox epic and sandbox-004",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "examples/sandbox/tickets/004-greeting-epic.md",
+        "examples/sandbox/tickets/005-*.md",
+        "examples/sandbox/tickets/006-*.md",
+        "examples/sandbox/tickets/007-*.md",
+        "examples/sandbox/README.md",
+        "evals/cases/sandbox-004.toml"
+      ],
+      "criteria": [
+        "AC13"
+      ],
+      "review": "batch",
+      "after": [
+        "T1"
+      ],
+      "wave": 3,
+      "started_at": "2026-10-21T03:44:56Z",
+      "finished_at": "2026-10-21T03:45:53Z",
+      "commit": "e978a58"
+    },
+    {
+      "id": "T6",
+      "title": "Docs and changelog fragment",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "docs/spec-agent.md",
+        "changelog.d/074-campaign-ordered-shape.md",
+        "docs/evals.md"
+      ],
+      "criteria": [
+        "AC14"
+      ],
+      "review": "batch",
+      "wave": 3,
+      "started_at": "2026-10-21T03:44:56Z",
+      "finished_at": "2026-10-21T03:45:45Z",
+      "commit": "dffe315"
+    },
+    {
+      "id": "F1",
+      "title": "Batched review fixes",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "skills/spec-agent/references/campaign.md",
+        "skills/spec-agent/SKILL.md",
+        "skills/spec-agent/references/state.md",
+        "skills/ticket-github/SKILL.md",
+        "skills/ticket-local/SKILL.md",
+        "examples/sandbox/README.md",
+        "examples/sandbox/tickets/004-greeting-epic.md",
+        "changelog.d/074-campaign-ordered-shape.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC7",
+        "AC9",
+        "AC13",
+        "AC15",
+        "AC16"
+      ],
+      "review": "batch",
+      "commit": "3df37d1"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-21T03:24:30Z",
+    "stage_started_at": {
+      "intake": "2026-10-21T03:24:30Z",
+      "spec": "2026-10-21T03:26:33Z",
+      "plan": "2026-10-21T03:33:30Z",
+      "implement": "2026-10-21T03:40:41Z",
+      "verify": "2026-10-21T03:51:06Z",
+      "document": "2026-10-21T04:07:18Z",
+      "deliver": "2026-10-21T04:09:14Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-21T03:27:48Z",
+        "approved_at": "2026-10-21T03:33:30Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-21T03:36:25Z",
+        "approved_at": "2026-10-21T03:40:41Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-21T04:09:14Z",
+        "approved_at": "2026-10-21T04:35:12Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 2,
+      "first_pass": 1
+    },
+    "retries": 0,
+    "interventions": 0,
+    "waves": {
+      "count": 3,
+      "max_width": 2,
+      "task_minutes": 7.2,
+      "wall_minutes": 4.0
+    }
+  },
+  "living": [
+    "campaign-mode",
+    "ticket-connectors",
+    "run-pointer",
+    "evals"
+  ]
+}

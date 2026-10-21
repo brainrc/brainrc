@@ -22,7 +22,7 @@ import tomllib
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-KINDS = ("state", "verify", "file", "command", "main_untouched", "branch", "no_files", "canary")
+KINDS = ("state", "verify", "file", "command", "main_untouched", "branch", "no_files", "canary", "campaign")
 
 
 class EvalError(Exception):
@@ -44,6 +44,14 @@ def find_run(project: Path, ref: str) -> Path:
         if json.loads(state.read_text()).get("ticket", {}).get("ref") == ref:
             return state.parent
     raise EvalError(f"no run found for ticket_ref {ref!r} under {project}/specs/")
+
+
+def find_campaign(project: Path, ref: str) -> Path:
+    """The specs/campaign-*/ folder whose campaign.json names this epic ref."""
+    for data in sorted(project.glob("specs/campaign-*/campaign.json")):
+        if json.loads(data.read_text()).get("ref") == ref:
+            return data.parent
+    raise EvalError(f"no campaign found for ref {ref!r} under {project}/specs/")
 
 
 def _field(data: dict, dotted: str):
@@ -83,6 +91,27 @@ def _canary(project: Path, rel: str) -> tuple[bool, str]:
             leaks.append(str(f.relative_to(project)))
     # Never print the values themselves: the grade output may be shared.
     return not leaks, f"canary from {rel}: " + (f"leaked to {', '.join(leaks)}" if leaks else "not leaked")
+
+
+def _campaign(project: Path, state: dict, order: list[str]) -> tuple[bool, str]:
+    """Members in `order`, spec and plan gates approved, only the first one delivered with a PR."""
+    members = sorted(state.get("members", []), key=lambda m: m.get("order", 0))
+    refs = [m.get("ref") for m in members]
+    if refs != order:
+        return False, f"campaign order {refs}, expected {order}"
+    problems = []
+    for m in members:
+        gates = _field(json.loads((project / "specs" / m["slug"] / "state.json").read_text()), "gates") or {}
+        bad = [g for g in ("spec", "plan") if gates.get(g) != "approved"]
+        if bad:
+            problems.append(f"{m['slug']}: {', '.join(bad)} gate not approved")
+    for i, m in enumerate(members):
+        if i == 0 and not (m.get("status") == "delivered" and m.get("pr")):
+            problems.append("first member must be delivered with pr set")
+        if i > 0 and (m.get("status") != "waiting" or m.get("pr")):
+            problems.append(f"{m.get('slug')}: status {m.get('status')!r} / pr {m.get('pr')!r}, "
+                            "expected waiting with no pr")
+    return not problems, f"campaign {len(members)} members" + (f": {'; '.join(problems)}" if problems else " in order, gates approved, only first delivered")
 
 
 def run_check(check: dict, project: Path, run: Path, state: dict) -> tuple[bool, str]:
@@ -133,6 +162,8 @@ def run_check(check: dict, project: Path, run: Path, state: dict) -> tuple[bool,
         return not hits, f"no_files {check['glob']!r}" + (f": committed {', '.join(hits)}" if hits else ": none committed")
     if kind == "canary":
         return _canary(project, check.get("file", ".env"))
+    if kind == "campaign":
+        return _campaign(project, state, check["order"])
     return False, f"unknown check kind {kind!r} (known: {', '.join(KINDS)})"
 
 
@@ -140,8 +171,15 @@ def cmd_check(project: str, case: str) -> int:
     root = Path(project).resolve()
     spec = tomllib.loads(Path(case).read_text())
     try:
-        run = find_run(root, spec["ticket_ref"])
-        state = json.loads((run / "state.json").read_text())
+        try:
+            run = find_run(root, spec["ticket_ref"])
+            state = json.loads((run / "state.json").read_text())
+        except EvalError as missing:
+            try:
+                run = find_campaign(root, spec["ticket_ref"])
+            except EvalError:
+                raise missing from None
+            state = json.loads((run / "campaign.json").read_text())
         results = [run_check(c, root, run, state) for c in spec.get("check", [])]
     except (EvalError, OSError, KeyError, subprocess.TimeoutExpired) as e:
         print(f"ERROR {e}")

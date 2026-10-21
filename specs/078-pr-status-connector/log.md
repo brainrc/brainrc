@@ -22,3 +22,6 @@ Wave 1 start: T1-T4 in worktrees.
 
 ## implementer · T2 · done
 **Did:** ticket-github pr_status row + section (GraphQL query, MCP get/get_check_runs/get_review_comments, mapping); post-deliver.md aligned. **Evidence:** validate OK; 314 OK (docs only). **Changed files:** skills/ticket-github/SKILL.md, docs/post-deliver.md **Open issues:** mapped STALE→cancelled, STARTUP_FAILURE→failure (own choice). **Next:** review (each).
+
+## code-reviewer · T1+T2 · changes-requested
+**Findings:** HIGH T2 single GraphQL query deviates from approved AC3 (gh pr view for checks/sha/state + GraphQL for threads); MEDIUM first:100 unpaginated; LOW -F owner coerces numerics; LOW MCP row has no mapping. T1 clean. **Next:** engine keeps the approved spec; T2 attempt 2 with findings.

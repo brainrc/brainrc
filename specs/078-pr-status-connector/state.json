@@ -38,7 +38,7 @@
       "id": "T1",
       "title": "Contract: pr_status in connectors.md + changelog fragment",
       "agent": "implementer",
-      "status": "review",
+      "status": "done",
       "attempts": 1,
       "files": [
         "skills/spec-agent/references/connectors.md",
@@ -59,8 +59,8 @@
       "id": "T2",
       "title": "ticket-github ## pr_status (gh + GraphQL + MCP, read-only); align post-deliver.md",
       "agent": "implementer",
-      "status": "review",
-      "attempts": 1,
+      "status": "in_progress",
+      "attempts": 2,
       "files": [
         "skills/ticket-github/SKILL.md",
         "docs/post-deliver.md"
@@ -142,10 +142,10 @@
       "plan": 0,
       "deliver": 0
     },
-    "retries": 0,
+    "retries": 1,
     "reviews": {
       "first_pass": 0,
-      "total": 0
+      "total": 1
     }
   },
   "living": []

@@ -38,7 +38,7 @@
       "id": "T1",
       "title": "watch.md review handling, rounds cap, Push gate with replies",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "review",
       "attempts": 1,
       "files": [
         "skills/spec-agent/references/watch.md"
@@ -55,7 +55,8 @@
       ],
       "review": "each",
       "wave": 1,
-      "started_at": "2026-10-21T15:58:11Z"
+      "started_at": "2026-10-21T15:58:11Z",
+      "finished_at": "2026-10-21T16:02:36Z"
     },
     {
       "id": "T2",
@@ -188,6 +189,12 @@
     "reviews": {
       "first_pass": 0,
       "total": 1
+    },
+    "waves": {
+      "count": 1,
+      "max_width": 4,
+      "task_minutes": 10.2,
+      "wall_minutes": 4.4
     }
   },
   "living": []

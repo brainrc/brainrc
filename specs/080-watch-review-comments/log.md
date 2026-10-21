@@ -28,3 +28,6 @@ Wave 1 start: T1-T4.
 
 ## implementer · T3 attempt 2 · done
 **Did:** reply_thread in ticket-github ops list + table (gh mutation; MCP none: hand draft to user); optional outward row in connectors.md; wrapped line. **Evidence:** validate OK; 328 OK. Engine read the diff: findings resolved; batched review re-covers it.
+
+## implementer · T1 · done
+**Did:** watch.md § Review comments; Resume pass R-tasks + new-thread collection; Push gate lists pushes and replies. 110 lines. **Evidence:** validate OK; 328 OK (docs only). **Next:** review (each).

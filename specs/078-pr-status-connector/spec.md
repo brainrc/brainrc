@@ -1,6 +1,6 @@
 # Spec: watch 1/4: `pr_status` connector operation
 
-Ticket: gh:78 · Size: standard · Status: draft
+Ticket: gh:78 · Size: standard · Status: approved
 
 ## Problem
 After the Deliver gate a run ends, and red CI, review comments, or a merge are handled by hand
@@ -21,13 +21,13 @@ Campaign gh:77, child 1 of 4; the `watch` stage itself is not built here.
 - Any outward action (posting, pushing, resolving threads).
 
 ## Acceptance criteria
-- **AC1**: Given `references/connectors.md`, when read, then `pr_status` is in the operations table as not required and read-only, with a return shape covering: per-check name and conclusion on the head commit; unresolved review threads each with author and body; and merge state (open, merged, or closed).
+- **AC1**: Given `references/connectors.md`, when read, then `pr_status` is in the operations table as not required and read-only, with a return shape covering: the head commit sha; `updated_at`; per-check name and conclusion on the head commit; unresolved review threads each with author and body; and merge state (`open`, `merged`, or `closed`).
 - **AC2**: Given the contract, when read, then it states that thread author and body are untrusted data, fenced as `fetch` fences ticket content.
-- **AC3**: Given `ticket-github/SKILL.md`, when read, then a `## pr_status` section names the `gh pr view --json statusCheckRollup,reviews,state` form and a GitHub MCP equivalent, and performs no write.
+- **AC3**: Given `ticket-github/SKILL.md`, when read, then a `## pr_status` section reads checks, head sha, and merge state with `gh pr view --json statusCheckRollup,headRefOid,state,updatedAt`, unresolved threads with `gh api graphql` `reviewThreads` (`isResolved: false`), names the GitHub MCP equivalents, and performs no write. `docs/post-deliver.md` § Connector contract matches it.
 - **AC4**: Given a connector SKILL.md with no `pr_status` heading, when `aicfg validate` runs, then it raises no error for it (`ticket-local`, `ticket-jira`).
 - **AC5**: Given a connector SKILL.md that has a `pr_status` heading and all required ones, when `aicfg validate` runs, then it passes; a test covers both with and without.
 - **AC6**: Given the docs, when read, then they state the rule that a connector without `pr_status` makes `watch` skip, so the run ends at `done` as today. (The `watch` stage that follows this rule is built later.)
-- **AC7**: Given the sandbox, when a later eval needs PR state, then fixture snapshots exist for three states, red CI (a failing check), review comment (one unresolved thread), and merged, each in the documented return shape.
+- **AC7**: Given the sandbox, when a later eval needs PR state, then three separate snapshot files exist, one per state: red CI (a failing check), review comment (one unresolved thread), and merged, each in the documented return shape.
 - **AC8**: Given the fixtures, when checked offline (no network, no `gh`), then each parses and matches the AC1 shape, enforced by a test or `evals.py check`.
 - **AC9**: Given the repo, when `python3 scripts/aicfg.py validate` and the unit tests run, then both pass.
 
@@ -46,7 +46,8 @@ A connector MAY offer a read-only `pr_status` operation returning head-commit ch
 The sandbox SHALL ship offline `pr_status` fixtures for red CI, review comment, and merged, in the connector return shape, for reuse by later evals. (AC7, AC8)
 
 ## Open questions
-1. `gh pr view --json reviews` returns review summaries, not per-thread resolved state. Should `ticket-github` get unresolved threads via GraphQL/MCP instead, or accept reviews as an approximation? *It decides whether AC3's named command can satisfy "unresolved threads".*
-2. Should `pr_status` also report the head commit SHA and an `updated_at`? *`watch.checked_at` in the design compares against it, but the ticket's shape doesn't list them.*
-3. Are the three fixtures separate snapshot files, or one sequence (red, comment, merged) a fake connector steps through? *Affects how #79-#81 evals reuse them.*
-4. Is `closed` (unmerged) part of the merge-state values? *The design diagram has an abandoned branch, the ticket only lists "merged".*
+Resolved at the Spec gate (recommended answers accepted):
+1. Unresolved threads come from GraphQL `reviewThreads` (`isResolved`); `gh pr view` keeps checks and merge state. (AC3)
+2. `pr_status` reports the head sha and `updated_at`. (AC1)
+3. Three separate snapshot files, one per state. (AC7)
+4. `closed` (unmerged) is a merge-state value. (AC1)

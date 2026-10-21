@@ -1,6 +1,6 @@
 # Plan: Record the active run's path for external tools
 
-Spec: [spec.md](spec.md) · Status: draft
+Spec: [spec.md](spec.md) · Status: approved
 
 ## Callouts
 - **New dependencies:** none (stdlib only)
@@ -38,7 +38,7 @@ rule in `references/state.md` (covers every gate, block, and done: AC6, AC7) and
 | `skills/spec-agent/scripts/active_run.py` | new: `write` / `read` |
 | `skills/spec-agent/references/state.md` | modify: `## Active run pointer` contract section; checkpoint rule and Resume call `write` |
 | `skills/spec-agent/references/lifecycle.md` | modify: intake step writes the pointer |
-| `skills/spec-agent/SKILL.md` | modify: one clause in Run step 1 pointing to `state.md` § Active run pointer |
+| `skills/spec-agent/SKILL.md` | modify: call `active_run.py write` in Run step 1 (intake, resume) and step 3 (every checkpoint commit); contract stays in `state.md` |
 | `changelog.d/071-active-run-pointer.md` | new: `bump: patch` fragment |
 
 ## Risks

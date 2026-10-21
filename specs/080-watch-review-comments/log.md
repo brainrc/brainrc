@@ -55,3 +55,6 @@ Engine: T5 diff is 3 short wording edits; its per-task review is folded into the
 
 ## engine · wave 2 landed
 T5 1221452, T6 f0cc3ca. 335 OK, validate OK. Batched review: code + security.
+
+## security-reviewer · batched · done
+**Findings:** no CRITICAL/HIGH. MEDIUM R-task files not bounded to PR diff/spec scope (outside or CI/secret-adjacent → design, stop); MEDIUM reply body quoting (use -F body=@file; no verbatim thread text; secret scan); LOW draft hash at gate; LOW per-pass cap + list handed-back threads; LOW verify thread id belongs to this PR; LOW test uses kind "R". Engine: MEDIUMs + cheap LOWs to fix task F1.

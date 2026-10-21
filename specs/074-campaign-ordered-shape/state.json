@@ -79,7 +79,7 @@
       "id": "T3",
       "title": "campaign.md ordered shape, SKILL.md, work skill",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "skills/spec-agent/references/campaign.md",
@@ -103,14 +103,15 @@
       ],
       "review": "batch",
       "wave": 2,
-      "worktree": "/tmp/claude-0/-home-user-ai-config/bb6b11af-d4d6-51ac-beaf-b202f60c9428/scratchpad/spec-agent/074-campaign-ordered-shape/T3",
-      "started_at": "2026-10-21T03:43:14Z"
+      "started_at": "2026-10-21T03:43:14Z",
+      "finished_at": "2026-10-21T03:44:23Z",
+      "commit": "80ff0a6"
     },
     {
       "id": "T4",
       "title": "state.md campaign resume",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "skills/spec-agent/references/state.md"
@@ -122,16 +123,16 @@
       ],
       "review": "batch",
       "wave": 2,
-      "worktree": "/tmp/claude-0/-home-user-ai-config/bb6b11af-d4d6-51ac-beaf-b202f60c9428/scratchpad/spec-agent/074-campaign-ordered-shape/T4",
       "started_at": "2026-10-21T03:43:14Z",
-      "finished_at": "2026-10-21T03:43:58Z"
+      "finished_at": "2026-10-21T03:43:58Z",
+      "commit": "c597145"
     },
     {
       "id": "T5",
       "title": "Sandbox epic and sandbox-004",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "examples/sandbox/tickets/004-greeting-epic.md",
         "examples/sandbox/tickets/005-*.md",
@@ -146,14 +147,17 @@
       "review": "batch",
       "after": [
         "T1"
-      ]
+      ],
+      "wave": 3,
+      "worktree": "/tmp/claude-0/-home-user-ai-config/bb6b11af-d4d6-51ac-beaf-b202f60c9428/scratchpad/spec-agent/074-campaign-ordered-shape/T5",
+      "started_at": "2026-10-21T03:44:56Z"
     },
     {
       "id": "T6",
       "title": "Docs and changelog fragment",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "docs/spec-agent.md",
         "changelog.d/074-campaign-ordered-shape.md",
@@ -162,7 +166,10 @@
       "criteria": [
         "AC14"
       ],
-      "review": "batch"
+      "review": "batch",
+      "wave": 3,
+      "worktree": "/tmp/claude-0/-home-user-ai-config/bb6b11af-d4d6-51ac-beaf-b202f60c9428/scratchpad/spec-agent/074-campaign-ordered-shape/T6",
+      "started_at": "2026-10-21T03:44:56Z"
     }
   ],
   "blocked": null,
@@ -196,10 +203,10 @@
     "retries": 0,
     "interventions": 0,
     "waves": {
-      "count": 1,
+      "count": 2,
       "max_width": 2,
-      "task_minutes": 3.5,
-      "wall_minutes": 1.9
+      "task_minutes": 5.4,
+      "wall_minutes": 3.0
     }
   }
 }

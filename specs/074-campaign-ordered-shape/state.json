@@ -172,6 +172,32 @@
       "started_at": "2026-10-21T03:44:56Z",
       "finished_at": "2026-10-21T03:45:45Z",
       "commit": "dffe315"
+    },
+    {
+      "id": "F1",
+      "title": "Batched review fixes",
+      "agent": "implementer",
+      "status": "in_progress",
+      "attempts": 1,
+      "files": [
+        "skills/spec-agent/references/campaign.md",
+        "skills/spec-agent/SKILL.md",
+        "skills/spec-agent/references/state.md",
+        "skills/ticket-github/SKILL.md",
+        "skills/ticket-local/SKILL.md",
+        "examples/sandbox/README.md",
+        "examples/sandbox/tickets/004-greeting-epic.md",
+        "changelog.d/074-campaign-ordered-shape.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC7",
+        "AC9",
+        "AC13",
+        "AC15",
+        "AC16"
+      ],
+      "review": "batch"
     }
   ],
   "blocked": null,
@@ -199,7 +225,7 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
+      "total": 1,
       "first_pass": 0
     },
     "retries": 0,

@@ -85,3 +85,21 @@ T3, T4 landed; cross-reference `campaign.md § Ordered shape` resolves. metrics.
 2026-10-21
 
 T5, T6 landed. metrics.waves: 3 waves, width 2, 7.2 task-min in 4.0 wall-min.
+
+## code-reviewer · batched review · changes-requested
+2026-10-21
+
+**Evidence:** 314 OK; validate OK; pinned shapes consistent across files; gate integrity OK; body parsing numbers-only; eval matches shape.
+
+**Findings:**
+- HIGH campaign.md step 1 / § Ordered shape: Campaign gate undefined for ordered (skip ranges include §3); when campaign.json is first saved unstated
+- HIGH examples/sandbox/README.md: row lacks --campaign; sandbox-004 can never pass
+- MEDIUM no resume-on-existing-campaign.json instruction; in_progress children on resume not covered
+- MEDIUM ticket-github: API returns [] for all while bodies have Depends on → silently playbook; fall back to body
+- MEDIUM ticket-github: blocked_by drops repo; cross-repo same number maps wrongly
+- MEDIUM campaign.md: dependency_source single value vs per-child fallback
+- LOW template mismatch auto-selects ordered (intended per AC1; confirm at Deliver)
+- LOW "verbatim" PR body impossible for N of M after #X; base branch unstated
+- LOW ticket-local: merged status / no remote = user "merged"
+- LOW changelog fragment incomplete; Depends on first number per line undocumented
+- epic ticket 004 text addresses the agent and gives away the eval answer

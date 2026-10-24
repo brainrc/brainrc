@@ -1,6 +1,6 @@
 # Spec: Quiz the run's owner before the Deliver gate can be approved
 
-Ticket: gh:69 · Size: standard · Status: draft
+Ticket: gh:69 · Size: standard · Status: approved
 
 ## Problem
 spec-agent can take a ticket to a reviewed, tested PR while the person who ran `/work`, and who
@@ -52,6 +52,7 @@ The system SHALL record `metrics.understanding` (`asked`, `first_try`, `after_ex
 The eval harness SHALL let a `state` check require a numeric field to be at least a given value, used to require `metrics.understanding.asked` ≥ 1 on sandbox cases 001 and 003. (AC10)
 
 ## Open questions
-1. **AC11 needs a person.** The E2E run's point is a real owner giving a wrong answer, then a right one. I can drive the sandbox run here with you answering the quiz (about 5 minutes at the end), or record it as a follow-up and deliver with AC11 marked not run. *If I answer my own quiz, the run proves nothing.*
-2. **Metrics rollup.** The ticket says the retro row lets "the metrics rollup spot runs" that needed many explanations. `scripts/retro_metrics.py` reads `state.json`, not the retro. Should this PR also add `understanding` to the rollup report, or leave that as a follow-up? Default: follow-up. *Adding it widens the PR to three Python files and their tests.*
-3. **Where answers live.** The ticket keeps answers only in `log.md`. Default: the engine appends one `## examiner · quiz` block per round with question, answer, and grade. *That's what the eval and E2E evidence read.*
+Resolved at the Spec gate:
+1. AC11: the owner answers the E2E quiz in this session before Deliver.
+2. Metrics rollup: deferred to a follow-up issue.
+3. Answers live in `log.md`, one `## examiner · quiz` block per round.

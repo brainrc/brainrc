@@ -1,28 +1,160 @@
 {
   "version": 1,
-  "ticket": { "source": "github", "ref": "gh:69", "id": "69",
-              "title": "spec-agent: quiz the run's owner before the Deliver gate can be approved",
-              "url": "https://github.com/bxker/ai-config/issues/69", "pr": null },
+  "ticket": {
+    "source": "github",
+    "ref": "gh:69",
+    "id": "69",
+    "title": "spec-agent: quiz the run's owner before the Deliver gate can be approved",
+    "url": "https://github.com/bxker/ai-config/issues/69",
+    "pr": null
+  },
   "slug": "069-deliver-owner-quiz",
   "branch": "069-deliver-owner-quiz",
   "base": "main",
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "spec",
-  "gates": { "spec": "pending", "plan": "pending", "deliver": "pending" },
-  "domains": ["scripting"],
+  "stage": "plan",
+  "gates": {
+    "spec": "approved",
+    "plan": "pending",
+    "deliver": "pending"
+  },
+  "domains": [
+    "scripting"
+  ],
   "targets": {},
-  "commands": { "test": "python3 -m unittest discover -s tests", "lint": null, "build": null,
-                "validate": "python3 scripts/aicfg.py validate", "plan": null, "baseline_failures": [] },
-  "tasks": [],
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/aicfg.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Examiner role and its docs",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "agents/examiner.md",
+        "docs/spec-agent.md",
+        "docs/install.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC9"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T2",
+      "title": "Engine: quiz in Deliver, approval refusal, fallback",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "skills/spec-agent/SKILL.md",
+        "skills/spec-agent/references/lifecycle.md",
+        "skills/spec-agent/references/fallback.md",
+        "changelog.d/069-deliver-owner-quiz.md"
+      ],
+      "criteria": [
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC8"
+      ],
+      "review": "batch",
+      "after": [
+        "T1"
+      ]
+    },
+    {
+      "id": "T3",
+      "title": "State, retro, PR body records",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "skills/spec-agent/references/state.md",
+        "skills/spec-agent/templates/retro.md",
+        "skills/spec-agent/templates/pr-body.md"
+      ],
+      "criteria": [
+        "AC5",
+        "AC6",
+        "AC7"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T4",
+      "title": "Eval min check and sandbox cases",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "scripts/evals.py",
+        "tests/test_evals.py",
+        "docs/evals.md",
+        "evals/cases/sandbox-001.toml",
+        "evals/cases/sandbox-003.toml"
+      ],
+      "criteria": [
+        "AC10",
+        "AC12"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T5",
+      "title": "E2E run with the owner",
+      "agent": "engine",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "docs/e2e-runs.md"
+      ],
+      "criteria": [
+        "AC11"
+      ],
+      "review": "batch",
+      "after": [
+        "T2",
+        "T3",
+        "T4"
+      ]
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-24T02:35:15Z",
-    "stage_started_at": { "intake": "2026-10-24T02:35:15Z", "spec": "2026-10-24T02:37:30Z" },
-    "gates": { "spec": { "presented_at": "2026-10-24T02:36:21Z" } },
-    "gate_rework": { "spec": 0, "plan": 0, "deliver": 0 },
-    "reviews": { "total": 0, "first_pass": 0 },
+    "stage_started_at": {
+      "intake": "2026-10-24T02:35:15Z",
+      "plan": "2026-10-24T03:02:45Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-24T02:36:21Z",
+        "approved_at": "2026-10-24T03:02:45Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-24T03:03:38Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
     "retries": 0,
     "interventions": 0
   }

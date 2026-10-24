@@ -102,7 +102,8 @@ There is no skip.
    - **understood**: the right choice with a why that holds.
    - **partial** (right choice, why doesn't hold) or **missed** (wrong choice): explain the point
      in 2–4 lines with a `file:line` pointer, then ask a rephrased question on the same point in
-     free text. Repeat until understood.
+     free text. Repeat until understood. A free-text follow-up is understood if it holds against
+     the diff, partial if incomplete, missed if wrong.
 4. Append one `## examiner · quiz · <done|changes-requested>` block per round to `log.md`:
    each question, the answer as given, and its grade. Answers are stored nowhere else.
 5. When every question ends understood: set `state.quiz` to `passed`, fill

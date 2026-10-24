@@ -28,3 +28,9 @@ Wave 1 start: T1, T2, T3.
 
 ## code-reviewer · T1 · changes-requested
 **Findings:** HIGH retro After delivery skeleton lacks CI failures/review rounds/reviewer catches (AC7); HIGH worktree cleanup not failure-safe; MEDIUM "done (abandoned)" text; MEDIUM name each regressing criterion + follow-up body; MEDIUM regression beats unverified; MEDIUM pending tasks/gate run before merged/closed check (inherited); LOW stale lifecycle note; LOW long SKILL line. **Next:** T1 attempt 2; engine decision: merged/closed preempts pending C/R-tasks and Push gate.
+
+## implementer · T1 attempt 2 · done
+**Did:** all 8 findings fixed (retro skeleton lines, failure-safe worktree, done (abandoned), per-criterion regression + follow-up body, precedence, merged/closed preempts pending tasks/gate, stale note, wrap). watch.md 156 lines. **Evidence:** validate OK; tests OK. Batched review re-covers T1.
+
+## engine · wave 1 landed 2026-10-24T14:55:43Z
+T1 52420f5, T2 5485f17, T3 c04d9e3. 342 OK, validate OK. Wave 2: T4, T5, T6.

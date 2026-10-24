@@ -38,7 +38,7 @@
       "id": "T1",
       "title": "Engine: Merged or closed in watch.md, state/lifecycle fields, pr_opened_at at link_pr, retro skeleton",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 2,
       "files": [
         "skills/spec-agent/references/watch.md",
@@ -60,13 +60,14 @@
       "review": "each",
       "wave": 1,
       "started_at": "2026-10-24T14:50:04Z",
-      "finished_at": "2026-10-24T14:52:37Z"
+      "finished_at": "2026-10-24T14:52:37Z",
+      "commit": "52420f5"
     },
     {
       "id": "T2",
       "title": "Optional merged_at/merge_commit_sha in pr_status contract, gh mapping, merged fixture",
       "agent": "implementer",
-      "status": "review",
+      "status": "done",
       "attempts": 1,
       "files": [
         "skills/spec-agent/references/connectors.md",
@@ -82,13 +83,14 @@
       "wave": 1,
       "started_at": "2026-10-24T14:50:04Z",
       "finished_at": "2026-10-24T14:51:33Z",
-      "red": "assertion"
+      "red": "assertion",
+      "commit": "5485f17"
     },
     {
       "id": "T3",
       "title": "RunRecord outcome, post_merge, time_to_merge, review_rounds, ci_failures (test first)",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "scripts/retro_metrics.py",
@@ -102,14 +104,15 @@
       "wave": 1,
       "started_at": "2026-10-24T14:50:04Z",
       "finished_at": "2026-10-24T14:52:04Z",
-      "red": "assertion"
+      "red": "assertion",
+      "commit": "c04d9e3"
     },
     {
       "id": "T4",
       "title": "Sandbox eval for the merged path",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "evals/cases/sandbox-007.toml",
         "examples/sandbox/tickets/010-watch-merged.md",
@@ -123,14 +126,15 @@
       "wave": 2,
       "after": [
         "T2"
-      ]
+      ],
+      "started_at": "2026-10-24T14:55:43Z"
     },
     {
       "id": "T5",
       "title": "Aggregate counts, report columns, schema_version 2 (test first)",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "scripts/retro_aggregate.py",
         "scripts/retro_report.py",
@@ -144,14 +148,15 @@
       "wave": 2,
       "after": [
         "T3"
-      ]
+      ],
+      "started_at": "2026-10-24T14:55:43Z"
     },
     {
       "id": "T6",
       "title": "Docs, roadmap Done, changelog fragment (bump: patch)",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "docs/efficiency.md",
         "docs/roadmap.md",
@@ -168,7 +173,8 @@
       "after": [
         "T1",
         "T3"
-      ]
+      ],
+      "started_at": "2026-10-24T14:55:43Z"
     }
   ],
   "blocked": null,

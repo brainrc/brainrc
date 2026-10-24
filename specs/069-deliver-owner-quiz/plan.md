@@ -1,6 +1,6 @@
 # Plan: Quiz the run's owner before the Deliver gate can be approved
 
-Spec: [spec.md](spec.md) · Status: draft
+Spec: [spec.md](spec.md) · Status: approved
 
 ## Callouts
 Must be empty or explicitly approved at the Plan gate:

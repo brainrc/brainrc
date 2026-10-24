@@ -14,10 +14,10 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "plan",
+  "stage": "implement",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [
@@ -37,8 +37,8 @@
       "id": "T1",
       "title": "Examiner role and its docs",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "files": [
         "agents/examiner.md",
         "docs/spec-agent.md",
@@ -48,14 +48,15 @@
         "AC1",
         "AC9"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": "f736cb0"
     },
     {
       "id": "T2",
       "title": "Engine: quiz in Deliver, approval refusal, fallback",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "files": [
         "skills/spec-agent/SKILL.md",
         "skills/spec-agent/references/lifecycle.md",
@@ -71,14 +72,15 @@
       "review": "batch",
       "after": [
         "T1"
-      ]
+      ],
+      "commit": "994f8e9"
     },
     {
       "id": "T3",
       "title": "State, retro, PR body records",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "files": [
         "skills/spec-agent/references/state.md",
         "skills/spec-agent/templates/retro.md",
@@ -89,13 +91,14 @@
         "AC6",
         "AC7"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": "056ce66"
     },
     {
       "id": "T4",
       "title": "Eval min check and sandbox cases",
       "agent": "implementer",
-      "status": "todo",
+      "status": "done",
       "attempts": 0,
       "files": [
         "scripts/evals.py",
@@ -108,7 +111,9 @@
         "AC10",
         "AC12"
       ],
-      "review": "batch"
+      "review": "batch",
+      "commit": "d9cb004",
+      "red": "assertion"
     },
     {
       "id": "T5",
@@ -135,7 +140,8 @@
     "started_at": "2026-10-24T02:35:15Z",
     "stage_started_at": {
       "intake": "2026-10-24T02:35:15Z",
-      "plan": "2026-10-24T03:02:45Z"
+      "plan": "2026-10-24T03:02:45Z",
+      "implement": "2026-10-24T03:30:17Z"
     },
     "gates": {
       "spec": {
@@ -143,7 +149,8 @@
         "approved_at": "2026-10-24T03:02:45Z"
       },
       "plan": {
-        "presented_at": "2026-10-24T03:03:38Z"
+        "presented_at": "2026-10-24T03:03:38Z",
+        "approved_at": "2026-10-24T03:30:17Z"
       }
     },
     "gate_rework": {

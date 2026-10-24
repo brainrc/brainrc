@@ -12,6 +12,10 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.3.37 (2026-10-24)
+
+- Connector contract gains an optional read-only `pr_status` operation (head checks, unresolved review threads, merge state; thread text fenced as untrusted). A connector without it makes `watch` skip. `ticket-github` implements it (read-only `gh` and GraphQL calls), and offline `pr_status` fixtures (red CI, review comment, merged) ship in `examples/sandbox/`.
+
 ## 0.3.36 (2026-10-21)
 
 - Add the `ordered` campaign shape (children built and merged in dependency order), the `--shape` flag, and a `dependencies` connector op (ticket-github, ticket-local).

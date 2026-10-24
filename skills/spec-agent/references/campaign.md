@@ -75,7 +75,8 @@ For each member in the batch (default size 3):
    approve visibly identical siblings faster.
 
 **Batch Deliver gate ⛔:** first one Understand quiz over the batch's combined diff
-(lifecycle.md § Understand quiz; counted by the largest member's size), then one gate for the batch, listing every outward action for every
+(lifecycle.md § Understand quiz; counted by the largest member's size; the patch appends each member's
+`git diff <base>...<branch>`), then one gate for the batch, listing every outward action for every
 member verbatim. After approval, deliver each member through its connector. One PR per member.
 
 **Batch checkpoint:** report PRs opened, members blocked, and playbook corrections found. Apply
@@ -131,7 +132,7 @@ starts from child N-1's branch (child 1 from the default branch). The active-run
 the child in progress.
 
 **Deliver gate ⛔.** One Understand quiz over the stack's combined diff (lifecycle.md § Understand
-quiz; counted by the largest child's size), then one gate after every child is verified, listing every child's outward
+quiz; counted by the largest child's size; patch: the last child's branch against the base), then one gate after every child is verified, listing every child's outward
 actions verbatim in merge order. After approval only `order: 1` is `delivered` with `pr` set
 (with no remote or local-only: its branch name is recorded as `pr`); the rest are `waiting` with
 `pr: null`.

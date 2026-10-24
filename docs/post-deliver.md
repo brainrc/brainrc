@@ -1,6 +1,6 @@
 # Post-deliver: following a PR to merge (design)
 
-Status: **all four steps are built** (see
+Status: **all five build steps are built** (see
 [`references/watch.md`](../skills/spec-agent/references/watch.md)). A run used to end at the Deliver gate: push, PR, ticket
 update, retro, `stage: done`, and whatever came next was fixed by hand. This page designs the
 stage that closes that loop. Build order is at the end.
@@ -68,7 +68,7 @@ handed back and nothing further is classified.
 
 ### Post-merge verify
 
-When the PR merges, run the verifier in a detached worktree (`.runs/post-merge`) at the merge
+When the PR merges, run the verifier in a detached worktree (`specs/<slug>/.runs/post-merge`) at the merge
 commit (or the local tip of the base if that commit is missing), writing `verify-merged.md`.
 `watch.post_merge` is `regression` (a check that passed in `verify.md` fails on the merge:
 report it, open nothing, print a suggested follow-up), `unverified` (nothing could be run;
@@ -109,8 +109,8 @@ reviewer role or checklist.
 1. **Metrics rollup first** (`scripts/retro_report.py`). Aggregate `state.json` and `retro.md`
    across runs and projects: gate rework, first-pass review rate, retries, interventions, time
    per stage. It needs no new state, gives a baseline today, and is the place the `watch`
-   numbers will land. Without it, the new fields would be written and never read.
-2. `pr_status` in the connector contract and `ticket-github`; `validate` accepts it as optional.
+   numbers will land. Without it, the new fields would be written and never read. **Done.**
+2. `pr_status` in the connector contract and `ticket-github`; `validate` accepts it as optional. **Done.**
 3. `watch` stage for CI failures and the Push gate. **Done.**
 4. Review comments. **Done.**
 5. Post-merge verify and the retro's After delivery section; add them to the rollup. **Done.**

@@ -55,3 +55,6 @@ T4 0628ca8, T5 1dde402, T6 95871dc. 353 OK, validate OK. Batched review (code); 
 
 ## verifier · verify · done
 **Did:** verify.md AC1-AC10 pass; 353 OK; validate OK; retro_report md+json on synthetic runs; evals.py check sandbox-007 good 7 pass, bad 2 fail. **Open issues:** `unittest tests.test_retro_metrics tests.test_evals` errors on an aicfg import clash; engine confirmed the same error on main (pre-existing, not this branch); AC1/3/4/6 prose-verified.
+
+## doc-writer · document · done
+**Did:** 3 drift fixes in post-deliver.md; pr-body.md (4 of 4), ticket-comment.md. **Evidence:** validate OK; 353 OK.

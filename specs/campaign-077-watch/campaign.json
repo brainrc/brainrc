@@ -41,7 +41,7 @@
       "depends_on": [
         "gh:80"
       ],
-      "status": "in_progress",
+      "status": "verified",
       "slug": "081-watch-post-merge",
       "branch": "081-watch-post-merge",
       "pr": null
@@ -50,6 +50,9 @@
   "gates": {
     "campaign": {
       "approved_at": "2026-10-21T04:52:53Z"
+    },
+    "deliver": {
+      "presented_at": "2026-10-24T15:09:42Z"
     }
   }
 }

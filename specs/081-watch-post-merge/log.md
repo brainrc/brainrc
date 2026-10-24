@@ -58,3 +58,6 @@ T4 0628ca8, T5 1dde402, T6 95871dc. 353 OK, validate OK. Batched review (code); 
 
 ## doc-writer · document · done
 **Did:** 3 drift fixes in post-deliver.md; pr-body.md (4 of 4), ticket-comment.md. **Evidence:** validate OK; 353 OK.
+
+## engine · deliver · 2026-10-24T22:26:12Z
+Stack Deliver gate approved 2026-10-24T15:18:45Z. Opened as a stacked PR on #87 (base 080-watch-review-comments) at the user's request.

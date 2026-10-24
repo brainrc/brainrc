@@ -25,3 +25,6 @@
 
 ## 2026-10-24T15:39:42Z · stack Deliver gate approved
 - gh:78 delivered: PR #84 (comment on #78). gh:79, gh:80, gh:81 waiting. Next: after #84 merges, re-run `/work --campaign gh:77` to release gh:79.
+
+## 2026-10-24T22:26:12Z · stacked PRs opened (user request)
+- gh:79 → #86 (base 078), gh:80 → #87 (base 079), gh:81 → PR (base 080). Merge in order; retarget each to main after its predecessor merges.

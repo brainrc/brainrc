@@ -41,7 +41,8 @@ python3 -m unittest discover -s tests -p test_evals.py -v
 - `watch.md` is 154 lines, above the ~140 line target in the plan.
 
 Spec: `specs/081-watch-post-merge/spec.md` · Plan: `specs/081-watch-post-merge/plan.md`
-Closes #81. Part of #77 (campaign gh:77, 4 of 4, after #<PREDECESSOR_PR>).
+Closes #81. Part of #77 (campaign gh:77, 4 of 4, after #87).
+Stacked on #87: the base is `080-watch-review-comments`, so this diff shows only #81. Retarget to `main` after #84, #86 and #87 merge.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 

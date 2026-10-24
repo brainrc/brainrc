@@ -11,7 +11,7 @@ Stages run in this order. [sizing.md](sizing.md) decides which ones run.
 | 3 | `implement` | implementer (or test-writer) per task, then batched review | `plan.md`, `spec.md` | code, tests, one commit per task | every task `done`, review clean |
 | 4 | `verify` | verifier | `spec.md`, `state.commands` | `verify.md` | every criterion `pass` with evidence |
 | 5 | `document` | engine, doc-writer | all artifacts, diff | `specs/living/`, project docs, `pr-body.md`, `ticket-comment.md` | drafts exist |
-| 6 | `deliver` | engine + ticket connector | drafts | push, PR, ticket comment/status | ⛔ **Deliver gate** approved before *any* outward action |
+| 6 | `deliver` | engine, examiner, ticket connector | drafts, diff | quiz rounds in `log.md`, then push, PR, ticket comment/status | quiz passed, then ⛔ **Deliver gate** approved before *any* outward action |
 | 7 | `done` | engine | `state.metrics` | `retro.md` | retro written |
 
 `blocked` is not a stage. It is `state.blocked`, set by any stop condition
@@ -71,7 +71,8 @@ docs. Without Python, the doc-writer applies the delta by hand with the same rul
 docs the change affects (README, CHANGELOG, API docs) and draft outward text. Nothing is posted.
 
 **6 · deliver**: re-run the intake `VERSION` check. If such a PR merged meanwhile, merge the
-default branch and renumber this run's version before the gate. Show the Deliver gate summary (below). Only after approval: push the
+default branch and renumber this run's version before the gate. Run the Understand quiz (below), then
+show the Deliver gate summary (below). Only after approval: push the
 branch, open the PR, comment on / transition the ticket, and link the PR.
 With `delivery: local-only`, the gate lists **no outward actions**: deliver finalizes the drafts
 (`PR: <PR_URL>` → `PR: none (local-only, branch <branch>)`), leaves the branch unpushed, and
@@ -80,6 +81,33 @@ writes the retro.
 **7 · done**: write `retro.md`, print the PR link and the metrics summary. Commit the done
 checkpoint, but push it only after CI on the delivered commit finishes: a push while CI runs
 can break steps that list the PR's commits.
+
+## Understand quiz
+
+The owner (the person who started the run) shows they understand the change before the Deliver
+gate opens. Every size runs it. An unattended run stops here and the quiz waits for the owner.
+There is no skip.
+
+1. Write `git diff <base>...HEAD -- . ':!specs'` to `.runs/deliver-diff.patch`. Dispatch
+   `examiner` with `Read:` spec.md, plan.md, verify.md, that patch, and the review findings, plus
+   a `Size:` line and a `Triggers:` line naming any security, IAM, migration, or prod trigger the
+   diff touches. Count: trivial 1, small 2, standard 3–5, +1 `risk` per trigger.
+2. Check the handoff: every question has a kind and a `file:line`, and none states its own
+   answer. Rewrite a question that gives its answer away before you ask it.
+3. Ask one question at a time, as free text (never as buttons or choices). Grade each answer against the
+   diff and the spec:
+   - **understood**: the question passes.
+   - **partial** or **missed**: explain the point in 2–4 lines with a `file:line` pointer, then
+     ask a rephrased question on the same point. Repeat until understood.
+4. Append one `## examiner · quiz · <done|changes-requested>` block per round to `log.md`:
+   each question, the answer as given, and its grade. Answers are stored nowhere else.
+5. When every question ends understood: set `state.quiz` to `passed`, fill
+   `metrics.understanding`, add the questions without answers to `pr-body.md` under
+   "Check your understanding", checkpoint-commit, and present the gate.
+
+While `state.quiz` isn't `passed`, an `approve` (typed, button, or `/spec-approve`) gets the
+reply "the Understand quiz comes first". It isn't recorded, and it doesn't count as gate rework.
+On resume, re-ask the questions that have no understood grade in `log.md`.
 
 ## Gate presentation
 

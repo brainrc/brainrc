@@ -20,6 +20,14 @@ Cost control: in a long run, drop working detail after each role. The artifacts
 hold what matters. If the harness supports compaction, compact after each completed
 task.
 
+## Understand quiz
+
+There is no separate examiner, so you play it: switch to `examiner`
+(`roles/examiner.md`), read only the artifacts and the diff patch named in
+[lifecycle.md](lifecycle.md) § Understand quiz, and write the questions. Don't draw on what you
+remember from writing the code. A question must not contain its own answer. Then switch back to
+the engine, ask the questions, and grade the answers yourself.
+
 ## Review isolation
 
 In one session the reviewer has already seen the implementer's reasoning, so limit what it reads:

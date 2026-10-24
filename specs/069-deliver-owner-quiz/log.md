@@ -205,3 +205,6 @@ Q4b (fresh choices) · what-if · evals.py:124 · asked
 Q4b pick: "TOML can't store bools" · missed
 Explained: state is JSON (state.json), and both JSON and TOML have booleans; the guard exists because Python treats True as int 1.
 Q4c (fresh choices) · what-if · evals.py:124 · asked
+Q4c pick: "Now wrongly passes" · understood (after explanation)
+Q5 pick: "Refused, not recorded" · understood (first try)
+Quiz passed: 5 asked, 3 first try, 2 after explanation, 9 rounds.

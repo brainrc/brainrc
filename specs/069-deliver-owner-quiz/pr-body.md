@@ -31,7 +31,12 @@ python3 -m unittest tests.test_evals -k test_state_min -v
 ```
 
 ## Check your understanding
-<filled after the quiz>
+The run's owner answered these before delivery. Questions only, no choices; answers are in the run's `log.md`, so try them first.
+1. why: Why does the engine save the diff to `.runs/deliver-diff.patch` before dispatching the examiner? (`skills/spec-agent/references/lifecycle.md:91`)
+2. what-if: After the quiz passes, the owner requests a Deliver-gate change that alters the diff. What happens to the quiz? (`skills/spec-agent/references/lifecycle.md:113`)
+3. where: In a batch campaign, where does the Understand quiz run? (`skills/spec-agent/references/campaign.md:77`)
+4. what-if: A state check has `min = 1` and the field holds boolean `true`. What result does it give? (`scripts/evals.py:124`)
+5. why: What happens to an `approve` sent while the quiz isn't passed yet? (`skills/spec-agent/references/lifecycle.md:111`)
 
 ## Follow-ups
 - The metrics rollup (`scripts/retro_metrics.py`, `retro_report.py`) doesn't read `metrics.understanding` yet; deferred at the Spec gate.

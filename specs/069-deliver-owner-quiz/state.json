@@ -236,6 +236,9 @@
       "plan": {
         "presented_at": "2026-10-24T03:03:38Z",
         "approved_at": "2026-10-24T03:30:17Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-24T15:17:41Z"
       }
     },
     "gate_rework": {
@@ -248,12 +251,18 @@
       "first_pass": 1
     },
     "retries": 0,
-    "interventions": 2
+    "interventions": 2,
+    "understanding": {
+      "asked": 5,
+      "first_try": 3,
+      "after_explanation": 2,
+      "rounds": 9
+    }
   },
   "review_context": "fresh",
   "living": [
     "deliver-gate",
     "evals"
   ],
-  "quiz": "pending"
+  "quiz": "passed"
 }

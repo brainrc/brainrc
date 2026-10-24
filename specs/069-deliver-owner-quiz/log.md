@@ -198,3 +198,10 @@ Q3b (fresh choices) · where · campaign.md:77 · asked
 Q3b pick: "2 per member, 8 total" · missed
 Explained: one quiz, not one per member; size from the largest member (standard → 3–5); before the gate, not as PRs open (campaign.md:77–78).
 Q3c (fresh choices) · where · campaign.md:77 · asked
+Q3c pick: "Exactly one, whole batch" · understood (after explanation)
+Q4 pick: "Passes, true equals 1" · missed
+Explained: evals.py:124 excludes bool explicitly (isinstance bool is also int in Python, so it is rejected by name) → fails with "expected >= 1".
+Q4b (fresh choices) · what-if · evals.py:124 · asked
+Q4b pick: "TOML can't store bools" · missed
+Explained: state is JSON (state.json), and both JSON and TOML have booleans; the guard exists because Python treats True as int 1.
+Q4c (fresh choices) · what-if · evals.py:124 · asked

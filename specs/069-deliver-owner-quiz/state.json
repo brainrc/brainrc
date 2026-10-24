@@ -200,7 +200,7 @@
       "id": "F4",
       "title": "Multiple choice only (owner request at Deliver)",
       "agent": "implementer",
-      "status": "review",
+      "status": "done",
       "attempts": 1,
       "files": [
         "skills/spec-agent/references/lifecycle.md",
@@ -214,7 +214,7 @@
         "AC4"
       ],
       "review": "batch",
-      "commit": "2e09910"
+      "commit": "2e09910 9d7ff1e"
     }
   ],
   "blocked": null,
@@ -244,7 +244,7 @@
       "deliver": 1
     },
     "reviews": {
-      "total": 2,
+      "total": 3,
       "first_pass": 1
     },
     "retries": 0,

@@ -177,3 +177,12 @@ Q5 · why · lifecycle.md:110 · approve before the quiz passes? a) refused, not
 **Open issues:** plan.md and AC11 evidence describe the earlier free-text design (history, left as is)
 
 **Next:** after F4 re-review, ask Q1–Q5 as shuffled pop-ups
+
+## code-reviewer · F4 · done
+2026-10-24T15:09:30Z
+
+**Did:** Re-reviewed 2e09910: consistent everywhere. 2 LOW (examiner sentence wording, rephrased choices check) fixed in 9d7ff1e, plus an E2E format note. Neither touches a quiz question's point, so the question set stands (pins re-checked).
+
+**Findings:** none open
+
+**Next:** ask Q1–Q5

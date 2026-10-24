@@ -119,3 +119,12 @@ Q1b (rephrased) · why · agents/examiner.md:4 · asked
 - LOW pr-body.md: choices in PR body unspecified → questions only
 
 **Next:** F3 (f5790b4), re-review
+
+## code-reviewer · F3 · done
+2026-10-24T14:53:19Z
+
+**Did:** Re-reviewed f5790b4: all 6 F2 findings fixed. 1 LOW (grading of free-text follow-ups) fixed in 07b6ac2.
+
+**Findings:** none open
+
+**Next:** restart the quiz in the new format

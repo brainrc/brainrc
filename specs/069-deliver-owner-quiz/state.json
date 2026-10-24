@@ -178,7 +178,7 @@
       "id": "F3",
       "title": "Grade pick and why together; metrics sum; AC1, PR body",
       "agent": "implementer",
-      "status": "review",
+      "status": "done",
       "attempts": 1,
       "files": [
         "skills/spec-agent/references/lifecycle.md",
@@ -194,7 +194,7 @@
         "AC7"
       ],
       "review": "batch",
-      "commit": "f5790b4"
+      "commit": "f5790b4 07b6ac2"
     }
   ],
   "blocked": null,

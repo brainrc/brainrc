@@ -60,3 +60,34 @@
 **Open issues:** none
 
 **Next:** fix task F1 (75e1512), re-review fix diff
+
+## code-reviewer · F1 · done
+2026-10-24T04:09:13Z
+
+**Did:** Re-reviewed 75e1512: all 4 findings fixed; 2 new LOW (campaign quiz result per member, batch patch) fixed in 84c0b9c.
+
+**Evidence:** tests 315 OK; validate OK
+
+**Changed files:** none
+
+**Findings:** none open
+
+**Next:** verify, document
+
+## examiner · quiz · done
+2026-10-24T04:09:13Z
+
+**Did:**
+Q1 · why · skills/spec-agent/references/lifecycle.md:91 · Why does the engine write the diff patch itself before dispatching the examiner, rather than having the examiner read the branch diff directly?
+Q2 · what-if · skills/spec-agent/references/lifecycle.md:111 · After the quiz has passed, what happens if a change request at the Deliver gate changes the diff, and why does that matter?
+Q3 · what-if · skills/spec-agent/references/lifecycle.md:109 · If the owner sends `/spec-approve` while the quiz is still in progress, what does the engine do, and how does that affect the gate's metrics?
+Q4 · where · scripts/evals.py:123 · Where does the eval harness decide a `min` state check passes, and what values does it reject even when they look numeric?
+Q5 · what-if · skills/spec-agent/references/campaign.md:77 · In a batch campaign, how many quizzes run, how are they sized, and how does each member's state end up recording the result?
+
+**Evidence:** spec.md, plan.md, verify.md, deliver-diff.patch, 6 review findings; size standard → 5, no triggers
+
+**Changed files:** none
+
+**Open issues:** none
+
+**Next:** ask the owner Q1–Q5, grade against the diff

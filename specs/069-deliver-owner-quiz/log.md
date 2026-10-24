@@ -144,3 +144,8 @@ Q5 · what-if · SKILL.md:95 · /spec-approve before the quiz passes? a) recorde
 **Changed files:** none
 
 **Next:** ask Q1–Q5 as pop-ups (shuffled), grade pick + why together
+
+## examiner · quiz · changes-requested
+2026-10-24T15:03:31Z
+
+**Did:** Q1 pick: "Examiner grades only why" (choice d), no why given → why asked for, no feedback on the pick yet.

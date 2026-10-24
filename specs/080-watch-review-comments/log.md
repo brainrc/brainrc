@@ -79,3 +79,6 @@ F1 b90d1c7, F2 b2eaa06. Tests OK, validate OK. Re-review of the fix diff.
 
 ## doc-writer · document · done
 **Did:** post-deliver.md contract mentions optional thread id; pr-body.md (3 of 4), ticket-comment.md. **Evidence:** validate OK; 335 OK.
+
+## engine · deliver · 2026-10-24T22:17:13Z
+Stack Deliver gate approved 2026-10-24T15:18:45Z. Opened as a stacked PR on #86 (base 079-watch-ci-failures) at the user's request.

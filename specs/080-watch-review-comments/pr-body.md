@@ -44,7 +44,8 @@ python3 -m unittest -v tests.test_evals.WatchReviewCommentCaseTest
 - `sandbox-006` assumes a one-task plan (its `tasks.1` is `R1`). A plan with more tasks would fail the check.
 
 Spec: `specs/080-watch-review-comments/spec.md` · Plan: `specs/080-watch-review-comments/plan.md`
-Closes #80. Part of #77 (campaign gh:77, 3 of 4, after #<PREDECESSOR_PR>).
+Closes #80. Part of #77 (campaign gh:77, 3 of 4, after #86).
+Stacked on #86: the base is `079-watch-ci-failures`, so this diff shows only #80. Retarget to `main` after #84 and #86 merge.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 

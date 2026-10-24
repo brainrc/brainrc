@@ -85,7 +85,7 @@ and suggest a follow-up ticket.
   "ci_failures": [{ "check": "test", "sha": "abc1234", "cause": "own|external", "task": "C1" }],
   "review_rounds": 2,
   "threads": { "total": 5, "fixed": 3, "replied": 2, "flagged": 0 },
-  "thread_log": [{ "key": "9f2c41d07a6b3e58", "kind": "ask", "task": "R1", "flagged": false }],
+  "thread_log": [{ "key": "<16-hex key>", "kind": "ask", "task": "R1", "flagged": false }],
   "merged_at": null,
   "post_merge": null
 }

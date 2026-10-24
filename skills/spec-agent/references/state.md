@@ -101,7 +101,7 @@ Source: <gh:42 | local:path> · <url if any> · fetched <ISO timestamp>
 | `tasks[].status` | `todo` `in_progress` `review` `done` `blocked` |
 | `living` | areas the run's delta changed (`["cli"]`), `[]` for `None.`; absent before the document stage |
 | `review_context` | fallback only: `fresh` (review ran in a new session) or `shared`; absent in subagent mode |
-| `quiz` | `pending` or `passed`: the Understand quiz ([lifecycle.md](lifecycle.md#understand-quiz)); the Deliver gate can't be approved until `passed`. Missing = `pending` |
+| `quiz` | `pending` or `passed`: the Understand quiz ([lifecycle.md](lifecycle.md#understand-quiz)); the Deliver gate can't be approved until `passed`. Missing = `pending`; back to `pending` when Deliver rework changes the diff |
 | `metrics.understanding` | set when the quiz passes. `asked`: the examiner's questions. `first_try`: understood on the first answer. `after_explanation`: understood after at least one explanation. `rounds`: every answer graded (≥ `asked`). Absent before the quiz |
 | `blocked` | `null` or `{ "reason": "...", "stage": "...", "task": "T2", "since": "<ISO>" }` |
 

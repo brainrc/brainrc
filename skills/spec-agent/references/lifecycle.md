@@ -107,7 +107,10 @@ There is no skip.
 
 While `state.quiz` isn't `passed`, an `approve` (typed, button, or `/spec-approve`) gets the
 reply "the Understand quiz comes first". It isn't recorded, and it doesn't count as gate rework.
-On resume, re-ask the questions that have no understood grade in `log.md`.
+On resume, re-ask the questions that have no understood grade in `log.md`. A change request at
+the Deliver gate that changes the diff sets `state.quiz` back to `pending`: the quiz runs again
+on the new diff before the gate is shown again. A campaign runs one quiz per Deliver gate
+([campaign.md](campaign.md)).
 
 ## Gate presentation
 

@@ -74,7 +74,8 @@ For each member in the batch (default size 3):
 3. Write the drafts. Every PR body links the parent ticket and its sibling PRs: reviewers
    approve visibly identical siblings faster.
 
-**Batch Deliver gate ⛔:** one gate for the batch, listing every outward action for every
+**Batch Deliver gate ⛔:** first one Understand quiz over the batch's combined diff
+(lifecycle.md § Understand quiz; counted by the largest member's size), then one gate for the batch, listing every outward action for every
 member verbatim. After approval, deliver each member through its connector. One PR per member.
 
 **Batch checkpoint:** report PRs opened, members blocked, and playbook corrections found. Apply
@@ -129,7 +130,8 @@ presented (the Campaign gate does not stand in for them), implement, verify. Chi
 starts from child N-1's branch (child 1 from the default branch). The active-run pointer names
 the child in progress.
 
-**Deliver gate ⛔.** One gate after every child is verified, listing every child's outward
+**Deliver gate ⛔.** One Understand quiz over the stack's combined diff (lifecycle.md § Understand
+quiz; counted by the largest child's size), then one gate after every child is verified, listing every child's outward
 actions verbatim in merge order. After approval only `order: 1` is `delivered` with `pr` set
 (with no remote or local-only: its branch name is recorded as `pr`); the rest are `waiting` with
 `pr: null`.

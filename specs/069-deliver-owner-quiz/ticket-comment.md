@@ -1,0 +1,3 @@
+Shipped the Understand quiz. Before the Deliver gate opens, the run's owner answers 1–5 free-text questions written by a new read-only `examiner` role, plus one per risk trigger touched. The engine grades each answer against the diff and explains and re-asks until every question is understood. No size or unattended run skips it. The questions go into the PR body, and `metrics.understanding` is recorded in state and the retro.
+Verify: `python3 -m unittest tests.test_evals -k test_state_min -v`. An E2E run on sandbox ticket 001 with a person answering passed 14/14 (`docs/e2e-runs.md`). The metrics rollup isn't wired up yet; that's a follow-up.
+PR: <PR_URL>

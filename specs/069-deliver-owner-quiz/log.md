@@ -106,3 +106,16 @@ Q1b (rephrased) · why · agents/examiner.md:4 · asked
 **Did:** Owner asked mid-quiz for a pop-up with choices. Chose the hybrid: 3–4 choices plus a one-line why. F2 (fb82aac) changes AC4, a non-goal, and the living deliver-gate requirements. The diff changed, so `state.quiz` went back to `pending`. Round 1 above is superseded; the quiz restarts with new questions.
 
 **Next:** re-review F2, re-run examiner with choices
+
+## code-reviewer · F2 · changes-requested
+2026-10-24T14:51:45Z
+
+**Findings:**
+- MEDIUM docs/spec-agent.md, deliver-gate requirement: partial wording disagrees with lifecycle.md → align
+- MEDIUM lifecycle.md:102: asking only for the why reveals the pick was right → grade pick + why together
+- MEDIUM state.md:105: right pick + late why fits no bucket → first_try + after_explanation = asked
+- LOW lifecycle.md:102: bad-why loop → treat as needing explanation
+- LOW examiner.md:35 vs AC1 word limit → update AC1
+- LOW pr-body.md: choices in PR body unspecified → questions only
+
+**Next:** F3 (f5790b4), re-review

@@ -173,6 +173,28 @@
       ],
       "review": "batch",
       "commit": "fb82aac"
+    },
+    {
+      "id": "F3",
+      "title": "Grade pick and why together; metrics sum; AC1, PR body",
+      "agent": "implementer",
+      "status": "review",
+      "attempts": 1,
+      "files": [
+        "skills/spec-agent/references/lifecycle.md",
+        "docs/spec-agent.md",
+        "specs/living/deliver-gate.md",
+        "skills/spec-agent/references/state.md",
+        "skills/spec-agent/templates/pr-body.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC4",
+        "AC5",
+        "AC7"
+      ],
+      "review": "batch",
+      "commit": "f5790b4"
     }
   ],
   "blocked": null,
@@ -202,7 +224,7 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 1,
+      "total": 2,
       "first_pass": 1
     },
     "retries": 0,

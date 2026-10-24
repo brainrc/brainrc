@@ -6,7 +6,7 @@
     "id": "69",
     "title": "spec-agent: quiz the run's owner before the Deliver gate can be approved",
     "url": "https://github.com/bxker/ai-config/issues/69",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/85"
   },
   "slug": "069-deliver-owner-quiz",
   "branch": "069-deliver-owner-quiz",
@@ -14,7 +14,7 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -226,7 +226,8 @@
       "implement": "2026-10-24T03:30:17Z",
       "verify": "2026-10-24T04:08:38Z",
       "document": "2026-10-24T04:08:38Z",
-      "deliver": "2026-10-24T04:08:38Z"
+      "deliver": "2026-10-24T04:08:38Z",
+      "done": "2026-10-24T15:38:18Z"
     },
     "gates": {
       "spec": {

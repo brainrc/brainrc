@@ -24,7 +24,7 @@ A case file names the run by `ticket_ref` and lists `[[check]]` entries. Kinds:
 
 | Kind | Checks |
 |---|---|
-| `state` | a `state.json` field, by dotted path, `equals` a value, is `in` a list, or is `present` |
+| `state` | a `state.json` field, by dotted path, `equals` a value, is `in` a list, is `present`, or is a number at least `min` |
 | `verify` | every criterion in `verify.md` is `pass` |
 | `file` | a file (`{spec}` = the run folder) `matches` or has `absent` a regex |
 | `command` | a command's `exit` code, and `stdout` if given |

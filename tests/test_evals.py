@@ -139,6 +139,19 @@ class CheckTest(unittest.TestCase):
         self.assertEqual(code, 0, out)
         self.assert_fails(present.replace('field = "stage"', 'field = "metrics.waves.task_minutes"'), "missing")
 
+    def test_state_min(self):
+        state = self.project / "specs/001-demo/state.json"
+        data = json.loads(state.read_text())
+        data["metrics"] = {"understanding": {"asked": 3}}
+        state.write_text(json.dumps(data))
+        at_least = ALL_KINDS.replace('field = "stage"\nequals = "done"',
+                                     'field = "metrics.understanding.asked"\nmin = 1')
+        code, out = self.run_case(at_least)
+        self.assertEqual(code, 0, out)
+        self.assertIn("metrics.understanding.asked = 3", out)
+        self.assert_fails(at_least.replace("min = 1", "min = 4"), "expected >= 4")
+        self.assert_fails(at_least.replace("understanding.asked", "understanding.rounds"), "rounds = None")
+
     def test_failed_criterion_fails(self):
         (self.project / "specs/001-demo/verify.md").write_text(VERIFY.replace("manual run | pass", "manual run | fail"))
         self.assert_fails(ALL_KINDS, "AC2")

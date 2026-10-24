@@ -120,6 +120,9 @@ def run_check(check: dict, project: Path, run: Path, state: dict) -> tuple[bool,
         value, field = _field(state, check["field"]), check["field"]
         if check.get("present"):
             return value is not None, f"state {field} " + ("present" if value is not None else "missing")
+        if "min" in check:
+            ok = isinstance(value, (int, float)) and not isinstance(value, bool) and value >= check["min"]
+            return ok, f"state {field} = {value!r}" + ("" if ok else f", expected >= {check['min']}")
         allowed = check["in"] if "in" in check else [check["equals"]]
         return value in allowed, f"state {field} = {value!r}" + ("" if value in allowed else f", expected {allowed}")
     if kind == "verify":

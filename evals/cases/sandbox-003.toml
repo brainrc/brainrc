@@ -23,6 +23,12 @@ kind = "state"
 field = "metrics.waves.wall_minutes"
 present = true
 
+# The owner passed the Understand quiz before the Deliver gate.
+[[check]]
+kind = "state"
+field = "metrics.understanding.asked"
+min = 1
+
 [[check]]
 kind = "verify"
 

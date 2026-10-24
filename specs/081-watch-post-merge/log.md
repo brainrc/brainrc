@@ -49,3 +49,6 @@ T4 0628ca8, T5 1dde402, T6 95871dc. 353 OK, validate OK. Batched review (code); 
 
 ## code-reviewer · batched · done
 **Findings:** all 8 T1 findings resolved; no CRITICAL/HIGH. MEDIUM preemption has no named state values; LOW efficiency.md JSON aggregate keys undocumented; LOW .runs/post-merge path ambiguous; LOW watch.md 156 lines (trim hints). Engine: F1 takes the MEDIUM and LOWs.
+
+## implementer · F1 · done (f707c55)
+**Did:** preemption → tasks blocked + gates.push skipped (state.md gains skipped); efficiency.md JSON keys; explicit specs/<slug>/.runs/post-merge; trim to 154 lines. Engine read the diff: rules intact (fixture enter rule kept in § Enter). 353 OK, validate OK.

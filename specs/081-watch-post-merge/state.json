@@ -15,7 +15,7 @@
   "size": "standard",
   "mode": "subagent",
   "delivery": "normal",
-  "stage": "implement",
+  "stage": "verify",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -188,7 +188,7 @@
       "id": "F1",
       "title": "Name preemption state values; doc JSON keys; .runs path",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "skills/spec-agent/references/watch.md",
@@ -201,7 +201,9 @@
       ],
       "review": "batch",
       "wave": 3,
-      "started_at": "2026-10-24T15:00:48Z"
+      "started_at": "2026-10-24T15:00:48Z",
+      "commit": "f707c55",
+      "finished_at": "2026-10-24T15:02:23Z"
     }
   ],
   "blocked": null,
@@ -211,7 +213,8 @@
       "intake": "2026-10-21T16:18:38Z",
       "spec": "2026-10-21T16:18:38Z",
       "plan": "2026-10-21T16:34:11Z",
-      "implement": "2026-10-24T14:50:04Z"
+      "implement": "2026-10-24T14:50:04Z",
+      "verify": "2026-10-24T15:02:23Z"
     },
     "gates": {
       "spec": {

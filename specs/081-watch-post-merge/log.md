@@ -46,3 +46,6 @@ T1 52420f5, T2 5485f17, T3 c04d9e3. 342 OK, validate OK. Wave 2: T4, T5, T6.
 
 ## engine · wave 2 landed
 T4 0628ca8, T5 1dde402, T6 95871dc. 353 OK, validate OK. Batched review (code); no security trigger per plan.
+
+## code-reviewer · batched · done
+**Findings:** all 8 T1 findings resolved; no CRITICAL/HIGH. MEDIUM preemption has no named state values; LOW efficiency.md JSON aggregate keys undocumented; LOW .runs/post-merge path ambiguous; LOW watch.md 156 lines (trim hints). Engine: F1 takes the MEDIUM and LOWs.

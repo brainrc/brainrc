@@ -128,3 +128,19 @@ Q1b (rephrased) · why · agents/examiner.md:4 · asked
 **Findings:** none open
 
 **Next:** restart the quiz in the new format
+
+## examiner · quiz · done
+2026-10-24T14:54:09Z
+
+**Did:** (new format, after F2/F3)
+Q1 · why · lifecycle.md:100 · Why must the owner give a missing why before hearing anything about their pick? a) rounds counts one round b) PR body needs the why c) feedback first would show the pick was right d) examiner grades only the why
+Q2 · why · lifecycle.md:91 · Why does the engine write deliver-diff.patch before dispatching the examiner? a) examiner has no Bash b) reviewers download it c) evals fails without it d) hides review findings
+Q3 · where · lifecycle.md:107 · Where are the owner's actual answers stored? a) state.json metrics b) pr-body c) retro row d) only log.md
+Q4 · what-if · lifecycle.md:115 · Quiz passed, then Deliver rework changes the diff? a) result stands b) quiz back to pending, reruns c) only changed lines re-asked d) rework, quiz skipped
+Q5 · what-if · SKILL.md:95 · /spec-approve before the quiz passes? a) recorded, applied later b) rework, restart c) "quiz comes first", nothing recorded d) accepted if unattended
+
+**Evidence:** spec, plan, verify, deliver-diff.patch; standard → 5, no triggers
+
+**Changed files:** none
+
+**Next:** ask Q1–Q5 as pop-ups (shuffled), grade pick + why together

@@ -40,3 +40,9 @@ T1 52420f5, T2 5485f17, T3 c04d9e3. 342 OK, validate OK. Wave 2: T4, T5, T6.
 
 ## implementer · T6 · done
 **Did:** efficiency.md columns + schema 2; roadmap watch → Done; post-deliver.md status, sections, step 5 done; spec-agent.md sentence; changelog fragment. **Evidence:** validate OK; 342 OK. **Open issues:** schema_version 2 lands with T5 (same wave); batched review checks doc vs JSON field names.
+
+## implementer · T5 · done
+**Did:** run columns, group Avg time to merge + Merged/Abandoned/Regressions, --json, SCHEMA_VERSION 2; 3 new tests. **Evidence:** red on assertions; 345 OK; validate OK.
+
+## engine · wave 2 landed
+T4 0628ca8, T5 1dde402, T6 95871dc. 353 OK, validate OK. Batched review (code); no security trigger per plan.

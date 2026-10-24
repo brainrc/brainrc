@@ -1,0 +1,55 @@
+{
+  "ref": "gh:77",
+  "shape": "ordered",
+  "dependency_source": "body",
+  "started_at": "2026-10-21T04:50:26Z",
+  "members": [
+    {
+      "ref": "gh:78",
+      "order": 1,
+      "depends_on": [],
+      "status": "verified",
+      "slug": "078-pr-status-connector",
+      "branch": "078-pr-status-connector",
+      "pr": null
+    },
+    {
+      "ref": "gh:79",
+      "order": 2,
+      "depends_on": [
+        "gh:78"
+      ],
+      "status": "in_progress",
+      "slug": "079-watch-ci-failures",
+      "branch": "079-watch-ci-failures",
+      "pr": null
+    },
+    {
+      "ref": "gh:80",
+      "order": 3,
+      "depends_on": [
+        "gh:79"
+      ],
+      "status": "todo",
+      "slug": null,
+      "branch": null,
+      "pr": null
+    },
+    {
+      "ref": "gh:81",
+      "order": 4,
+      "depends_on": [
+        "gh:80"
+      ],
+      "status": "todo",
+      "slug": null,
+      "branch": null,
+      "pr": null
+    }
+  ],
+  "gates": {
+    "campaign": {
+      "approved_at": "2026-10-21T04:52:53Z"
+    }
+  }
+}

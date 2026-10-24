@@ -441,5 +441,59 @@ class CaseFileTest(unittest.TestCase):
                     self.assertIn(check["kind"], evals.KINDS)
 
 
+class PrStatusFixtureTest(unittest.TestCase):
+    """Sandbox pr_status snapshots match the connector return shape (references/connectors.md)."""
+
+    DIR = REPO / "examples/sandbox/pr_status"
+    STATES = {"open", "merged", "closed"}
+    CONCLUSIONS = {"success", "failure", "neutral", "cancelled", "skipped",
+                   "timed_out", "action_required", "pending"}
+
+    def load(self, name):
+        path = self.DIR / f"{name}.json"
+        self.assertTrue(path.is_file(), path)
+        return json.loads(path.read_text())
+
+    def check_shape(self, data):
+        self.assertEqual(set(data), {"head_sha", "updated_at", "state", "checks", "unresolved_threads"})
+        self.assertIsInstance(data["head_sha"], str)
+        self.assertTrue(data["head_sha"])
+        self.assertRegex(data["updated_at"], r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$")
+        self.assertIn(data["state"], self.STATES)
+        self.assertIsInstance(data["checks"], list)
+        for check in data["checks"]:
+            self.assertEqual(set(check), {"name", "conclusion"})
+            self.assertIsInstance(check["name"], str)
+            self.assertIn(check["conclusion"], self.CONCLUSIONS)
+        self.assertIsInstance(data["unresolved_threads"], list)
+        for thread in data["unresolved_threads"]:
+            self.assertEqual(set(thread), {"author", "body"})
+            self.assertIsInstance(thread["author"], str)
+            self.assertIsInstance(thread["body"], str)
+
+    def test_exactly_three_fixtures(self):
+        names = {p.stem for p in self.DIR.glob("*.json")}
+        self.assertEqual(names, {"red-ci", "review-comment", "merged"})
+
+    def test_each_matches_shape(self):
+        for name in ("red-ci", "review-comment", "merged"):
+            with self.subTest(fixture=name):
+                self.check_shape(self.load(name))
+
+    def test_red_ci_has_failing_check(self):
+        data = self.load("red-ci")
+        self.assertEqual(data["state"], "open")
+        failing = [c for c in data["checks"] if c["conclusion"] == "failure"]
+        self.assertEqual(len(failing), 1)
+
+    def test_review_comment_has_one_unresolved_thread(self):
+        data = self.load("review-comment")
+        self.assertEqual(data["state"], "open")
+        self.assertEqual(len(data["unresolved_threads"]), 1)
+
+    def test_merged_state(self):
+        self.assertEqual(self.load("merged")["state"], "merged")
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -16,3 +16,6 @@ Wave 1 start: T1, T2, T3.
 
 ## implementer · T2 · done
 **Did:** optional merged_at/merge_commit_sha (fixture test; merged.json; connectors.md; ticket-github mapping, MCP if present). **Evidence:** red: test_merged_has_merge_fields; 336 OK; validate OK. **Next:** review (each).
+
+## implementer · T3 · done
+**Did:** RunRecord + load_run: outcome, post_merge, time_to_merge, review_rounds, ci_failures (missing/invalid None, real 0 stays 0); 6 tests. **Evidence:** red: 3 assertion failures with stubs; 341 OK; validate not run by agent (engine runs at landing). **Next:** batch review.

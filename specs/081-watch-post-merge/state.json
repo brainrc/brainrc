@@ -196,8 +196,8 @@
     },
     "retries": 0,
     "reviews": {
-      "first_pass": 0,
-      "total": 0
+      "first_pass": 1,
+      "total": 1
     }
   },
   "living": []

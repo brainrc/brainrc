@@ -19,3 +19,6 @@ Wave 1 start: T1, T2, T3.
 
 ## implementer · T3 · done
 **Did:** RunRecord + load_run: outcome, post_merge, time_to_merge, review_rounds, ci_failures (missing/invalid None, real 0 stays 0); 6 tests. **Evidence:** red: 3 assertion failures with stubs; 341 OK; validate not run by agent (engine runs at landing). **Next:** batch review.
+
+## code-reviewer · T2 · done
+**Findings:** no CRITICAL/HIGH. LOW overlong line in connectors.md; LOW no absent-on-open assertion; LOW null fails regex (docs say omit). Engine: LOWs left; T2 lands with wave 1.

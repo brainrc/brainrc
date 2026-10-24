@@ -593,7 +593,13 @@ class PrStatusFixtureTest(unittest.TestCase):
         return json.loads(path.read_text())
 
     def check_shape(self, data):
-        self.assertEqual(set(data), {"head_sha", "updated_at", "state", "checks", "unresolved_threads"})
+        required = {"head_sha", "updated_at", "state", "checks", "unresolved_threads"}
+        self.assertLessEqual(required, set(data))
+        self.assertLessEqual(set(data) - required, {"merged_at", "merge_commit_sha"})
+        if "merged_at" in data:
+            self.assertRegex(data["merged_at"], r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$")
+        if "merge_commit_sha" in data:
+            self.assertRegex(data["merge_commit_sha"], r"^[0-9a-f]{7,64}$")
         self.assertIsInstance(data["head_sha"], str)
         self.assertTrue(data["head_sha"])
         self.assertRegex(data["updated_at"], r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$")
@@ -635,6 +641,11 @@ class PrStatusFixtureTest(unittest.TestCase):
 
     def test_merged_state(self):
         self.assertEqual(self.load("merged")["state"], "merged")
+
+    def test_merged_has_merge_fields(self):
+        data = self.load("merged")
+        self.assertIn("merged_at", data)
+        self.assertIn("merge_commit_sha", data)
 
 
 if __name__ == "__main__":

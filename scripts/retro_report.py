@@ -19,7 +19,7 @@ import retro_aggregate  # noqa: E402
 import retro_ccusage  # noqa: E402
 import retro_metrics  # noqa: E402
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 UNKNOWN, NA = "unknown", "n/a"
 
 
@@ -137,7 +137,8 @@ def _run_row(r: dict) -> list:
         stage, r["blocked_reason"] or "", _fmt(r["total_minutes"]), _fmt(r["agent_minutes"]),
         _fmt(r["wait_minutes"]), _pct(r["first_pass_rate"]), _fmt(r["retries"]),
         _fmt(r["interventions"]), _fmt(r["wave_ratio"], 2), r["criteria_passed"] or UNKNOWN,
-        "; ".join(r["warnings"]),
+        r["outcome"] or UNKNOWN, r["post_merge"] or UNKNOWN, _fmt(r["time_to_merge"]),
+        _fmt(r["review_rounds"]), _fmt(r["ci_failures"]), "; ".join(r["warnings"]),
     ]
 
 
@@ -146,7 +147,8 @@ def render_markdown(doc: dict) -> str:
            "it is never counted as 0.", "", "## Runs", ""]
     out += _table(["Run", "Size", "Mode", "Domains", "Stage", "Blocked", "Total min", "Agent min",
                    "Gate wait min", "First-pass", "Retries", "Interventions", "Wave ratio",
-                   "Criteria", "Warnings"], [_run_row(r) for r in doc["runs"]])
+                   "Criteria", "Outcome", "Post-merge", "Time to merge", "Review rounds",
+                   "CI failures", "Warnings"], [_run_row(r) for r in doc["runs"]])
     if doc["skipped"]:
         out += ["", "## Skipped runs", ""]
         out += _table(["Run", "Reason"], [[s["path"], s["reason"]] for s in doc["skipped"]])
@@ -163,10 +165,11 @@ def render_markdown(doc: dict) -> str:
             a = g["averages"]
             body.append([name, g["runs"], _avg(a["total_minutes"]), _avg(a["agent_minutes"]),
                          _avg(a["wait_minutes"]), _avg(a["first_pass_rate"], _pct),
-                         _avg(a["retries"]), _avg(a["interventions"]), g["blocked_stops"]["count"]])
+                         _avg(a["retries"]), _avg(a["interventions"]), _avg(a["time_to_merge"]), g["merged"],
+                         g["abandoned"], g["regressions"], g["blocked_stops"]["count"]])
         out += _table([title.replace("By ", "").capitalize(), "Runs", "Avg total", "Avg agent",
                        "Avg gate wait", "Avg first-pass", "Avg retries", "Avg interventions",
-                       "Blocked stops"], body)
+                       "Avg time to merge", "Merged", "Abandoned", "Regressions", "Blocked stops"], body)
         if title == "By domain":
             out += ["", agg["domain_note"]]
         out.append("")

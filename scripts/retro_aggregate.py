@@ -7,7 +7,7 @@ from __future__ import annotations
 
 DOMAIN_NOTE = "A run with several domains counts under each, so domain rows can sum past the run count."
 DURATION_METRICS = ("total_minutes", "wait_minutes", "agent_minutes")
-OTHER_METRICS = ("first_pass_rate", "retries", "interventions", "wave_ratio")
+OTHER_METRICS = ("first_pass_rate", "retries", "interventions", "wave_ratio", "time_to_merge")
 
 
 def final_stage(r) -> str:
@@ -47,6 +47,9 @@ def _group(records: list) -> dict:
         "stage_minutes": _avg_by_key([r.stage_minutes for r in done]),
         "gate_rework": _avg_by_key([r.gate_rework for r in records]),
         "blocked_stops": {"count": len(reasons), "reasons": reasons},
+        "merged": sum(r.outcome == "merged" for r in records),
+        "abandoned": sum(r.outcome == "abandoned" for r in records),
+        "regressions": sum(r.post_merge == "regression" for r in records),
     }
 
 

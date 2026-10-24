@@ -52,3 +52,6 @@ T4 0628ca8, T5 1dde402, T6 95871dc. 353 OK, validate OK. Batched review (code); 
 
 ## implementer · F1 · done (f707c55)
 **Did:** preemption → tasks blocked + gates.push skipped (state.md gains skipped); efficiency.md JSON keys; explicit specs/<slug>/.runs/post-merge; trim to 154 lines. Engine read the diff: rules intact (fixture enter rule kept in § Enter). 353 OK, validate OK.
+
+## verifier · verify · done
+**Did:** verify.md AC1-AC10 pass; 353 OK; validate OK; retro_report md+json on synthetic runs; evals.py check sandbox-007 good 7 pass, bad 2 fail. **Open issues:** `unittest tests.test_retro_metrics tests.test_evals` errors on an aicfg import clash; engine confirmed the same error on main (pre-existing, not this branch); AC1/3/4/6 prose-verified.

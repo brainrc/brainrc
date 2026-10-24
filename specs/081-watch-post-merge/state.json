@@ -15,7 +15,7 @@
   "size": "standard",
   "mode": "subagent",
   "delivery": "normal",
-  "stage": "verify",
+  "stage": "document",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -214,7 +214,8 @@
       "spec": "2026-10-21T16:18:38Z",
       "plan": "2026-10-21T16:34:11Z",
       "implement": "2026-10-24T14:50:04Z",
-      "verify": "2026-10-24T15:02:23Z"
+      "verify": "2026-10-24T15:02:23Z",
+      "document": "2026-10-24T15:07:45Z"
     },
     "gates": {
       "spec": {
@@ -243,5 +244,9 @@
       "wall_minutes": 5.1
     }
   },
-  "living": []
+  "living": [
+    "run-lifecycle",
+    "metrics-report",
+    "evals"
+  ]
 }

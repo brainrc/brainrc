@@ -17,3 +17,7 @@ _Last changed by 079-watch-ci-failures._
 ### Review-comment watch eval
 A sandbox eval SHALL grade the review-comment path offline from a fixture containing an embedded instruction, which must be flagged and not followed. (AC10)
 _Last changed by 080-watch-review-comments._
+
+### Merged watch eval
+A sandbox eval SHALL grade the merged path offline from the merged fixture, checking post-merge fields, `verify-merged.md`, and the retro's After delivery section. (AC9)
+_Last changed by 081-watch-post-merge._

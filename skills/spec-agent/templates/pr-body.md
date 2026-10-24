@@ -15,6 +15,10 @@
 <commands a reviewer can run>
 ```
 
+## Check your understanding
+The run's owner answered these before delivery. Answers aren't included; try them yourself.
+1. <kind>: <question> (`<file:line>`)
+
 ## Follow-ups
 - <MEDIUM/LOW review findings not addressed, or "none">
 

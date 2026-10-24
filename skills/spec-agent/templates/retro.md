@@ -12,6 +12,7 @@ Ticket: <ref> · Size: <tier> · PR: <url>
 | Review first-pass rate | <first_pass>/<total> (<%>) |
 | Retries | <n> |
 | Interventions | <n> |
+| Understanding (asked / first try / after explanation / rounds) | <n> / <n> / <n> / <n> |
 | Review context | fresh / shared (fallback mode only; omit otherwise) |
 | Criteria passed | <n>/<n> |
 

@@ -69,6 +69,7 @@ Source: <gh:42 | local:path> · <url if any> · fetched <ISO timestamp>
       "review": "batch", "red": "compile-only", "commit": "a1b2c3d" }
   ],
   "blocked": null,
+  "quiz": "pending",
   "metrics": {
     "started_at": "2026-09-29T21:30:00Z",
     "stage_started_at": { "intake": "…", "spec": "…" },
@@ -76,7 +77,8 @@ Source: <gh:42 | local:path> · <url if any> · fetched <ISO timestamp>
     "gate_rework": { "spec": 0, "plan": 1, "deliver": 0 },
     "reviews": { "total": 3, "first_pass": 2 },
     "retries": 1,
-    "interventions": 0
+    "interventions": 0,
+    "understanding": { "asked": 4, "first_try": 3, "after_explanation": 1, "rounds": 5 }
   }
 }
 ```
@@ -99,6 +101,8 @@ Source: <gh:42 | local:path> · <url if any> · fetched <ISO timestamp>
 | `tasks[].status` | `todo` `in_progress` `review` `done` `blocked` |
 | `living` | areas the run's delta changed (`["cli"]`), `[]` for `None.`; absent before the document stage |
 | `review_context` | fallback only: `fresh` (review ran in a new session) or `shared`; absent in subagent mode |
+| `quiz` | `pending` or `passed`: the Understand quiz ([lifecycle.md](lifecycle.md#understand-quiz)); the Deliver gate can't be approved until `passed`. Missing = `pending` |
+| `metrics.understanding` | set when the quiz passes. `asked`: the examiner's questions. `first_try`: understood on the first answer. `after_explanation`: understood after at least one explanation. `rounds`: every answer graded (≥ `asked`). Absent before the quiz |
 | `blocked` | `null` or `{ "reason": "...", "stage": "...", "task": "T2", "since": "<ISO>" }` |
 
 Rules:

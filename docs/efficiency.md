@@ -67,7 +67,7 @@ One document on stdout. Unknown values are `null`.
 | `schema_version` | `2`; bumped on breaking changes |
 | `runs[]` | one record per run: `path`, `slug`, `size`, `mode`, `domains`, `stage`, `blocked_reason`, `total_minutes`, `wait_minutes`, `agent_minutes`, `stage_minutes` (per stage), `gate_rework` (per gate), `first_pass_rate` (0-1), `retries`, `interventions`, `waves`, `wave_ratio`, `criteria_passed`, `outcome`, `post_merge`, `time_to_merge`, `review_rounds`, `ci_failures`, `blocked_stops`, `warnings` (new fields in version 2; `null` when unknown) |
 | `skipped[]` | runs that could not be read: `path`, `reason` |
-| `aggregates` | `runs`, `overall`, `by_size`, `by_mode`, `by_domain`, `by_stage`, `domain_note`, `blocked_stops`; each group has `runs`, `averages` (`{avg, n}` per field), `stage_minutes` and `gate_rework` (`{avg, n}` per key), and `blocked_stops` (`count`, `reasons`) |
+| `aggregates` | `runs`, `overall`, `by_size`, `by_mode`, `by_domain`, `by_stage`, `domain_note`, `blocked_stops`; each group has `runs`, `averages` (`{avg, n}` per field), `stage_minutes` and `gate_rework` (`{avg, n}` per key), `blocked_stops` (`count`, `reasons`), and the counts `merged`, `abandoned`, `regressions` (runs by `outcome` / `post_merge`; `averages.time_to_merge` is the mean) |
 | `usage` | `requested`, `available`, `since`, `until`, `tokens`, `cost`, `note` |
 
 ## Optional external tools (researched 2026-09)

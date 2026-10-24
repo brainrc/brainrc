@@ -22,3 +22,6 @@ Wave 1 start: T1, T2, T3.
 
 ## code-reviewer · T2 · done
 **Findings:** no CRITICAL/HIGH. LOW overlong line in connectors.md; LOW no absent-on-open assertion; LOW null fails regex (docs say omit). Engine: LOWs left; T2 lands with wave 1.
+
+## implementer · T1 · done
+**Did:** watch.md § Merged or closed; state/lifecycle fields; SKILL.md pr_opened_at; retro After delivery skeleton. 147 lines (over ~140). **Evidence:** validate OK; 335 OK (docs only). **Next:** review (each).

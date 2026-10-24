@@ -4,6 +4,21 @@ Real spec-agent runs on the [sandbox](../examples/sandbox/README.md), graded wit
 `python3 scripts/evals.py check` ([evals](evals.md)). Add a section per session, newest first.
 CONTRIBUTING.md § Releases says when a run is required.
 
+## 2026-10-24 · Claude Code · ticket 001, Understand quiz
+
+**Result: 14/14**, including the new `metrics.understanding.asked` ≥ 1 check. Inline mode (size
+small), but the questions came from a fresh `examiner` subagent that read only `spec.md`,
+`plan.md`, `verify.md`, and `.runs/deliver-diff.patch`: one `why` question (`greet.py:7`, the
+`shout` default) and one `what-if` question (`greet.py:15`, `--shout` with no name). A person
+answered. Q1 was partial, then missed; each answer got a `file:line` explanation and a rephrased
+question, and the third answer was understood. Q2 was missed, partial, then partial (right line,
+no output), and the fourth answer was understood. The Deliver gate was presented and approved
+only after that. `metrics.understanding`: 2 asked, 0 first try, 2 after explanation, 7 rounds.
+The PR body listed both questions without answers.
+
+**Open:** `deliver-diff.patch` also held the ticket file's status line. The examiner skipped it on
+its own, but the patch could leave ticket files out.
+
 ## 2026-10-18 · Claude Code · ticket 003, role skills and `.runs/`
 
 **Result: 11/11**, same setup as the re-runs below. The doc-writer's dispatch carried the new

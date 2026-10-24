@@ -143,7 +143,7 @@ tasks `F1..`, run them as above, re-review only the fix diff. Track `metrics.rev
 
 0. **Understand quiz** (every size, unattended runs too; `lifecycle.md` § Understand quiz):
    write the diff to `.runs/deliver-diff.patch`, dispatch `examiner`, ask its questions one at a
-   time, grade each free-text answer against the diff, and explain and re-ask until every one is
+   time (pop-up choices plus a one-line why), grade each against the diff, and explain and re-ask until every one is
    understood. Then set `state.quiz` to `passed`, add the questions to `pr-body.md`, and
    present the gate. An `approve` before that is refused and not recorded.
 1. Present the Deliver gate with every outward action verbatim (branch, PR title/body

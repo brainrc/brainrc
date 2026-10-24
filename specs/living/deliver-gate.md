@@ -3,11 +3,11 @@
 What must happen before a run's outward actions are allowed.
 
 ### Understand quiz before Deliver
-The system SHALL quiz the run's owner with free-text questions from the read-only examiner role (or the engine in inline/fallback mode), sized by tier plus one risk question per touched trigger, before presenting the Deliver gate, for every size and unattended runs too. (AC1, AC2, AC3, AC8)
+The system SHALL quiz the run's owner with questions, each with 3–4 choices and asked in a pop-up where available, from the read-only examiner role (or the engine in inline/fallback mode), sized by tier plus one risk question per touched trigger, before presenting the Deliver gate, for every size and unattended runs too. (AC1, AC2, AC3, AC8)
 _Last changed by 069-deliver-owner-quiz._
 
 ### Quiz grading and approval
-The system SHALL grade each answer against the diff, explain a partial or missed answer with a `file:line` pointer and re-ask a rephrased question, and refuse Deliver approval until every question is understood. (AC2, AC4)
+The system SHALL require a one-line why with every choice picked, grade each answer against the diff, explain a partial or missed answer with a `file:line` pointer and re-ask a rephrased question, and refuse Deliver approval until every question is understood. (AC2, AC4)
 _Last changed by 069-deliver-owner-quiz._
 
 ### Understanding record

@@ -17,7 +17,7 @@ on its own.
 ```
 /work gh:42
   intake ─► analyst ─► ⛔ SPEC ─► architect ─► ⛔ PLAN ─► implementer ×N ─► reviewers ─►
-  verifier ─► doc-writer ─► ⛔ DELIVER ─► push · PR · ticket update ─► retro
+  verifier ─► doc-writer ─► examiner quiz ─► ⛔ DELIVER ─► push · PR · ticket update ─► retro
 ```
 
 ## Commands
@@ -45,6 +45,20 @@ gets them. In the Claude Code plugin they're `/ai-config:work`; in Codex, call t
    harness hooks (Claude Code) that prompt on push, PR, cluster, cloud, and state mutations.
 5. **Cheap by default.** Domain knowledge loads only for the stacks touched, command output stays
    in files, routine roles use cheaper models. See [efficiency.md](efficiency.md).
+
+## Understand quiz
+
+Before the Deliver gate, the engine quizzes the person who started the run on what changes and
+why. The read-only `examiner` role writes the questions from `spec.md`, `plan.md`, `verify.md`,
+the review findings, and the diff: 1 for trivial, 2 for small, 3–5 for standard, plus one `risk`
+question per security, IAM, migration, or prod trigger touched. Each is a `why`, `where`,
+`what-if`, or `risk` question, answered in free text. The engine grades each answer against the
+diff. A partial or missed answer gets a short explanation with a `file:line` pointer and a
+rephrased question on the same point. The gate opens only when every question ends understood;
+an earlier `approve` doesn't count, and no size or unattended run skips it. The questions, without
+answers, go into the PR body under "Check your understanding". `metrics.understanding` records
+how many needed an explanation. Answers stay in the run's `log.md`. In inline and fallback mode
+the engine writes the questions itself. Details: [lifecycle.md](../skills/spec-agent/references/lifecycle.md).
 
 ## Campaigns
 
@@ -99,6 +113,7 @@ is absent. The contract is in [state.md](../skills/spec-agent/references/state.m
 | infra-reviewer | sonnet | blast radius, destroy/replace, state, rollout |
 | verifier | haiku | criteria → evidence |
 | doc-writer | haiku | docs, PR body, ticket comment |
+| examiner | sonnet | Understand quiz questions before the Deliver gate |
 
 ## Domain skills (`skills/`)
 

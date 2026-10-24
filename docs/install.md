@@ -135,7 +135,7 @@ in a **pack**: a separate repo with the same layout. See [packs.md](packs.md).
 rules/          Global instructions, as ordered markdown fragments (00-core.md, 10-git.md, ...).
                 Concatenated into CLAUDE.md / AGENTS.md.
 skills/<name>/  Agent Skills: spec-agent engine, ticket connectors, domain skills (terraform, aws, ...).
-agents/         Agent roles (analyst, architect, implementer, reviewers, verifier, doc-writer).
+agents/         Agent roles (analyst, architect, implementer, reviewers, verifier, doc-writer, examiner).
 commands/       Optional, for packs: slash commands. Core's (/work, /review, /spec-*) are skills.
 mcp/            Canonical MCP server registry. Env var names only, never secret values.
 overrides/      Harness-specific config (Claude guard hooks + settings fragment).

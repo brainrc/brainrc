@@ -127,7 +127,9 @@
       "after": [
         "T2"
       ],
-      "started_at": "2026-10-24T14:55:43Z"
+      "started_at": "2026-10-24T14:55:43Z",
+      "finished_at": "2026-10-24T14:57:26Z",
+      "red": "assertion"
     },
     {
       "id": "T5",

@@ -34,3 +34,6 @@ Wave 1 start: T1, T2, T3.
 
 ## engine · wave 1 landed 2026-10-24T14:55:43Z
 T1 52420f5, T2 5485f17, T3 c04d9e3. 342 OK, validate OK. Wave 2: T4, T5, T6.
+
+## implementer · T4 · done
+**Did:** WatchMergedCaseTest (pass + 7 failing variants); sandbox-007.toml; ticket 010; README. **Evidence:** red 6/8 on assertions; 350 OK; validate OK.

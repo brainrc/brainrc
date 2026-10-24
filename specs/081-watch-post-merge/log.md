@@ -13,3 +13,6 @@ Recommended answers to Q1-Q3 folded into Open questions.
 
 ## engine · plan gate · approved 2026-10-24T14:50:04Z
 Wave 1 start: T1, T2, T3.
+
+## implementer · T2 · done
+**Did:** optional merged_at/merge_commit_sha (fixture test; merged.json; connectors.md; ticket-github mapping, MCP if present). **Evidence:** red: test_merged_has_merge_fields; 336 OK; validate OK. **Next:** review (each).

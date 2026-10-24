@@ -99,3 +99,10 @@ Q5 · what-if · skills/spec-agent/references/campaign.md:77 · In a batch campa
 Q1 · why · lifecycle.md:91 · answer: "Token efficiency" · grade: missed
 Explained: the examiner's tools are Read, Grep, Glob (agents/examiner.md:4), with no Bash, so it can't run git diff; the engine writes the patch (lifecycle.md:90), with specs/ excluded, so it has a file to read.
 Q1b (rephrased) · why · agents/examiner.md:4 · asked
+
+## engine · deliver · changes-requested
+2026-10-24T14:49:04Z
+
+**Did:** Owner asked mid-quiz for a pop-up with choices. Chose the hybrid: 3–4 choices plus a one-line why. F2 (fb82aac) changes AC4, a non-goal, and the living deliver-gate requirements. The diff changed, so `state.quiz` went back to `pending`. Round 1 above is superseded; the quiz restarts with new questions.
+
+**Next:** re-review F2, re-run examiner with choices

@@ -153,6 +153,26 @@
       ],
       "review": "batch",
       "commit": "75e1512 84c0b9c"
+    },
+    {
+      "id": "F2",
+      "title": "Hybrid pop-up quiz (owner request at Deliver)",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "agents/examiner.md",
+        "skills/spec-agent/references/lifecycle.md",
+        "skills/spec-agent/SKILL.md",
+        "docs/spec-agent.md",
+        "changelog.d/069-deliver-owner-quiz.md",
+        "specs/living/deliver-gate.md"
+      ],
+      "criteria": [
+        "AC4"
+      ],
+      "review": "batch",
+      "commit": "fb82aac"
     }
   ],
   "blocked": null,
@@ -186,7 +206,7 @@
       "first_pass": 1
     },
     "retries": 0,
-    "interventions": 0
+    "interventions": 1
   },
   "review_context": "fresh",
   "living": [

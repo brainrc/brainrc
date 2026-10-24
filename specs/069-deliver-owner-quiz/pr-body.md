@@ -4,7 +4,7 @@ Quiz the run's owner before the Deliver gate can be approved
 spec-agent could take a ticket to a reviewed, tested PR while the person who ran `/work`, and who owns the PR, never had to understand the change. The Deliver gate asked for approval, not understanding.
 
 ## What changed
-- New Understand quiz, the first step of the deliver stage. The owner answers 1 (trivial), 2 (small), or 3–5 (standard) free-text questions, plus one `risk` question per security, IAM, migration, or prod trigger touched. The engine grades each answer against the diff. A partial or missed answer gets a short explanation with a `file:line` pointer and a rephrased question on the same point. The Deliver gate opens only when every question is understood. An earlier `approve` is refused and not recorded. No size or unattended run skips the quiz.
+- New Understand quiz, the first step of the deliver stage. The owner answers 1 (trivial), 2 (small), or 3–5 (standard) questions, plus one `risk` question per security, IAM, migration, or prod trigger touched. Each question is a pop-up with 3–4 choices. A pick passes only with a one-line why, so guessing alone can't pass. The engine grades each answer against the diff. A wrong pick or a weak why gets a short explanation with a `file:line` pointer and a rephrased question on the same point. The Deliver gate opens only when every question is understood. An earlier `approve` is refused and not recorded. No size or unattended run skips the quiz.
 - New read-only `examiner` role (`agents/examiner.md`, `Read, Grep, Glob`) writes the questions from `spec.md`, `plan.md`, `verify.md`, the review findings, and a diff patch, so the engine can't write questions that contain their own answers. In inline and fallback mode the engine plays examiner from the artifacts only.
 - `state.quiz` (`pending` | `passed`) gates approval and goes back to `pending` when Deliver rework changes the diff. `metrics.understanding` records `{ asked, first_try, after_explanation, rounds }`, and the retro has a matching row. The PR body gets a "Check your understanding" section with the questions only.
 - Campaigns run one quiz over the combined diff before each Deliver gate and record the result in every member's state.
@@ -15,12 +15,12 @@ spec-agent could take a ticket to a reviewed, tested PR while the person who ran
 Most criteria describe engine behavior written in markdown and were checked by reading the cited text. AC10, AC11, and AC12 have executable evidence.
 
 - [x] AC1: examiner role, read-only, kinds and `file:line`, no answers (read: `agents/examiner.md`)
-- [x] AC2, AC3, AC4: quiz before the gate, sizes, grading, refusal of an early approve (read: `SKILL.md`, `lifecycle.md`)
+- [x] AC2, AC3, AC4: quiz before the gate, sizes, pop-up choices plus a why, grading, refusal of an early approve (read: `SKILL.md`, `lifecycle.md`). AC4 changed at the owner's request during the Deliver quiz (fb82aac).
 - [x] AC5, AC6, AC7: state, retro row, PR body section (read: `state.md`, templates)
 - [x] AC8: fallback path (read: `fallback.md`)
 - [x] AC9: docs (read: `docs/spec-agent.md`)
 - [x] AC10: `min` state check, verified by `tests/test_evals.py::CheckTest::test_state_min`
-- [x] AC11: E2E on sandbox ticket 001 with a person answering. Each question took several rounds (partial, missed, then understood), and the gate opened only after both passed. `evals.py check` 14/14.
+- [x] AC11: E2E on sandbox ticket 001 with a person answering. Each question took several rounds (partial, missed, then understood), and the gate opened only after both passed. `evals.py check` 14/14. This ran before the pop-up change and used free-text answers. #69's own Deliver quiz used the pop-up.
 - [x] AC12: `aicfg.py validate` and 315 unit tests pass
 
 ## How to verify

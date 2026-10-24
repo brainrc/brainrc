@@ -159,3 +159,21 @@ Q1b (rephrased, free text) · why · lifecycle.md:100 · asked
 **Did:** Owner asked for multiple choice only (pick-plus-why was too much friction). F4 (2e09910) changes AC4, a non-goal, and the deliver-gate living requirement again. The diff changed, so `state.quiz` is back to `pending`. The round above is superseded.
 
 **Next:** re-review F4, re-run the examiner
+
+## examiner · quiz · done
+2026-10-24T15:08:25Z
+
+**Did:** (multiple choice only, after F4)
+Q1 · why · lifecycle.md:91 · Why save the diff to deliver-diff.patch before dispatching the examiner? a) no Bash b) PR body embeds it c) evals checks it d) resume reads it
+Q2 · what-if · lifecycle.md:112 · Deliver rework alters the diff after the quiz passed? a) stays passed b) changed files only c) back to pending, reruns d) back to verify, skipped
+Q3 · where · campaign.md:77 · Batch campaign: where does the quiz run? a) per member b) once over combined diff, largest size c) first member only d) after batch gate
+Q4 · what-if · evals.py:124 · min = 1, field is true? a) passes b) error c) missing d) fails, bools aren't numbers
+Q5 · why · lifecycle.md:110 · approve before the quiz passes? a) refused, not recorded, not rework b) applied later c) rework, restart d) accepted if unattended
+
+**Evidence:** spec, plan, verify, deliver-diff.patch; standard → 5, no triggers
+
+**Changed files:** none
+
+**Open issues:** plan.md and AC11 evidence describe the earlier free-text design (history, left as is)
+
+**Next:** after F4 re-review, ask Q1–Q5 as shuffled pop-ups

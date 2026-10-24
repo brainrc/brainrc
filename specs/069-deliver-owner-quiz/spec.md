@@ -18,10 +18,10 @@ understanding, so the owner can wave through a change they couldn't explain or r
 - Choice-only answers (a pick without a why), or any way to skip the quiz.
 
 ## Acceptance criteria
-- **AC1**: Given the spec-agent package, when `agents/examiner.md` is read, then its frontmatter has `name: examiner`, `tools: Read, Grep, Glob`, and the body says it writes each question with its kind (`why`, `where`, `what-if`, `risk`) and the `file:line` it tests, never the answer, and ends with a handoff under 150 words.
+- **AC1**: Given the spec-agent package, when `agents/examiner.md` is read, then its frontmatter has `name: examiner`, `tools: Read, Grep, Glob`, and the body says it writes each question with its kind (`why`, `where`, `what-if`, `risk`) and the `file:line` it tests, never the answer, and 3–4 unmarked choices, and ends with a handoff under 150 words (choices not counted).
 - **AC2**: Given the Deliver stage in `SKILL.md` and `lifecycle.md`, when a run reaches deliver, then they say the quiz runs before the gate is presented and before any outward action, and an approval sent before the quiz is passed is refused.
 - **AC3**: Given the question count rule, when it is read, then trivial asks 1, small 2, standard 3–5, plus 1 `risk` question when a security, IAM, migration, or prod trigger is touched; every size runs the quiz, unattended runs included (the quiz waits for the owner).
-- **AC4**: Given the grading rule, when a question is asked as a pop-up with 3–4 choices, then a pick needs a one-line why to pass (`understood`), a right pick without a valid why is `partial` and asked for the why, and `missed` (a wrong pick) gets a short explanation with a `file:line` pointer and a rephrased question on the same point; the quiz passes only when every question ends `understood`.
+- **AC4**: Given the grading rule, when a question is asked as a pop-up with 3–4 choices, then a missing why is asked for before any feedback, a right pick with a why that holds is `understood`, and `partial` (right pick, weak why) or `missed` (wrong pick) gets a short explanation with a `file:line` pointer and a rephrased question on the same point; the quiz passes only when every question ends `understood`.
 - **AC5**: Given `state.md`, when it is read, then `metrics.understanding` is documented as `{ asked, first_try, after_explanation, rounds }` with what each counts.
 - **AC6**: Given `templates/retro.md`, when it is read, then it has an Understanding row with the same four numbers.
 - **AC7**: Given `templates/pr-body.md`, when it is read, then it has a "Check your understanding" section that lists the questions without answers.
@@ -43,7 +43,7 @@ Purpose: What must happen before a run's outward actions are allowed.
 #### ADDED: Understand quiz before Deliver
 The system SHALL quiz the run's owner with questions, each with 3–4 choices and asked in a pop-up where available, from the read-only examiner role (or the engine in inline/fallback mode), sized by tier plus one risk question per touched trigger, before presenting the Deliver gate, for every size and unattended runs too. (AC1, AC2, AC3, AC8)
 #### ADDED: Quiz grading and approval
-The system SHALL require a one-line why with every choice picked, grade each answer against the diff, explain a partial or missed answer with a `file:line` pointer and re-ask a rephrased question, and refuse Deliver approval until every question is understood. (AC2, AC4)
+The system SHALL require a one-line why with every choice picked, grade the pick and the why together against the diff, explain a wrong pick or a why that doesn't hold with a `file:line` pointer and re-ask a rephrased question, and refuse Deliver approval until every question is understood. (AC2, AC4)
 #### ADDED: Understanding record
 The system SHALL record `metrics.understanding` (`asked`, `first_try`, `after_explanation`, `rounds`), show it in the retro, and list the questions without answers in the PR body. (AC5, AC6, AC7)
 

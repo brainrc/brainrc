@@ -7,7 +7,7 @@ The system SHALL quiz the run's owner with questions, each with 3–4 choices an
 _Last changed by 069-deliver-owner-quiz._
 
 ### Quiz grading and approval
-The system SHALL require a one-line why with every choice picked, grade each answer against the diff, explain a partial or missed answer with a `file:line` pointer and re-ask a rephrased question, and refuse Deliver approval until every question is understood. (AC2, AC4)
+The system SHALL require a one-line why with every choice picked, grade the pick and the why together against the diff, explain a wrong pick or a why that doesn't hold with a `file:line` pointer and re-ask a rephrased question, and refuse Deliver approval until every question is understood. (AC2, AC4)
 _Last changed by 069-deliver-owner-quiz._
 
 ### Understanding record

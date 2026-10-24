@@ -54,8 +54,9 @@ the review findings, and the diff: 1 for trivial, 2 for small, 3–5 for standar
 question per security, IAM, migration, or prod trigger touched. Each is a `why`, `where`,
 `what-if`, or `risk` question with 3–4 choices, asked in a pop-up where the harness has one. The
 owner picks a choice and adds a one-line why; a pick alone never passes, so guessing doesn't
-either. The engine grades each answer against the diff. A partial or missed answer gets a short explanation with a `file:line` pointer and a
-rephrased free-text question on the same point. The gate opens only when every question ends understood;
+either. The engine grades the pick and the why together, against the diff, and says nothing
+about the pick until it has both. A wrong pick, or a right pick with a why that doesn't hold, gets a
+short explanation with a `file:line` pointer and a rephrased free-text question on the same point. The gate opens only when every question ends understood;
 an earlier `approve` doesn't count, and no size or unattended run skips it. The questions, without
 answers, go into the PR body under "Check your understanding". `metrics.understanding` records
 how many needed an explanation. Answers stay in the run's `log.md`. In inline and fallback mode

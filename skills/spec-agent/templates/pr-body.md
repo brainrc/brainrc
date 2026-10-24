@@ -16,7 +16,7 @@
 ```
 
 ## Check your understanding
-The run's owner answered these before delivery. Answers are in the run's `log.md`; try them first.
+The run's owner answered these before delivery. Questions only, no choices; answers are in the run's `log.md`, so try them first.
 1. <kind>: <question> (`<file:line>`)
 
 ## Follow-ups

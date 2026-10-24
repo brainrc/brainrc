@@ -96,12 +96,13 @@ There is no skip.
    its own answer. Rewrite a question or choice that gives the answer away before you ask it.
 3. Ask one question at a time, in a pop-up with its choices in shuffled order when the harness has a
    multiple-choice tool (Claude Code: `AskUserQuestion`), else as a numbered list. The owner
-   picks a choice **and** gives a one-line why (a note on the pick, or typed after). A pick alone never passes.
-   Grade against the diff and the spec:
+   picks a choice **and** gives a one-line why (a note on the pick, or typed after). A pick alone
+   never passes. If the why is missing, ask for it before saying anything about the pick. Then
+   grade the pick and the why together, against the diff and the spec:
    - **understood**: the right choice with a why that holds.
-   - **partial**: the right choice with no why or a wrong why. Ask for the why, in free text.
-   - **missed**: a wrong choice. Explain the point in 2–4 lines with a `file:line` pointer, then
-     ask a rephrased question on the same point in free text. Repeat until understood.
+   - **partial** (right choice, why doesn't hold) or **missed** (wrong choice): explain the point
+     in 2–4 lines with a `file:line` pointer, then ask a rephrased question on the same point in
+     free text. Repeat until understood.
 4. Append one `## examiner · quiz · <done|changes-requested>` block per round to `log.md`:
    each question, the answer as given, and its grade. Answers are stored nowhere else.
 5. When every question ends understood: set `state.quiz` to `passed`, fill

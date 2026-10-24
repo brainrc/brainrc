@@ -6,7 +6,7 @@
     "id": "78",
     "title": "watch 1/4: pr_status connector operation",
     "url": "https://github.com/bxker/ai-config/issues/78",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/84"
   },
   "slug": "078-pr-status-connector",
   "branch": "078-pr-status-connector",
@@ -15,7 +15,7 @@
   "size": "standard",
   "mode": "subagent",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -165,7 +165,8 @@
       "max_width": 4,
       "task_minutes": 8.2,
       "wall_minutes": 3.5
-    }
+    },
+    "done_at": "2026-10-24T15:39:31Z"
   },
   "living": [
     "ticket-connectors",

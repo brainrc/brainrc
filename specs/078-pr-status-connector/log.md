@@ -43,3 +43,6 @@ Wave 1 start: T1-T4 in worktrees.
 
 ## engine · deliver gate (stack) · approved
 Campaign gh:77 Deliver gate approved; child 1 delivers now.
+
+## engine · deliver · done 2026-10-24T15:39:31Z
+Pushed 078-pr-status-connector; PR #84; commented on #78; retro.md written; stage done.

@@ -17,7 +17,7 @@ Run at 2026-10-24T04:08:12Z on commit `84c0b9c`.
 | AC1 | `agents/examiner.md`: frontmatter `name: examiner`, `tools: Read, Grep, Glob`; Questions section lists the 4 kinds and the `file:line` per question, no answers; handoff under 150 words | pass |
 | AC2 | `SKILL.md` Deliver stage step 0 and Run step 4; `lifecycle.md` stage 6 row, details, and § Understand quiz (quiz before the gate, early `approve` refused and not recorded) | pass |
 | AC3 | `lifecycle.md` § Understand quiz step 1 and `examiner.md` Questions: 1 / 2 / 3–5, plus 1 `risk` per trigger; "Every size runs it", unattended runs wait | pass |
-| AC4 | `lifecycle.md` § Understand quiz step 3: pop-up with 3–4 shuffled choices plus a one-line why, a missing why asked for before any feedback, pick and why graded together; partial or missed → explanation with `file:line` and a free-text rephrased re-ask; passes only when all are understood (revised in fb82aac, f5790b4) | pass |
+| AC4 | `lifecycle.md` § Understand quiz step 3: multiple-choice pop-up with 3–4 shuffled choices; a right pick is understood, a wrong pick gets an explanation with `file:line` and a rephrased question with fresh choices; passes only when all are understood (revised at the owner's request in fb82aac, then 2e09910) | pass |
 | AC5 | `state.md` example and `metrics.understanding` row define `asked`, `first_try`, `after_explanation`, `rounds` | pass |
 | AC6 | `templates/retro.md` Understanding row (asked / first try / after explanation / rounds) | pass |
 | AC7 | `templates/pr-body.md` § Check your understanding, questions only | pass |

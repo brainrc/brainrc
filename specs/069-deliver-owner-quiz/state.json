@@ -195,6 +195,26 @@
       ],
       "review": "batch",
       "commit": "f5790b4 07b6ac2"
+    },
+    {
+      "id": "F4",
+      "title": "Multiple choice only (owner request at Deliver)",
+      "agent": "implementer",
+      "status": "review",
+      "attempts": 1,
+      "files": [
+        "skills/spec-agent/references/lifecycle.md",
+        "skills/spec-agent/SKILL.md",
+        "docs/spec-agent.md",
+        "changelog.d/069-deliver-owner-quiz.md",
+        "skills/spec-agent/references/state.md",
+        "specs/living/deliver-gate.md"
+      ],
+      "criteria": [
+        "AC4"
+      ],
+      "review": "batch",
+      "commit": "2e09910"
     }
   ],
   "blocked": null,
@@ -221,14 +241,14 @@
     "gate_rework": {
       "spec": 0,
       "plan": 0,
-      "deliver": 0
+      "deliver": 1
     },
     "reviews": {
       "total": 2,
       "first_pass": 1
     },
     "retries": 0,
-    "interventions": 1
+    "interventions": 2
   },
   "review_context": "fresh",
   "living": [

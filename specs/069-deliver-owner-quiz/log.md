@@ -152,3 +152,10 @@ Q5 · what-if · SKILL.md:95 · /spec-approve before the quiz passes? a) recorde
 Q1 why: "Because we require a written answer not just multiple choice, it was a spec decision" · grade: missed (wrong pick; the examiner never grades)
 Explained: examiner.md:30 bars the examiner from grading; the engine grades pick and why together. lifecycle.md:100 asks for a missing why first because feedback on the pick would reveal it was right, and the why could then be reverse-engineered.
 Q1b (rephrased, free text) · why · lifecycle.md:100 · asked
+
+## engine · deliver · changes-requested
+2026-10-24T15:07:41Z
+
+**Did:** Owner asked for multiple choice only (pick-plus-why was too much friction). F4 (2e09910) changes AC4, a non-goal, and the deliver-gate living requirement again. The diff changed, so `state.quiz` is back to `pending`. The round above is superseded.
+
+**Next:** re-review F4, re-run the examiner

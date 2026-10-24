@@ -186,3 +186,15 @@ Q5 · why · lifecycle.md:110 · approve before the quiz passes? a) refused, not
 **Findings:** none open
 
 **Next:** ask Q1–Q5
+
+## examiner · quiz · done
+2026-10-24T15:12:33Z
+
+**Did:** Q1 pick: "Examiner has no Bash" · understood (first try)
+Q2 pick: "Back to pending, reruns" · understood (first try)
+Q3 pick: "After the batch gate" · missed
+Explained: campaign.md:77, one quiz over the combined batch diff, sized by the largest member, runs *before* the batch Deliver gate opens; after approval is too late, since outward actions follow at once.
+Q3b (fresh choices) · where · campaign.md:77 · asked
+Q3b pick: "2 per member, 8 total" · missed
+Explained: one quiz, not one per member; size from the largest member (standard → 3–5); before the gate, not as PRs open (campaign.md:77–78).
+Q3c (fresh choices) · where · campaign.md:77 · asked

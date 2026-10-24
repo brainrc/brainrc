@@ -37,3 +37,6 @@ T1 52420f5, T2 5485f17, T3 c04d9e3. 342 OK, validate OK. Wave 2: T4, T5, T6.
 
 ## implementer · T4 · done
 **Did:** WatchMergedCaseTest (pass + 7 failing variants); sandbox-007.toml; ticket 010; README. **Evidence:** red 6/8 on assertions; 350 OK; validate OK.
+
+## implementer · T6 · done
+**Did:** efficiency.md columns + schema 2; roadmap watch → Done; post-deliver.md status, sections, step 5 done; spec-agent.md sentence; changelog fragment. **Evidence:** validate OK; 342 OK. **Open issues:** schema_version 2 lands with T5 (same wave); batched review checks doc vs JSON field names.

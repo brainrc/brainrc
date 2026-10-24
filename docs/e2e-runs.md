@@ -16,6 +16,10 @@ no output), and the fourth answer was understood. The Deliver gate was presented
 only after that. `metrics.understanding`: 2 asked, 0 first try, 2 after explanation, 7 rounds.
 The PR body listed both questions without answers.
 
+This run used free-text answers, before the quiz became multiple choice in the same PR; the
+`partial` grade above no longer exists. The multiple-choice format was first used on #69's own
+Deliver quiz.
+
 **Open:** `deliver-diff.patch` also held the ticket file's status line. The examiner skipped it on
 its own, but the patch could leave ticket files out.
 

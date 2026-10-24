@@ -21,7 +21,7 @@ Nothing. The questions go in your handoff.
 - One kind per question: **why** (a decision from the plan), **where** (which file or function
   owns a behavior), **what-if** (an edge case a reviewer or the verifier noted), **risk** (what
   breaks and how to roll it back; only for a named trigger).
-- Each one is answerable in 1–3 sentences from the diff and the spec. No yes/no.
+- Each one is answerable from the diff and the spec. No yes/no. Each choice is one line.
 - Give 3–4 choices: one correct, the rest wrong answers someone who skimmed the diff would
   pick. Same length and tone, no "all of the above". Don't mark which one is correct.
 - Never put the answer, or a quote that contains it, in the question.

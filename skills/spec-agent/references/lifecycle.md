@@ -100,7 +100,7 @@ There is no skip.
    - **understood**: the right choice.
    - **missed**: a wrong choice. Explain the point in 2–4 lines with a `file:line` pointer, then
      ask a rephrased question on the same point with fresh choices (no choice reused, in a new
-     order). Repeat until understood.
+     order, checked as in step 2). Repeat until understood.
 4. Append one `## examiner · quiz · <done|changes-requested>` block per round to `log.md`:
    each question, the answer as given, and its grade. Answers are stored nowhere else.
 5. When every question ends understood: set `state.quiz` to `passed`, fill

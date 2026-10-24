@@ -22,3 +22,6 @@
 - Finding: engine error in child 3 (misread worktree status, overwrote T1 edits; recovered by re-apply).
 
 ## 2026-10-24T15:09:42Z · child 4 gh:81 verified; stack Deliver gate presented
+
+## 2026-10-24T15:39:42Z · stack Deliver gate approved
+- gh:78 delivered: PR #84 (comment on #78). gh:79, gh:80, gh:81 waiting. Next: after #84 merges, re-run `/work --campaign gh:77` to release gh:79.

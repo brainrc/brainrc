@@ -25,3 +25,6 @@ Wave 1 start: T1, T2, T3.
 
 ## implementer · T1 · done
 **Did:** watch.md § Merged or closed; state/lifecycle fields; SKILL.md pr_opened_at; retro After delivery skeleton. 147 lines (over ~140). **Evidence:** validate OK; 335 OK (docs only). **Next:** review (each).
+
+## code-reviewer · T1 · changes-requested
+**Findings:** HIGH retro After delivery skeleton lacks CI failures/review rounds/reviewer catches (AC7); HIGH worktree cleanup not failure-safe; MEDIUM "done (abandoned)" text; MEDIUM name each regressing criterion + follow-up body; MEDIUM regression beats unverified; MEDIUM pending tasks/gate run before merged/closed check (inherited); LOW stale lifecycle note; LOW long SKILL line. **Next:** T1 attempt 2; engine decision: merged/closed preempts pending C/R-tasks and Push gate.

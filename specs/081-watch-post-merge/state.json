@@ -38,8 +38,8 @@
       "id": "T1",
       "title": "Engine: Merged or closed in watch.md, state/lifecycle fields, pr_opened_at at link_pr, retro skeleton",
       "agent": "implementer",
-      "status": "review",
-      "attempts": 1,
+      "status": "in_progress",
+      "attempts": 2,
       "files": [
         "skills/spec-agent/references/watch.md",
         "skills/spec-agent/references/state.md",
@@ -195,10 +195,10 @@
       "plan": 0,
       "deliver": 0
     },
-    "retries": 0,
+    "retries": 1,
     "reviews": {
       "first_pass": 1,
-      "total": 1
+      "total": 2
     },
     "waves": {
       "count": 1,

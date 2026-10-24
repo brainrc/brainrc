@@ -10,3 +10,6 @@ Recommended answers to Q1-Q3 folded into Open questions.
 
 ## architect · plan · done
 **Did:** plan.md (71 lines), 6 tasks in 2 waves. **Open issues:** pr_status optional merged_at/merge_commit_sha; --json schema_version 1→2; sandbox-007 graded on a synthetic folder; Total min now includes merge wait (follow-up). **Next:** Plan gate.
+
+## engine · plan gate · approved 2026-10-24T14:50:04Z
+Wave 1 start: T1, T2, T3.

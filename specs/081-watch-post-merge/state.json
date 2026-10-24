@@ -15,10 +15,10 @@
   "size": "standard",
   "mode": "subagent",
   "delivery": "normal",
-  "stage": "plan",
+  "stage": "implement",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [
@@ -38,8 +38,8 @@
       "id": "T1",
       "title": "Engine: Merged or closed in watch.md, state/lifecycle fields, pr_opened_at at link_pr, retro skeleton",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "skills/spec-agent/references/watch.md",
         "skills/spec-agent/references/state.md",
@@ -58,14 +58,15 @@
         "AC10"
       ],
       "review": "each",
-      "wave": 1
+      "wave": 1,
+      "started_at": "2026-10-24T14:50:04Z"
     },
     {
       "id": "T2",
       "title": "Optional merged_at/merge_commit_sha in pr_status contract, gh mapping, merged fixture",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "skills/spec-agent/references/connectors.md",
         "skills/ticket-github/SKILL.md",
@@ -77,14 +78,15 @@
         "AC9"
       ],
       "review": "each",
-      "wave": 1
+      "wave": 1,
+      "started_at": "2026-10-24T14:50:04Z"
     },
     {
       "id": "T3",
       "title": "RunRecord outcome, post_merge, time_to_merge, review_rounds, ci_failures (test first)",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "scripts/retro_metrics.py",
         "tests/test_retro_metrics.py"
@@ -94,7 +96,8 @@
         "AC8"
       ],
       "review": "batch",
-      "wave": 1
+      "wave": 1,
+      "started_at": "2026-10-24T14:50:04Z"
     },
     {
       "id": "T4",
@@ -169,7 +172,8 @@
     "stage_started_at": {
       "intake": "2026-10-21T16:18:38Z",
       "spec": "2026-10-21T16:18:38Z",
-      "plan": "2026-10-21T16:34:11Z"
+      "plan": "2026-10-21T16:34:11Z",
+      "implement": "2026-10-24T14:50:04Z"
     },
     "gates": {
       "spec": {
@@ -177,7 +181,8 @@
         "approved_at": "2026-10-21T16:34:11Z"
       },
       "plan": {
-        "presented_at": "2026-10-21T16:37:15Z"
+        "presented_at": "2026-10-21T16:37:15Z",
+        "approved_at": "2026-10-24T14:50:04Z"
       }
     },
     "gate_rework": {

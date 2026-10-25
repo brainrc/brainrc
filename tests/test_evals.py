@@ -298,6 +298,52 @@ class CampaignCheckTest(unittest.TestCase):
         self.data["members"][2]["status"] = "delivered"
         self.assert_fails("status")
 
+    def stack(self):
+        """Stacked delivery: every PR open, each based on the previous child's branch."""
+        self.data["delivery"] = "stacked"
+        prev = "main"
+        for i, m in enumerate(self.data["members"], 1):
+            m.update(status="delivered", pr=f"https://example.com/pr/{i}", base=prev)
+            prev = m["branch"]
+
+    def test_stacked_campaign_passes(self):
+        self.stack()
+        self.write()
+        code, out = self.check()
+        self.assertEqual(code, 0, out)
+        self.assertIn("stacked", out)
+
+    def test_stacked_member_retargeted_to_main_passes(self):
+        self.stack()
+        self.data["members"][0]["merged"] = True
+        self.data["members"][1].update(base="main", merged=True)
+        self.write()
+        code, out = self.check()
+        self.assertEqual(code, 0, out)
+
+    def test_stacked_member_merged_into_its_stacked_base_fails(self):
+        self.stack()
+        self.data["members"][0]["merged"] = True
+        self.data["members"][1]["merged"] = True  # still based on 005-a: merged into the wrong branch
+        self.assert_fails("merged into '005-a', expected main")
+
+    def test_stacked_member_on_an_unrelated_base_fails(self):
+        self.stack()
+        self.data["members"][2]["base"] = "005-a"
+        self.assert_fails("007-c: base '005-a'")
+
+    def test_stacked_member_without_pr_fails(self):
+        self.stack()
+        self.data["members"][2].update(status="waiting", pr=None)
+        self.assert_fails("007-c")
+
+    def test_check_delivery_overrides_campaign_json(self):
+        self.stack()
+        self.write()
+        self.case.write_text(CAMPAIGN_CASE + 'delivery = "sequential"\n')
+        code, out = self.check()
+        self.assertEqual(code, 1, out)  # all delivered is wrong for sequential
+
 
 CANARY_CASE = '''
 ticket_ref = "local:tickets/001-demo.md"

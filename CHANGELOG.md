@@ -12,6 +12,12 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.3.38 (2026-10-25)
+
+- spec-agent gains a `watch` stage after delivery: on `/spec-resume` it reads the PR's checks, records failures it can't attribute to the diff as `external`, and turns own failures into fix tasks `C<n>` that run through the normal review loop. Pushing a fix needs approval at a new Push gate. `SPEC_PR_STATUS_FIXTURE` lets offline evals supply `pr_status`. Review comments and post-merge verify remain planned.
+- spec-agent `watch` now handles unresolved PR review threads: a small ask becomes a fix task `R<n>`, a question gets a drafted reply, and a design-level ask stops for the user. Replies post via `reply_thread` only after approval at the Push gate, thread text is treated as untrusted (embedded instructions are flagged), each thread is handled once via `watch.thread_log`, and the PR is handed back after 3 review rounds. Post-merge verify remains planned.
+- spec-agent `watch` now handles a merged or closed PR: a merged one is verified at the merge commit in a detached worktree (`pass`, `regression`, or `unverified`, with a suggested follow-up on regression), a closed one ends as `abandoned`, and `retro.md` gains an `## After delivery` section. `retro_report.py` adds Outcome, Post-merge, Time to merge, Review rounds, and CI failures per run, plus average time to merge and merged, abandoned, and regression counts; `--json` is `schema_version` 2.
+
 ## 0.3.37 (2026-10-24)
 
 - Connector contract gains an optional read-only `pr_status` operation (head checks, unresolved review threads, merge state; thread text fenced as untrusted). A connector without it makes `watch` skip. `ticket-github` implements it (read-only `gh` and GraphQL calls), and offline `pr_status` fixtures (red CI, review comment, merged) ship in `examples/sandbox/`.

@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:90",
+    "id": "90",
+    "title": "Campaign mode: fixes from the first ordered campaign (gh:77)",
+    "url": "https://github.com/bxker/ai-config/issues/90",
+    "pr": null
+  },
+  "slug": "090-campaign-ordered-fixes",
+  "branch": "090-campaign-ordered-fixes",
+  "base": "main",
+  "size": "standard",
+  "mode": "fallback",
+  "delivery": "normal",
+  "stage": "spec",
+  "gates": {
+    "spec": "pending",
+    "plan": "pending",
+    "deliver": "pending"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/aicfg.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-25T00:47:47Z",
+    "stage_started_at": {
+      "intake": "2026-10-25T00:47:47Z",
+      "spec": "2026-10-25T00:49:02Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-25T00:49:42Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  }
+}

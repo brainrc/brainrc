@@ -55,17 +55,29 @@ def settings_change(m: SettingsMerge) -> tuple[str, dict | None]:
     return ("ok" if merged == current else "merge"), merged
 
 
-def write_settings(dest: Path, merged: dict) -> None:
-    replace_file(dest, json.dumps(merged, indent=2) + "\n")
+class FileChanged(Exception):
+    """The file changed after apply read it: a running harness wrote it meanwhile."""
 
 
-def replace_file(dest: Path, text: str) -> None:
+def read_current(path: Path) -> str | None:
+    """The file's text as apply first saw it (None: absent), for replace_file's `before`."""
+    return path.read_text() if path.is_file() else None
+
+
+def write_settings(dest: Path, merged: dict, before: str | None) -> None:
+    replace_file(dest, json.dumps(merged, indent=2) + "\n", before)
+
+
+def replace_file(dest: Path, text: str, before: str | None) -> None:
     """Back up, prune old backups, then replace atomically so a crash never leaves half a file.
 
     A symlinked dest is written through to its target, which keeps the link. The target's mode is
-    kept on the new file and the backup.
+    kept on the new file and the backup. Raises FileChanged, writing nothing, when the file no
+    longer holds `before`.
     """
     target = dest.resolve()  # non-strict: a dangling link resolves to the file it would create
+    if read_current(target) != before:
+        raise FileChanged(dest)
     target.parent.mkdir(parents=True, exist_ok=True)
     mode = stat.S_IMODE(target.stat().st_mode) if target.exists() else None
     if mode is not None:
@@ -74,7 +86,7 @@ def replace_file(dest: Path, text: str) -> None:
         backups = sorted(target.parent.glob(f"{target.name}.bak-aicfg-*"))
         for old in backups[:-BACKUPS_KEPT]:
             old.unlink()
-    tmp = target.with_name(f".{target.name}.aicfg-tmp")
+    tmp = target.with_name(f".{target.name}.aicfg-tmp-{os.getpid()}")
     _create(tmp, text.encode(), mode)
     os.replace(tmp, target)
 

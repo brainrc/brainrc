@@ -227,9 +227,9 @@ def mcp_change(m: McpSync) -> tuple[str, str | None, list[str], list[str]]:
     return ("ok" if new == text else "merge"), new, conflicts, owned
 
 
-def write_mcp(m: McpSync, text: str, owned: list[str]) -> None:
+def write_mcp(m: McpSync, text: str, owned: list[str], before: str | None) -> None:
     """Back up, then replace atomically, as for settings files; record what ai-config owns."""
-    replace_file(m.dest, text)
+    replace_file(m.dest, text, before)
     record_owned(m, owned)
 
 

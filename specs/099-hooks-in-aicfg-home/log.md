@@ -27,3 +27,18 @@
 **Open issues:** 1 open question (copy only when installed vs always).
 
 **Next:** Spec gate
+
+## analyst · spec (revision 1) · done
+2026-10-25T23:20:37Z
+
+**Did:** Architect found Cursor's guard runs Claude's guards from `<root>/claude/hooks`; per-harness copies would leave Cursor unguarded when Claude is disabled. AC1: copy every core hooks dir. AC6: remove the copy only when no harness with hooks is enabled.
+
+**Evidence:**
+- overrides/cursor/hooks/guard.py:17 `HOOKS = Path(__file__).resolve().parent.parent.parent / "claude" / "hooks"`
+- `living_specs.py check` → OK
+
+**Changed files:** specs/099-hooks-in-aicfg-home/spec.md
+
+**Open issues:** none
+
+**Next:** Spec gate (again)

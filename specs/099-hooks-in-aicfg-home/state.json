@@ -39,15 +39,16 @@
     "started_at": "2026-10-25T23:17:57Z",
     "stage_started_at": {
       "intake": "2026-10-25T23:17:57Z",
-      "spec": "2026-10-25T23:17:57Z"
+      "spec": "2026-10-25T23:17:57Z",
+      "plan": "2026-10-25T23:19:49Z"
     },
     "gates": {
       "spec": {
-        "presented_at": "2026-10-25T23:18:27Z"
+        "presented_at": "2026-10-25T23:20:37Z"
       }
     },
     "gate_rework": {
-      "spec": 0,
+      "spec": 1,
       "plan": 0,
       "deliver": 0
     },

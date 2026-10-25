@@ -23,9 +23,10 @@ they must not depend on a versioned package path.
 - Updating the copy automatically on upgrade: the copy is refreshed by the next `apply`.
 
 ## Acceptance criteria
-- **AC1**: Given an installed `aicfg` (core under `_core`), when `aicfg apply` runs, then each
-  harness's core hooks are copied to `$AICFG_HOME/hooks/core/<harness>/hooks/`, and the
-  harness's `hooks_dir` link points at that copy, not into the package.
+- **AC1**: Given an installed `aicfg` (core under `_core`), when `aicfg apply` runs, then every
+  core `overrides/<harness>/hooks/` dir is copied to `$AICFG_HOME/hooks/core/<harness>/hooks/`
+  (all of them, since Cursor's guard runs Claude's guards from the sibling dir), and each enabled
+  harness's `hooks_dir` link points at its copy, not into the package.
 - **AC2**: Given that install, when the package directory is removed or moved (an upgrade to a
   new Python), then the Claude Code and Cursor guard commands still run the guards: a risky
   Bash call still gets `ask` (Claude) / `deny` (Cursor).
@@ -38,7 +39,8 @@ they must not depend on a versioned package path.
   `aicfg apply` runs after this change, then the link is re-pointed at the copy (reported as an
   update, not a conflict), and `aicfg doctor` reports no problem with it.
 - **AC6**: Given a harness is disabled, when `aicfg apply` runs, then its hooks link is removed
-  as today, and its copy under `$AICFG_HOME/hooks/` is removed too.
+  as today. Given every harness with a `hooks_dir` is disabled, then `$AICFG_HOME/hooks/core/`
+  is removed too.
 
 ## Constraints
 - Stdlib only. `aicfg status` stays read-only (no copy, no `$AICFG_HOME` writes).
@@ -52,10 +54,10 @@ they must not depend on a versioned package path.
 #### ADDED: Installed hooks live in AICFG_HOME
 When `aicfg` runs from an installed package, `aicfg apply` SHALL copy core's hooks to
 `$AICFG_HOME/hooks/core/<harness>/hooks/` and link `hooks_dir` there, refresh the copy when the
-package's hooks change, and remove it when the harness is disabled. From a checkout, hooks SHALL
+package's hooks change, and remove it when no harness with hooks is enabled. From a checkout, hooks SHALL
 stay linked into the checkout. (AC1, AC2, AC3, AC4, AC5, AC6)
 
 ## Open questions
-1. Copy only when installed (default: AC1, AC4), or always, checkout included? *Always copying
-   also survives a moved checkout, but contributors would have to re-run `apply` after editing a
-   guard to test it in their harness.*
+None. Resolved at the Spec gate: Q1 copy only when installed (AC1, AC4).
+Revision 1 (found at plan): the copy holds every core hooks dir, because Cursor's guard runs
+Claude's guards from `<root>/claude/hooks`; AC1 and AC6 changed to match.

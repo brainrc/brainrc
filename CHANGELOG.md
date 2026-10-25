@@ -12,6 +12,11 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.3.39 (2026-10-25)
+
+- Ordered campaigns: the Deliver gate picks `sequential` or `stacked` delivery, and a retarget rule makes every child PR merge with base `main` (gh:77's stacked PRs merged into their stacked bases). Adds member status `verified`, a single home for `campaign.json`, and a `stacked` mode for the `campaign` eval check.
+- spec-agent: `worktree_fence.py` checks a wave task's changed paths against its `files` and the main tree before landing, and status checks use `git -C <worktree>`. The architect puts a task that links to another task's new file in a later wave. `SKILL.md` says when the engine may edit an approved artifact itself.
+
 ## 0.3.38 (2026-10-25)
 
 - spec-agent gains a `watch` stage after delivery: on `/spec-resume` it reads the PR's checks, records failures it can't attribute to the diff as `external`, and turns own failures into fix tasks `C<n>` that run through the normal review loop. Pushing a fix needs approval at a new Push gate. `SPEC_PR_STATUS_FIXTURE` lets offline evals supply `pr_status`. Review comments and post-merge verify remain planned.

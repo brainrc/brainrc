@@ -1,6 +1,6 @@
 # Plan: Lock apply and use unique tmp names
 
-Spec: [spec.md](spec.md) · Status: draft
+Spec: [spec.md](spec.md) · Status: approved
 
 ## Callouts
 - **New dependencies:** none (stdlib `fcntl`, `msvcrt` on Windows)

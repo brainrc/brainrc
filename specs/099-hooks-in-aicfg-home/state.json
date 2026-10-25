@@ -15,7 +15,7 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "implement",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -95,6 +95,24 @@
         "T2"
       ],
       "commit": "78f56dd"
+    },
+    {
+      "id": "F1",
+      "title": "Correct install.md upgrade note",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "docs/install.md"
+      ],
+      "criteria": [
+        "AC1"
+      ],
+      "review": "batch",
+      "after": [
+        "T3"
+      ],
+      "commit": "214add7"
     }
   ],
   "blocked": null,
@@ -104,7 +122,8 @@
       "intake": "2026-10-25T23:17:57Z",
       "spec": "2026-10-25T23:17:57Z",
       "plan": "2026-10-25T23:19:49Z",
-      "implement": "2026-10-25T23:25:55Z"
+      "implement": "2026-10-25T23:25:55Z",
+      "document": "2026-10-25T23:45:41Z"
     },
     "gates": {
       "spec": {
@@ -122,10 +141,14 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 4,
-      "first_pass": 4
+      "total": 6,
+      "first_pass": 5
     },
-    "retries": 0,
+    "retries": 1,
     "interventions": 0
-  }
+  },
+  "review_context": "shared",
+  "living": [
+    "aicfg-apply"
+  ]
 }

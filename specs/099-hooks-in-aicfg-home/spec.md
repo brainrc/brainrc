@@ -17,8 +17,8 @@ they must not depend on a versioned package path.
 
 ## Non-goals
 - Skills, agents, commands, and the OpenCode `plugin.js` links into the package. They also
-  dangle after a Python change, but losing them blocks nothing; `doctor` and `apply` fix them.
-  A follow-up can copy those too.
+  dangle after a Python change, but losing them blocks nothing; `doctor` lists them with the
+  `rm` that clears them (`apply` reports them as `CONFLICT`). A follow-up can fix that.
 - Pack hooks (packs live in local dirs or `$AICFG_HOME` fetches, not in the package).
 - Updating the copy automatically on upgrade: the copy is refreshed by the next `apply`.
 

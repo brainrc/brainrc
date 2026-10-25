@@ -21,3 +21,6 @@
 ## 2026-10-25T23:17:24Z · child 3 gh:98 verified
 - Drafts ready. Child 4 gh:99 starts on 099-hooks-in-aicfg-home from 098-hooks-fail-open.
 - Finding: a fragment change makes the generated plugin manifests stale, and plans need to fence them (and tests that pin hook commands) in. Candidate architect rule.
+
+## 2026-10-25T23:46:44Z · child 4 gh:99 verified; stack Deliver gate presented
+- Finding: a real 3.12→3.13 upgrade shows skill/agent links into the old venv as CONFLICT (pre-existing); follow-up.

@@ -150,3 +150,64 @@
 **Open issues:** none
 
 **Next:** batched review (T3)
+
+## code-reviewer · batch (T3) · done
+2026-10-25T23:41:00Z
+
+**Did:** Reviewed T3 against AC1. review_context: shared.
+
+**Findings:**
+- HIGH docs/install.md: "Run `aicfg apply` after upgrading to … re-link anything else" is false. The verifier's real 3.12 → 3.13 run shows 140 CONFLICT for skill/agent links into the old venv → fix task F1.
+
+**Open issues:** none
+
+**Next:** F1
+
+## implementer · F1 · done
+2026-10-25T23:41:00Z
+
+**Did:** install.md now says apply refreshes the hooks copy, and that other links into the old Python path show as CONFLICT, with doctor listing the `rm` for each. Spec non-goal wording corrected to match (spec change after approval; list at Deliver gate).
+
+**Evidence:**
+- `python3 scripts/aicfg.py validate` → OK (docs-only)
+
+**Changed files:** docs/install.md, specs/099-hooks-in-aicfg-home/spec.md, specs/099-hooks-in-aicfg-home/plan.md
+
+**Open issues:** follow-up: treat a dangling link into an old `_core` path as `update`, not `conflict`.
+
+**Next:** re-review F1, then verify
+
+## code-reviewer · F1 · done
+2026-10-25T23:45:41Z
+
+**Did:** Re-reviewed the F1 diff only. **Findings:** none. **Next:** verify
+
+## verifier · verify · done
+2026-10-25T23:45:41Z
+
+**Did:** Suite and validate, 14 targeted tests, a real pip-venv upgrade from 3.12 to 3.13 with the old venv removed. 6/6 criteria pass.
+
+**Evidence:**
+- `python3 -m unittest discover -s tests` → 392 passed
+- `python3 scripts/aicfg.py validate` → OK
+
+**Changed files:** specs/099-hooks-in-aicfg-home/verify.md
+
+**Open issues:** follow-up on dangling non-hook links (see Notes)
+
+**Next:** document
+
+## doc-writer · document · done
+2026-10-25T23:46:44Z
+
+**Did:** Applied the living-spec delta (1 requirement added to aicfg-apply), added changelog.d/099-hooks-in-aicfg-home.md (patch), drafted pr-body.md and ticket-comment.md. Docs were done in T3/F1.
+
+**Evidence:**
+- `living_specs.py apply` → updated specs/living/aicfg-apply.md
+- `python3 scripts/aicfg.py validate` → OK
+
+**Changed files:** specs/living/aicfg-apply.md, changelog.d/099-hooks-in-aicfg-home.md, specs/099-hooks-in-aicfg-home/pr-body.md, specs/099-hooks-in-aicfg-home/ticket-comment.md
+
+**Open issues:** none
+
+**Next:** stack Deliver gate

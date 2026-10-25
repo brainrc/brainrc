@@ -77,3 +77,7 @@ there's no `hooks/` in `$AICFG_HOME`.
   - files: `docs/install.md`
   - criteria: AC1
   - after: T2
+- [ ] **F1** [agent: implementer] Correct install.md: dangling non-hook links after a Python upgrade are CONFLICTs, not re-linked by apply
+  - files: `docs/install.md`
+  - criteria: AC1
+  - after: T3

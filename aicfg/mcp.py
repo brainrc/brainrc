@@ -7,15 +7,13 @@ values. A server the user defined under the same name is left alone and reported
 from __future__ import annotations
 
 import json
-import os
 import re
-import shutil
 import tomllib
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from pathlib import Path
 
-from .config import BACKUPS_KEPT, ConfigError, aicfg_home, expand, load_harnesses
+from .config import ConfigError, aicfg_home, expand, load_harnesses
+from .settings import replace_file
 from .sources import Source
 
 REGISTRY = Path("mcp") / "servers.toml"
@@ -231,15 +229,7 @@ def mcp_change(m: McpSync) -> tuple[str, str | None, list[str], list[str]]:
 
 def write_mcp(m: McpSync, text: str, owned: list[str]) -> None:
     """Back up, then replace atomically, as for settings files; record what ai-config owns."""
-    m.dest.parent.mkdir(parents=True, exist_ok=True)
-    if m.dest.exists():
-        stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-        shutil.copy2(m.dest, m.dest.with_name(f"{m.dest.name}.bak-aicfg-{stamp}"))
-        for old in sorted(m.dest.parent.glob(f"{m.dest.name}.bak-aicfg-*"))[:-BACKUPS_KEPT]:
-            old.unlink()
-    tmp = m.dest.with_name(f".{m.dest.name}.aicfg-tmp")
-    tmp.write_text(text)
-    os.replace(tmp, m.dest)
+    replace_file(m.dest, text)
     record_owned(m, owned)
 
 

@@ -2,7 +2,9 @@
 import json
 import os
 import shutil
+import stat
 import tempfile
+import unittest
 import tomllib
 from pathlib import Path
 
@@ -157,6 +159,32 @@ class McpSyncTest(McpCase):
         data = json.loads(self.claude.read_text())
         self.assertEqual(data["userID"], "u")
         self.assertEqual(set(data["mcpServers"]), {"mine", "gh"})
+
+    @unittest.skipIf(os.name == "nt", "POSIX permission bits")
+    def test_a_private_claude_json_stays_private(self):
+        self.claude.write_text(json.dumps({"userID": "u"}))
+        self.claude.chmod(0o600)
+        self.registry(GH)
+        self.apply()
+        self.assertIn("gh", json.loads(self.claude.read_text())["mcpServers"])
+        self.assertEqual(stat.S_IMODE(self.claude.stat().st_mode), 0o600)
+
+    def test_a_symlinked_claude_json_stays_linked(self):
+        dotfiles = self.home / "dotfiles"
+        dotfiles.mkdir()
+        target = dotfiles / "claude.json"
+        target.write_text(json.dumps({"userID": "u"}))
+        target.chmod(0o600)
+        self.claude.symlink_to(target)
+        self.registry(GH)
+        self.apply()
+        self.assertTrue(self.claude.is_symlink())
+        self.assertEqual(self.claude.readlink(), target)
+        data = json.loads(target.read_text())
+        self.assertEqual(data["userID"], "u")
+        self.assertIn("gh", data["mcpServers"])
+        if os.name != "nt":
+            self.assertEqual(stat.S_IMODE(target.stat().st_mode), 0o600)
 
     def test_a_users_own_server_of_the_same_name_is_never_overwritten(self):
         self.claude.write_text(json.dumps({"mcpServers": {"gh": {"type": "stdio", "command": "my-gh"}}}))

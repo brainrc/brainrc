@@ -112,6 +112,43 @@
         "T1"
       ],
       "commit": "3ea810c"
+    },
+    {
+      "id": "F1",
+      "title": "Fence checks rename sources; eval rejects unknown delivery",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "skills/spec-agent/scripts/worktree_fence.py",
+        "tests/test_worktree_fence.py",
+        "scripts/evals.py",
+        "tests/test_evals.py"
+      ],
+      "criteria": [
+        "AC7",
+        "AC9"
+      ],
+      "review": "batch",
+      "commit": "3932fff",
+      "red": "assertion"
+    },
+    {
+      "id": "F2",
+      "title": "Campaign state home writes, all-verified resume, merged scope",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "skills/spec-agent/references/campaign.md",
+        "skills/spec-agent/references/state.md"
+      ],
+      "criteria": [
+        "AC4",
+        "AC5"
+      ],
+      "review": "batch",
+      "commit": "a0e73b3"
     }
   ],
   "blocked": null,
@@ -139,10 +176,11 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
+      "total": 1,
       "first_pass": 0
     },
-    "retries": 0,
+    "retries": 1,
     "interventions": 0
-  }
+  },
+  "review_context": "fresh"
 }

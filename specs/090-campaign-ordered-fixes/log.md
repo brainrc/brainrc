@@ -110,3 +110,53 @@
 **Open issues:** none
 
 **Next:** batched review
+
+## code-reviewer · batch · changes-requested
+2026-10-25T02:13:12Z
+
+**Did:** Fresh-context subagent reviewed 6a586f2..HEAD (specs excluded) against AC1-AC10.
+
+**Evidence:**
+- unittest → 365 passed; validate → OK; fence repro: `git mv README.md src/new.md` with `--files 'src/*'` → OK (wrong)
+
+**Changed files:** none
+
+**Findings:**
+- HIGH worktree_fence.py:33: rename source path skipped → check it for R entries, add test
+- MEDIUM campaign.md:126-129: state home doesn't cover Deliver-gate writes, merged flag, or where resume reads campaign.json → say so
+- MEDIUM state.md:163 / campaign.md:166-168: all members verified → resume presents stack Deliver gate
+- LOW campaign.md:163: merged parenthetical applies to sequential too → limit to stacked
+- LOW evals.py:104: unknown delivery silently sequential → reject
+- LOW worktree_fence.py:41: fnmatch `*` crosses `/` → document
+
+**Open issues:** none
+
+**Next:** F1 (scripts), F2 (docs)
+
+## implementer · F1 · done
+2026-10-25T02:15:23Z
+
+**Did:** Fence adds a rename's source path (HIGH fixed); docstring notes fnmatch `*` crosses `/` (LOW fixed); campaign eval rejects unknown `delivery` (LOW fixed). Two new tests, red on assertions first.
+
+**Evidence:**
+- `python3 -m unittest discover -s tests` → 367 passed
+
+**Changed files:** `skills/spec-agent/scripts/worktree_fence.py`, `tests/test_worktree_fence.py`, `scripts/evals.py`, `tests/test_evals.py`
+
+**Open issues:** none
+
+**Next:** F2
+
+## implementer · F2 · done
+2026-10-25T02:15:23Z
+
+**Did:** campaign.md State home names the stack tip from the Deliver gate on (MEDIUM fixed); all-verified resume presents the Deliver gate in campaign.md and state.md (MEDIUM fixed); `merged: true` limited to stacked (LOW fixed).
+
+**Evidence:**
+- `python3 scripts/aicfg.py validate` → OK; unittest → OK
+
+**Changed files:** `skills/spec-agent/references/campaign.md`, `skills/spec-agent/references/state.md`
+
+**Open issues:** none
+
+**Next:** re-review fix diff

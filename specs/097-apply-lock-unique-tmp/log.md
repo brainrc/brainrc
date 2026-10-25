@@ -99,3 +99,45 @@
 **Open issues:** none
 
 **Next:** batched review (T2, T3)
+
+## code-reviewer · batch (T2, T3) · done
+2026-10-25T20:05:39Z
+
+**Did:** Reviewed T2 and T3 diffs against AC1, AC2, AC5, AC6. review_context: shared (user chose to continue here).
+
+**Findings:**
+- LOW aicfg/cli.py:cmd_update: pack fetches run before the lock → spec non-goal.
+
+**Open issues:** none
+
+**Next:** verify
+
+## verifier · verify · done
+2026-10-25T20:05:39Z
+
+**Did:** Suite and validate once, 6 targeted tests, real two-process lock check on a scratch copy. 6/6 criteria pass.
+
+**Evidence:**
+- `python3 -m unittest discover -s tests` → 378 passed
+- `python3 scripts/aicfg.py validate` → OK
+
+**Changed files:** specs/097-apply-lock-unique-tmp/verify.md
+
+**Open issues:** none
+
+**Next:** document
+
+## doc-writer · document · done
+2026-10-25T20:05:58Z
+
+**Did:** Applied the living-spec delta (2 requirements added to aicfg-apply), added changelog.d/097-apply-lock-unique-tmp.md (patch), drafted pr-body.md and ticket-comment.md. Docs were done in T3.
+
+**Evidence:**
+- `living_specs.py apply` → updated specs/living/aicfg-apply.md
+- `python3 scripts/aicfg.py validate` → OK
+
+**Changed files:** specs/living/aicfg-apply.md, changelog.d/097-apply-lock-unique-tmp.md, specs/097-apply-lock-unique-tmp/pr-body.md, specs/097-apply-lock-unique-tmp/ticket-comment.md
+
+**Open issues:** none
+
+**Next:** child verified; campaign continues with child 3

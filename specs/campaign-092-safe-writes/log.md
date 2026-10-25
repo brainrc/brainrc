@@ -14,3 +14,6 @@
 
 ## 2026-10-25T19:40:36Z · child 1 gh:96 verified
 - Drafts ready; waits for the stack Deliver gate. Child 2 gh:97 starts on 097-apply-lock-unique-tmp from 096-keep-mode-follow-symlinks.
+
+## 2026-10-25T20:05:58Z · child 2 gh:97 verified
+- Drafts ready. Child 3 gh:98 starts on 098-hooks-fail-open from 097-apply-lock-unique-tmp.

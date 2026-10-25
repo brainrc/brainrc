@@ -15,10 +15,10 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "plan",
+  "stage": "implement",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [
@@ -38,12 +38,15 @@
       "id": "T1",
       "title": "Fail-open hook commands",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "files": [
         "overrides/claude/settings.fragment.json",
         "overrides/cursor/settings.fragment.json",
-        "tests/test_hooks.py"
+        "tests/test_hooks.py",
+        "tests/test_aicfg.py",
+        ".claude-plugin/plugin.json",
+        ".cursor-plugin/hooks.json"
       ],
       "criteria": [
         "AC1",
@@ -51,14 +54,16 @@
         "AC3",
         "AC7"
       ],
-      "review": "each"
+      "review": "each",
+      "red": "assertion",
+      "commit": "473559b"
     },
     {
       "id": "T2",
       "title": "Doctor hook check",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "files": [
         "aicfg/doctor.py",
         "tests/test_aicfg.py"
@@ -71,14 +76,16 @@
       "review": "each",
       "after": [
         "T1"
-      ]
+      ],
+      "commit": "bf37324",
+      "red": "compile-only"
     },
     {
       "id": "T3",
       "title": "Troubleshooting entry for blocked tool calls and hook findings",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "files": [
         "docs/troubleshooting.md"
       ],
@@ -88,7 +95,8 @@
       "review": "batch",
       "after": [
         "T2"
-      ]
+      ],
+      "commit": "9b33887"
     }
   ],
   "blocked": null,
@@ -97,7 +105,8 @@
     "stage_started_at": {
       "intake": "2026-10-25T20:06:53Z",
       "spec": "2026-10-25T20:06:53Z",
-      "plan": "2026-10-25T20:08:33Z"
+      "plan": "2026-10-25T20:08:33Z",
+      "implement": "2026-10-25T20:10:31Z"
     },
     "gates": {
       "spec": {
@@ -105,7 +114,8 @@
         "approved_at": "2026-10-25T20:08:33Z"
       },
       "plan": {
-        "presented_at": "2026-10-25T20:09:16Z"
+        "presented_at": "2026-10-25T20:09:16Z",
+        "approved_at": "2026-10-25T20:10:31Z"
       }
     },
     "gate_rework": {
@@ -114,10 +124,10 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
-      "first_pass": 0
+      "total": 4,
+      "first_pass": 4
     },
     "retries": 0,
-    "interventions": 0
+    "interventions": 1
   }
 }

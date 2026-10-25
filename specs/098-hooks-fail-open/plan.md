@@ -1,6 +1,6 @@
 # Plan: Hooks fail open when their file is missing
 
-Spec: [spec.md](spec.md) · Status: draft
+Spec: [spec.md](spec.md) · Status: approved
 
 ## Callouts
 - **New dependencies:** none
@@ -61,7 +61,7 @@ and a safe Bash call. AC1 and AC3: delete the dir, then exit 0 and the expected 
 
 ## Tasks
 - [ ] **T1** [agent: implementer] Fail-open hook commands
-  - files: `overrides/claude/settings.fragment.json`, `overrides/cursor/settings.fragment.json`, `tests/test_hooks.py`
+  - files: `overrides/claude/settings.fragment.json`, `overrides/cursor/settings.fragment.json`, `tests/test_hooks.py`, `tests/test_aicfg.py`, `.claude-plugin/plugin.json`, `.cursor-plugin/hooks.json` (widened at a blocked stop: pinned command strings; manifests regenerated with `aicfg plugin`, never hand-edited)
   - criteria: AC1, AC2, AC3, AC7
   - review: each
 - [ ] **T2** [agent: implementer] Doctor hook check

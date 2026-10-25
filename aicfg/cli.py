@@ -28,11 +28,13 @@ are merged (only entries owned by ai-config are replaced) and backed up first.
 """
 from __future__ import annotations
 
+import os
 import sys
 
 from . import config
 from .config import (
     ConfigError,
+    aicfg_home,
     extensions_file,
     home_extensions_file,
     legacy_instructions,
@@ -57,6 +59,34 @@ CHANGED_HINT = "(changed during apply; close Claude Code and re-run)"
 
 
 def cmd_sync(apply: bool) -> int:
+    """status (apply=False) or apply; apply holds $AICFG_HOME/apply.lock while it runs."""
+    if not apply:
+        return _sync(False)
+    lock = aicfg_home() / "apply.lock"
+    lock.parent.mkdir(parents=True, exist_ok=True)
+    with open(lock, "a") as f:
+        if not _try_lock(f):
+            print(f"ERROR another aicfg apply is running (lock: {tilde(lock)})")
+            print("\nNothing written. Let it finish, then re-run.")
+            return 1
+        return _sync(True)
+
+
+def _try_lock(f) -> bool:
+    """Exclusive and non-blocking. The OS releases it when the file closes or the process dies."""
+    try:
+        if os.name == "nt":
+            import msvcrt
+            msvcrt.locking(f.fileno(), msvcrt.LK_NBLCK, 1)
+        else:
+            import fcntl
+            fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        return False
+    return True
+
+
+def _sync(apply: bool) -> int:
     try:
         pending = [(key, cfg, root) for key, cfg, root in git_packs() if not root.exists()]
     except ConfigError as e:

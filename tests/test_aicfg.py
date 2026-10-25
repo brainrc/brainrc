@@ -269,6 +269,36 @@ class SyncFakeHomeTest(TempRepoCase):
             quiet(aicfg.cmd_sync, True)
         self.assertEqual(names, [f".settings.json.aicfg-tmp-{os.getpid()}"])
 
+    @unittest.skipIf(os.name == "nt", "fcntl")
+    def test_a_second_apply_fails_while_one_holds_the_lock(self):
+        import fcntl
+        lock = self.aicfg_home / "apply.lock"
+        lock.parent.mkdir(parents=True)
+        with open(lock, "a") as held:
+            fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            code, out = quiet(aicfg.cmd_sync, True)
+            status_code, status_out = quiet(aicfg.cmd_sync, False)
+        self.assertEqual(code, 1, out)
+        self.assertIn("another aicfg apply is running", out)
+        self.assertIn("apply.lock", out)
+        self.assertEqual(list(self.home.iterdir()), [])
+        self.assertEqual(list(self.aicfg_home.iterdir()), [lock])
+        self.assertEqual(status_code, 0, status_out)
+        self.assertIn("Dry run", status_out)
+
+    @unittest.skipIf(os.name == "nt", "fcntl")
+    def test_the_lock_is_released_after_apply_even_on_error(self):
+        import fcntl
+        self.assertEqual(quiet(aicfg.cmd_sync, True)[0], 0)
+        with mock.patch("aicfg.cli.plan", side_effect=RuntimeError("boom")):
+            with self.assertRaises(RuntimeError):
+                quiet(aicfg.cmd_sync, True)
+        with open(self.aicfg_home / "apply.lock", "a") as f:
+            fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)  # raises if a run leaked the lock
+            fcntl.flock(f, fcntl.LOCK_UN)
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+
     def test_settings_changed_during_apply_are_left_alone(self):
         settings = self.home / ".claude/settings.json"
         settings.parent.mkdir()

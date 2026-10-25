@@ -1,6 +1,6 @@
 # Spec: Copy hooks into AICFG_HOME
 
-Ticket: gh:99 · Size: standard · Status: draft
+Ticket: gh:99 · Size: standard · Status: approved
 
 ## Problem
 With `aicfg` installed as a package (`uv tool install` / `pipx`), the hooks dir link points into

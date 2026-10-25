@@ -42,3 +42,16 @@
 **Open issues:** none
 
 **Next:** Spec gate (again)
+
+## architect · plan · done
+2026-10-25T23:23:39Z
+
+**Did:** Wrote plan.md: 3 tasks. `Link.copy` (src overrides, dest $AICFG_HOME/hooks/core) for core hooks when installed; state "update" when the copy is stale; cli copies all core hook dirs via temp dir + rename before linking; prune the copy when no link needs it.
+
+**Evidence:** read-only inspection of plan.py (Link, plan, _managed_target), cli.py apply loop, doctor._link_finding, InstalledModeTest.
+
+**Changed files:** specs/099-hooks-in-aicfg-home/plan.md
+
+**Open issues:** none. Callouts: new $AICFG_HOME/hooks/core; apply may rmtree it.
+
+**Next:** Plan gate

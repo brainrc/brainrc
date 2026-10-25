@@ -15,9 +15,9 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "spec",
+  "stage": "plan",
   "gates": {
-    "spec": "pending",
+    "spec": "approved",
     "plan": "pending",
     "deliver": "pending"
   },
@@ -33,7 +33,65 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Installed hooks copied to AICFG_HOME and kept current",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "aicfg/config.py",
+        "aicfg/plan.py",
+        "aicfg/cli.py",
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5"
+      ],
+      "review": "each"
+    },
+    {
+      "id": "T2",
+      "title": "Remove the copy when no harness with hooks is enabled",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "aicfg/plan.py",
+        "aicfg/cli.py",
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC6"
+      ],
+      "review": "each",
+      "after": [
+        "T1"
+      ]
+    },
+    {
+      "id": "T3",
+      "title": "Install docs: where installed hooks live",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "docs/install.md"
+      ],
+      "criteria": [
+        "AC1"
+      ],
+      "review": "batch",
+      "after": [
+        "T2"
+      ]
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-25T23:17:57Z",
@@ -44,7 +102,11 @@
     },
     "gates": {
       "spec": {
-        "presented_at": "2026-10-25T23:20:37Z"
+        "presented_at": "2026-10-25T23:20:37Z",
+        "approved_at": "2026-10-25T23:23:39Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-25T23:23:39Z"
       }
     },
     "gate_rework": {

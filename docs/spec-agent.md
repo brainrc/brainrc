@@ -64,9 +64,11 @@ Two shapes, detected from the template check plus the children's depends-on link
   batches with one Deliver gate per batch.
 - **ordered**: different or dependent children, built in dependency order. Dependencies come from
   the connector (`api`, then `body`, then `frontmatter`; else epic order). Each child gets its own
-  Spec and Plan gates. One Deliver gate covers all children, then PRs open sequentially: only the
-  first at once. Resuming (`/work --campaign` or `/spec-resume`) opens the next after its
-  predecessor's PR is merged.
+  Spec and Plan gates. One Deliver gate covers all children and picks the delivery: `sequential`
+  (only the first PR opens; resuming with `/work --campaign` or `/spec-resume` opens the next after
+  its predecessor merges) or `stacked` (all PRs open at once, each based on the previous child's
+  branch). Either way a child PR merges only with base `main`: on resume after its predecessor
+  merges, `main` is merged into its branch and a stacked PR is retargeted to `main`.
 
 To express dependencies, use GitHub issue dependencies or a `Depends on #N` line in the child's
 body. For local tickets, use `depends_on: [local:...]` in the child's frontmatter, and list the

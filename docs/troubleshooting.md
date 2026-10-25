@@ -84,6 +84,21 @@ Close Claude Code before `apply` changes MCP servers: it rewrites `~/.claude.jso
    servers it added (backing each file up first). Your other settings, hooks, and servers stay.
 3. Delete the repo.
 
+## Every tool call is blocked, or `doctor` says `hook missing`
+
+In older installs, a hook whose script had gone (checkout moved or deleted, package removed, Python
+upgraded) exited 2, which Claude Code treats as a block on every tool call. Run `apply` to
+rewrite the hook commands: they now skip a missing script (Cursor's reply "allow"), so the
+harness keeps working. That also means the guard is off until it's fixed, so `doctor` checks
+each one:
+
+| Finding | Fix |
+|---|---|
+| `<harness>: hook missing: <path>` | Run `apply` from the checkout or install you use now; it re-links the hooks dir. |
+| `<harness>: hook <path> exits <n> on an empty payload` | Run `python3 <path>` and read the error (often a Python too old for the guard), then `apply`. |
+| `<harness>: hook <path> timed out after <n>s` | Run it by hand to see where it hangs. |
+| `<harness>: hook <path> can't run: python3 is not on PATH` | Install Python 3, or put `python3` on the PATH the harness starts with. |
+
 ## A guard hook blocked something safe, or missed something risky
 
 The Claude Code hooks match command patterns ([guardrails.md](guardrails.md)), so both happen.

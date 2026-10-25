@@ -1,6 +1,6 @@
 # Spec: Lock apply and use unique tmp names
 
-Ticket: gh:97 · Size: standard · Status: draft
+Ticket: gh:97 · Size: standard · Status: approved
 
 ## Problem
 Two `aicfg apply` runs at once (two terminals, a shell hook plus a manual run) read the same
@@ -58,9 +58,4 @@ non-zero with a clear message instead of writing. Read-only commands SHALL NOT t
 whose content changed after apply read it; it warns and exits non-zero instead. (AC3, AC4)
 
 ## Open questions
-1. Second apply: **fail fast** (analyst default, AC1) or wait for the lock (with a timeout)?
-   *Matters for scripted applies (a shell hook), which would rather wait.* Fail fast is simpler
-   and the message tells the user what to do.
-2. File changed during apply: **skip it and exit non-zero** (default, AC4), or re-read and
-   re-merge once? *Re-merging recovers automatically, but can loop against a harness that writes
-   constantly; skipping is predictable.*
+None. Resolved at the Spec gate: Q1 fail fast (AC1); Q2 skip the changed file and exit non-zero (AC4).

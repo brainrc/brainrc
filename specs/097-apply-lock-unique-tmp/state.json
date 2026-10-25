@@ -15,9 +15,9 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "spec",
+  "stage": "plan",
   "gates": {
-    "spec": "pending",
+    "spec": "approved",
     "plan": "pending",
     "deliver": "pending"
   },
@@ -33,17 +33,79 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Changed-during-apply guard and pid temp names",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "aicfg/settings.py",
+        "aicfg/mcp.py",
+        "aicfg/cli.py",
+        "tests/test_aicfg.py",
+        "tests/test_mcp.py"
+      ],
+      "criteria": [
+        "AC3",
+        "AC4"
+      ],
+      "review": "each"
+    },
+    {
+      "id": "T2",
+      "title": "Apply lock",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "aicfg/cli.py",
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC5"
+      ],
+      "review": "batch",
+      "after": [
+        "T1"
+      ]
+    },
+    {
+      "id": "T3",
+      "title": "Troubleshooting docs for the lock and changed-file messages",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "docs/troubleshooting.md"
+      ],
+      "criteria": [
+        "AC6"
+      ],
+      "review": "batch",
+      "after": [
+        "T2"
+      ]
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-25T19:40:58Z",
     "stage_started_at": {
       "intake": "2026-10-25T19:40:58Z",
-      "spec": "2026-10-25T19:40:58Z"
+      "spec": "2026-10-25T19:40:58Z",
+      "plan": "2026-10-25T19:42:05Z"
     },
     "gates": {
       "spec": {
-        "presented_at": "2026-10-25T19:41:26Z"
+        "presented_at": "2026-10-25T19:41:26Z",
+        "approved_at": "2026-10-25T19:42:05Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-25T19:42:49Z"
       }
     },
     "gate_rework": {

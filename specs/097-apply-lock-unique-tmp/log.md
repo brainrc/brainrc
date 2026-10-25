@@ -27,3 +27,16 @@
 **Open issues:** 2 open questions (fail fast vs wait; skip vs re-merge).
 
 **Next:** Spec gate
+
+## architect · plan · done
+2026-10-25T19:42:49Z
+
+**Did:** Wrote plan.md: 3 tasks. cli reads `before` and passes it to `replace_file`, which raises `FileChanged` on mismatch; pid temp names; non-blocking flock on $AICFG_HOME/apply.lock around `_sync(True)`; docs.
+
+**Evidence:** read-only inspection of aicfg/cli.py, settings.py, mcp.py, doctor.py call sites.
+
+**Changed files:** specs/097-apply-lock-unique-tmp/plan.md
+
+**Open issues:** none. Callouts: internal signature change (`before` arg), new $AICFG_HOME/apply.lock.
+
+**Next:** Plan gate

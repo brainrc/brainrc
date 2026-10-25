@@ -1,6 +1,6 @@
 # Spec: Keep file mode and follow symlinks on every write
 
-Ticket: gh:96 · Size: standard · Status: draft
+Ticket: gh:96 · Size: standard · Status: approved
 
 ## Problem
 `aicfg apply` rewrites harness settings files (`settings.json`, hooks) and MCP config files
@@ -58,8 +58,4 @@ final target (creating it if the link dangles), keep the link, and back up the t
 content. (AC3, AC4, AC6, AC7)
 
 ## Open questions
-1. Where should backups of a symlinked file go: beside the link (today's location, what users
-   look in) or beside the target (the dotfiles repo, where they'd show up as untracked files)?
-   *Matters because backups beside the target pollute a git-managed dotfiles dir.* Analyst
-   default for AC6: beside the target, same as the temp file, since the rename must happen in the
-   target's directory to stay atomic. Say if you want them beside the link instead.
+None. Q1 resolved at the Spec gate: backups of a symlinked file sit beside the target (AC6).

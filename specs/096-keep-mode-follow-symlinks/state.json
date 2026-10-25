@@ -15,9 +15,9 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "spec",
+  "stage": "plan",
   "gates": {
-    "spec": "pending",
+    "spec": "approved",
     "plan": "pending",
     "deliver": "pending"
   },
@@ -33,17 +33,61 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "replace_file helper; settings writes keep mode and follow links",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "aicfg/settings.py",
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC2",
+        "AC3",
+        "AC5",
+        "AC6",
+        "AC7"
+      ],
+      "review": "each"
+    },
+    {
+      "id": "T2",
+      "title": "MCP writes use replace_file",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "aicfg/mcp.py",
+        "tests/test_mcp.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC4"
+      ],
+      "review": "batch",
+      "after": [
+        "T1"
+      ]
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-25T18:38:25Z",
     "stage_started_at": {
       "intake": "2026-10-25T18:38:25Z",
-      "spec": "2026-10-25T18:38:25Z"
+      "spec": "2026-10-25T18:38:25Z",
+      "plan": "2026-10-25T18:41:09Z"
     },
     "gates": {
       "spec": {
-        "presented_at": "2026-10-25T18:39:46Z"
+        "presented_at": "2026-10-25T18:39:46Z",
+        "approved_at": "2026-10-25T18:41:09Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-25T18:41:53Z"
       }
     },
     "gate_rework": {

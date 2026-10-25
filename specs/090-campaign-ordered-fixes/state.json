@@ -6,7 +6,7 @@
     "id": "90",
     "title": "Campaign mode: fixes from the first ordered campaign (gh:77)",
     "url": "https://github.com/bxker/ai-config/issues/90",
-    "pr": null
+    "pr": "https://github.com/bxker/ai-config/pull/91"
   },
   "slug": "090-campaign-ordered-fixes",
   "branch": "090-campaign-ordered-fixes",
@@ -14,7 +14,7 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "watch",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -187,12 +187,17 @@
       "first_pass": 0
     },
     "retries": 1,
-    "interventions": 0
+    "interventions": 0,
+    "pr_opened_at": "2026-10-25T02:18:43Z"
   },
   "review_context": "fresh",
   "living": [
     "campaign-mode",
     "run-lifecycle",
     "evals"
-  ]
+  ],
+  "watch": {
+    "checked_at": "2026-10-25T02:18:43Z",
+    "head_sha": "130295f"
+  }
 }

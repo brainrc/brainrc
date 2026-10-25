@@ -40,3 +40,9 @@ Wave 1 start: T1-T4 in worktrees.
 
 ## doc-writer · document · done
 **Did:** folded review LOWs (owner/repo source, ghost author; changelog bullets); pr_status in docs/spec-agent.md ops list; pr-body.md, ticket-comment.md. **Evidence:** validate OK; 321 OK. **Next:** campaign: child 1 waits for the stack Deliver gate; child 2 starts.
+
+## engine · deliver gate (stack) · approved
+Campaign gh:77 Deliver gate approved; child 1 delivers now.
+
+## engine · deliver · done 2026-10-24T15:39:31Z
+Pushed 078-pr-status-connector; PR #84; commented on #78; retro.md written; stage done.

@@ -43,6 +43,11 @@ class RunRecord:
     wave_ratio: float | None = None
     criteria_passed: str | None = None  # "n/m" or None
     blocked_stops: list | None = None  # one reason per stop: current block, then past log blocks
+    outcome: str | None = None  # watch.outcome: merged | abandoned
+    post_merge: str | None = None  # watch.post_merge: pass | regression | unverified
+    time_to_merge: float | None = None  # minutes, from metrics.time_to_merge
+    review_rounds: int | None = None
+    ci_failures: int | None = None  # count of watch.ci_failures entries
     warnings: list = field(default_factory=list)
 
 
@@ -270,4 +275,14 @@ def load_run(run_dir: Path, label: str | None = None) -> RunRecord | Skipped:
         task, wall = rec.waves["task_minutes"], rec.waves["wall_minutes"]
         if task is not None and wall:
             rec.wave_ratio = task / wall
+
+    watch = _dict(state.get("watch")) or {}
+    outcome, post_merge = watch.get("outcome"), watch.get("post_merge")
+    rec.outcome = outcome if outcome in ("merged", "abandoned") else None
+    rec.post_merge = post_merge if post_merge in ("pass", "regression", "unverified") else None
+    ttm = _num(metrics.get("time_to_merge"))
+    rec.time_to_merge = ttm if ttm is not None and ttm >= 0 else None
+    rec.review_rounds = _int(watch.get("review_rounds"))
+    failures = watch.get("ci_failures")
+    rec.ci_failures = len(failures) if isinstance(failures, list) else None
     return rec

@@ -20,3 +20,11 @@
 ## 2026-10-21T16:18:38Z · child 3 gh:80 verified
 - Drafts ready. Child 4 gh:81 starts on 081-watch-post-merge from 080-watch-review-comments.
 - Finding: engine error in child 3 (misread worktree status, overwrote T1 edits; recovered by re-apply).
+
+## 2026-10-24T15:09:42Z · child 4 gh:81 verified; stack Deliver gate presented
+
+## 2026-10-24T15:39:42Z · stack Deliver gate approved
+- gh:78 delivered: PR #84 (comment on #78). gh:79, gh:80, gh:81 waiting. Next: after #84 merges, re-run `/work --campaign gh:77` to release gh:79.
+
+## 2026-10-24T22:26:12Z · stacked PRs opened (user request)
+- gh:79 → #86 (base 078), gh:80 → #87 (base 079), gh:81 → PR (base 080). Merge in order; retarget each to main after its predecessor merges.

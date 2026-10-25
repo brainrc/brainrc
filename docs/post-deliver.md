@@ -1,8 +1,7 @@
 # Post-deliver: following a PR to merge (design)
 
-Status: **CI failures, review comments, and the Push gate are built** (see
-[`references/watch.md`](../skills/spec-agent/references/watch.md)); post-merge verify is
-still planned. A run used to end at the Deliver gate: push, PR, ticket
+Status: **all five build steps are built** (see
+[`references/watch.md`](../skills/spec-agent/references/watch.md)). A run used to end at the Deliver gate: push, PR, ticket
 update, retro, `stage: done`, and whatever came next was fixed by hand. This page designs the
 stage that closes that loop. Build order is at the end.
 
@@ -69,10 +68,12 @@ handed back and nothing further is classified.
 
 ### Post-merge verify
 
-When the PR merges, check out the default branch at the merge commit and dispatch the
-verifier against `spec.md`'s criteria, writing `verify-merged.md`. A criterion that passed on
-the branch and fails on `main` is a **regression**: report it, open nothing automatically,
-and suggest a follow-up ticket.
+When the PR merges, run the verifier in a detached worktree (`specs/<slug>/.runs/post-merge`) at the merge
+commit (or the local tip of the base if that commit is missing), writing `verify-merged.md`.
+`watch.post_merge` is `regression` (a check that passed in `verify.md` fails on the merge:
+report it, open nothing, print a suggested follow-up), `unverified` (nothing could be run;
+never claimed as pass), or `pass`. A PR closed unmerged ends the run as `abandoned` with no
+verify.
 
 ## State and retro
 
@@ -87,16 +88,19 @@ and suggest a follow-up ticket.
   "threads": { "total": 5, "fixed": 3, "replied": 2, "flagged": 0 },
   "thread_log": [{ "key": "<16-hex key>", "kind": "ask", "task": "R1", "flagged": false }],
   "merged_at": null,
-  "post_merge": null
+  "post_merge": null,
+  "outcome": null
 }
 ```
 
 `metrics` gains `post_deliver_retries` (fix tasks after the PR opened) and
-`time_to_merge` (PR opened → merged, from timestamps, never estimated).
+`time_to_merge` (PR opened → merged, in minutes, from timestamps, never estimated; unset if
+either is missing). `watch.post_merge` is `pass|regression|unverified`, `watch.outcome` is
+`merged|abandoned`.
 
 `retro.md` keeps its sections and adds **After delivery**: CI failures (own/external), review
 rounds and what reviewers caught that the run's own reviewers didn't, post-merge result. The
-retro is first written at deliver as today, and this section is appended when `watch` ends.
+retro is first written at deliver as today, and this section is appended once when `watch` ends (merged or abandoned).
 The "what reviewers caught" line is the useful one: each miss is a candidate edit to a
 reviewer role or checklist.
 
@@ -105,11 +109,11 @@ reviewer role or checklist.
 1. **Metrics rollup first** (`scripts/retro_report.py`). Aggregate `state.json` and `retro.md`
    across runs and projects: gate rework, first-pass review rate, retries, interventions, time
    per stage. It needs no new state, gives a baseline today, and is the place the `watch`
-   numbers will land. Without it, the new fields would be written and never read.
-2. `pr_status` in the connector contract and `ticket-github`; `validate` accepts it as optional.
+   numbers will land. Without it, the new fields would be written and never read. **Done.**
+2. `pr_status` in the connector contract and `ticket-github`; `validate` accepts it as optional. **Done.**
 3. `watch` stage for CI failures and the Push gate. **Done.**
 4. Review comments. **Done.**
-5. Post-merge verify and the retro's After delivery section; add them to the rollup.
+5. Post-merge verify and the retro's After delivery section; add them to the rollup. **Done.**
 
 Each step is one PR and ships with an eval: a sandbox ticket with a fake `pr_status` fixture
 (red CI, then a review comment, then merged), graded with `scripts/evals.py check`.

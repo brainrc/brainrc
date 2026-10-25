@@ -7,8 +7,8 @@ The system SHALL find runs under one or more roots, report each, treat missing f
 _Last changed by 024-metrics-rollup._
 
 ### Per-run and grouped aggregate metrics
-The system SHALL report duration (agent time, gate wait, per stage), gate rework, review first-pass rate, retries, interventions, wave stats, and criteria passed, aggregated by size, domain, and mode with stated denominators, plus blocked-stop counts including past blocks from `log.md`. (AC3, AC4, AC5, AC9, AC17, AC19)
-_Last changed by 024-metrics-rollup._
+The system SHALL report duration, gate rework, first-pass rate, retries, interventions, wave stats, and criteria passed as before, and also outcome, post-merge result, time to merge, review rounds, and CI failures per run, with average time to merge and merged, abandoned, and regression counts in the aggregates, missing values unknown. (AC8)
+_Last changed by 081-watch-post-merge._
 
 ### Markdown and JSON output
 The system SHALL print a Markdown table by default and a documented, versioned JSON document with `--json`. (AC10, AC11)

@@ -140,6 +140,21 @@ class AggregateTest(unittest.TestCase):
         self.assertEqual(a["blocked_stops"]["count"], 0)
         self.assertEqual(a["by_size"], {})
 
+    def test_post_merge_counts_and_time_to_merge_average(self):
+        a = aggregate([
+            rec("a", outcome="merged", post_merge="pass", time_to_merge=10),
+            rec("b", outcome="merged", post_merge="regression", time_to_merge=30),
+            rec("c", outcome="abandoned"),
+            rec("d"),
+        ])["overall"]
+        self.assertEqual((a["merged"], a["abandoned"], a["regressions"]), (2, 1, 1))
+        self.assertEqual(a["averages"]["time_to_merge"], {"avg": 20, "n": 2})
+
+    def test_time_to_merge_unknown_has_n_zero(self):
+        a = aggregate([rec("a"), rec("b", outcome="merged")])["overall"]
+        self.assertEqual(a["averages"]["time_to_merge"], {"avg": None, "n": 0})
+        self.assertEqual((a["merged"], a["abandoned"], a["regressions"]), (1, 0, 0))
+
 
 if __name__ == "__main__":
     unittest.main()

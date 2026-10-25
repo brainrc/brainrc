@@ -36,7 +36,7 @@
       "ref": "gh:99",
       "order": 4,
       "depends_on": [],
-      "status": "todo",
+      "status": "in_progress",
       "slug": "099-hooks-in-aicfg-home",
       "branch": "099-hooks-in-aicfg-home",
       "pr": null

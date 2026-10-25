@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:99",
+    "id": "99",
+    "title": "Copy hooks into AICFG_HOME",
+    "url": "https://github.com/brainrc/brainrc/issues/99",
+    "pr": null
+  },
+  "slug": "099-hooks-in-aicfg-home",
+  "branch": "099-hooks-in-aicfg-home",
+  "base": "098-hooks-fail-open",
+  "campaign": "specs/campaign-092-safe-writes",
+  "size": "standard",
+  "mode": "fallback",
+  "delivery": "normal",
+  "stage": "spec",
+  "gates": {
+    "spec": "pending",
+    "plan": "pending",
+    "deliver": "pending"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/aicfg.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-25T23:17:57Z",
+    "stage_started_at": {
+      "intake": "2026-10-25T23:17:57Z",
+      "spec": "2026-10-25T23:17:57Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-25T23:18:27Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  }
+}

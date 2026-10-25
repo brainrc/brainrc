@@ -55,3 +55,98 @@
 **Open issues:** none. Callouts: new $AICFG_HOME/hooks/core; apply may rmtree it.
 
 **Next:** Plan gate
+
+## implementer · T1 · done
+2026-10-25T23:27:27Z
+
+**Did:** `config.hooks_copy_root()`; `Link.copy` + `hooks_copy_current` in plan.py (state "update" when the copy differs); installed core hooks link to $AICFG_HOME/hooks/core/<h>/hooks; cli `_copy_hooks` builds all core hook dirs in a temp sibling and swaps it in before linking.
+
+**Evidence:**
+- red: 4 InstalledModeTest tests fail on behavior (link target is the package; no copy; no UPDATE); checkout test passes before (regression guard)
+- `python3 -m unittest discover -s tests` → 391 passed
+- `python3 scripts/aicfg.py validate` → OK
+
+**Changed files:** aicfg/config.py, aicfg/plan.py, aicfg/cli.py, tests/test_aicfg.py
+
+**Open issues:** none
+
+**Next:** review T1
+
+## code-reviewer · T1 · done
+2026-10-25T23:27:27Z
+
+**Did:** Reviewed T1 diff against AC1–AC5.
+
+**Findings:**
+- LOW aicfg/doctor.py (via Link.state): a stale copy shows as "points at the wrong item"; the fix (`apply`) is right, the wording is generic.
+- LOW aicfg/plan.py:_hook_files: `__pycache__` is matched against the absolute path parts → only matters if $AICFG_HOME's own path contains `__pycache__`.
+
+**Open issues:** none
+
+**Next:** commit T1
+
+## security-reviewer · T1 · done
+2026-10-25T23:27:27Z
+
+**Did:** Checked filesystem writes and removals (security-checklist: Paths).
+
+**Findings:**
+- LOW aicfg/cli.py:_copy_hooks: between the two renames the copy is briefly absent, so guards fail open for that instant → accepted in plan Risks.
+- none higher: rmtree targets are fixed, pid-named siblings of $AICFG_HOME/hooks/core; copies keep the package's modes.
+
+**Open issues:** none
+
+**Next:** commit T1
+
+## implementer · T2 · done
+2026-10-25T23:28:56Z
+
+**Did:** `_managed_target` accepts links into $AICFG_HOME/hooks/core/<h>/hooks (so a disabled harness's link is pruned); `stale_hooks_copy` returns the copy when no link uses it; cli prints PRUNE and removes it on apply.
+
+**Evidence:**
+- red: test fails on assertion (cursor link into the copy not pruned)
+- `python3 -m unittest discover -s tests` → 392 passed
+- `python3 scripts/aicfg.py validate` → OK
+
+**Changed files:** aicfg/plan.py, aicfg/cli.py, tests/test_aicfg.py
+
+**Open issues:** none
+
+**Next:** review T2
+
+## code-reviewer · T2 · done
+2026-10-25T23:28:56Z
+
+**Did:** Reviewed T2 diff against AC6.
+
+**Findings:**
+- LOW aicfg/plan.py:stale_hooks_copy: a checkout that once ran installed also prunes the leftover copy → desirable; untested.
+
+**Open issues:** none
+
+**Next:** commit T2
+
+## security-reviewer · T2 · done
+2026-10-25T23:28:56Z
+
+**Did:** Checked the new `rmtree` (security-checklist: Paths).
+
+**Findings:** none. The path is fixed (`$AICFG_HOME/hooks/core`), removed only when no link uses it, and it holds only aicfg's copy.
+
+**Open issues:** none
+
+**Next:** commit T2
+
+## implementer · T3 · done
+2026-10-25T23:29:10Z
+
+**Did:** docs/install.md: installed guard hooks are copied to $AICFG_HOME/hooks/core; run `aicfg apply` after upgrading.
+
+**Evidence:**
+- `python3 scripts/aicfg.py validate` → OK (docs-only)
+
+**Changed files:** docs/install.md
+
+**Open issues:** none
+
+**Next:** batched review (T3)

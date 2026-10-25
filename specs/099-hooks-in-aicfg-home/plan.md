@@ -1,6 +1,6 @@
 # Plan: Copy hooks into AICFG_HOME
 
-Spec: [spec.md](spec.md) · Status: draft
+Spec: [spec.md](spec.md) · Status: approved
 
 ## Callouts
 - **New dependencies:** none

@@ -23,3 +23,13 @@ _Last changed by 097-apply-lock-unique-tmp._
 `aicfg apply` SHALL use per-process temp names, and SHALL NOT overwrite a settings or MCP file
 whose content changed after apply read it; it warns and exits non-zero instead. (AC3, AC4)
 _Last changed by 097-apply-lock-unique-tmp._
+
+### Hooks fail open
+ai-config's hook commands SHALL exit 0 without blocking (Cursor: with an allow response) when
+their script file is missing, and behave as the guard otherwise. (AC1, AC2, AC3, AC7)
+_Last changed by 098-hooks-fail-open._
+
+### Doctor checks hooks
+`aicfg doctor` SHALL report each ai-config hook in a harness's settings file whose script is
+missing, or that exits non-zero for an empty payload, with the fix. (AC4, AC5, AC6)
+_Last changed by 098-hooks-fail-open._

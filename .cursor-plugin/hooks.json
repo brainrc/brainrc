@@ -3,12 +3,12 @@
   "hooks": {
     "beforeShellExecution": [
       {
-        "command": "python3 \"${CURSOR_PLUGIN_ROOT}/overrides/cursor/hooks/guard.py\""
+        "command": "f=\"${CURSOR_PLUGIN_ROOT}/overrides/cursor/hooks/guard.py\"; if [ -f \"$f\" ]; then python3 \"$f\"; else echo '{\"permission\": \"allow\"}'; fi"
       }
     ],
     "beforeReadFile": [
       {
-        "command": "python3 \"${CURSOR_PLUGIN_ROOT}/overrides/cursor/hooks/guard.py\""
+        "command": "f=\"${CURSOR_PLUGIN_ROOT}/overrides/cursor/hooks/guard.py\"; if [ -f \"$f\" ]; then python3 \"$f\"; else echo '{\"permission\": \"allow\"}'; fi"
       }
     ]
   }

@@ -13,6 +13,7 @@ from .config import (
     ConfigError,
     expand,
     hook_command_dir,
+    hooks_copy_root,
     load_harnesses,
     pack_hooks_dir,
     rendered_agents_dir,
@@ -28,12 +29,13 @@ class Link:
     harness: str
     dest: Path
     source: Path
+    copy: tuple[Path, Path] | None = None  # (overrides dir, copy root): source is a hooks copy
 
     def state(self, roots: list[Path] | None = None) -> str:
         if self.dest.is_symlink():
             target = link_target(self.dest)
             if os.path.normpath(target) == os.path.normpath(self.source):
-                return "ok"
+                return "ok" if not self.copy or hooks_copy_current(*self.copy) else "update"
             return "update" if _inside(target, roots or [config.REPO]) else "conflict"
         return "conflict" if self.dest.exists() else "create"
 
@@ -111,6 +113,17 @@ def _inside_repo(path: Path) -> bool:
     return _inside(path, [config.REPO])
 
 
+def _hook_files(root: Path) -> dict[Path, bytes]:
+    """Every file under root/<harness>/hooks/, keyed by its path relative to root."""
+    return {p.relative_to(root): p.read_bytes() for p in sorted(root.glob("*/hooks/**/*"))
+            if p.is_file() and "__pycache__" not in p.parts}
+
+
+def hooks_copy_current(overrides: Path, copy_root: Path) -> bool:
+    """True if copy_root holds exactly the hooks dirs under overrides."""
+    return copy_root.is_dir() and _hook_files(overrides) == _hook_files(copy_root)
+
+
 def _managed_target(target: Path, roots: list[Path]) -> bool:
     """True if target is a path aicfg itself links to inside one of the source roots."""
     t = Path(os.path.abspath(target)).resolve()
@@ -150,7 +163,10 @@ def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
             hooks_dir = None
             if "hooks_dir" in h:
                 hooks_dir = h["hooks_dir"] if src.is_core else pack_hooks_dir(h["hooks_dir"], src.name)
-                if src.is_core or hooks.is_dir():
+                if src.is_core and config.installed():  # a package path changes with Python
+                    links.append(Link(name, expand(hooks_dir), hooks_copy_root() / name / "hooks",
+                                      (src.root / "overrides", hooks_copy_root())))
+                elif src.is_core or hooks.is_dir():
                     links.append(Link(name, expand(hooks_dir), hooks))
             fragment = src.root / "overrides" / name / "settings.fragment.json"
             if fragment.is_file():

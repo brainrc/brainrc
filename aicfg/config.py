@@ -160,6 +160,11 @@ def extensions_file() -> Path:
     return REPO / "skills" / "spec-agent" / "references" / "extensions.md"
 
 
+def hooks_copy_root() -> Path:
+    """Where an installed aicfg copies core's hooks, so they outlive a versioned package path."""
+    return aicfg_home() / "hooks" / "core"
+
+
 def hook_command_dir(hooks_dir: str) -> str:
     """hooks_dir as written into hook commands: `~` becomes `$HOME` so the shell expands it."""
     return "$HOME" + hooks_dir[1:] if hooks_dir.startswith("~") else hooks_dir

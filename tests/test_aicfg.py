@@ -264,6 +264,11 @@ class SyncFakeHomeTest(TempRepoCase):
         self.assertEqual(len(list(settings.parent.glob("settings.json.bak-aicfg-*"))), aicfg.BACKUPS_KEPT)
         self.assertEqual(list(settings.parent.glob(".settings.json.aicfg-tmp*")), [])
 
+    def test_checkout_hooks_link_into_the_checkout(self):
+        quiet(aicfg.cmd_sync, True)
+        self.assertEqual(aicfg.link_target(self.home / ".claude/hooks/ai-config"), self.repo / "overrides/claude/hooks")
+        self.assertFalse((self.aicfg_home / "hooks").exists())
+
     def test_temp_name_includes_the_pid(self):
         settings = self.home / ".claude/settings.json"
         settings.parent.mkdir()
@@ -1289,6 +1294,55 @@ class InstalledModeTest(TempRepoCase):
         self.assertEqual(self.files(), before)
         self.assertTrue((self.aicfg_home / "extensions.md").is_file())
         self.assertEqual(aicfg.link_target(self.home / ".claude/skills/spec-agent"), self.core / "skills/spec-agent")
+        self.assertEqual(aicfg.doctor_findings(), [])
+
+    def copy_root(self) -> Path:
+        return self.aicfg_home / "hooks/core"
+
+    def test_installed_hooks_link_into_a_copy_in_aicfg_home(self):
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        for harness in ("claude", "cursor"):
+            copy = self.copy_root() / harness / "hooks"
+            self.assertEqual(aicfg.link_target(self.home / f".{harness}/hooks/ai-config"), copy)
+            self.assertEqual(sorted(p.name for p in copy.iterdir()),
+                             sorted(p.name for p in (self.core / "overrides" / harness / "hooks").iterdir()))
+        self.assertEqual(aicfg.doctor_findings(), [])
+
+    def test_guards_still_run_after_the_package_is_gone(self):
+        quiet(aicfg.cmd_sync, True)
+        claude = json.loads((self.home / ".claude/settings.json").read_text())
+        cursor = json.loads((self.home / ".cursor/hooks.json").read_text())
+        shutil.rmtree(self.core)  # an upgrade to a new Python moved the package
+        risky = {"tool_name": "Bash", "tool_input": {"command": "git push origin main"}}
+        run = subprocess.run(["sh", "-c", claude["hooks"]["PreToolUse"][0]["hooks"][0]["command"]],
+                             input=json.dumps(risky), capture_output=True, text=True)
+        self.assertEqual(json.loads(run.stdout)["hookSpecificOutput"]["permissionDecision"], "ask")
+        shell = {"hook_event_name": "beforeShellExecution", "command": "git push origin main", "cwd": "/tmp/p"}
+        run = subprocess.run(["sh", "-c", cursor["hooks"]["beforeShellExecution"][0]["command"]],
+                             input=json.dumps(shell), capture_output=True, text=True)
+        self.assertEqual(json.loads(run.stdout)["permission"], "deny")
+
+    def test_an_upgraded_package_refreshes_the_copy(self):
+        quiet(aicfg.cmd_sync, True)
+        (self.copy_root() / "claude/hooks/leftover.py").write_text("")
+        guard = self.core / "overrides/claude/hooks/guard_outward.py"
+        guard.write_text(guard.read_text() + "\n# upgraded\n")
+        code, out = quiet(aicfg.cmd_sync, False)
+        self.assertRegex(out, r"UPDATE +claude +~/.claude/hooks/ai-config")
+        quiet(aicfg.cmd_sync, True)
+        self.assertEqual((self.copy_root() / "claude/hooks/guard_outward.py").read_text(), guard.read_text())
+        self.assertFalse((self.copy_root() / "claude/hooks/leftover.py").exists())
+        self.assertIn("Everything in sync", quiet(aicfg.cmd_sync, False)[1])
+
+    def test_an_old_link_into_the_package_is_repointed(self):
+        link = self.home / ".claude/hooks/ai-config"
+        link.parent.mkdir(parents=True)
+        link.symlink_to(self.core / "overrides/claude/hooks")
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        self.assertRegex(out, r"UPDATE +claude +~/.claude/hooks/ai-config")
+        self.assertEqual(aicfg.link_target(link), self.copy_root() / "claude/hooks")
         self.assertEqual(aicfg.doctor_findings(), [])
 
     def test_relative_pack_path_is_relative_to_aicfg_home(self):

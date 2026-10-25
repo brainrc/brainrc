@@ -1,6 +1,6 @@
 # Spec: Campaign ordered-shape fixes from gh:77
 
-Ticket: gh:90 · Size: standard · Status: draft
+Ticket: gh:90 · Size: standard · Status: approved
 
 ## Problem
 The first ordered campaign (gh:77) shipped, but its children's stacked PRs merged into their stacked bases instead of `main`, so three children only reached `main` through an extra PR. The run also hit gaps the procedure doesn't cover: no member status for "verified, awaiting Deliver", no documented stacked delivery, campaign state scattered across child branches, same-wave tasks linking each other's new files, implementers writing outside their worktree, and engine edits to approved artifacts with no rule. Each gap cost a manual recovery; the next campaign will hit them again.
@@ -56,5 +56,6 @@ The engine MAY edit an approved artifact only for wording or path fixes that cha
 The eval harness SHALL offer a `campaign` check kind that verifies member order and approved spec and plan gates, and for `sequential` delivery first-member-only delivery, for `stacked` delivery every member delivered with a valid base. (AC9)
 
 ## Open questions
-1. **Home for `campaign.json`** (AC5). Proposal: it lives in `specs/campaign-<slug>/` on the child branch in progress; each child commits only its own member entry, and `main` is merged in before the PR opens or retargets, so its PR diff shows just that entry. Alternative: a separate small PR to `main` per status change (more PRs, but `main` always current). *Decides where the engine commits campaign updates.*
-2. **Worktree guard form** (AC7). Proposal: a stdlib script `skills/spec-agent/scripts/worktree_fence.py` run by the engine, not a harness hook (hooks are per-harness; rules must stay harness-neutral). *Decides whether hooks config changes.*
+None. Resolved at the Spec gate:
+1. `campaign.json` home (AC5): on the child branch in progress, in `specs/campaign-<slug>/`; each child commits only its own member entry, and `main` is merged in before its PR opens or retargets.
+2. Worktree guard (AC7): an engine-run stdlib script `skills/spec-agent/scripts/worktree_fence.py` with unit tests, not a harness hook.

@@ -38,8 +38,10 @@ Pin a release with `git+https://github.com/bxker/ai-config@v0.3.29`.
 Links then point into the installed package, so `uv tool upgrade ai-config` (or `pipx upgrade
 ai-config`) updates every harness. Guard hooks are the exception: `apply` copies them to
 `$AICFG_HOME/hooks/core/` and links there, because the package path changes when an upgrade
-moves the tool to a new Python. Run `aicfg apply` after upgrading to refresh the copy and
-re-link anything else. Local files go in `~/.config/ai-config/` (`$AICFG_HOME`):
+moves the tool to a new Python. Run `aicfg apply` after upgrading to refresh the copy. After an
+upgrade to a new Python, the other links (skills, agents) point at the old path and `apply`
+reports them as `CONFLICT`; `aicfg doctor` lists each broken link with the `rm` that clears it,
+then re-run `apply`. Local files go in `~/.config/ai-config/` (`$AICFG_HOME`):
 `harnesses.local.toml`, `packs.local.toml`, and `rules/*.local.md`. Packs are local
 directories or git URLs that `aicfg` fetches ([packs](packs.md#enable-a-pack)).
 `plugin` needs a checkout. Contributors use the clone above.

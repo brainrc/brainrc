@@ -160,3 +160,24 @@
 **Open issues:** none
 
 **Next:** re-review fix diff
+
+## code-reviewer · fix re-review · done
+2026-10-25T02:17:40Z
+
+**Did:** Re-reviewed be34ac9..HEAD: all 6 findings fixed, no new CRITICAL/HIGH.
+
+## verifier · verify · done
+2026-10-25T02:17:40Z
+
+**Did:** Re-ran tests and validate; mapped AC1-AC10 to evidence in verify.md, all pass.
+
+**Evidence:**
+- `python3 -m unittest discover -s tests` → 367 passed
+- `python3 scripts/aicfg.py validate` → OK
+
+## engine · document · done
+2026-10-25T02:17:40Z
+
+**Did:** living_specs apply (campaign-mode, run-lifecycle, evals); pr-body.md, ticket-comment.md drafted. No spec changes after approval.
+
+**Next:** Deliver gate

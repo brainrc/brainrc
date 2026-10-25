@@ -14,7 +14,7 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "implement",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -158,7 +158,10 @@
       "intake": "2026-10-25T00:47:47Z",
       "spec": "2026-10-25T00:49:02Z",
       "plan": "2026-10-25T02:01:32Z",
-      "implement": "2026-10-25T02:02:43Z"
+      "implement": "2026-10-25T02:02:43Z",
+      "verify": "2026-10-25T02:17:19Z",
+      "document": "2026-10-25T02:17:19Z",
+      "deliver": "2026-10-25T02:17:40Z"
     },
     "gates": {
       "spec": {
@@ -168,6 +171,9 @@
       "plan": {
         "presented_at": "2026-10-25T02:02:18Z",
         "approved_at": "2026-10-25T02:02:43Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-25T02:17:40Z"
       }
     },
     "gate_rework": {
@@ -176,11 +182,16 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 1,
+      "total": 2,
       "first_pass": 0
     },
     "retries": 1,
     "interventions": 0
   },
-  "review_context": "fresh"
+  "review_context": "fresh",
+  "living": [
+    "campaign-mode",
+    "run-lifecycle",
+    "evals"
+  ]
 }

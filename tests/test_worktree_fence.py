@@ -60,6 +60,13 @@ class WorktreeFenceTest(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn("STRAY src/new.py", result.stdout)
 
+    def test_rename_from_outside_the_fence_fails(self):
+        git(self.wt, "mv", "README.md", "src/a_doc.py")  # the deletion of README.md is out of scope
+        result = self.fence("--files", "src/*")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("STRAY README.md", result.stdout)
+        self.assertNotIn("src/a_doc.py", result.stdout)
+
     def test_main_tree_write_fails(self):
         (self.wt / "src/a.py").write_text("a = 2\n")
         (self.main / "src/a.py").write_text("a = 3\n")  # the implementer wrote to the root

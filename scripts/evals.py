@@ -102,6 +102,8 @@ def _campaign(project: Path, state: dict, order: list[str], delivery: str | None
     delivered with a PR. `stacked`: all delivered, each based on the previous branch or `main`,
     and a merged member based on `main`."""
     delivery = delivery or state.get("delivery") or "sequential"
+    if delivery not in ("sequential", "stacked"):
+        return False, f"campaign delivery {delivery!r}, expected 'sequential' or 'stacked'"
     members = sorted(state.get("members", []), key=lambda m: m.get("order", 0))
     refs = [m.get("ref") for m in members]
     if refs != order:

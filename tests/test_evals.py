@@ -337,6 +337,10 @@ class CampaignCheckTest(unittest.TestCase):
         self.data["members"][2].update(status="waiting", pr=None)
         self.assert_fails("007-c")
 
+    def test_unknown_delivery_fails(self):
+        self.data["delivery"] = "stack"
+        self.assert_fails("delivery 'stack'")
+
     def test_check_delivery_overrides_campaign_json(self):
         self.stack()
         self.write()

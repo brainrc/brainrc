@@ -3,6 +3,10 @@ from __future__ import annotations
 
 import contextlib
 import io
+import json
+import os
+import re
+import subprocess
 import tomllib
 from pathlib import Path
 
@@ -31,7 +35,7 @@ from .sources import (
 )
 from .opencode import agents_format, rendered_agents
 from .plan import FragmentError, Link, invalid_fragments, link_target, plan
-from .settings import settings_change
+from .settings import _owned, settings_change
 from .mcp import check_servers, mcp_change, mcp_plan
 from .validate import ROLES_FIX, check_roles_link, cmd_validate
 
@@ -187,7 +191,51 @@ def doctor_findings() -> list[Finding]:
         elif state == "conflict":
             found.append(("FAIL", f"{m.harness}: {tilde(m.dest)} is invalid JSON",
                           f"fix it by hand, then {command('apply')}"))
+    found += _hook_findings(merges, skipped)
     found += _mcp_findings(srcs, skipped)
+    return found
+
+
+HOOK_SCRIPT = re.compile(r'"([^"]+\.py)"')  # the script in a `python3 "<dir>/<guard>.py"` command
+
+
+def _hook_findings(merges: list, skipped: set[str]) -> list[Finding]:
+    """ai-config's hooks in each settings file: the script exists and passes an empty payload.
+    A missing script is skipped by the hook command, so its guard is silently off."""
+    found = []
+    for m in merges:
+        if m.harness in skipped or not m.fragments or not m.dest.is_file():
+            continue
+        try:
+            current = json.loads(m.dest.read_text())
+        except json.JSONDecodeError:
+            continue  # reported with the settings checks
+        scripts: dict[Path, int] = {}
+        for groups in current.get("hooks", {}).values():
+            for group in groups:
+                if not _owned(group, m.markers()):
+                    continue
+                for h in [group, *group.get("hooks", [])]:
+                    match = HOOK_SCRIPT.search(str(h.get("command", "")))
+                    if match:
+                        scripts.setdefault(Path(os.path.expandvars(match[1])), h.get("timeout", 5))
+        for script, timeout in scripts.items():
+            hook = f"{m.harness}: hook {tilde(script)}"
+            if not script.is_file():
+                found.append(("FAIL", f"{m.harness}: hook missing: {tilde(script)}", command("apply")))
+                continue
+            try:  # -B: doctor is read-only, so no __pycache__ next to the guards
+                result = subprocess.run(["python3", "-B", str(script)], input="{}", capture_output=True,
+                                        text=True, timeout=timeout)
+            except FileNotFoundError:
+                found.append(("FAIL", f"{hook} can't run: python3 is not on PATH", "install Python 3"))
+                continue
+            except subprocess.TimeoutExpired:
+                found.append(("FAIL", f"{hook} timed out after {timeout}s", f"run `python3 {tilde(script)}`"))
+                continue
+            if result.returncode:
+                found.append(("FAIL", f"{hook} exits {result.returncode} on an empty payload",
+                              f"run `python3 {tilde(script)}` to see why, then {command('apply')}"))
     return found
 
 

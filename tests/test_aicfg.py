@@ -643,6 +643,27 @@ class DoctorTest(TempRepoCase):
         self.assertEqual(code, 0, out)
         self.assertIn("No problems found.", out)
 
+    def test_missing_hook_script(self):
+        (self.repo / "overrides/claude/hooks/guard_secrets.py").unlink()
+        self.assert_one_fail("claude: hook missing: ~/.claude/hooks/ai-config/guard_secrets.py", "apply")
+
+    def test_broken_hook_script(self):
+        (self.repo / "overrides/claude/hooks/guard_outward.py").write_text("import sys\nsys.exit(3)\n")
+        self.assert_one_fail("claude: hook ~/.claude/hooks/ai-config/guard_outward.py exits 3", "apply")
+
+    def test_every_hook_runs_with_an_empty_payload(self):
+        calls, real = [], subprocess.run
+
+        def spy(args, **kw):
+            calls.append((Path(args[-1]).name, kw.get("input"), kw.get("timeout")))
+            return real(args, **kw)
+
+        with mock.patch("aicfg.doctor.subprocess.run", spy):
+            self.assertEqual([f for f in aicfg.doctor_findings() if "hook" in f[1]], [])
+        self.assertIn(("guard_outward.py", "{}", 5), calls)
+        self.assertIn(("guard_secrets.py", "{}", 5), calls)
+        self.assertEqual([c for c in calls if c[0] == "guard.py"], [("guard.py", "{}", 5)])  # Cursor: once
+
     def test_points_to_troubleshooting_only_when_something_is_wrong(self):
         _, clean = quiet(aicfg.cmd_doctor)
         self.assertNotIn("troubleshooting", clean)

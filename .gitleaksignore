@@ -1,0 +1,4 @@
+# Example 16-hex review-thread keys in docs, not secrets (generic-api-key false positives).
+a0a1ef2feb985219a30ed976a1ff0d8f7c124214:skills/spec-agent/references/state.md:generic-api-key:74
+941a39bebf5dff51f77ddf712f876154a2ca82ab:skills/spec-agent/references/state.md:generic-api-key:74
+37d62ed1c644679b83e2f80210532966dee6e72d:docs/post-deliver.md:generic-api-key:88

@@ -55,8 +55,12 @@ def find_campaign(project: Path, ref: str) -> Path:
 
 
 def _field(data: dict, dotted: str):
+    """Dotted path into state; a digit segment indexes a list (out of range is None)."""
     for key in dotted.split("."):
-        data = data.get(key) if isinstance(data, dict) else None
+        if isinstance(data, list):
+            data = data[int(key)] if key.isdigit() and int(key) < len(data) else None
+        else:
+            data = data.get(key) if isinstance(data, dict) else None
     return data
 
 
@@ -118,6 +122,8 @@ def run_check(check: dict, project: Path, run: Path, state: dict) -> tuple[bool,
     kind = check.get("kind")
     if kind == "state":
         value, field = _field(state, check["field"]), check["field"]
+        if check.get("present") is False:
+            return value is None, f"state {field} " + ("absent" if value is None else f"= {value!r}, expected absent")
         if check.get("present"):
             return value is not None, f"state {field} " + ("present" if value is not None else "missing")
         allowed = check["in"] if "in" in check else [check["equals"]]

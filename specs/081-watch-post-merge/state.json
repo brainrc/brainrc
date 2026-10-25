@@ -1,0 +1,257 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:81",
+    "id": "81",
+    "title": "watch 4/4: post-merge verify and the retro's After delivery section",
+    "url": "https://github.com/bxker/ai-config/issues/81",
+    "pr": null
+  },
+  "slug": "081-watch-post-merge",
+  "branch": "081-watch-post-merge",
+  "base": "080-watch-review-comments",
+  "campaign": "specs/campaign-077-watch",
+  "size": "standard",
+  "mode": "subagent",
+  "delivery": "normal",
+  "stage": "deliver",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/aicfg.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Engine: Merged or closed in watch.md, state/lifecycle fields, pr_opened_at at link_pr, retro skeleton",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 2,
+      "files": [
+        "skills/spec-agent/references/watch.md",
+        "skills/spec-agent/references/state.md",
+        "skills/spec-agent/references/lifecycle.md",
+        "skills/spec-agent/SKILL.md",
+        "skills/spec-agent/templates/retro.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC6",
+        "AC7",
+        "AC10"
+      ],
+      "review": "each",
+      "wave": 1,
+      "started_at": "2026-10-24T14:50:04Z",
+      "finished_at": "2026-10-24T14:52:37Z",
+      "commit": "52420f5"
+    },
+    {
+      "id": "T2",
+      "title": "Optional merged_at/merge_commit_sha in pr_status contract, gh mapping, merged fixture",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "skills/spec-agent/references/connectors.md",
+        "skills/ticket-github/SKILL.md",
+        "examples/sandbox/pr_status/merged.json",
+        "tests/test_evals.py"
+      ],
+      "criteria": [
+        "AC2",
+        "AC9"
+      ],
+      "review": "each",
+      "wave": 1,
+      "started_at": "2026-10-24T14:50:04Z",
+      "finished_at": "2026-10-24T14:51:33Z",
+      "red": "assertion",
+      "commit": "5485f17"
+    },
+    {
+      "id": "T3",
+      "title": "RunRecord outcome, post_merge, time_to_merge, review_rounds, ci_failures (test first)",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "scripts/retro_metrics.py",
+        "tests/test_retro_metrics.py"
+      ],
+      "criteria": [
+        "AC6",
+        "AC8"
+      ],
+      "review": "batch",
+      "wave": 1,
+      "started_at": "2026-10-24T14:50:04Z",
+      "finished_at": "2026-10-24T14:52:04Z",
+      "red": "assertion",
+      "commit": "c04d9e3"
+    },
+    {
+      "id": "T4",
+      "title": "Sandbox eval for the merged path",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "evals/cases/sandbox-007.toml",
+        "examples/sandbox/tickets/010-watch-merged.md",
+        "examples/sandbox/README.md",
+        "tests/test_evals.py"
+      ],
+      "criteria": [
+        "AC9"
+      ],
+      "review": "batch",
+      "wave": 2,
+      "after": [
+        "T2"
+      ],
+      "started_at": "2026-10-24T14:55:43Z",
+      "finished_at": "2026-10-24T14:57:26Z",
+      "red": "assertion",
+      "commit": "0628ca8"
+    },
+    {
+      "id": "T5",
+      "title": "Aggregate counts, report columns, schema_version 2 (test first)",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "scripts/retro_aggregate.py",
+        "scripts/retro_report.py",
+        "tests/test_retro_aggregate.py",
+        "tests/test_retro_report.py"
+      ],
+      "criteria": [
+        "AC8"
+      ],
+      "review": "batch",
+      "wave": 2,
+      "after": [
+        "T3"
+      ],
+      "started_at": "2026-10-24T14:55:43Z",
+      "finished_at": "2026-10-24T14:58:21Z",
+      "red": "assertion",
+      "commit": "1dde402"
+    },
+    {
+      "id": "T6",
+      "title": "Docs, roadmap Done, changelog fragment (bump: patch)",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "docs/efficiency.md",
+        "docs/roadmap.md",
+        "docs/post-deliver.md",
+        "docs/spec-agent.md",
+        "changelog.d/081-watch-post-merge.md"
+      ],
+      "criteria": [
+        "AC8",
+        "AC10"
+      ],
+      "review": "batch",
+      "wave": 2,
+      "after": [
+        "T1",
+        "T3"
+      ],
+      "started_at": "2026-10-24T14:55:43Z",
+      "finished_at": "2026-10-24T14:58:07Z",
+      "commit": "95871dc"
+    },
+    {
+      "id": "F1",
+      "title": "Name preemption state values; doc JSON keys; .runs path",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "skills/spec-agent/references/watch.md",
+        "skills/spec-agent/references/state.md",
+        "docs/efficiency.md"
+      ],
+      "criteria": [
+        "AC5",
+        "AC8"
+      ],
+      "review": "batch",
+      "wave": 3,
+      "started_at": "2026-10-24T15:00:48Z",
+      "commit": "f707c55",
+      "finished_at": "2026-10-24T15:02:23Z"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-21T16:18:38Z",
+    "stage_started_at": {
+      "intake": "2026-10-21T16:18:38Z",
+      "spec": "2026-10-21T16:18:38Z",
+      "plan": "2026-10-21T16:34:11Z",
+      "implement": "2026-10-24T14:50:04Z",
+      "verify": "2026-10-24T15:02:23Z",
+      "document": "2026-10-24T15:07:45Z",
+      "deliver": "2026-10-24T15:09:42Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-21T16:19:42Z",
+        "approved_at": "2026-10-21T16:34:11Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-21T16:37:15Z",
+        "approved_at": "2026-10-24T14:50:04Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-24T15:09:42Z",
+        "approved_at": "2026-10-24T15:18:45Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "retries": 1,
+    "reviews": {
+      "first_pass": 2,
+      "total": 3
+    },
+    "waves": {
+      "count": 2,
+      "max_width": 3,
+      "task_minutes": 12.8,
+      "wall_minutes": 5.1
+    }
+  },
+  "living": [
+    "run-lifecycle",
+    "metrics-report",
+    "evals"
+  ]
+}

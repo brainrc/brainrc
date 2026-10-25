@@ -401,5 +401,43 @@ class RetroMetricsTest(unittest.TestCase):
         self.assertEqual(self.run_with(log=log).blocked_stops, [])
 
 
+    # AC6, AC8
+    def watch_rec(self, watch=None, ttm=None):
+        st = copy.deepcopy(COMPLETE)
+        if watch is not None:
+            st["watch"] = watch
+        if ttm is not None:
+            st["metrics"]["time_to_merge"] = ttm
+        return self.load(st)
+
+    def watch_values(self, rec):
+        return (rec.outcome, rec.post_merge, rec.time_to_merge, rec.review_rounds, rec.ci_failures)
+
+    def test_watch_fields_loaded(self):
+        rec = self.watch_rec({"outcome": "merged", "post_merge": "regression", "review_rounds": 2,
+                              "ci_failures": [{"kind": "own"}, {"kind": "external"}]}, ttm=95.5)
+        self.assertEqual(self.watch_values(rec), ("merged", "regression", 95.5, 2, 2))
+
+    def test_watch_fields_missing_are_none(self):
+        self.assertEqual(self.watch_values(self.load(copy.deepcopy(COMPLETE))), (None,) * 5)
+
+    def test_watch_zero_values_stay_zero(self):
+        rec = self.watch_rec({"review_rounds": 0, "ci_failures": []}, ttm=0)
+        self.assertEqual((rec.time_to_merge, rec.review_rounds, rec.ci_failures), (0, 0, 0))
+
+    def test_watch_invalid_values_are_none(self):
+        rec = self.watch_rec({"outcome": "closed", "post_merge": "maybe", "review_rounds": "2",
+                              "ci_failures": 3}, ttm=-1)
+        self.assertEqual(self.watch_values(rec), (None,) * 5)
+
+    def test_abandoned_and_unverified(self):
+        rec = self.watch_rec({"outcome": "abandoned", "post_merge": "unverified"})
+        self.assertEqual((rec.outcome, rec.post_merge), ("abandoned", "unverified"))
+
+    def test_watch_not_an_object(self):
+        rec = self.watch_rec("merged")
+        self.assertEqual(self.watch_values(rec), (None,) * 5)
+
+
 if __name__ == "__main__":
     unittest.main()

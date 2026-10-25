@@ -154,3 +154,44 @@ User chose to widen T1: tests/test_aicfg.py (5 pinned command strings → `claud
 **Open issues:** none
 
 **Next:** batched review (T3)
+
+## code-reviewer · batch (T3) · done
+2026-10-25T23:17:04Z
+
+**Did:** Reviewed T3 against AC4: the four message strings match doctor.py. review_context: shared (user chose to continue here).
+
+**Findings:** none
+
+**Open issues:** none
+
+**Next:** verify
+
+## verifier · verify · done
+2026-10-25T23:17:04Z
+
+**Did:** Suite and validate once, 9 targeted tests, real apply → delete hooks → run installed command → doctor on a scratch copy. 7/7 criteria pass.
+
+**Evidence:**
+- `python3 -m unittest discover -s tests` → 386 passed
+- `python3 scripts/aicfg.py validate` → OK
+
+**Changed files:** specs/098-hooks-fail-open/verify.md
+
+**Open issues:** none
+
+**Next:** document
+
+## doc-writer · document · done
+2026-10-25T23:17:24Z
+
+**Did:** Applied the living-spec delta (2 requirements added to aicfg-apply), added changelog.d/098-hooks-fail-open.md (patch), drafted pr-body.md and ticket-comment.md. Docs were done in T3.
+
+**Evidence:**
+- `living_specs.py apply` → updated specs/living/aicfg-apply.md
+- `python3 scripts/aicfg.py validate` → OK
+
+**Changed files:** specs/living/aicfg-apply.md, changelog.d/098-hooks-fail-open.md, specs/098-hooks-fail-open/pr-body.md, specs/098-hooks-fail-open/ticket-comment.md
+
+**Open issues:** none
+
+**Next:** child verified; campaign continues with child 4

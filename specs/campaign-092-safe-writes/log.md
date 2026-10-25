@@ -17,3 +17,7 @@
 
 ## 2026-10-25T20:05:58Z · child 2 gh:97 verified
 - Drafts ready. Child 3 gh:98 starts on 098-hooks-fail-open from 097-apply-lock-unique-tmp.
+
+## 2026-10-25T23:17:24Z · child 3 gh:98 verified
+- Drafts ready. Child 4 gh:99 starts on 099-hooks-in-aicfg-home from 098-hooks-fail-open.
+- Finding: a fragment change makes the generated plugin manifests stale, and plans need to fence them (and tests that pin hook commands) in. Candidate architect rule.

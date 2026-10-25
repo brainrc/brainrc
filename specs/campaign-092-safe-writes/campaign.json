@@ -27,7 +27,7 @@
       "ref": "gh:98",
       "order": 3,
       "depends_on": [],
-      "status": "in_progress",
+      "status": "verified",
       "slug": "098-hooks-fail-open",
       "branch": "098-hooks-fail-open",
       "pr": null

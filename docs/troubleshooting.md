@@ -60,6 +60,15 @@ The rewritten file and its backup keep the original's permissions, so a `0600` `
 stays `0600`. If the path is a symlink (a dotfiles-managed `settings.json`), `apply` writes
 through to the link's target and leaves the link in place; the backup goes next to the target.
 
+## Apply while something else writes
+
+Close Claude Code before `apply` changes MCP servers: it rewrites `~/.claude.json` while it runs.
+
+| Message | Fix |
+|---|---|
+| `ERROR another aicfg apply is running (lock: <path>)` | Another `apply` (or `update`) holds `$AICFG_HOME/apply.lock`. Let it finish, then re-run. The lock is released when that process exits, even if it crashed, so there is nothing to delete. |
+| `CHANGED <harness> <file>  (changed during apply; close Claude Code and re-run)` | The file changed after `apply` read it, so `apply` left it alone and exited 1. Close the harness that writes it, then re-run. |
+
 ## Uninstall
 
 1. Disable every harness in `harnesses.local.toml`, and every pack in `packs.local.toml`:

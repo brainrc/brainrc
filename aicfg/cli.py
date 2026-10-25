@@ -47,7 +47,7 @@ from .config import (
 from .sources import check_packs, collisions, render_extensions, render_instructions, sources
 from .opencode import rendered_agents
 from .packs import describe, fetch_pack, git_packs
-from .plan import hooks_copy_current, invalid_fragments, plan
+from .plan import hooks_copy_current, invalid_fragments, plan, stale_hooks_copy
 from .mcp import check_servers, mcp_change, mcp_plan, record_owned, write_mcp
 from .settings import FileChanged, read_current, settings_change, write_settings
 from .plugin import cmd_plugin
@@ -200,6 +200,12 @@ def _sync(apply: bool) -> int:
         print(f"{'PRUNE':9} {'':9} {tilde(p)}")
         if apply:
             p.unlink()
+    copy = stale_hooks_copy(links)
+    if copy:
+        changes += 1
+        print(f"{'PRUNE':9} {'':9} {tilde(copy)}")
+        if apply:
+            shutil.rmtree(copy)
     for m in merges:
         before = read_current(m.dest)
         state, merged = settings_change(m)

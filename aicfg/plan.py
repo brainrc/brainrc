@@ -125,7 +125,7 @@ def hooks_copy_current(overrides: Path, copy_root: Path) -> bool:
 
 
 def _managed_target(target: Path, roots: list[Path]) -> bool:
-    """True if target is a path aicfg itself links to inside one of the source roots."""
+    """True if target is a path aicfg itself links to: in a source root, or the hooks copy."""
     t = Path(os.path.abspath(target)).resolve()
     if t == rendered_instructions().resolve() or t.parent == rendered_agents_dir().resolve():
         return True
@@ -136,7 +136,13 @@ def _managed_target(target: Path, roots: list[Path]) -> bool:
             return True
         if t.name in ("hooks", "plugin.js") and t.parent.parent == root / "overrides":
             return True
-    return False
+    return t.name == "hooks" and t.parent.parent == hooks_copy_root().resolve()
+
+
+def stale_hooks_copy(links: list[Link]) -> Path | None:
+    """The hooks copy when no planned link uses it any more (every hooked harness disabled)."""
+    root = hooks_copy_root()
+    return root if root.exists() and not any(link.copy for link in links) else None
 
 
 def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None

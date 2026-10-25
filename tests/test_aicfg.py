@@ -1345,6 +1345,20 @@ class InstalledModeTest(TempRepoCase):
         self.assertEqual(aicfg.link_target(link), self.copy_root() / "claude/hooks")
         self.assertEqual(aicfg.doctor_findings(), [])
 
+    def test_disabling_every_hooked_harness_removes_the_copy(self):
+        quiet(aicfg.cmd_sync, True)
+        local = self.aicfg_home / "harnesses.local.toml"
+        local.write_text("[cursor]\nenabled = false\n")
+        quiet(aicfg.cmd_sync, True)
+        self.assertFalse((self.home / ".cursor/hooks/ai-config").is_symlink())
+        self.assertTrue(self.copy_root().is_dir())  # claude still links into it
+        local.write_text("[cursor]\nenabled = false\n[claude]\nenabled = false\n")
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        self.assertRegex(out, r"PRUNE +~?.*hooks/core")
+        self.assertFalse((self.home / ".claude/hooks/ai-config").is_symlink())
+        self.assertFalse(self.copy_root().exists())
+
     def test_relative_pack_path_is_relative_to_aicfg_home(self):
         self.aicfg_home.mkdir(parents=True)
         shutil.copytree(REPO / "examples/pack-acme", self.aicfg_home / "packs/acme")

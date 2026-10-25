@@ -29,6 +29,11 @@ BLOCKED = {"slug": "004-blocked", "size": "small", "mode": "auto", "stage": "pla
            "blocked": {"reason": "needs decision"}}
 
 
+def header_of(out: str, title: str) -> str:
+    lines = out.splitlines()
+    return lines[lines.index(title) + 2]
+
+
 class ReportTest(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp()).resolve()
@@ -98,7 +103,7 @@ class ReportTest(unittest.TestCase):
         r = self.cli("--json", "--root", ".")
         self.assertEqual(r.returncode, 0, r.stderr)
         doc = json.loads(r.stdout)
-        self.assertEqual(doc["schema_version"], 1)
+        self.assertEqual(doc["schema_version"], 2)
         self.assertEqual(len(doc["runs"]), 4)
         self.assertEqual(len(doc["skipped"]), 1)
         self.assertIn("invalid JSON", doc["skipped"][0]["reason"])
@@ -112,6 +117,32 @@ class ReportTest(unittest.TestCase):
         self.assertEqual(doc["aggregates"]["blocked_stops"]["count"], 2)  # current + one past
         self.assertEqual(doc["aggregates"]["blocked_stops"]["reasons"], ["needs decision", "earlier snag"])
         self.assertIn("usage", doc)
+
+    def test_post_merge_columns_and_aggregates(self):
+        self.fixtures(self.tmp)
+        self.run_dir(self.tmp, "006-merged", {
+            "slug": "006-merged", "size": "small", "stage": "done",
+            "watch": {"outcome": "merged", "post_merge": "regression", "ci_failures": [{}, {}],
+                      "review_rounds": 3},
+            "metrics": {"time_to_merge": 42}})
+        out = self.cli("--root", ".").stdout
+        header = next(l for l in out.splitlines() if l.startswith("| Run"))
+        cols = [c.strip() for c in header.strip("|").split("|")]
+        i = cols.index("Criteria")
+        self.assertEqual(cols[i + 1:i + 6],
+                         ["Outcome", "Post-merge", "Time to merge", "Review rounds", "CI failures"])
+        row = next(l for l in out.splitlines() if "006-merged" in l and l.startswith("| "))
+        cells = [c.strip() for c in row.strip("|").split("|")]
+        self.assertEqual(cells[i + 1:i + 6], ["merged", "regression", "42", "3", "2"])
+        old = next(l for l in out.splitlines() if "002-old" in l and l.startswith("| "))
+        cells = [c.strip() for c in old.strip("|").split("|")]
+        self.assertEqual(cells[i + 1:i + 6], ["unknown"] * 5)
+        for h in ("Avg time to merge", "Merged", "Abandoned", "Regressions"):
+            self.assertIn(h, header_of(out, "### Overall"))
+        self.assertIn("42 (n=1)", out)
+        agg = json.loads(self.cli("--json", "--root", ".").stdout)["aggregates"]["overall"]
+        self.assertEqual((agg["merged"], agg["regressions"]), (1, 1))
+        self.assertEqual(agg["averages"]["time_to_merge"], {"avg": 42, "n": 1})
 
     def test_markdown_default(self):
         self.fixtures(self.tmp)

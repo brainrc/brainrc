@@ -1,0 +1,278 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:79",
+    "id": "79",
+    "title": "watch 2/4: watch stage for CI failures, with a Push gate",
+    "url": "https://github.com/bxker/ai-config/issues/79",
+    "pr": null
+  },
+  "slug": "079-watch-ci-failures",
+  "branch": "079-watch-ci-failures",
+  "base": "078-pr-status-connector",
+  "campaign": "specs/campaign-077-watch",
+  "size": "standard",
+  "mode": "subagent",
+  "delivery": "normal",
+  "stage": "deliver",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "pending"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/aicfg.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Numeric index segments in eval state checks (test-first)",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "scripts/evals.py",
+        "tests/test_evals.py",
+        "docs/evals.md"
+      ],
+      "criteria": [
+        "AC10"
+      ],
+      "review": "batch",
+      "wave": 1,
+      "started_at": "2026-10-21T14:32:59Z",
+      "finished_at": "2026-10-21T14:34:45Z",
+      "red": "assertion",
+      "commit": "d8ab616"
+    },
+    {
+      "id": "T2",
+      "title": "references/watch.md: enter, fixture hook, resume pass, CI triage, C-tasks, Push gate",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 2,
+      "files": [
+        "skills/spec-agent/references/watch.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC6",
+        "AC7"
+      ],
+      "review": "each",
+      "wave": 1,
+      "started_at": "2026-10-21T14:32:59Z",
+      "finished_at": "2026-10-21T14:34:37Z",
+      "commit": "2b894dd"
+    },
+    {
+      "id": "T3",
+      "title": "state.md schema and Resume at watch",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "skills/spec-agent/references/state.md"
+      ],
+      "criteria": [
+        "AC3",
+        "AC6",
+        "AC8"
+      ],
+      "review": "batch",
+      "wave": 1,
+      "started_at": "2026-10-21T14:32:59Z",
+      "finished_at": "2026-10-21T14:35:19Z",
+      "commit": "4626334",
+      "red": null
+    },
+    {
+      "id": "T4",
+      "title": "Wire pointers: SKILL.md deliver step, lifecycle row and Push gate, guardrails, /work",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 2,
+      "files": [
+        "skills/spec-agent/SKILL.md",
+        "skills/spec-agent/references/lifecycle.md",
+        "skills/spec-agent/references/guardrails.md",
+        "skills/work/SKILL.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC7",
+        "AC8"
+      ],
+      "review": "each",
+      "after": [
+        "T2"
+      ],
+      "wave": 2,
+      "started_at": "2026-10-21T14:38:19Z",
+      "finished_at": "2026-10-21T14:40:02Z",
+      "commit": "395c969"
+    },
+    {
+      "id": "T5",
+      "title": "Docs status and changelog fragment (bump: patch)",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "docs/post-deliver.md",
+        "docs/spec-agent.md",
+        "changelog.d/079-watch-ci-failures.md"
+      ],
+      "criteria": [
+        "AC8"
+      ],
+      "review": "batch",
+      "after": [
+        "T2"
+      ],
+      "wave": 2,
+      "started_at": "2026-10-21T14:38:19Z",
+      "finished_at": "2026-10-21T14:39:48Z",
+      "commit": "7786c6d"
+    },
+    {
+      "id": "T6",
+      "title": "Red-CI sandbox eval: ticket 008, log fixture, sandbox-005.toml, README setup, synthetic-run grading tests",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "examples/sandbox/tickets/008-watch-red-ci.md",
+        "examples/sandbox/pr_status/red-ci.unit-tests.log",
+        "examples/sandbox/README.md",
+        "evals/cases/sandbox-005.toml",
+        "tests/test_evals.py",
+        "docs/evals.md"
+      ],
+      "criteria": [
+        "AC4",
+        "AC9",
+        "AC10"
+      ],
+      "review": "batch",
+      "after": [
+        "T1"
+      ],
+      "wave": 2,
+      "started_at": "2026-10-21T14:38:19Z",
+      "finished_at": "2026-10-21T14:40:14Z",
+      "red": "compile-only",
+      "commit": "ece5df5"
+    },
+    {
+      "id": "F1",
+      "title": "watch.md/state.md/lifecycle.md review and security fixes",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "skills/spec-agent/references/watch.md",
+        "skills/spec-agent/references/state.md",
+        "skills/spec-agent/references/lifecycle.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC3",
+        "AC5",
+        "AC6",
+        "AC7"
+      ],
+      "review": "batch",
+      "wave": 3,
+      "started_at": "2026-10-21T14:44:27Z",
+      "finished_at": "2026-10-21T14:46:05Z",
+      "commit": "91b2b1a"
+    },
+    {
+      "id": "F2",
+      "title": "Sandbox fixture path and stricter sandbox-005 case",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "examples/sandbox/README.md",
+        "examples/sandbox/tickets/008-watch-red-ci.md",
+        "evals/cases/sandbox-005.toml",
+        "docs/evals.md",
+        "tests/test_evals.py",
+        "scripts/evals.py"
+      ],
+      "criteria": [
+        "AC9",
+        "AC10"
+      ],
+      "review": "batch",
+      "wave": 3,
+      "started_at": "2026-10-21T14:44:27Z",
+      "finished_at": "2026-10-21T14:47:32Z",
+      "red": "assertion",
+      "commit": "84f1dd2"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-21T05:10:55Z",
+    "stage_started_at": {
+      "intake": "2026-10-21T05:10:55Z",
+      "spec": "2026-10-21T05:10:55Z",
+      "plan": "2026-10-21T13:18:15Z",
+      "implement": "2026-10-21T14:32:59Z",
+      "verify": "2026-10-21T14:49:37Z",
+      "document": "2026-10-21T14:51:40Z",
+      "deliver": "2026-10-21T14:54:02Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-21T05:11:50Z",
+        "approved_at": "2026-10-21T13:18:15Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-21T13:21:05Z",
+        "approved_at": "2026-10-21T14:32:59Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "retries": 2,
+    "reviews": {
+      "first_pass": 2,
+      "total": 5
+    },
+    "waves": {
+      "count": 2,
+      "max_width": 3,
+      "task_minutes": 10.8,
+      "wall_minutes": 4.2
+    }
+  },
+  "living": [
+    "run-lifecycle",
+    "evals"
+  ],
+  "spec_changes_after_approval": [
+    "AC9 fixture path clarified to the sandbox-relative path (review LOW)"
+  ]
+}

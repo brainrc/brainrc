@@ -1,0 +1,38 @@
+# Ticket 010 (watch, merged): run `/work local:tickets/010-watch-merged.md` to the watch stage with
+# `SPEC_PR_STATUS_FIXTURE=pr_status/merged.json` set (sandbox-relative; honored only without a git remote).
+ticket_ref = "local:tickets/010-watch-merged.md"
+
+[[check]]
+kind = "state"
+field = "stage"
+equals = "done"
+
+[[check]]
+kind = "state"
+field = "watch.outcome"
+equals = "merged"
+
+[[check]]
+kind = "state"
+field = "watch.merged_at"
+present = true
+
+[[check]]
+kind = "state"
+field = "watch.post_merge"
+present = true
+
+[[check]]
+kind = "state"
+field = "metrics.time_to_merge"
+present = true
+
+[[check]]
+kind = "file"
+path = "{spec}/verify-merged.md"
+matches = "Post-merge verify"
+
+[[check]]
+kind = "file"
+path = "{spec}/retro.md"
+matches = "^## After delivery"

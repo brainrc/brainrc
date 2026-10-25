@@ -15,13 +15,21 @@ The system SHALL give each ordered child its own Spec and Plan gates, build on t
 _Last changed by 074-campaign-ordered-shape._
 
 ### Sequential PRs
-The system SHALL open only the first PR after approval and each next PR after its predecessor merges, with `main` merged in and tests re-run; upstream review changes and failures propagate as in AC10 and AC11. (AC8-AC11)
-_Last changed by 074-campaign-ordered-shape._
+The system SHALL deliver an ordered stack `sequential` (only the first PR after approval, each next PR after its predecessor merges) or `stacked` (all PRs at once, each based on the previous child's branch), chosen at the Deliver gate; before any child PR merges, `main` SHALL be merged into its branch, its tests re-run, and its base SHALL be `main`. Upstream review changes and failures propagate as before. (AC1, AC2, AC3)
+_Last changed by 090-campaign-ordered-fixes._
 
 ### Merge detection
 The system SHALL learn of a predecessor's merge by reading its PR state on resume, or from the user, and SHALL NOT poll. (AC15)
 _Last changed by 074-campaign-ordered-shape._
 
 ### Campaign state fields
-`campaign.json` SHALL record `shape`, `depends_on`, `order`, and status `waiting`. (AC12)
-_Last changed by 074-campaign-ordered-shape._
+`campaign.json` SHALL record `shape`, `delivery`, `depends_on`, `order`, and statuses `verified` and `waiting`, in one documented home that each child's branch updates only for its own member. (AC4, AC5)
+_Last changed by 090-campaign-ordered-fixes._
+
+### Worktree fence
+Before landing a wave task, the engine SHALL check with a tested offline helper that every changed path is inside the task's worktree and `files`, and that the main tree is unchanged, using `git -C <worktree>`. (AC7, AC8)
+_Last changed by 090-campaign-ordered-fixes._
+
+### Wave link ordering
+The architect SHALL put a task that links to a file another task creates in a later wave. (AC6)
+_Last changed by 090-campaign-ordered-fixes._

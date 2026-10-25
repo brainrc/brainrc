@@ -1,0 +1,12 @@
+{
+  "head_sha": "7a1b2c3d4e5f60718293a4b5c6d7e8f901234567",
+  "updated_at": "2026-01-15T11:45:00Z",
+  "state": "open",
+  "checks": [
+    {"name": "lint", "conclusion": "success"},
+    {"name": "unit-tests", "conclusion": "success"}
+  ],
+  "unresolved_threads": [
+    {"author": "reviewer-a", "body": "Please add a test for the empty-string case."}
+  ]
+}

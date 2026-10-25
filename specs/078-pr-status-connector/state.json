@@ -1,0 +1,175 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:78",
+    "id": "78",
+    "title": "watch 1/4: pr_status connector operation",
+    "url": "https://github.com/bxker/ai-config/issues/78",
+    "pr": "https://github.com/bxker/ai-config/pull/84"
+  },
+  "slug": "078-pr-status-connector",
+  "branch": "078-pr-status-connector",
+  "base": "main",
+  "campaign": "specs/campaign-077-watch",
+  "size": "standard",
+  "mode": "subagent",
+  "delivery": "normal",
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/aicfg.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Contract: pr_status in connectors.md + changelog fragment",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "skills/spec-agent/references/connectors.md",
+        "changelog.d/078-pr-status-connector.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC6",
+        "AC9"
+      ],
+      "review": "each",
+      "wave": 1,
+      "started_at": "2026-10-21T05:00:58Z",
+      "finished_at": "2026-10-21T05:02:33Z",
+      "commit": "ac6a0c2"
+    },
+    {
+      "id": "T2",
+      "title": "ticket-github ## pr_status (gh + GraphQL + MCP, read-only); align post-deliver.md",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 2,
+      "files": [
+        "skills/ticket-github/SKILL.md",
+        "docs/post-deliver.md"
+      ],
+      "criteria": [
+        "AC3",
+        "AC6",
+        "AC9"
+      ],
+      "review": "each",
+      "wave": 1,
+      "started_at": "2026-10-21T05:00:58Z",
+      "finished_at": "2026-10-21T05:02:40Z",
+      "commit": "5dd1ffb"
+    },
+    {
+      "id": "T3",
+      "title": "Validate tests: connectors with and without pr_status",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC4",
+        "AC5",
+        "AC9"
+      ],
+      "review": "batch",
+      "wave": 1,
+      "started_at": "2026-10-21T05:00:58Z",
+      "finished_at": "2026-10-21T05:02:25Z",
+      "red": "assertion",
+      "commit": "dcbe111"
+    },
+    {
+      "id": "T4",
+      "title": "Sandbox pr_status fixtures + offline shape test",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "examples/sandbox/pr_status/red-ci.json",
+        "examples/sandbox/pr_status/review-comment.json",
+        "examples/sandbox/pr_status/merged.json",
+        "examples/sandbox/README.md",
+        "tests/test_evals.py"
+      ],
+      "criteria": [
+        "AC7",
+        "AC8",
+        "AC9"
+      ],
+      "review": "batch",
+      "wave": 1,
+      "started_at": "2026-10-21T05:00:58Z",
+      "finished_at": "2026-10-21T05:04:26Z",
+      "red": "assertion",
+      "commit": "216edf1"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-21T04:52:22Z",
+    "stage_started_at": {
+      "intake": "2026-10-21T04:52:22Z",
+      "spec": "2026-10-21T04:52:53Z",
+      "plan": "2026-10-21T04:55:53Z",
+      "implement": "2026-10-21T05:00:58Z",
+      "verify": "2026-10-21T05:07:15Z",
+      "document": "2026-10-21T05:08:40Z",
+      "deliver": "2026-10-21T05:10:30Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-21T04:54:02Z",
+        "approved_at": "2026-10-21T04:55:53Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-21T04:57:29Z",
+        "approved_at": "2026-10-21T05:00:58Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-24T15:09:42Z",
+        "approved_at": "2026-10-24T15:18:45Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "retries": 1,
+    "reviews": {
+      "first_pass": 1,
+      "total": 2
+    },
+    "waves": {
+      "count": 1,
+      "max_width": 4,
+      "task_minutes": 8.2,
+      "wall_minutes": 3.5
+    },
+    "done_at": "2026-10-24T15:39:31Z"
+  },
+  "living": [
+    "ticket-connectors",
+    "evals"
+  ]
+}

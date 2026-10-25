@@ -17,8 +17,17 @@ on its own.
 ```
 /work gh:42
   intake ─► analyst ─► ⛔ SPEC ─► architect ─► ⛔ PLAN ─► implementer ×N ─► reviewers ─►
-  verifier ─► doc-writer ─► examiner quiz ─► ⛔ DELIVER ─► push · PR · ticket update ─► retro
+  verifier ─► doc-writer ─► examiner quiz ─► ⛔ DELIVER ─► push · PR · ticket update ─► retro ─► watch
 ```
+
+**`watch`** (normal delivery, connector with `pr_status`) runs on `/spec-resume`, never in a
+loop. It reads the PR's checks; a red check caused by this diff becomes a fix task `C<n>`, run
+through the usual implement and review loop, then a **Push gate** (diff stat, commits, the
+failing check) before anything is pushed. External failures are only noted. Unresolved review threads are handled once each: a small
+ask becomes a fix task `R<n>`, a question gets a drafted reply, and a design-level ask stops for
+you. Replies post only after the same Push gate, and after 3 review rounds the PR is handed back.
+After merge, `watch` verifies the merge commit in a detached worktree and records `pass`, `regression`, or `unverified`; a PR closed unmerged ends as `abandoned`, and both show in the summary. Details: [post-deliver.md](post-deliver.md). In a sandbox copy with
+no git remote, `SPEC_PR_STATUS_FIXTURE` names a `pr_status` fixture file read instead of the connector.
 
 ## Commands
 
@@ -69,9 +78,11 @@ Two shapes, detected from the template check plus the children's depends-on link
   batches with one Deliver gate per batch.
 - **ordered**: different or dependent children, built in dependency order. Dependencies come from
   the connector (`api`, then `body`, then `frontmatter`; else epic order). Each child gets its own
-  Spec and Plan gates. One Deliver gate covers all children, then PRs open sequentially: only the
-  first at once. Resuming (`/work --campaign` or `/spec-resume`) opens the next after its
-  predecessor's PR is merged.
+  Spec and Plan gates. One Deliver gate covers all children and picks the delivery: `sequential`
+  (only the first PR opens; resuming with `/work --campaign` or `/spec-resume` opens the next after
+  its predecessor merges) or `stacked` (all PRs open at once, each based on the previous child's
+  branch). Either way a child PR merges only with base `main`: on resume after its predecessor
+  merges, `main` is merged into its branch and a stacked PR is retargeted to `main`.
 
 To express dependencies, use GitHub issue dependencies or a `Depends on #N` line in the child's
 body. For local tickets, use `depends_on: [local:...]` in the child's frontmatter, and list the
@@ -159,6 +170,7 @@ For standard and large runs the engine stops before batched review and recommend
   `transition`, `link_pr` per the
   [connector contract](../skills/spec-agent/references/connectors.md). `validate` checks the
   headings. Existing ones: `ticket-local`, `ticket-github`, `ticket-jira`.
+  Optional: `pr_status` (read-only; without it `watch` skips).
 
 `python3 scripts/aicfg.py validate` checks that every agent, skill, and link referenced exists.
 

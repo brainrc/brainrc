@@ -1,0 +1,59 @@
+{
+  "ref": "gh:77",
+  "shape": "ordered",
+  "dependency_source": "body",
+  "started_at": "2026-10-21T04:50:26Z",
+  "members": [
+    {
+      "ref": "gh:78",
+      "order": 1,
+      "depends_on": [],
+      "status": "delivered",
+      "slug": "078-pr-status-connector",
+      "branch": "078-pr-status-connector",
+      "pr": "https://github.com/bxker/ai-config/pull/84"
+    },
+    {
+      "ref": "gh:79",
+      "order": 2,
+      "depends_on": [
+        "gh:78"
+      ],
+      "status": "delivered",
+      "slug": "079-watch-ci-failures",
+      "branch": "079-watch-ci-failures",
+      "pr": "https://github.com/bxker/ai-config/pull/86"
+    },
+    {
+      "ref": "gh:80",
+      "order": 3,
+      "depends_on": [
+        "gh:79"
+      ],
+      "status": "delivered",
+      "slug": "080-watch-review-comments",
+      "branch": "080-watch-review-comments",
+      "pr": "https://github.com/bxker/ai-config/pull/87"
+    },
+    {
+      "ref": "gh:81",
+      "order": 4,
+      "depends_on": [
+        "gh:80"
+      ],
+      "status": "delivered",
+      "slug": "081-watch-post-merge",
+      "branch": "081-watch-post-merge",
+      "pr": null
+    }
+  ],
+  "gates": {
+    "campaign": {
+      "approved_at": "2026-10-21T04:52:53Z"
+    },
+    "deliver": {
+      "presented_at": "2026-10-24T15:09:42Z",
+      "approved_at": "2026-10-24T15:18:45Z"
+    }
+  }
+}

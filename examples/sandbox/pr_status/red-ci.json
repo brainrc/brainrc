@@ -1,0 +1,10 @@
+{
+  "head_sha": "3f2a9c1d7b4e5a60918c2d3e4f5a6b7c8d9e0f12",
+  "updated_at": "2026-01-15T10:30:00Z",
+  "state": "open",
+  "checks": [
+    {"name": "lint", "conclusion": "success"},
+    {"name": "unit-tests", "conclusion": "failure"}
+  ],
+  "unresolved_threads": []
+}

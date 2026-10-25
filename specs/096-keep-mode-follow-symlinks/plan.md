@@ -1,6 +1,6 @@
 # Plan: Keep file mode and follow symlinks on every write
 
-Spec: [spec.md](spec.md) · Status: draft
+Spec: [spec.md](spec.md) · Status: approved
 
 ## Callouts
 - **New dependencies:** none

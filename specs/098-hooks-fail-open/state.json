@@ -15,9 +15,9 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "spec",
+  "stage": "plan",
   "gates": {
-    "spec": "pending",
+    "spec": "approved",
     "plan": "pending",
     "deliver": "pending"
   },
@@ -33,17 +33,79 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Fail-open hook commands",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "overrides/claude/settings.fragment.json",
+        "overrides/cursor/settings.fragment.json",
+        "tests/test_hooks.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC7"
+      ],
+      "review": "each"
+    },
+    {
+      "id": "T2",
+      "title": "Doctor hook check",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "aicfg/doctor.py",
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC4",
+        "AC5",
+        "AC6"
+      ],
+      "review": "each",
+      "after": [
+        "T1"
+      ]
+    },
+    {
+      "id": "T3",
+      "title": "Troubleshooting entry for blocked tool calls and hook findings",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "docs/troubleshooting.md"
+      ],
+      "criteria": [
+        "AC4"
+      ],
+      "review": "batch",
+      "after": [
+        "T2"
+      ]
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-25T20:06:53Z",
     "stage_started_at": {
       "intake": "2026-10-25T20:06:53Z",
-      "spec": "2026-10-25T20:06:53Z"
+      "spec": "2026-10-25T20:06:53Z",
+      "plan": "2026-10-25T20:08:33Z"
     },
     "gates": {
       "spec": {
-        "presented_at": "2026-10-25T20:07:15Z"
+        "presented_at": "2026-10-25T20:07:15Z",
+        "approved_at": "2026-10-25T20:08:33Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-25T20:09:16Z"
       }
     },
     "gate_rework": {

@@ -27,3 +27,16 @@
 **Open issues:** 1 open question (Cursor: explicit allow vs empty output).
 
 **Next:** Spec gate
+
+## architect · plan · done
+2026-10-25T20:09:16Z
+
+**Did:** Wrote plan.md: 3 tasks. Fail-open sh wrappers in the two fragments (no code change; OWNED_HOOK still matches, AC7). Doctor `_hook_findings` extracts each owned hook's script path, reports missing, runs present ones with `{}` and the hook timeout.
+
+**Evidence:** read-only inspection of fragments, plan.py render_fragment, config.hook_command_dir, doctor.py, test_hooks.py.
+
+**Changed files:** specs/098-hooks-fail-open/plan.md
+
+**Open issues:** none. Callouts: hook command form changes in users' settings; doctor runs local scripts (arg list, no shell).
+
+**Next:** Plan gate

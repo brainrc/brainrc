@@ -1,6 +1,6 @@
 # Spec: Hooks fail open when their file is missing
 
-Ticket: gh:98 · Size: standard · Status: draft
+Ticket: gh:98 · Size: standard · Status: approved
 
 ## Problem
 ai-config's guard hooks run as `python3 "<hooks dir>/<guard>.py"`, and the hooks dir is a link
@@ -59,6 +59,4 @@ their script file is missing, and behave as the guard otherwise. (AC1, AC2, AC3,
 missing, or that exits non-zero for an empty payload, with the fix. (AC4, AC5, AC6)
 
 ## Open questions
-1. Cursor with a missing guard: print `{"permission": "allow"}` (default, AC3), or exit 0 with no
-   output? *Cursor's handling of empty hook output isn't documented here; an explicit allow
-   is unambiguous.*
+None. Resolved at the Spec gate: Q1 a missing Cursor guard prints `{"permission": "allow"}` (AC3). Fail-open trade-off accepted.

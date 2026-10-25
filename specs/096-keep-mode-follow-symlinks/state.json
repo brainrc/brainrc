@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:96",
+    "id": "96",
+    "title": "Keep file mode and follow symlinks on every write",
+    "url": "https://github.com/brainrc/brainrc/issues/96",
+    "pr": null
+  },
+  "slug": "096-keep-mode-follow-symlinks",
+  "branch": "096-keep-mode-follow-symlinks",
+  "base": "main",
+  "campaign": "specs/campaign-092-safe-writes",
+  "size": "standard",
+  "mode": "fallback",
+  "delivery": "normal",
+  "stage": "spec",
+  "gates": {
+    "spec": "pending",
+    "plan": "pending",
+    "deliver": "pending"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/aicfg.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-25T18:38:25Z",
+    "stage_started_at": {
+      "intake": "2026-10-25T18:38:25Z",
+      "spec": "2026-10-25T18:38:25Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-25T18:39:46Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  }
+}

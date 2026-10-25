@@ -1,6 +1,6 @@
 # Plan: Campaign ordered-shape fixes from gh:77
 
-Spec: [spec.md](spec.md) · Status: draft
+Spec: [spec.md](spec.md) · Status: approved
 
 ## Callouts
 - **New dependencies:** none

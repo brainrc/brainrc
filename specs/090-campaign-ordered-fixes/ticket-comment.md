@@ -1,0 +1,3 @@
+Fixed the ordered-campaign gaps from gh:77. The Deliver gate now picks `sequential` or `stacked` delivery, and one retarget rule makes every child PR merge with base `main`. There is a new `verified` member status, one documented home for `campaign.json`, a tested `worktree_fence.py` that runs before wave landing (with `git -C <worktree>`), the architect's wave-link rule, and a rule for engine edits after approval. The `campaign` eval check covers stacked delivery.
+Verify: `python3 -m unittest -v tests.test_worktree_fence tests.test_evals.CampaignCheckTest`.
+PR: https://github.com/bxker/ai-config/pull/91

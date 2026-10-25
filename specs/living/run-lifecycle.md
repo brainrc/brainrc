@@ -33,3 +33,7 @@ _Last changed by 081-watch-post-merge._
 ### Retro After delivery section
 When `watch` ends, `retro.md` SHALL gain one appended **After delivery** section covering CI failures, review rounds, reviewer catches the run missed, and the post-merge result. (AC7)
 _Last changed by 081-watch-post-merge._
+
+### Engine edits after approval
+The engine MAY edit an approved artifact only for wording or path fixes that change no criterion's meaning, and SHALL log each in `log.md` and list it at the Deliver gate. (AC10)
+_Last changed by 090-campaign-ordered-fixes._

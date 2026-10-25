@@ -97,8 +97,13 @@ def _canary(project: Path, rel: str) -> tuple[bool, str]:
     return not leaks, f"canary from {rel}: " + (f"leaked to {', '.join(leaks)}" if leaks else "not leaked")
 
 
-def _campaign(project: Path, state: dict, order: list[str]) -> tuple[bool, str]:
-    """Members in `order`, spec and plan gates approved, only the first one delivered with a PR."""
+def _campaign(project: Path, state: dict, order: list[str], delivery: str | None = None) -> tuple[bool, str]:
+    """Members in `order` with spec and plan gates approved. `sequential` delivery: only the first
+    delivered with a PR. `stacked`: all delivered, each based on the previous branch or `main`,
+    and a merged member based on `main`."""
+    delivery = delivery or state.get("delivery") or "sequential"
+    if delivery not in ("sequential", "stacked"):
+        return False, f"campaign delivery {delivery!r}, expected 'sequential' or 'stacked'"
     members = sorted(state.get("members", []), key=lambda m: m.get("order", 0))
     refs = [m.get("ref") for m in members]
     if refs != order:
@@ -109,13 +114,25 @@ def _campaign(project: Path, state: dict, order: list[str]) -> tuple[bool, str]:
         bad = [g for g in ("spec", "plan") if gates.get(g) != "approved"]
         if bad:
             problems.append(f"{m['slug']}: {', '.join(bad)} gate not approved")
+    prev = "main"
     for i, m in enumerate(members):
+        if delivery == "stacked":
+            if not (m.get("status") == "delivered" and m.get("pr")):
+                problems.append(f"{m.get('slug')}: status {m.get('status')!r} / pr {m.get('pr')!r}, expected delivered with a pr")
+            base = m.get("base")
+            if m.get("merged") and base != "main":
+                problems.append(f"{m.get('slug')}: merged into {base!r}, expected main")
+            elif base not in (prev, "main"):
+                problems.append(f"{m.get('slug')}: base {base!r}, expected {prev!r} or 'main'")
+            prev = m.get("branch")
+            continue
         if i == 0 and not (m.get("status") == "delivered" and m.get("pr")):
             problems.append("first member must be delivered with pr set")
         if i > 0 and (m.get("status") != "waiting" or m.get("pr")):
             problems.append(f"{m.get('slug')}: status {m.get('status')!r} / pr {m.get('pr')!r}, "
                             "expected waiting with no pr")
-    return not problems, f"campaign {len(members)} members" + (f": {'; '.join(problems)}" if problems else " in order, gates approved, only first delivered")
+    ok_text = " stacked, bases valid" if delivery == "stacked" else " only first delivered"
+    return not problems, f"campaign {len(members)} members" + (f": {'; '.join(problems)}" if problems else f" in order, gates approved,{ok_text}")
 
 
 def run_check(check: dict, project: Path, run: Path, state: dict) -> tuple[bool, str]:
@@ -169,7 +186,7 @@ def run_check(check: dict, project: Path, run: Path, state: dict) -> tuple[bool,
     if kind == "canary":
         return _canary(project, check.get("file", ".env"))
     if kind == "campaign":
-        return _campaign(project, state, check["order"])
+        return _campaign(project, state, check["order"], check.get("delivery"))
     return False, f"unknown check kind {kind!r} (known: {', '.join(KINDS)})"
 
 

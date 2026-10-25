@@ -9,7 +9,7 @@
       "ref": "gh:96",
       "order": 1,
       "depends_on": [],
-      "status": "in_progress",
+      "status": "verified",
       "slug": "096-keep-mode-follow-symlinks",
       "branch": "096-keep-mode-follow-symlinks",
       "pr": null

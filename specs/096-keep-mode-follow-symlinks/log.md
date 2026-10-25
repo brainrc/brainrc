@@ -100,3 +100,44 @@
 **Open issues:** none
 
 **Next:** batched review
+
+## code-reviewer · batch (T2) · done
+2026-10-25T19:39:15Z
+
+**Did:** Reviewed T2 diff (1b1aea3) against AC1, AC4. review_context: shared (user chose to continue in this session).
+
+**Findings:** none. Docs note: docs/troubleshooting.md:55 says backups sit "next to the original"; for a symlink that is beside the target, so the document stage should say so.
+
+**Open issues:** none
+
+**Next:** verify
+
+## verifier · verify · done
+2026-10-25T19:39:15Z
+
+**Did:** Ran suite and validate once, targeted run of 7 tests, real `aicfg apply` on a scratch copy with fresh HOME. 7/7 criteria pass.
+
+**Evidence:**
+- `python3 -m unittest discover -s tests` → 373 passed
+- `python3 scripts/aicfg.py validate` → OK
+
+**Changed files:** specs/096-keep-mode-follow-symlinks/verify.md
+
+**Open issues:** none
+
+**Next:** document
+
+## doc-writer · document · done
+2026-10-25T19:39:52Z
+
+**Did:** Applied the living-spec delta (new area aicfg-apply), updated docs/troubleshooting.md § Settings backups, added changelog.d/096-keep-mode-follow-symlinks.md (patch), drafted pr-body.md and ticket-comment.md.
+
+**Evidence:**
+- `living_specs.py apply` → updated specs/living/aicfg-apply.md
+- `python3 scripts/aicfg.py validate` → OK
+
+**Changed files:** specs/living/aicfg-apply.md, docs/troubleshooting.md, changelog.d/096-keep-mode-follow-symlinks.md, specs/096-keep-mode-follow-symlinks/pr-body.md, specs/096-keep-mode-follow-symlinks/ticket-comment.md
+
+**Open issues:** none
+
+**Next:** child verified; campaign continues with child 2

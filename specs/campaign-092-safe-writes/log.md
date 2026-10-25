@@ -11,3 +11,6 @@
 
 ## 2026-10-25T18:37:58Z · Campaign gate approved
 - Child 1 gh:96 started: specs/096-keep-mode-follow-symlinks/ on branch 096-keep-mode-follow-symlinks (from main).
+
+## 2026-10-25T19:40:36Z · child 1 gh:96 verified
+- Drafts ready; waits for the stack Deliver gate. Child 2 gh:97 starts on 097-apply-lock-unique-tmp from 096-keep-mode-follow-symlinks.

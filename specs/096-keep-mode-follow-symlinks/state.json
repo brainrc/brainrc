@@ -15,7 +15,7 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "implement",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -84,7 +84,8 @@
       "intake": "2026-10-25T18:38:25Z",
       "spec": "2026-10-25T18:38:25Z",
       "plan": "2026-10-25T18:41:09Z",
-      "implement": "2026-10-25T18:42:24Z"
+      "implement": "2026-10-25T18:42:24Z",
+      "document": "2026-10-25T19:39:15Z"
     },
     "gates": {
       "spec": {
@@ -102,10 +103,14 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 2,
-      "first_pass": 2
+      "total": 3,
+      "first_pass": 3
     },
     "retries": 0,
     "interventions": 0
-  }
+  },
+  "review_context": "shared",
+  "living": [
+    "aicfg-apply"
+  ]
 }

@@ -141,3 +141,10 @@
 **Open issues:** none
 
 **Next:** child verified; campaign continues with child 3
+
+## engine · deliver · done
+2026-10-25T23:56:12Z
+
+**Did:** Stacked delivery approved at the campaign Deliver gate. PR null opened (draft), ticket comment posted, retro.md written; stage watch.
+
+**Next:** watch (pull-based, on /spec-resume)

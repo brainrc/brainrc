@@ -24,3 +24,6 @@
 
 ## 2026-10-25T23:46:44Z · child 4 gh:99 verified; stack Deliver gate presented
 - Finding: a real 3.12→3.13 upgrade shows skill/agent links into the old venv as CONFLICT (pre-existing); follow-up.
+
+## 2026-10-25T23:56:12Z · stack Deliver gate approved (stacked)
+- gh:96 → #212 (base main), gh:97 → #213 (base 096), gh:98 → #214 (base 097), gh:99 → #215 (base 098). Comments posted on #96–#99. Merge in order; before each merge, merge main into the branch, re-run tests, retarget to main (`gh pr edit <n> --base main`).

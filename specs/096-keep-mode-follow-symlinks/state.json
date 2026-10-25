@@ -6,7 +6,7 @@
     "id": "96",
     "title": "Keep file mode and follow symlinks on every write",
     "url": "https://github.com/brainrc/brainrc/issues/96",
-    "pr": null
+    "pr": "https://github.com/brainrc/brainrc/pull/212"
   },
   "slug": "096-keep-mode-follow-symlinks",
   "branch": "096-keep-mode-follow-symlinks",
@@ -15,11 +15,11 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "watch",
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [
     "scripting"
@@ -95,6 +95,10 @@
       "plan": {
         "presented_at": "2026-10-25T18:41:53Z",
         "approved_at": "2026-10-25T18:42:24Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-25T23:46:44Z",
+        "approved_at": "2026-10-25T23:47:35Z"
       }
     },
     "gate_rework": {
@@ -107,10 +111,24 @@
       "first_pass": 3
     },
     "retries": 0,
-    "interventions": 0
+    "interventions": 0,
+    "pr_opened_at": "2026-10-25T23:47:53Z"
   },
   "review_context": "shared",
   "living": [
     "aicfg-apply"
-  ]
+  ],
+  "watch": {
+    "checked_at": "2026-10-25T23:47:52Z",
+    "head_sha": "3204da0",
+    "ci_failures": [],
+    "review_rounds": 0,
+    "threads": {
+      "total": 0,
+      "fixed": 0,
+      "replied": 0,
+      "flagged": 0
+    },
+    "thread_log": []
+  }
 }

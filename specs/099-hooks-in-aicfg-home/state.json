@@ -6,7 +6,7 @@
     "id": "99",
     "title": "Copy hooks into AICFG_HOME",
     "url": "https://github.com/brainrc/brainrc/issues/99",
-    "pr": null
+    "pr": "https://github.com/brainrc/brainrc/pull/215"
   },
   "slug": "099-hooks-in-aicfg-home",
   "branch": "099-hooks-in-aicfg-home",
@@ -15,11 +15,11 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "watch",
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [
     "scripting"
@@ -133,6 +133,10 @@
       "plan": {
         "presented_at": "2026-10-25T23:23:39Z",
         "approved_at": "2026-10-25T23:25:55Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-25T23:46:44Z",
+        "approved_at": "2026-10-25T23:47:35Z"
       }
     },
     "gate_rework": {
@@ -145,10 +149,24 @@
       "first_pass": 5
     },
     "retries": 1,
-    "interventions": 0
+    "interventions": 0,
+    "pr_opened_at": "2026-10-25T23:48:18Z"
   },
   "review_context": "shared",
   "living": [
     "aicfg-apply"
-  ]
+  ],
+  "watch": {
+    "checked_at": "2026-10-25T23:48:17Z",
+    "head_sha": "a693950",
+    "ci_failures": [],
+    "review_rounds": 0,
+    "threads": {
+      "total": 0,
+      "fixed": 0,
+      "replied": 0,
+      "flagged": 0
+    },
+    "thread_log": []
+  }
 }

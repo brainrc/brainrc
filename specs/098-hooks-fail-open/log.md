@@ -195,3 +195,10 @@ User chose to widen T1: tests/test_aicfg.py (5 pinned command strings → `claud
 **Open issues:** none
 
 **Next:** child verified; campaign continues with child 4
+
+## engine · deliver · done
+2026-10-25T23:56:12Z
+
+**Did:** Stacked delivery approved at the campaign Deliver gate. PR null opened (draft), ticket comment posted, retro.md written; stage watch.
+
+**Next:** watch (pull-based, on /spec-resume)

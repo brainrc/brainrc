@@ -12,6 +12,10 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.3.40 (2026-10-26)
+
+- CI runs the pinned gitleaks CLI (8.24.3, checksum-verified) instead of `gitleaks-action`, which fails without a paid license now that the repo is owned by an organization. It scans the same commit range with the same flags.
+
 ## 0.3.39 (2026-10-25)
 
 - Ordered campaigns: the Deliver gate picks `sequential` or `stacked` delivery, and a retarget rule makes every child PR merge with base `main` (gh:77's stacked PRs merged into their stacked bases). Adds member status `verified`, a single home for `campaign.json`, and a `stacked` mode for the `campaign` eval check.

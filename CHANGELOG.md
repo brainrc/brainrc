@@ -12,6 +12,10 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.3.42 (2026-10-26)
+
+- `aicfg apply` keeps a settings or MCP file's permissions when it rewrites it, so a `0600` `~/.claude.json` no longer comes back world-readable, and writes through a symlinked file to its target instead of replacing the link. Backups keep the original's permissions and sit next to the target.
+
 ## 0.3.41 (2026-10-26)
 
 - The release workflow creates a GitHub Release for each `vX.Y.Z` tag, with that version's `CHANGELOG.md` section as its notes. It skips a release that already exists. `python3 scripts/aicfg.py release --notes X.Y.Z` prints those notes.

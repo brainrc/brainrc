@@ -12,6 +12,10 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.3.41 (2026-10-26)
+
+- The release workflow creates a GitHub Release for each `vX.Y.Z` tag, with that version's `CHANGELOG.md` section as its notes. It skips a release that already exists. `python3 scripts/aicfg.py release --notes X.Y.Z` prints those notes.
+
 ## 0.3.40 (2026-10-26)
 
 - CI runs the pinned gitleaks CLI (8.24.3, checksum-verified) instead of `gitleaks-action`, which fails without a paid license now that the repo is owned by an organization. It scans the same commit range with the same flags.

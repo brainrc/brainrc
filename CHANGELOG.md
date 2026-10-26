@@ -12,6 +12,11 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.3.44 (2026-10-26)
+
+- Guard hooks fail open when their script is missing, so a moved or deleted checkout (or a Python upgrade) no longer blocks every Claude Code tool call. Cursor's guard replies allow. Run `apply` to rewrite existing hook commands.
+- `aicfg doctor` runs each ai-config hook with an empty payload and reports one that is missing, exits non-zero, times out, or has no `python3`.
+
 ## 0.3.43 (2026-10-26)
 
 - `aicfg apply` takes a lock on `$AICFG_HOME/apply.lock`, so a second apply exits with a clear message instead of overwriting the first one's writes. Temp files carry the pid. A settings or MCP file that changes while apply runs (Claude Code rewriting `~/.claude.json`) is left alone with a `CHANGED` warning and exit 1, instead of losing that write.

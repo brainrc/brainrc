@@ -6,7 +6,7 @@
     "id": "218",
     "title": "Create a GitHub Release for each version tag",
     "url": "https://github.com/brainrc/brainrc/issues/218",
-    "pr": null
+    "pr": "https://github.com/brainrc/brainrc/pull/219"
   },
   "slug": "218-github-releases",
   "branch": "218-github-releases",
@@ -14,11 +14,11 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "watch",
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [
     "ci-pipelines",
@@ -98,7 +98,8 @@
         "approved_at": "2026-10-26T03:22:54Z"
       },
       "deliver": {
-        "presented_at": "2026-10-26T03:38:59Z"
+        "presented_at": "2026-10-26T03:38:59Z",
+        "approved_at": "2026-10-26T03:39:27Z"
       }
     },
     "gate_rework": {
@@ -111,10 +112,24 @@
       "first_pass": 3
     },
     "retries": 0,
-    "interventions": 0
+    "interventions": 0,
+    "pr_opened_at": "2026-10-26T03:39:32Z"
   },
   "review_context": "shared",
   "living": [
     "release"
-  ]
+  ],
+  "watch": {
+    "checked_at": "2026-10-26T03:39:32Z",
+    "head_sha": "4ea7988",
+    "ci_failures": [],
+    "review_rounds": 0,
+    "threads": {
+      "total": 0,
+      "fixed": 0,
+      "replied": 0,
+      "flagged": 0
+    },
+    "thread_log": []
+  }
 }

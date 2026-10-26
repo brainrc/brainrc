@@ -139,3 +139,10 @@
 **Open issues:** none
 
 **Next:** Deliver gate
+
+## engine · deliver · done
+2026-10-26T03:39:32Z
+
+**Did:** Deliver gate approved. Pushed 218-github-releases, opened draft PR https://github.com/brainrc/brainrc/pull/219, commented on #218, wrote retro.md; stage watch.
+
+**Next:** watch (CI expected red on gitleaks until #217 merges: external)

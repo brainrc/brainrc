@@ -4,7 +4,7 @@ from __future__ import annotations
 import copy
 import json
 import os
-import shutil
+import stat
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -56,14 +56,34 @@ def settings_change(m: SettingsMerge) -> tuple[str, dict | None]:
 
 
 def write_settings(dest: Path, merged: dict) -> None:
-    """Back up, prune old backups, then replace atomically so a crash never leaves half a file."""
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    if dest.exists():
+    replace_file(dest, json.dumps(merged, indent=2) + "\n")
+
+
+def replace_file(dest: Path, text: str) -> None:
+    """Back up, prune old backups, then replace atomically so a crash never leaves half a file.
+
+    A symlinked dest is written through to its target, which keeps the link. The target's mode is
+    kept on the new file and the backup.
+    """
+    target = dest.resolve()  # non-strict: a dangling link resolves to the file it would create
+    target.parent.mkdir(parents=True, exist_ok=True)
+    mode = stat.S_IMODE(target.stat().st_mode) if target.exists() else None
+    if mode is not None:
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-        shutil.copy2(dest, dest.with_name(f"{dest.name}.bak-aicfg-{stamp}"))
-        backups = sorted(dest.parent.glob(f"{dest.name}.bak-aicfg-*"))
+        _create(target.with_name(f"{target.name}.bak-aicfg-{stamp}"), target.read_bytes(), mode)
+        backups = sorted(target.parent.glob(f"{target.name}.bak-aicfg-*"))
         for old in backups[:-BACKUPS_KEPT]:
             old.unlink()
-    tmp = dest.with_name(f".{dest.name}.aicfg-tmp")
-    tmp.write_text(json.dumps(merged, indent=2) + "\n")
-    os.replace(tmp, dest)
+    tmp = target.with_name(f".{target.name}.aicfg-tmp")
+    _create(tmp, text.encode(), mode)
+    os.replace(tmp, target)
+
+
+def _create(path: Path, data: bytes, mode: int | None) -> None:
+    """Write a fresh file that is never looser than 0600 before it gets mode (None: umask default)."""
+    path.unlink(missing_ok=True)  # an existing file would keep its own mode under O_TRUNC
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o666 if mode is None else 0o600)
+    with os.fdopen(fd, "wb") as f:
+        f.write(data)
+    if mode is not None:
+        os.chmod(path, mode)

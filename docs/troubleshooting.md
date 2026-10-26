@@ -53,7 +53,12 @@ name: rename or remove yours (or the registry's), then run `apply`.
 
 Before `apply` changes a harness's settings file (Claude Code: `~/.claude/settings.json`), it
 copies it next to the original as `settings.json.bak-aicfg-<UTC time>`. The last 5 are kept.
-No backup is made when the file didn't exist yet.
+No backup is made when the file didn't exist yet. MCP config files (`~/.claude.json` and the
+others) are backed up the same way.
+
+The rewritten file and its backup keep the original's permissions, so a `0600` `~/.claude.json`
+stays `0600`. If the path is a symlink (a dotfiles-managed `settings.json`), `apply` writes
+through to the link's target and leaves the link in place; the backup goes next to the target.
 
 ## Uninstall
 

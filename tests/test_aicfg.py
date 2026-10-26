@@ -4,11 +4,13 @@ import io
 import json
 import os
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO))
@@ -264,6 +266,73 @@ class SyncFakeHomeTest(TempRepoCase):
         quiet(aicfg.cmd_sync, True)
         self.assertEqual(len(list(settings.parent.glob("settings.json.bak-aicfg-*"))), aicfg.BACKUPS_KEPT)
         self.assertEqual(list(settings.parent.glob(".settings.json.aicfg-tmp")), [])
+
+    @unittest.skipIf(os.name == "nt", "POSIX permission bits")
+    def test_settings_write_keeps_the_files_mode(self):
+        settings = self.home / ".claude/settings.json"
+        settings.parent.mkdir()
+        for mode in (0o600, 0o640):
+            settings.write_text("{}")
+            settings.chmod(mode)
+            quiet(aicfg.cmd_sync, True)
+            self.assertIn("hooks", json.loads(settings.read_text()))
+            self.assertEqual(stat.S_IMODE(settings.stat().st_mode), mode)
+            newest = sorted(settings.parent.glob("settings.json.bak-aicfg-*"))[-1]
+            self.assertEqual(stat.S_IMODE(newest.stat().st_mode), mode)
+
+    @unittest.skipIf(os.name == "nt", "POSIX permission bits")
+    def test_temp_file_is_never_looser_than_the_target(self):
+        settings = self.home / ".claude/settings.json"
+        settings.parent.mkdir()
+        settings.write_text("{}")
+        settings.chmod(0o600)
+        seen, real = [], os.replace
+
+        def spy(src, dst):
+            if Path(dst) == settings.resolve():
+                seen.append(stat.S_IMODE(os.stat(src).st_mode))
+            real(src, dst)
+
+        old = os.umask(0)  # a loose umask must not leak into the temp file
+        try:
+            with mock.patch("os.replace", spy):
+                quiet(aicfg.cmd_sync, True)
+        finally:
+            os.umask(old)
+        self.assertEqual(seen, [0o600])
+
+    def test_symlinked_settings_stay_linked_and_the_target_gets_the_hooks(self):
+        dotfiles = self.home / "dotfiles"
+        dotfiles.mkdir()
+        target = dotfiles / "settings.json"
+        target.write_text('{"theme": "dark"}\n')
+        settings = self.home / ".claude/settings.json"
+        settings.parent.mkdir()
+        settings.symlink_to(target)
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        self.assertTrue(settings.is_symlink())
+        self.assertEqual(settings.readlink(), target)
+        data = json.loads(target.read_text())
+        self.assertEqual(data["theme"], "dark")
+        self.assertIn("hooks", data)
+        backups = list(dotfiles.glob("settings.json.bak-aicfg-*"))
+        self.assertEqual([b.read_text() for b in backups], ['{"theme": "dark"}\n'])
+        self.assertEqual(list(settings.parent.glob("settings.json.bak-aicfg-*")), [])
+        self.assertEqual(list(self.home.rglob("*.aicfg-tmp")), [])
+
+    def test_a_dangling_settings_link_creates_its_target(self):
+        dotfiles = self.home / "dotfiles"
+        dotfiles.mkdir()
+        target = dotfiles / "settings.json"
+        settings = self.home / ".claude/settings.json"
+        settings.parent.mkdir()
+        settings.symlink_to(target)
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        self.assertTrue(settings.is_symlink())
+        self.assertEqual(settings.readlink(), target)
+        self.assertIn("hooks", json.loads(target.read_text()))
 
     def test_apply_then_in_sync_and_conflicts_respected(self):
         (self.home / ".claude").mkdir()

@@ -1,6 +1,6 @@
 # Plan: Create a GitHub Release for each version tag
 
-Spec: [spec.md](spec.md) · Status: draft
+Spec: [spec.md](spec.md) · Status: approved
 
 ## Callouts
 - **New dependencies:** none (`gh` is preinstalled on GitHub-hosted runners)

@@ -40,3 +40,59 @@
 **Open issues:** none. Callouts: new CLI form (read-only); CI workflow with contents: write; next merge creates a public Release.
 
 **Next:** Plan gate
+
+## implementer · T1 · done
+2026-10-26T03:24:02Z
+
+**Did:** `release_notes(text, version)` and `cmd_release_notes` in release.py; `cli.main` routes `release --notes X.Y.Z`; usage line added.
+
+**Evidence:**
+- red: both new tests fail on assertions (usage, exit 2)
+- `python3 -m unittest discover -s tests` → 369 passed
+- `python3 scripts/aicfg.py release --notes 0.3.39` → prints the 0.3.39 section, exit 0
+
+**Changed files:** aicfg/release.py, aicfg/cli.py, tests/test_aicfg.py
+
+**Open issues:** none
+
+**Next:** T2
+
+## implementer · T2 · done
+2026-10-26T03:35:14Z
+
+**Did:** release.yml: "GitHub Release" step after the tag push: skip if `gh release view` finds it, else `release --notes` → `gh release create --verify-tag`. Header comment updated. CONTRIBUTING § Releases describes the Release and the manual backfill.
+
+**Evidence:**
+- step body under `bash -e` with a stub `gh`: no release → view, create with `--verify-tag --title v0.3.39 --notes-file`; exists → view only, "already released"; both exit 0
+- notes file passed to create == `release --notes 0.3.39` output (diff empty)
+- `python3 scripts/aicfg.py validate` → OK
+
+**Changed files:** .github/workflows/release.yml, CONTRIBUTING.md
+
+**Open issues:** none
+
+**Next:** review T2
+
+## infra-reviewer · T2 · done
+2026-10-26T03:35:14Z
+
+**Did:** Blast radius and rollout of the release.yml change (ci-pipelines checklist).
+
+**Findings:**
+- LOW .github/workflows/release.yml: if `gh release view` fails for a reason other than "not found" (API outage), the step tries `create`, which fails if the release exists → job red but nothing wrong is published; a re-run fixes it. Plan risk, accepted.
+- none higher: the step runs after the tag push (so a failed push never releases), `concurrency: release` serializes runs, and the bot's own push doesn't retrigger.
+
+**Open issues:** none
+
+**Next:** commit T2
+
+## security-reviewer · T2 · done
+2026-10-26T03:35:14Z
+
+**Did:** security-checklist Pipelines: script injection, token scope, untrusted input.
+
+**Findings:** none. Only `secrets.GITHUB_TOKEN` is used, through `env:`; no event data reaches `run:`; the version comes from the repo's own VERSION; `contents: write` was already granted; the job runs only on push to main and workflow_dispatch, never on pull_request.
+
+**Open issues:** none
+
+**Next:** commit T2

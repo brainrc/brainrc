@@ -45,7 +45,10 @@ branch's checkpoint commits stay on the branch; its `specs/<slug>/` folder carri
 Every merge to `main` is a release. `.github/workflows/release.yml` runs
 `python3 scripts/aicfg.py release`, which folds the fragments into `CHANGELOG.md`, bumps
 `VERSION` by the largest `bump`, and regenerates the plugin manifests. It then commits
-`Release vX.Y.Z` and tags `vX.Y.Z`. Users pin a tag ([install](docs/install.md)). If `main` is
+`Release vX.Y.Z` and tags `vX.Y.Z`, then creates a GitHub Release for the tag with that version's
+`CHANGELOG.md` section as its notes (`python3 scripts/aicfg.py release --notes X.Y.Z` prints them).
+A tag without a release gets one on the next run, or when you run the workflow by hand
+(**Actions → release → Run workflow**). Users pin a tag ([install](docs/install.md)). If `main` is
 protected, add GitHub Actions to the rule's bypass list so the workflow can push its release
 commit and tag.
 

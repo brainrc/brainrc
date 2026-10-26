@@ -89,3 +89,22 @@ def cmd_release(dry_run: bool = False) -> int:
     for p in paths:
         p.unlink()
     return cmd_plugin()
+
+
+def release_notes(text: str, version: str) -> str | None:
+    """The body of CHANGELOG.md's `## <version>` section, stripped; None if there is none."""
+    head = re.search(rf"^## {re.escape(version)}\b.*$", text, re.M)
+    if not head:
+        return None
+    end = CHANGELOG_VERSION.search(text, head.end())
+    return text[head.end():end.start() if end else len(text)].strip()
+
+
+def cmd_release_notes(version: str) -> int:
+    """Print a version's changelog section: the body of its GitHub Release (read-only)."""
+    notes = release_notes((config.REPO / "CHANGELOG.md").read_text(), version)
+    if notes is None:
+        print(f"ERROR CHANGELOG.md has no section for {version}")
+        return 1
+    print(notes)
+    return 0

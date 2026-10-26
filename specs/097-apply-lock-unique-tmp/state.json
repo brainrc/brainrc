@@ -138,9 +138,16 @@
     "aicfg-apply"
   ],
   "watch": {
-    "checked_at": "2026-10-25T23:48:06Z",
+    "checked_at": "2026-10-26T02:48:55Z",
     "head_sha": "82bb448",
-    "ci_failures": [],
+    "ci_failures": [
+      {
+        "check": "validate (gitleaks step)",
+        "sha": "82bb448",
+        "cause": "external",
+        "task": null
+      }
+    ],
     "review_rounds": 0,
     "threads": {
       "total": 0,

@@ -202,3 +202,10 @@ User chose to widen T1: tests/test_aicfg.py (5 pinned command strings → `claud
 **Did:** Stacked delivery approved at the campaign Deliver gate. PR null opened (draft), ticket comment posted, retro.md written; stage watch.
 
 **Next:** watch (pull-based, on /spec-resume)
+
+## engine · watch · done
+2026-10-26T02:48:55Z
+
+**Did:** CI `validate` failed only at gitleaks-action: "missing gitleaks license" (org-owned repo needs GITLEAKS_LICENSE). Tests and validate steps passed. cause: external; no fix task.
+
+**Next:** user decides the CI fix (separate change)

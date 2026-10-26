@@ -103,6 +103,19 @@ class ReleaseTest(TempRepoCase):
         self.assertEqual((self.repo / "VERSION").read_text(), "0.3.9\n")
         self.assertTrue((self.repo / "changelog.d/a.md").is_file())
 
+    def test_notes_print_one_versions_section(self):
+        (self.repo / "CHANGELOG.md").write_text(
+            "# Changelog\n\nIntro.\n\n## 0.3.10 (2026-01-02)\n\n- New.\n- Also new.\n\n"
+            "## 0.3.9 (2026-01-01)\n\n- Old.\n")
+        self.assertEqual(quiet(aicfg.main, ["aicfg.py", "release", "--notes", "0.3.10"]), (0, "- New.\n- Also new.\n"))
+        self.assertEqual(quiet(aicfg.main, ["aicfg.py", "release", "--notes", "0.3.9"]), (0, "- Old.\n"))
+
+    def test_notes_for_a_missing_version_fail(self):
+        (self.repo / "CHANGELOG.md").write_text("# Changelog\n\n## 0.3.10 (2026-01-02)\n\n- New.\n")
+        code, out = quiet(aicfg.main, ["aicfg.py", "release", "--notes", "0.3.1"])  # not a prefix match
+        self.assertEqual(code, 1, out)
+        self.assertEqual(out, "ERROR CHANGELOG.md has no section for 0.3.1\n")
+
     def test_bad_fragments_fail_validation_and_release(self):
         set_core_version(self.repo, "0.3.9")
         self.fragment("a.md", "huge", "- Fixed.")

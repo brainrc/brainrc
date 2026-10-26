@@ -96,3 +96,46 @@
 **Open issues:** none
 
 **Next:** commit T2
+
+## code-reviewer · batch (T1) · done
+2026-10-26T03:37:04Z
+
+**Did:** Reviewed T1 against AC1, AC2. review_context: shared.
+
+**Findings:**
+- LOW aicfg/release.py:release_notes: `\b` lets `0.3.9` match a `## 0.3.9-rc` heading → no such headings in this repo.
+- LOW aicfg/release.py:cmd_release_notes: an empty section prints empty notes with exit 0 → release would have an empty body; release always writes entries.
+
+**Open issues:** none
+
+**Next:** verify
+
+## verifier · verify · done
+2026-10-26T03:37:04Z
+
+**Did:** Suite and validate once, notes tests, real notes command, and the workflow step run with a stub gh for both branches. 6/6 criteria pass.
+
+**Evidence:**
+- `python3 -m unittest discover -s tests` → 369 passed
+- `python3 scripts/aicfg.py validate` → OK
+
+**Changed files:** specs/218-github-releases/verify.md
+
+**Open issues:** none
+
+**Next:** document
+
+## doc-writer · document · done
+2026-10-26T03:38:59Z
+
+**Did:** Applied the living-spec delta (new area release), added changelog.d/218-github-releases.md (patch), drafted pr-body.md and ticket-comment.md. CONTRIBUTING was done in T2.
+
+**Evidence:**
+- `living_specs.py apply` → updated specs/living/release.md
+- `python3 scripts/aicfg.py validate` → OK
+
+**Changed files:** specs/living/release.md, changelog.d/218-github-releases.md, specs/218-github-releases/pr-body.md, specs/218-github-releases/ticket-comment.md
+
+**Open issues:** none
+
+**Next:** Deliver gate

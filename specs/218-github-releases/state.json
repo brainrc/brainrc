@@ -14,7 +14,7 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "implement",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -74,7 +74,7 @@
         "T1"
       ],
       "commit": "7620f5f",
-      "red": "assertion"
+      "red": null
     }
   ],
   "blocked": null,
@@ -84,7 +84,9 @@
       "intake": "2026-10-26T03:18:22Z",
       "spec": "2026-10-26T03:18:22Z",
       "plan": "2026-10-26T03:20:56Z",
-      "implement": "2026-10-26T03:22:54Z"
+      "implement": "2026-10-26T03:22:54Z",
+      "document": "2026-10-26T03:37:04Z",
+      "deliver": "2026-10-26T03:38:59Z"
     },
     "gates": {
       "spec": {
@@ -94,6 +96,9 @@
       "plan": {
         "presented_at": "2026-10-26T03:21:24Z",
         "approved_at": "2026-10-26T03:22:54Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-26T03:38:59Z"
       }
     },
     "gate_rework": {
@@ -102,10 +107,14 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 2,
-      "first_pass": 2
+      "total": 3,
+      "first_pass": 3
     },
     "retries": 0,
     "interventions": 0
-  }
+  },
+  "review_context": "shared",
+  "living": [
+    "release"
+  ]
 }

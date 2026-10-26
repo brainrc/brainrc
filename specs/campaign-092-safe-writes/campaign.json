@@ -18,7 +18,7 @@
       "ref": "gh:97",
       "order": 2,
       "depends_on": [],
-      "status": "todo",
+      "status": "verified",
       "slug": "097-apply-lock-unique-tmp",
       "branch": "097-apply-lock-unique-tmp",
       "pr": null

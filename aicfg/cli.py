@@ -29,11 +29,13 @@ are merged (only entries owned by ai-config are replaced) and backed up first.
 """
 from __future__ import annotations
 
+import os
 import sys
 
 from . import config
 from .config import (
     ConfigError,
+    aicfg_home,
     extensions_file,
     home_extensions_file,
     legacy_instructions,
@@ -46,7 +48,7 @@ from .opencode import rendered_agents
 from .packs import describe, fetch_pack, git_packs
 from .plan import invalid_fragments, plan
 from .mcp import check_servers, mcp_change, mcp_plan, record_owned, write_mcp
-from .settings import settings_change, write_settings
+from .settings import FileChanged, read_current, settings_change, write_settings
 from .plugin import cmd_plugin
 from .release import cmd_release, cmd_release_notes
 from .tokens import cmd_tokens
@@ -54,7 +56,38 @@ from .validate import cmd_validate
 from .doctor import cmd_doctor
 
 
+CHANGED_HINT = "(changed during apply; close Claude Code and re-run)"
+
+
 def cmd_sync(apply: bool) -> int:
+    """status (apply=False) or apply; apply holds $AICFG_HOME/apply.lock while it runs."""
+    if not apply:
+        return _sync(False)
+    lock = aicfg_home() / "apply.lock"
+    lock.parent.mkdir(parents=True, exist_ok=True)
+    with open(lock, "a") as f:
+        if not _try_lock(f):
+            print(f"ERROR another aicfg apply is running (lock: {tilde(lock)})")
+            print("\nNothing written. Let it finish, then re-run.")
+            return 1
+        return _sync(True)
+
+
+def _try_lock(f) -> bool:
+    """Exclusive and non-blocking. The OS releases it when the file closes or the process dies."""
+    try:
+        if os.name == "nt":
+            import msvcrt
+            msvcrt.locking(f.fileno(), msvcrt.LK_NBLCK, 1)
+        else:
+            import fcntl
+            fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        return False
+    return True
+
+
+def _sync(apply: bool) -> int:
     try:
         pending = [(key, cfg, root) for key, cfg, root in git_packs() if not root.exists()]
     except ConfigError as e:
@@ -127,7 +160,7 @@ def cmd_sync(apply: bool) -> int:
                 legacy_instructions().parent.rmdir()
 
     links, stale, merges = plan(srcs)
-    conflicts, changes = 0, len(pending)
+    conflicts, changed, changes = 0, 0, len(pending)
     for link in links:
         state = link.state(roots)
         if state == "ok":
@@ -148,6 +181,7 @@ def cmd_sync(apply: bool) -> int:
         if apply:
             p.unlink()
     for m in merges:
+        before = read_current(m.dest)
         state, merged = settings_change(m)
         if state == "ok":
             continue
@@ -158,8 +192,13 @@ def cmd_sync(apply: bool) -> int:
             continue
         changes += 1
         if apply:
-            write_settings(m.dest, merged)
+            try:
+                write_settings(m.dest, merged, before)
+            except FileChanged:
+                changed += 1
+                print(f"{'CHANGED':9} {m.harness:9} {tilde(m.dest)}  {CHANGED_HINT}")
     for s in mcp_plan(srcs):
+        before = read_current(s.dest)
         state, text, clashing, owned = mcp_change(s)
         for name in clashing:
             conflicts += 1
@@ -172,7 +211,11 @@ def cmd_sync(apply: bool) -> int:
             changes += 1
             print(f"{'MERGE':9} {s.harness:9} {tilde(s.dest)}  (mcp)")
             if apply:
-                write_mcp(s, text, owned)
+                try:
+                    write_mcp(s, text, owned, before)
+                except FileChanged:
+                    changed += 1
+                    print(f"{'CHANGED':9} {s.harness:9} {tilde(s.dest)}  {CHANGED_HINT}")
         elif apply:
             record_owned(s, owned)  # e.g. adopt entries that already match after lost state
 
@@ -183,7 +226,10 @@ def cmd_sync(apply: bool) -> int:
     if conflicts:
         print(f"\n{conflicts} conflict(s): existing files not managed by this repo. "
               "Move them into the repo (or delete them), then re-run.")
-    return 1 if conflicts else 0
+    if changed:
+        print(f"\n{changed} file(s) changed while apply ran, so they were left alone. "
+              "Close Claude Code (it rewrites ~/.claude.json while running), then re-run.")
+    return 1 if conflicts or changed else 0
 
 
 def cmd_update() -> int:

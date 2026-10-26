@@ -1,0 +1,135 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:97",
+    "id": "97",
+    "title": "Lock apply and use unique tmp names",
+    "url": "https://github.com/brainrc/brainrc/issues/97",
+    "pr": null
+  },
+  "slug": "097-apply-lock-unique-tmp",
+  "branch": "097-apply-lock-unique-tmp",
+  "base": "096-keep-mode-follow-symlinks",
+  "campaign": "specs/campaign-092-safe-writes",
+  "size": "standard",
+  "mode": "fallback",
+  "delivery": "normal",
+  "stage": "deliver",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "pending"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/aicfg.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Changed-during-apply guard and pid temp names",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "aicfg/settings.py",
+        "aicfg/mcp.py",
+        "aicfg/cli.py",
+        "tests/test_aicfg.py",
+        "tests/test_mcp.py"
+      ],
+      "criteria": [
+        "AC3",
+        "AC4"
+      ],
+      "review": "each",
+      "commit": "05fcb98",
+      "red": "assertion"
+    },
+    {
+      "id": "T2",
+      "title": "Apply lock",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "aicfg/cli.py",
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC5"
+      ],
+      "review": "batch",
+      "after": [
+        "T1"
+      ],
+      "commit": "a26d174",
+      "red": "assertion"
+    },
+    {
+      "id": "T3",
+      "title": "Troubleshooting docs for the lock and changed-file messages",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "docs/troubleshooting.md"
+      ],
+      "criteria": [
+        "AC6"
+      ],
+      "review": "batch",
+      "after": [
+        "T2"
+      ],
+      "commit": "6f87c58"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-25T19:40:58Z",
+    "stage_started_at": {
+      "intake": "2026-10-25T19:40:58Z",
+      "spec": "2026-10-25T19:40:58Z",
+      "plan": "2026-10-25T19:42:05Z",
+      "implement": "2026-10-25T19:43:21Z",
+      "document": "2026-10-25T20:05:39Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-25T19:41:26Z",
+        "approved_at": "2026-10-25T19:42:05Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-25T19:42:49Z",
+        "approved_at": "2026-10-25T19:43:21Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 2,
+      "first_pass": 2
+    },
+    "retries": 0,
+    "interventions": 0
+  },
+  "review_context": "shared",
+  "living": [
+    "aicfg-apply"
+  ]
+}

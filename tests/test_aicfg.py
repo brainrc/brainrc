@@ -265,7 +265,72 @@ class SyncFakeHomeTest(TempRepoCase):
         settings.write_text("{}")
         quiet(aicfg.cmd_sync, True)
         self.assertEqual(len(list(settings.parent.glob("settings.json.bak-aicfg-*"))), aicfg.BACKUPS_KEPT)
-        self.assertEqual(list(settings.parent.glob(".settings.json.aicfg-tmp")), [])
+        self.assertEqual(list(settings.parent.glob(".settings.json.aicfg-tmp*")), [])
+
+    def test_temp_name_includes_the_pid(self):
+        settings = self.home / ".claude/settings.json"
+        settings.parent.mkdir()
+        settings.write_text("{}")
+        names, real = [], os.replace
+
+        def spy(src, dst):
+            if Path(dst) == settings.resolve():
+                names.append(Path(src).name)
+            real(src, dst)
+
+        with mock.patch("os.replace", spy):
+            quiet(aicfg.cmd_sync, True)
+        self.assertEqual(names, [f".settings.json.aicfg-tmp-{os.getpid()}"])
+
+    @unittest.skipIf(os.name == "nt", "fcntl")
+    def test_a_second_apply_fails_while_one_holds_the_lock(self):
+        import fcntl
+        lock = self.aicfg_home / "apply.lock"
+        lock.parent.mkdir(parents=True)
+        with open(lock, "a") as held:
+            fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            code, out = quiet(aicfg.cmd_sync, True)
+            status_code, status_out = quiet(aicfg.cmd_sync, False)
+        self.assertEqual(code, 1, out)
+        self.assertIn("another aicfg apply is running", out)
+        self.assertIn("apply.lock", out)
+        self.assertEqual(list(self.home.iterdir()), [])
+        self.assertEqual(list(self.aicfg_home.iterdir()), [lock])
+        self.assertEqual(status_code, 0, status_out)
+        self.assertIn("Dry run", status_out)
+
+    @unittest.skipIf(os.name == "nt", "fcntl")
+    def test_the_lock_is_released_after_apply_even_on_error(self):
+        import fcntl
+        self.assertEqual(quiet(aicfg.cmd_sync, True)[0], 0)
+        with mock.patch("aicfg.cli.plan", side_effect=RuntimeError("boom")):
+            with self.assertRaises(RuntimeError):
+                quiet(aicfg.cmd_sync, True)
+        with open(self.aicfg_home / "apply.lock", "a") as f:
+            fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)  # raises if a run leaked the lock
+            fcntl.flock(f, fcntl.LOCK_UN)
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+
+    def test_settings_changed_during_apply_are_left_alone(self):
+        settings = self.home / ".claude/settings.json"
+        settings.parent.mkdir()
+        settings.write_text("{}")
+        real = aicfg.cli.settings_change
+
+        def harness_writes_meanwhile(m):
+            result = real(m)
+            if m.dest == settings:
+                settings.write_text('{"theme": "app"}')
+            return result
+
+        with mock.patch("aicfg.cli.settings_change", harness_writes_meanwhile):
+            code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 1, out)
+        self.assertRegex(out, r"CHANGED +claude +~/.claude/settings.json")
+        self.assertIn("close Claude Code", out)
+        self.assertEqual(settings.read_text(), '{"theme": "app"}')
+        self.assertEqual(list(settings.parent.glob("settings.json.bak-aicfg-*")), [])
 
     @unittest.skipIf(os.name == "nt", "POSIX permission bits")
     def test_settings_write_keeps_the_files_mode(self):

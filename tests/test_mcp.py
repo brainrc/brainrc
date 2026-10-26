@@ -7,6 +7,7 @@ import tempfile
 import unittest
 import tomllib
 from pathlib import Path
+from unittest import mock
 
 from test_aicfg import TempRepoCase, aicfg, make_pack, quiet, set_core_version
 
@@ -185,6 +186,25 @@ class McpSyncTest(McpCase):
         self.assertIn("gh", data["mcpServers"])
         if os.name != "nt":
             self.assertEqual(stat.S_IMODE(target.stat().st_mode), 0o600)
+
+    def test_a_claude_json_changed_during_apply_is_left_alone(self):
+        self.claude.write_text(json.dumps({"userID": "u"}))
+        self.registry(GH)
+        real = aicfg.cli.mcp_change
+
+        def claude_writes_meanwhile(s):
+            result = real(s)
+            if s.dest == self.claude:
+                self.claude.write_text(json.dumps({"userID": "u", "numStartups": 2}))
+            return result
+
+        with mock.patch("aicfg.cli.mcp_change", claude_writes_meanwhile):
+            code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 1, out)
+        self.assertRegex(out, r"CHANGED +claude +~/.claude.json")
+        self.assertIn("close Claude Code", out)
+        self.assertEqual(json.loads(self.claude.read_text()), {"userID": "u", "numStartups": 2})
+        self.assertIn("gh", json.loads(self.opencode.read_text())["mcp"])
 
     def test_a_users_own_server_of_the_same_name_is_never_overwritten(self):
         self.claude.write_text(json.dumps({"mcpServers": {"gh": {"type": "stdio", "command": "my-gh"}}}))

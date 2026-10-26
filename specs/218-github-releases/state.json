@@ -14,9 +14,9 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "spec",
+  "stage": "plan",
   "gates": {
-    "spec": "pending",
+    "spec": "approved",
     "plan": "pending",
     "deliver": "pending"
   },
@@ -33,17 +33,61 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "release --notes <version> prints a version's changelog section",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "aicfg/release.py",
+        "aicfg/cli.py",
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T2",
+      "title": "Release workflow creates the GitHub Release; CONTRIBUTING",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        ".github/workflows/release.yml",
+        "CONTRIBUTING.md"
+      ],
+      "criteria": [
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC6"
+      ],
+      "review": "each",
+      "after": [
+        "T1"
+      ]
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-26T03:18:22Z",
     "stage_started_at": {
       "intake": "2026-10-26T03:18:22Z",
-      "spec": "2026-10-26T03:18:22Z"
+      "spec": "2026-10-26T03:18:22Z",
+      "plan": "2026-10-26T03:20:56Z"
     },
     "gates": {
       "spec": {
-        "presented_at": "2026-10-26T03:19:28Z"
+        "presented_at": "2026-10-26T03:19:28Z",
+        "approved_at": "2026-10-26T03:20:56Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-26T03:21:24Z"
       }
     },
     "gate_rework": {

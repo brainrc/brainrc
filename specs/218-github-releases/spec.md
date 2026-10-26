@@ -1,6 +1,6 @@
 # Spec: Create a GitHub Release for each version tag
 
-Ticket: gh:218 · Size: standard · Status: draft
+Ticket: gh:218 · Size: standard · Status: approved
 
 ## Problem
 Every merge to `main` gets a `vX.Y.Z` tag from `release.yml`, but no GitHub Release. The
@@ -53,7 +53,4 @@ without one, with that version's `CHANGELOG.md` section as the body, and SHALL N
 duplicate when the release exists. (AC1, AC2, AC3, AC4, AC5)
 
 ## Open questions
-1. Notes source: one command that reads a version's section back out of `CHANGELOG.md` (analyst
-   default: it covers the fresh, re-run, and backfill paths alike), or have `aicfg release` write
-   the section it just built (the ticket's `--notes-out`), which only covers fresh releases?
-   *Matters for AC4/AC5: the tag-only path has no freshly built section.*
+None. Resolved at the Spec gate: Q1 one command reads a version's section from `CHANGELOG.md`.

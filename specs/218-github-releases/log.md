@@ -27,3 +27,16 @@
 **Open issues:** 1 open question (notes from CHANGELOG vs --notes-out).
 
 **Next:** Spec gate
+
+## architect · plan · done
+2026-10-26T03:21:24Z
+
+**Did:** Wrote plan.md: 2 tasks. `release --notes X.Y.Z` reads the section back from CHANGELOG.md; a release.yml step creates the Release unless `gh release view` finds it (covers fresh, re-run, backfill).
+
+**Evidence:** read-only inspection of aicfg/release.py, cli.py usage and main, release.yml, ReleaseTest.
+
+**Changed files:** specs/218-github-releases/plan.md
+
+**Open issues:** none. Callouts: new CLI form (read-only); CI workflow with contents: write; next merge creates a public Release.
+
+**Next:** Plan gate

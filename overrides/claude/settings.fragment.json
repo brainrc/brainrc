@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"{{hooks_dir}}/guard_outward.py\"",
+            "command": "f=\"{{hooks_dir}}/guard_outward.py\"; [ ! -f \"$f\" ] || python3 \"$f\"",
             "timeout": 5
           }
         ]
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"{{hooks_dir}}/guard_secrets.py\"",
+            "command": "f=\"{{hooks_dir}}/guard_secrets.py\"; [ ! -f \"$f\" ] || python3 \"$f\"",
             "timeout": 5
           }
         ]

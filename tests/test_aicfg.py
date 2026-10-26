@@ -22,6 +22,16 @@ SOURCES = ("skills", "agents", "overrides", "rules")  # core ships no commands/ 
 FRAGMENT = REPO / "overrides/claude/settings.fragment.json"
 
 
+def claude_guard(hooks_dir: str, script: str) -> str:
+    """A Claude Code hook command as the fragment renders it: skipped when the script is gone."""
+    return f'f="{hooks_dir}/{script}"; [ ! -f "$f" ] || python3 "$f"'
+
+
+def cursor_guard(hooks_dir: str) -> str:
+    """A Cursor hook command as the fragment renders it: allows when the guard is gone."""
+    return f'f="{hooks_dir}/guard.py"; if [ -f "$f" ]; then python3 "$f"; else echo \'{{"permission": "allow"}}\'; fi'
+
+
 def quiet(fn, *args):
     buf = io.StringIO()
     with contextlib.redirect_stdout(buf):
@@ -137,7 +147,7 @@ class MergeSettingsTest(unittest.TestCase):
 
     def test_renders_hooks_dir_placeholder(self):
         commands = [h["command"] for g in self.fragment["hooks"]["PreToolUse"] for h in g["hooks"]]
-        self.assertIn('python3 "$HOME/.claude/hooks/ai-config/guard_outward.py"', commands)
+        self.assertIn(claude_guard("$HOME/.claude/hooks/ai-config", "guard_outward.py"), commands)
         self.assertFalse(any(aicfg.HOOKS_DIR_PLACEHOLDER in c for c in commands))
 
     def test_custom_hooks_dir_is_owned(self):
@@ -513,7 +523,7 @@ class PackSyncTest(TempRepoCase):
         hooks_link = self.home / ".claude/hooks/ai-config-acme"
         self.assertEqual(aicfg.link_target(hooks_link), self.pack / "overrides/claude/hooks")
         commands = self.settings_commands()
-        self.assertIn('python3 "$HOME/.claude/hooks/ai-config/guard_outward.py"', commands)
+        self.assertIn(claude_guard("$HOME/.claude/hooks/ai-config", "guard_outward.py"), commands)
         self.assertIn('python3 "$HOME/.claude/hooks/ai-config-acme/guard_acme.py"', commands)
 
         ext = aicfg.extensions_file().read_text()
@@ -645,6 +655,27 @@ class DoctorTest(TempRepoCase):
         code, out = quiet(aicfg.cmd_doctor)
         self.assertEqual(code, 0, out)
         self.assertIn("No problems found.", out)
+
+    def test_missing_hook_script(self):
+        (self.repo / "overrides/claude/hooks/guard_secrets.py").unlink()
+        self.assert_one_fail("claude: hook missing: ~/.claude/hooks/ai-config/guard_secrets.py", "apply")
+
+    def test_broken_hook_script(self):
+        (self.repo / "overrides/claude/hooks/guard_outward.py").write_text("import sys\nsys.exit(3)\n")
+        self.assert_one_fail("claude: hook ~/.claude/hooks/ai-config/guard_outward.py exits 3", "apply")
+
+    def test_every_hook_runs_with_an_empty_payload(self):
+        calls, real = [], subprocess.run
+
+        def spy(args, **kw):
+            calls.append((Path(args[-1]).name, kw.get("input"), kw.get("timeout")))
+            return real(args, **kw)
+
+        with mock.patch("aicfg.doctor.subprocess.run", spy):
+            self.assertEqual([f for f in aicfg.doctor_findings() if "hook" in f[1]], [])
+        self.assertIn(("guard_outward.py", "{}", 5), calls)
+        self.assertIn(("guard_secrets.py", "{}", 5), calls)
+        self.assertEqual([c for c in calls if c[0] == "guard.py"], [("guard.py", "{}", 5)])  # Cursor: once
 
     def test_points_to_troubleshooting_only_when_something_is_wrong(self):
         _, clean = quiet(aicfg.cmd_doctor)
@@ -866,7 +897,7 @@ class PluginTest(TempRepoCase):
         self.assertEqual((plugin["name"], plugin["version"]), ("ai-config", "1.2.3"))
         self.assertEqual(plugin["author"], {"name": "ai-config contributors"})
         commands = [h["command"] for groups in plugin["hooks"].values() for g in groups for h in g["hooks"]]
-        self.assertIn('python3 "${CLAUDE_PLUGIN_ROOT}/overrides/claude/hooks/guard_outward.py"', commands)
+        self.assertIn(claude_guard("${CLAUDE_PLUGIN_ROOT}/overrides/claude/hooks", "guard_outward.py"), commands)
         self.assertNotIn("{{hooks_dir}}", json.dumps(plugin))
 
     def test_antigravity_manifest_is_the_name_only(self):
@@ -1471,7 +1502,7 @@ class CursorHooksTest(TempRepoCase):
         shell = once["hooks"]["beforeShellExecution"]
         self.assertEqual(shell[0], CURSOR_FOREIGN)
         self.assertNotIn(old, shell)
-        self.assertIn('python3 "$HOME/.cursor/hooks/ai-config/guard.py"', [e["command"] for e in shell])
+        self.assertIn(cursor_guard("$HOME/.cursor/hooks/ai-config"), [e["command"] for e in shell])
         self.assertIn("beforeReadFile", once["hooks"])
         self.assertEqual(aicfg.merge_settings(once, wanted, markers), once)
 
@@ -1512,7 +1543,7 @@ class CursorPluginTest(TempRepoCase):
         self.assertEqual(hooks["version"], 1)
         commands = [e["command"] for entries in hooks["hooks"].values() for e in entries]
         self.assertEqual(set(hooks["hooks"]), {"beforeShellExecution", "beforeReadFile"})
-        self.assertTrue(all(c == 'python3 "${CURSOR_PLUGIN_ROOT}/overrides/cursor/hooks/guard.py"'
+        self.assertTrue(all(c == cursor_guard("${CURSOR_PLUGIN_ROOT}/overrides/cursor/hooks")
                             for c in commands), commands)
         self.assertNotIn("..", json.dumps(plugin))
 

@@ -281,6 +281,17 @@ def entry() -> None:
 
 
 def main(argv: list[str]) -> int:
+    """Run one command. A reader that stops early (`aicfg doctor | head`) ends it quietly."""
+    try:
+        code = _dispatch(argv)
+        sys.stdout.flush()  # inside the try: a closed pipe fails here, not at interpreter exit
+        return code
+    except BrokenPipeError:
+        os.dup2(os.open(os.devnull, os.O_WRONLY), sys.stdout.fileno())  # so the final flush can't fail
+        return 0
+
+
+def _dispatch(argv: list[str]) -> int:
     cmd = argv[1] if len(argv) > 1 else "status"
     if cmd in ("status", "apply") and len(argv) <= 2:
         return cmd_sync(apply=cmd == "apply")

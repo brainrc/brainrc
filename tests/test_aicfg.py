@@ -1966,5 +1966,22 @@ class ConfigErrorTest(TempRepoCase):
         self.assert_error(f"{path}:2: `prefix` must be a string")
 
 
+class ClosedStdoutTest(unittest.TestCase):
+    """`aicfg doctor | head -1`: the reader stops early, aicfg exits quietly."""
+
+    def test_closed_stdout_exits_without_a_traceback(self):
+        tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, tmp)
+        env = {**os.environ, "HOME": str(tmp), "AICFG_HOME": str(tmp / "ai-config")}
+        for cmd in ("doctor", "status"):
+            p = subprocess.Popen([sys.executable, str(REPO / "scripts/aicfg.py"), cmd], env=env,
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            p.stdout.close()  # nobody reads: every write gets EPIPE
+            _, err = p.communicate(timeout=60)
+            self.assertNotIn(b"Traceback", err, cmd)
+            self.assertNotIn(b"BrokenPipe", err, cmd)
+            self.assertEqual(p.returncode, 0, (cmd, err))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -31,7 +31,7 @@
 ## engine · Spec gate approved
 2026-10-27T02:30:50Z
 
-- Spec approval time not captured separately (recorded as presented_at; the approval came in the same exchange).
+- Spec approval time not recorded (left unset rather than estimated).
 
 ## implementer · T1 · done
 2026-10-27T02:30:50Z

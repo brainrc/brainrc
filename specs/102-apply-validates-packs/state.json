@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:102",
+    "id": "102",
+    "title": "apply validates packs before linking",
+    "url": "https://github.com/brainrc/brainrc/issues/102",
+    "pr": null
+  },
+  "slug": "102-apply-validates-packs",
+  "branch": "102-apply-validates-packs",
+  "base": "101-reject-duplicate-pack-names",
+  "campaign": "specs/campaign-093-config-pack-loading",
+  "size": "small",
+  "mode": "inline",
+  "delivery": "normal",
+  "stage": "spec",
+  "gates": {
+    "spec": "pending",
+    "plan": "skipped",
+    "deliver": "pending"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/aicfg.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-27T02:31:40Z",
+    "stage_started_at": {
+      "intake": "2026-10-27T02:31:40Z",
+      "spec": "2026-10-27T02:31:40Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-27T02:31:40Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  }
+}

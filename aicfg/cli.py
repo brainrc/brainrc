@@ -109,7 +109,8 @@ def _copy_hooks(overrides: Path, copy_root: Path) -> None:
 
 def _sync(apply: bool) -> int:
     try:
-        check_config()
+        for w in check_config():
+            print(f"WARN {w}")
         pending = [(key, cfg, root) for key, cfg, root in git_packs() if not root.exists()]
     except ConfigError as e:
         print(f"ERROR {e}")

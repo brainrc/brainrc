@@ -154,26 +154,37 @@ def _read_toml(path: Path) -> dict:
         raise toml_error(path, text, e) from None
 
 
-def _check_toml(name: str, path: Path, data: dict) -> None:
+def _check_toml(name: str, path: Path, data: dict, known_tables: set[str] | None = None) -> list[str]:
     """Raise ConfigError, with file and line, for a value that isn't a table or a known key of
-    the wrong type."""
+    the wrong type. Return warnings for unknown keys, and for tables outside known_tables."""
     text = path.read_text() if data else ""
+    warnings = []
     for table, values in data.items():
         if not isinstance(values, dict):
             raise ConfigError(f"{tilde(path)}:{line_of(text, table)}: `{table}` must be a table, e.g. [{table}]")
-        for key, kind in LAYERED_KEYS[name].items():
-            if key in values and not isinstance(values[key], kind):
+        if known_tables is not None and table not in known_tables:
+            warnings.append(f"{tilde(path)}:{line_of(text, table)}: unknown {name[:-2]} [{table}]")
+        for key, value in values.items():
+            kind = LAYERED_KEYS[name].get(key)
+            if kind is None:
+                warnings.append(f"{tilde(path)}:{line_of(text, table, key)}: unknown key `{key}` in [{table}]")
+            elif not isinstance(value, kind):
                 want = "true or false" if kind is bool else "a string"
                 raise ConfigError(f"{tilde(path)}:{line_of(text, table, key)}: [{table}] `{key}` must be {want}")
+    return warnings
 
 
-def _layered(name: str) -> dict[str, dict]:
+def _layered(name: str, warnings: list[str] | None = None) -> dict[str, dict]:
     """<name>.toml with <name>.local.toml merged over it, one table at a time. Each file is
-    checked before the merge, so an error names the file the bad value is in."""
+    checked before the merge, so an error names the file the bad value is in; warnings are
+    added to `warnings` when given. A harness defined only in the local file still loads."""
     config: dict[str, dict] = {}
     for path in (REPO / f"{name}.toml", local_dir() / f"{name}.local.toml"):
         data = _read_toml(path)
-        _check_toml(name, path, data)
+        known = set(config) if name == "harnesses" and config else None
+        found = _check_toml(name, path, data, known)
+        if warnings is not None:
+            warnings += found
         for key, overrides in data.items():
             config.setdefault(key, {}).update(overrides)
     return config
@@ -181,10 +192,11 @@ def _layered(name: str) -> dict[str, dict]:
 
 def check_config() -> list[str]:
     """Check harness and pack config up front, so a command stops on the first bad value before
-    it does anything. Raises ConfigError."""
+    it does anything. Raises ConfigError; returns the warnings (unknown keys and harnesses)."""
+    warnings: list[str] = []
     for name in LAYERED_KEYS:
-        _layered(name)
-    return []
+        _layered(name, warnings)
+    return warnings
 
 
 def load_harnesses(include_disabled: bool = False) -> dict[str, dict]:

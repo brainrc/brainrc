@@ -129,10 +129,11 @@ def _link_finding(link: Link, roots: list[Path]) -> Finding | None:
 def doctor_findings() -> list[Finding]:
     """Everything wrong with this machine's install, each with its fix. Writes nothing."""
     try:
-        check_config()
+        warnings = check_config()
     except ConfigError as e:  # everything below reads this config, so stop here
         return [("FAIL", str(e), "fix that line in the file named")]
     srcs, every_src, found = _doctor_sources()
+    found += [("WARN", w, "fix the name, or delete it if it isn't needed") for w in warnings]
     if roles := check_roles_link():
         found.append(("FAIL", roles, ROLES_FIX))
     try:

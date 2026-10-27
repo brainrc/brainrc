@@ -1912,5 +1912,38 @@ class ConfigErrorTest(TempRepoCase):
         self.assert_error(f"{path}:2: [claude] `enabled` must be true or false")
 
 
+    def assert_warning(self, warning: str) -> None:
+        """status, apply, and validate print the warning once and carry on; doctor reports it."""
+        for fn, args in ((aicfg.cmd_sync, (False,)), (aicfg.cmd_sync, (True,)), (aicfg.cmd_validate, ())):
+            code, out = quiet(fn, *args)
+            self.assertEqual(code, 0, out)
+            self.assertEqual(out.count(f"WARN {warning}"), 1, out)
+        warns = [f[1] for f in aicfg.doctor_findings() if f[0] == "WARN"]
+        self.assertIn(warning, warns)
+
+    def test_unknown_harness_key_warns(self):
+        path = self.local("harnesses", "[claude]\nenabeld = false\n")
+        self.assert_warning(f"{path}:2: unknown key `enabeld` in [claude]")
+
+    def test_unknown_pack_key_warns(self):
+        pack = self.repo / "packs-src/acme"
+        (pack / "skills").mkdir(parents=True)
+        (pack / "pack.toml").write_text('name = "acme"\nrequires_core = ">=0.1"\n')
+        path = self.local("packs", f'[acme]\npath = "{pack}"\nreff = "v1"\n')
+        self.assert_warning(f"{path}:3: unknown key `reff` in [acme]")
+
+    def test_harness_only_in_local_file_warns_and_still_loads(self):
+        path = self.local("harnesses", '[cursr]\nskills = "~/.cursr/skills"\n')
+        self.assert_warning(f"{path}:1: unknown harness [cursr]")
+        self.assertTrue((self.home / ".cursr/skills/spec-agent").is_symlink())
+
+    def test_shipped_config_is_quiet(self):
+        for fn, args in ((aicfg.cmd_sync, (False,)), (aicfg.cmd_validate, ())):
+            code, out = quiet(fn, *args)
+            self.assertEqual(code, 0, out)
+            self.assertNotIn("WARN", out)
+            self.assertNotIn("ERROR", out)
+
+
 if __name__ == "__main__":
     unittest.main()

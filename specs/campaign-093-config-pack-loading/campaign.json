@@ -45,7 +45,7 @@
       "ref": "gh:202",
       "order": 5,
       "depends_on": [],
-      "status": "todo",
+      "status": "in_progress",
       "slug": "202-validate-model-ids-task-tool",
       "branch": "202-validate-model-ids-task-tool",
       "pr": null

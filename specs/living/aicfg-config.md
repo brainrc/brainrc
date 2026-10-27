@@ -16,3 +16,9 @@ _Last changed by 100-readable-config-errors._
 ### Closed output
 aicfg SHALL exit without a traceback when its stdout is closed early. (AC7)
 _Last changed by 100-readable-config-errors._
+
+### Unique pack names
+aicfg SHALL refuse, with an error naming both `packs.toml` keys, two enabled packs with the same
+name, or a pack named `core`, in `validate`, `status`, `apply`, and `doctor`, and `apply` SHALL
+write nothing while it stands. (AC1, AC2, AC3, AC4)
+_Last changed by 101-reject-duplicate-pack-names._

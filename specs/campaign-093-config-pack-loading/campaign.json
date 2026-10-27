@@ -18,7 +18,7 @@
       "ref": "gh:101",
       "order": 2,
       "depends_on": [],
-      "status": "in_progress",
+      "status": "verified",
       "slug": "101-reject-duplicate-pack-names",
       "branch": "101-reject-duplicate-pack-names",
       "pr": null

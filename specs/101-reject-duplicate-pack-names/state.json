@@ -15,9 +15,9 @@
   "size": "small",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "spec",
+  "stage": "deliver",
   "gates": {
-    "spec": "pending",
+    "spec": "approved",
     "plan": "skipped",
     "deliver": "pending"
   },
@@ -33,17 +33,46 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Refuse duplicate pack names",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "aicfg/sources.py",
+        "aicfg/cli.py",
+        "aicfg/validate.py",
+        "aicfg/doctor.py",
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "d40a193"
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-27T02:26:54Z",
     "stage_started_at": {
       "intake": "2026-10-27T02:26:54Z",
-      "spec": "2026-10-27T02:26:54Z"
+      "spec": "2026-10-27T02:26:54Z",
+      "implement": "2026-10-27T02:30:50Z",
+      "verify": "2026-10-27T02:30:50Z",
+      "document": "2026-10-27T02:30:50Z",
+      "deliver": "2026-10-27T02:30:50Z"
     },
     "gates": {
       "spec": {
-        "presented_at": "2026-10-27T02:27:18Z"
+        "presented_at": "2026-10-27T02:27:18Z",
+        "approved_at": "2026-10-27T02:27:18Z"
       }
     },
     "gate_rework": {
@@ -52,10 +81,13 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
+      "total": 1,
       "first_pass": 0
     },
     "retries": 0,
     "interventions": 0
-  }
+  },
+  "living": [
+    "aicfg-config"
+  ]
 }

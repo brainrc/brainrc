@@ -2177,5 +2177,37 @@ class PackApplyCheckTest(TempRepoCase):
         self.assertTrue((self.home / ".claude/skills/acme-deploy").is_symlink())
 
 
+class AgentFrontmatterTest(TempRepoCase):
+    """Agent `model` and `tools` names validate accepts."""
+
+    def agent(self, model: str, tools: str) -> tuple[int, str]:
+        path = self.repo / "agents/verifier.md"
+        text = path.read_text()
+        head, sep, body = text.partition("\n---\n")
+        lines = [l for l in head.splitlines() if not l.startswith(("model:", "tools:"))]
+        path.write_text("\n".join(lines + [f"model: {model}", f"tools: {tools}"]) + sep + body)
+        return quiet(aicfg.cmd_validate)
+
+    def test_full_claude_model_id_is_accepted(self):
+        for model in ("claude-sonnet-5-5", "claude-opus-4-1-20250805", "claude-3.5-haiku"):
+            code, out = self.agent(model, "Read")
+            self.assertNotIn("unknown model", out, model)
+            self.assertEqual(code, 0, out)
+
+    def test_task_tool_is_accepted(self):
+        code, out = self.agent("haiku", "Read, Task")
+        self.assertNotIn("unknown tool", out)
+        self.assertEqual(code, 0, out)
+
+    def test_unknown_names_still_fail(self):
+        for model, tools, error in (("gpt-9", "Read", "unknown model `gpt-9`"),
+                                    ("claude-", "Read", "unknown model `claude-`"),
+                                    ("Claude-Sonnet", "Read", "unknown model `Claude-Sonnet`"),
+                                    ("haiku", "Read, Nope", "unknown tool `Nope`")):
+            code, out = self.agent(model, tools)
+            self.assertEqual(code, 1, out)
+            self.assertIn(error, out)
+
+
 if __name__ == "__main__":
     unittest.main()

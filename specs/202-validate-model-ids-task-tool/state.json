@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:202",
+    "id": "202",
+    "title": "Validate accepts full model IDs and the Task tool",
+    "url": "https://github.com/brainrc/brainrc/issues/202",
+    "pr": "https://github.com/brainrc/brainrc/pull/225"
+  },
+  "slug": "202-validate-model-ids-task-tool",
+  "branch": "202-validate-model-ids-task-tool",
+  "base": "103-refetch-git-pack-on-change",
+  "campaign": "specs/campaign-093-config-pack-loading",
+  "size": "small",
+  "mode": "inline",
+  "delivery": "normal",
+  "stage": "watch",
+  "gates": {
+    "spec": "approved",
+    "plan": "skipped",
+    "deliver": "approved"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/aicfg.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Accept full model IDs and Task",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "aicfg/config.py",
+        "aicfg/validate.py",
+        "tests/test_aicfg.py",
+        "docs/formats.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "bc517b4"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-27T02:43:30Z",
+    "stage_started_at": {
+      "intake": "2026-10-27T02:43:30Z",
+      "spec": "2026-10-27T02:43:30Z",
+      "implement": "2026-10-27T02:44:06Z",
+      "verify": "2026-10-27T02:45:23Z",
+      "document": "2026-10-27T02:45:23Z",
+      "deliver": "2026-10-27T02:45:23Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-27T02:43:30Z",
+        "approved_at": "2026-10-27T02:44:06Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-27T02:45:23Z",
+        "approved_at": "2026-10-27T02:46:10Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 1,
+      "first_pass": 1
+    },
+    "retries": 0,
+    "interventions": 0,
+    "pr_opened_at": "2026-10-27T02:48:49Z"
+  },
+  "living": [
+    "aicfg-config"
+  ],
+  "watch": {
+    "entered_at": "2026-10-27T02:48:49Z"
+  }
+}

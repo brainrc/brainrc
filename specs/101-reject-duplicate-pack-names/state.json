@@ -6,7 +6,7 @@
     "id": "101",
     "title": "Reject duplicate pack names",
     "url": "https://github.com/brainrc/brainrc/issues/101",
-    "pr": null
+    "pr": "https://github.com/brainrc/brainrc/pull/222"
   },
   "slug": "101-reject-duplicate-pack-names",
   "branch": "101-reject-duplicate-pack-names",
@@ -15,11 +15,11 @@
   "size": "small",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "watch",
   "gates": {
     "spec": "approved",
     "plan": "skipped",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [
     "scripting"
@@ -72,6 +72,10 @@
     "gates": {
       "spec": {
         "presented_at": "2026-10-27T02:27:18Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-27T02:45:23Z",
+        "approved_at": "2026-10-27T02:46:10Z"
       }
     },
     "gate_rework": {
@@ -84,9 +88,13 @@
       "first_pass": 0
     },
     "retries": 0,
-    "interventions": 0
+    "interventions": 0,
+    "pr_opened_at": "2026-10-27T02:48:49Z"
   },
   "living": [
     "aicfg-config"
-  ]
+  ],
+  "watch": {
+    "entered_at": "2026-10-27T02:48:49Z"
+  }
 }

@@ -1,6 +1,6 @@
 # Spec: Refetch a git pack when its ref or URL changes
 
-Ticket: gh:103 · Size: standard · Status: draft
+Ticket: gh:103 · Size: standard · Status: approved
 
 ## Problem
 A pack named by `git` URL is fetched into `$AICFG_HOME/packs/<key>` only when that directory is
@@ -53,4 +53,4 @@ aicfg SHALL stop any git call after 60 seconds and report it as an error. (AC6)
 1. A clone from before this change has no record (AC7): fetch it once, or assume it matches and
    record the current config? *Fetching once needs the network on the first apply after
    upgrading; assuming could leave the exact bug this ticket fixes in place for anyone who
-   already bumped `ref`.* Default: fetch once.
+   already bumped `ref`.* Resolved at the Spec gate: fetch once.

@@ -11,12 +11,12 @@
   "slug": "216-work-auto-mode",
   "branch": "216-work-auto-mode",
   "base": "main",
-  "size": "large",
+  "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "spec",
+  "stage": "plan",
   "gates": {
-    "spec": "pending",
+    "spec": "approved",
     "plan": "pending",
     "deliver": "pending"
   },
@@ -32,17 +32,107 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Auto mode for single runs",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "skills/spec-agent/SKILL.md",
+        "skills/spec-agent/references/guardrails.md",
+        "skills/spec-agent/references/state.md",
+        "skills/spec-agent/references/fallback.md",
+        "skills/spec-agent/templates/pr-body.md",
+        "skills/work/SKILL.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC6"
+      ],
+      "review": "each"
+    },
+    {
+      "id": "T2",
+      "title": "Auto campaigns in campaign.md",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "skills/spec-agent/references/campaign.md"
+      ],
+      "criteria": [
+        "AC7"
+      ],
+      "review": "batch",
+      "after": [
+        "T1"
+      ]
+    },
+    {
+      "id": "T3",
+      "title": "Sandbox tickets and eval cases for auto runs and hard stops",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "examples/sandbox/tickets/",
+        "examples/sandbox/README.md",
+        "evals/cases/",
+        "tests/test_evals.py"
+      ],
+      "criteria": [
+        "AC2",
+        "AC4",
+        "AC8"
+      ],
+      "review": "batch",
+      "after": [
+        "T1"
+      ]
+    },
+    {
+      "id": "T4",
+      "title": "Auto campaign eval case",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "evals/cases/",
+        "examples/sandbox/README.md",
+        "tests/test_evals.py"
+      ],
+      "criteria": [
+        "AC7",
+        "AC8"
+      ],
+      "review": "batch",
+      "after": [
+        "T2",
+        "T3"
+      ]
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-27T03:01:03Z",
     "stage_started_at": {
       "intake": "2026-10-27T03:01:03Z",
-      "spec": "2026-10-27T03:01:03Z"
+      "spec": "2026-10-27T03:01:03Z",
+      "plan": "2026-10-27T03:03:39Z"
     },
     "gates": {
       "spec": {
-        "presented_at": "2026-10-27T03:01:46Z"
+        "presented_at": "2026-10-27T03:01:46Z",
+        "approved_at": "2026-10-27T03:03:39Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-27T03:05:05Z"
       }
     },
     "gate_rework": {

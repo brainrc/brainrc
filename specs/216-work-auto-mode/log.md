@@ -27,3 +27,22 @@
 **Open issues:** 5 open questions (defaults stated)
 
 **Next:** Spec gate (large: split proposal)
+
+## engine · Spec gate approved
+2026-10-27T03:03:39Z
+
+- User chose "Approve, no split": resized large → standard (one run, Plan gate added). Open questions 1-5 resolved with their defaults. Spec change after approval (wording only): size line, resolved note, split marked not taken.
+
+## architect · plan · done
+2026-10-27T03:05:05Z
+
+**Did:** Wrote plan.md: 4 tasks (engine rules; campaigns; eval tickets/cases; campaign eval). No aicfg code change; existing eval check kinds suffice.
+
+**Evidence:**
+- read SKILL.md, guardrails.md, state.md, lifecycle.md, fallback.md, campaign.md, templates/pr-body.md, scripts/evals.py, tests/test_evals.py, examples/sandbox
+
+**Changed files:** specs/216-work-auto-mode/plan.md
+
+**Open issues:** Callouts: new flag + state field; outward-action exception (approved as Q2). Design choice to narrow AC8 to plantable stops: decide at the Plan gate.
+
+**Next:** Plan gate

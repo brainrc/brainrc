@@ -49,8 +49,14 @@ def needs_fetch(cfg: dict, root: Path) -> str | None:
     return None
 
 
+GIT_TIMEOUT = 60  # seconds; an unreachable host or a credential prompt must not hang apply
+
+
 def _git(*args: str, cwd: Path) -> str:
-    result = subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True)
+    try:
+        result = subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, timeout=GIT_TIMEOUT)
+    except subprocess.TimeoutExpired:
+        raise ConfigError(f"git {args[0]} timed out after {GIT_TIMEOUT}s") from None
     if result.returncode:
         detail = (result.stderr.strip().splitlines() or [f"exit {result.returncode}"])[-1]
         raise ConfigError(f"git {args[0]} failed: {detail}")

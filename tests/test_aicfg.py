@@ -1553,6 +1553,25 @@ class GitPackTest(TempRepoCase):
         code, out = quiet(aicfg.cmd_sync, False)
         self.assertNotIn("FETCH", out)
 
+    def test_a_hung_git_call_times_out(self):
+        self.use(git=self.url, ref="v1")
+        timeout = subprocess.TimeoutExpired(["git", "fetch"], 60)
+        with mock.patch("aicfg.packs.subprocess.run", side_effect=timeout):
+            code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 1, out)
+        self.assertIn("ERROR git init timed out after 60s", out)
+        self.assertIn("Nothing written", out)
+        self.assertFalse(self.clone.exists())
+        self.assertEqual(list(self.home.iterdir()), [])
+
+    def test_git_calls_have_a_timeout(self):
+        self.use(git=self.url, ref="v1")
+        real = subprocess.run
+        with mock.patch("aicfg.packs.subprocess.run", side_effect=real) as run:
+            quiet(aicfg.cmd_sync, True)
+        self.assertTrue(run.call_args_list)
+        self.assertTrue(all(c.kwargs.get("timeout") == 60 for c in run.call_args_list), run.call_args_list)
+
     def test_doctor_flags_an_unfetched_pack(self):
         self.use(git=self.url)
         fails = [f for f in aicfg.doctor_findings() if f[0] == "FAIL"]

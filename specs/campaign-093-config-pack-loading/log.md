@@ -9,3 +9,6 @@
 - Note: children 1-4 say "N of 4", gh:202 says "5 of 5" (added later). Epic sub-issue list has 5; all 5 are in.
 
 ## 2026-10-27T02:09:00Z · Campaign gate presented
+
+## 2026-10-27T02:09:22Z · Campaign gate approved
+- Child 1 gh:100 started: specs/100-readable-config-errors/ on branch 100-readable-config-errors (from main).

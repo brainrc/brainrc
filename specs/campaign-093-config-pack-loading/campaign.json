@@ -5,13 +5,56 @@
   "started_at": "2026-10-27T02:09:00Z",
   "delivery": "sequential",
   "members": [
-    { "ref": "gh:100", "order": 1, "depends_on": [], "status": "todo", "slug": "100-readable-config-errors", "branch": "100-readable-config-errors", "pr": null },
-    { "ref": "gh:101", "order": 2, "depends_on": [], "status": "todo", "slug": "101-reject-duplicate-pack-names", "branch": "101-reject-duplicate-pack-names", "pr": null },
-    { "ref": "gh:102", "order": 3, "depends_on": [], "status": "todo", "slug": "102-apply-validates-packs", "branch": "102-apply-validates-packs", "pr": null },
-    { "ref": "gh:103", "order": 4, "depends_on": [], "status": "todo", "slug": "103-refetch-git-pack-on-change", "branch": "103-refetch-git-pack-on-change", "pr": null },
-    { "ref": "gh:202", "order": 5, "depends_on": [], "status": "todo", "slug": "202-validate-model-ids-task-tool", "branch": "202-validate-model-ids-task-tool", "pr": null }
+    {
+      "ref": "gh:100",
+      "order": 1,
+      "depends_on": [],
+      "status": "in_progress",
+      "slug": "100-readable-config-errors",
+      "branch": "100-readable-config-errors",
+      "pr": null
+    },
+    {
+      "ref": "gh:101",
+      "order": 2,
+      "depends_on": [],
+      "status": "todo",
+      "slug": "101-reject-duplicate-pack-names",
+      "branch": "101-reject-duplicate-pack-names",
+      "pr": null
+    },
+    {
+      "ref": "gh:102",
+      "order": 3,
+      "depends_on": [],
+      "status": "todo",
+      "slug": "102-apply-validates-packs",
+      "branch": "102-apply-validates-packs",
+      "pr": null
+    },
+    {
+      "ref": "gh:103",
+      "order": 4,
+      "depends_on": [],
+      "status": "todo",
+      "slug": "103-refetch-git-pack-on-change",
+      "branch": "103-refetch-git-pack-on-change",
+      "pr": null
+    },
+    {
+      "ref": "gh:202",
+      "order": 5,
+      "depends_on": [],
+      "status": "todo",
+      "slug": "202-validate-model-ids-task-tool",
+      "branch": "202-validate-model-ids-task-tool",
+      "pr": null
+    }
   ],
   "gates": {
-    "campaign": { "presented_at": "2026-10-27T02:09:00Z" }
+    "campaign": {
+      "presented_at": "2026-10-27T02:09:00Z",
+      "approved_at": "2026-10-27T02:09:22Z"
+    }
   }
 }

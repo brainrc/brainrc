@@ -19,3 +19,6 @@ Artifacts: specs/campaign-199-rename-brainrc/campaign.json
 
 ## 2026-10-27T18:47:20Z · child 1 gh:204 verified
 - Size small, inline. Drafts ready; waits for the stack Deliver gate. Child 2 gh:205 starts on its branch from 204-point-urls-brainrc.
+
+## 2026-10-27T18:48:46Z · child 2 gh:205 blocked (auto hard stop: size large)
+- Spec written with a 3-child Proposed split; needs approval. Children 3-6 paused. Stack has a blocked child, so no PRs open (gh:204 stays verified, unpushed).

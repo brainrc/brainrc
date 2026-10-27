@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:205",
+    "id": "205",
+    "title": "Rename: PyPI package and the brainrc command",
+    "url": "https://github.com/brainrc/brainrc/issues/205",
+    "pr": null
+  },
+  "slug": "205-brainrc-package-command",
+  "branch": "205-brainrc-package-command",
+  "base": "204-point-urls-brainrc",
+  "size": "large",
+  "mode": "subagent",
+  "delivery": "normal",
+  "auto": true,
+  "stage": "spec",
+  "gates": {
+    "spec": "pending",
+    "plan": "pending",
+    "deliver": "pending"
+  },
+  "domains": [
+    "scripting",
+    "ci-pipelines"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/aicfg.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [],
+  "blocked": {
+    "reason": "auto hard stop: size large; Proposed split needs approval and child tickets",
+    "stage": "spec",
+    "task": null,
+    "since": "2026-10-27T18:48:46Z"
+  },
+  "metrics": {
+    "started_at": "2026-10-27T18:47:44Z",
+    "stage_started_at": {
+      "intake": "2026-10-27T18:47:44Z",
+      "spec": "2026-10-27T18:47:44Z"
+    },
+    "gates": {},
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  }
+}

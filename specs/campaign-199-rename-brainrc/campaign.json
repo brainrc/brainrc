@@ -19,9 +19,9 @@
       "ref": "gh:205",
       "order": 2,
       "depends_on": [],
-      "status": "todo",
-      "slug": null,
-      "branch": null,
+      "status": "blocked",
+      "slug": "205-brainrc-package-command",
+      "branch": "205-brainrc-package-command",
       "pr": null
     },
     {

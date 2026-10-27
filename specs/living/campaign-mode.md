@@ -33,3 +33,9 @@ _Last changed by 090-campaign-ordered-fixes._
 ### Wave link ordering
 The architect SHALL put a task that links to a file another task creates in a later wave. (AC6)
 _Last changed by 090-campaign-ordered-fixes._
+
+### Auto campaigns
+An ordered campaign started with `--auto` SHALL auto-approve its Campaign gate and each child's Spec
+and Plan gates, and deliver stacked draft PRs in dependency order. A child's hard stop SHALL pause
+the later children. (AC7)
+_Last changed by 216-work-auto-mode._

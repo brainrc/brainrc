@@ -37,3 +37,14 @@ _Last changed by 081-watch-post-merge._
 ### Engine edits after approval
 The engine MAY edit an approved artifact only for wording or path fixes that change no criterion's meaning, and SHALL log each in `log.md` and list it at the Deliver gate. (AC10)
 _Last changed by 090-campaign-ordered-fixes._
+
+### Auto mode
+A run started with `--auto` SHALL record `auto: true` from the flag alone, pass every gate without
+stopping while logging each as `auto-approved` with timestamps, and deliver a draft PR whose body
+lists the decisions made without the user. (AC1, AC2, AC3, AC5, AC6)
+_Last changed by 216-work-auto-mode._
+
+### Auto mode hard stops
+An auto run SHALL stop, push nothing, and open no PR on any guardrails stop condition, size `large`,
+a plan Callout, or a CRITICAL/HIGH security finding. (AC4, AC8)
+_Last changed by 216-work-auto-mode._

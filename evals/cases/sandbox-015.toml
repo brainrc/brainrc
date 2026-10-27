@@ -1,0 +1,41 @@
+# Ticket 018 (auto campaign): run `/work --campaign local:tickets/018-auto-greeting-epic.md --shape ordered --auto`
+# to the end. No gate stop: children run in dependency order (005, 006, 007), every gate is
+# auto-approved, and all three are delivered stacked (branches recorded as PRs, no remote).
+ticket_ref = "local:tickets/018-auto-greeting-epic.md"
+
+[[check]]
+kind = "state"
+field = "auto"
+equals = true
+
+[[check]]
+kind = "state"
+field = "delivery"
+equals = "stacked"
+
+[[check]]
+kind = "state"
+field = "gates.campaign.approved_at"
+present = true
+
+[[check]]
+kind = "file"
+path = "{spec}/log.md"
+matches = "(?m)^## .*Campaign gate · auto-approved"
+
+[[check]]
+kind = "campaign"
+delivery = "stacked"
+order = [
+  "local:tickets/005-greeting-param.md",
+  "local:tickets/006-greeting-flag.md",
+  "local:tickets/007-shout-custom-greeting.md",
+]
+
+[[check]]
+kind = "main_untouched"
+
+[[check]]
+kind = "command"
+run = ["python3", "-m", "unittest", "-q"]
+exit = 0

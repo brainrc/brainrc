@@ -1,0 +1,97 @@
+# Ticket 012 (auto, standard): run `/work local:tickets/012-auto-standard.md --auto` to the end. No
+# gate stop: Spec, Plan, and Deliver logged as auto-approved.
+ticket_ref = "local:tickets/012-auto-standard.md"
+
+[[check]]
+kind = "state"
+field = "size"
+equals = "standard"
+
+[[check]]
+kind = "state"
+field = "auto"
+equals = true
+
+[[check]]
+kind = "state"
+field = "blocked"
+present = false
+
+[[check]]
+kind = "state"
+field = "ticket.pr"
+present = true
+
+[[check]]
+kind = "state"
+field = "gates.spec"
+equals = "approved"
+
+[[check]]
+kind = "state"
+field = "gates.plan"
+equals = "approved"
+
+[[check]]
+kind = "state"
+field = "gates.deliver"
+equals = "approved"
+
+[[check]]
+kind = "state"
+field = "metrics.gates.spec.approved_at"
+present = true
+
+[[check]]
+kind = "state"
+field = "metrics.gates.plan.approved_at"
+present = true
+
+[[check]]
+kind = "state"
+field = "metrics.gates.deliver.approved_at"
+present = true
+
+[[check]]
+kind = "file"
+path = "{spec}/log.md"
+matches = "(?m)^## engine · Spec gate · auto-approved"
+
+[[check]]
+kind = "file"
+path = "{spec}/log.md"
+matches = "(?m)^## engine · Plan gate · auto-approved"
+
+[[check]]
+kind = "file"
+path = "{spec}/log.md"
+matches = "(?m)^## engine · Deliver gate · auto-approved"
+
+[[check]]
+kind = "file"
+path = "{spec}/pr-body.md"
+matches = "(?m)^## Decisions made without you"
+
+[[check]]
+kind = "verify"
+
+[[check]]
+kind = "command"
+run = ["python3", "-m", "unittest", "-q"]
+exit = 0
+
+[[check]]
+kind = "command"
+run = ["python3", "greet.py", "Ada"]
+stdout = "Hello, Ada!\n"
+
+[[check]]
+kind = "main_untouched"
+
+[[check]]
+kind = "branch"
+
+[[check]]
+kind = "command"
+run = ["python3", "greet.py", "Ada", "--lang", "fr"]
+stdout = "Bonjour, Ada!\n"

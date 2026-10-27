@@ -15,7 +15,7 @@
   "mode": "subagent",
   "delivery": "normal",
   "auto": true,
-  "stage": "implement",
+  "stage": "verify",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -38,8 +38,8 @@
       "id": "T1",
       "title": "Bump checkout to v7.0.1 and setup-python to v7.0.0; changelog fragment",
       "agent": "implementer",
-      "status": "in_progress",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "files": [
         ".github/workflows/validate.yml",
         ".github/workflows/release.yml",
@@ -54,7 +54,9 @@
         "AC6",
         "AC7"
       ],
-      "review": "each"
+      "review": "each",
+      "red": "assertion",
+      "commit": "d0f63e3"
     }
   ],
   "blocked": null,
@@ -64,7 +66,8 @@
       "intake": "2026-10-27T04:07:20Z",
       "spec": "2026-10-27T04:07:20Z",
       "plan": "2026-10-27T04:08:39Z",
-      "implement": "2026-10-27T04:10:42Z"
+      "implement": "2026-10-27T04:10:42Z",
+      "verify": "2026-10-27T04:14:18Z"
     },
     "gates": {
       "spec": {
@@ -82,8 +85,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
-      "first_pass": 0
+      "total": 3,
+      "first_pass": 3
     },
     "retries": 0,
     "interventions": 0

@@ -68,3 +68,43 @@ Decide: auto-approved (--auto).
 Summary: 1 task, implementer, review: each (code, infra, security). No new dependency, API, migration, IAM, prod config, or destructive change.
 Hard stops checked: Callouts none.
 Decide: auto-approved (--auto).
+
+## implementer · T1 · done
+2026-10-27T04:14:18Z
+
+**Did:** Replaced both pins in validate.yml and release.yml (checkout v7.0.1, setup-python v7.0.0); added changelog fragment.
+
+**Evidence:**
+- red: grep showed old SHAs on all 4 lines; after: new pins on all 4, none old
+- `aicfg.py validate` → OK; unit tests → 438 OK (engine re-ran both)
+
+**Changed files:** .github/workflows/validate.yml, .github/workflows/release.yml, changelog.d/220-ci-actions-node24.md (in fence; commit d0f63e3)
+
+**Open issues:** AC5/AC6 CI-only
+
+**Next:** reviews
+
+## security-reviewer · T1 · done
+2026-10-27T04:14:18Z
+
+**Findings:** none. Pins verified against upstream tags (lightweight, commit SHAs); all `uses:` full-SHA; permissions, triggers, inputs unchanged; no secrets added.
+
+## infra-reviewer · T1 · done
+2026-10-27T04:14:18Z
+
+**Findings:**
+- LOW .github/workflows/release.yml:26: push relies on checkout v7's credential file under $RUNNER_TEMP (includeIf); upstream says no workflow change needed, but only the first post-merge release run proves it. Rollback: revert the checkout pin to v4.4.0 `11d5960…`.
+
+## code-reviewer · T1 · done
+2026-10-27T04:14:18Z
+
+**Findings:**
+- LOW AC3 uses tag commit dates, not release-API publish dates (API blocked); ~100-day margin.
+- PR must say setup-python stays at v7.0.0 because v7.1.0 is 6 days old.
+
+## engine · review result
+2026-10-27T04:14:18Z
+
+- No CRITICAL/HIGH: no auto hard stop. LOW findings go to the PR's Follow-ups.
+
+**Next:** verifier

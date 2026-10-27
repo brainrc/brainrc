@@ -1498,6 +1498,61 @@ class GitPackTest(TempRepoCase):
         self.assertEqual(code, 1, out)
         self.assertIn("ERROR", out)
 
+    def test_apply_follows_a_ref_change(self):
+        self.use(git=self.url, ref="v1")
+        quiet(aicfg.cmd_sync, True)
+        self.use(git=self.url, ref="v2")
+        code, out = quiet(aicfg.cmd_sync, False)
+        self.assertEqual(code, 0, out)
+        self.assertIn(f"FETCH     acme      {self.url} (v2)", out)
+        self.assertFalse((self.clone / "skills/acme-new").exists())  # status doesn't fetch
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        self.assertIn("FETCH", out)
+        self.assertTrue((self.clone / "skills/acme-new").is_dir())
+        self.assertTrue((self.home / ".claude/skills/acme-new").is_symlink())
+
+    def test_apply_follows_a_url_change(self):
+        self.use(git=self.url, ref="v1")
+        quiet(aicfg.cmd_sync, True)
+        moved = self.tmp / "moved.git"
+        shutil.copytree(self.tmp / "acme.git", moved)
+        shutil.rmtree(self.tmp / "acme.git")
+        self.use(git=moved.as_uri(), ref="v2")
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        self.assertIn(f"FETCH     acme      {moved.as_uri()} (v2)", out)
+        self.assertTrue((self.clone / "skills/acme-new").is_dir())
+
+    def test_doctor_flags_a_clone_that_doesnt_match(self):
+        self.use(git=self.url, ref="v1")
+        quiet(aicfg.cmd_sync, True)
+        self.use(git=self.url, ref="v2")
+        fails = [f for f in aicfg.doctor_findings() if f[0] == "FAIL"]
+        self.assertTrue(any("v1" in what and "v2" in what and "apply" in fix for _, what, fix in fails), fails)
+
+    def test_unchanged_config_does_not_fetch(self):
+        self.use(git=self.url, ref="v1")
+        quiet(aicfg.cmd_sync, True)
+        with mock.patch("aicfg.packs.subprocess.run") as run:
+            code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("FETCH", out)
+        run.assert_not_called()
+
+    def test_a_clone_without_a_record_is_fetched_once(self):
+        self.use(git=self.url, ref="v1")
+        quiet(aicfg.cmd_sync, True)
+        record = self.clone / ".git/aicfg-fetched.json"
+        self.assertTrue(record.is_file())
+        record.unlink()  # as a clone from before aicfg recorded fetches
+        code, out = quiet(aicfg.cmd_sync, False)
+        self.assertIn("FETCH", out)
+        quiet(aicfg.cmd_sync, True)
+        self.assertTrue(record.is_file())
+        code, out = quiet(aicfg.cmd_sync, False)
+        self.assertNotIn("FETCH", out)
+
     def test_doctor_flags_an_unfetched_pack(self):
         self.use(git=self.url)
         fails = [f for f in aicfg.doctor_findings() if f[0] == "FAIL"]

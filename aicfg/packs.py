@@ -1,6 +1,7 @@
 """Packs named by git URL: aicfg fetches them into $AICFG_HOME/packs/<key>."""
 from __future__ import annotations
 
+import json
 import shutil
 import subprocess
 from pathlib import Path
@@ -18,6 +19,34 @@ def git_packs() -> list[tuple[str, dict, Path]]:
 def describe(key: str, cfg: dict) -> str:
     """One `FETCH` line: the key, the URL, and the ref (or the remote's default branch)."""
     return f"{'FETCH':9} {key:9} {cfg['git']} ({cfg.get('ref', 'default branch')})"
+
+
+FETCHED = ".git/aicfg-fetched.json"  # inside .git: invisible to `git status` and the pack's items
+
+
+def _wanted(cfg: dict) -> dict:
+    return {"git": str(cfg["git"]), "ref": str(cfg.get("ref", "HEAD"))}
+
+
+def fetched(root: Path) -> dict | None:
+    """The `git` and `ref` the clone at root was last fetched from, or None if not recorded."""
+    try:
+        return json.loads((root / FETCHED).read_text())
+    except (OSError, ValueError):
+        return None
+
+
+def needs_fetch(cfg: dict, root: Path) -> str | None:
+    """Why the clone at root needs fetching for this config, or None when it matches."""
+    if not root.exists():
+        return "not fetched yet"
+    was, want = fetched(root), _wanted(cfg)
+    if was is None:
+        return "fetched before aicfg recorded its ref"
+    for key in ("git", "ref"):
+        if was.get(key) != want[key]:
+            return f"fetched {key} `{was.get(key)}`, packs.toml says `{want[key]}`"
+    return None
 
 
 def _git(*args: str, cwd: Path) -> str:
@@ -40,6 +69,7 @@ def fetch_pack(key: str, cfg: dict, root: Path) -> None:
             raise ConfigError(f"pack {key}: {root} has local changes; commit or discard them, then update")
         _git("fetch", "-q", "--depth", "1", url, ref, cwd=root)
         _git("checkout", "-q", "--detach", "FETCH_HEAD", cwd=root)
+        (root / FETCHED).write_text(json.dumps(_wanted(cfg)) + "\n")
         return
     tmp = root.with_name(f".{root.name}.fetching")
     shutil.rmtree(tmp, ignore_errors=True)
@@ -48,6 +78,7 @@ def fetch_pack(key: str, cfg: dict, root: Path) -> None:
         _git("init", "-q", cwd=tmp)
         _git("fetch", "-q", "--depth", "1", url, ref, cwd=tmp)
         _git("checkout", "-q", "--detach", "FETCH_HEAD", cwd=tmp)
+        (tmp / FETCHED).write_text(json.dumps(_wanted(cfg)) + "\n")
     except ConfigError:
         shutil.rmtree(tmp, ignore_errors=True)
         raise

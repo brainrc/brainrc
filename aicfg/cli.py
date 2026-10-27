@@ -48,7 +48,7 @@ from .config import (
 )
 from .sources import check_packs, collisions, duplicate_packs, render_extensions, render_instructions, sources
 from .opencode import rendered_agents
-from .packs import describe, fetch_pack, git_packs
+from .packs import describe, fetch_pack, git_packs, needs_fetch
 from .plan import hooks_copy_current, invalid_fragments, plan, stale_hooks_copy
 from .mcp import check_servers, mcp_change, mcp_plan, record_owned, write_mcp
 from .settings import FileChanged, read_current, settings_change, write_settings
@@ -111,7 +111,7 @@ def _sync(apply: bool) -> int:
     try:
         for w in check_config():
             print(f"WARN {w}")
-        pending = [(key, cfg, root) for key, cfg, root in git_packs() if not root.exists()]
+        pending = [(key, cfg, root) for key, cfg, root in git_packs() if needs_fetch(cfg, root)]
     except ConfigError as e:
         print(f"ERROR {e}")
         return 1

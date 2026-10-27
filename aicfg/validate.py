@@ -244,6 +244,15 @@ def check_connectors(srcs: list[Source]) -> list[str]:
     return errors
 
 
+def pack_errors(srcs: list[Source]) -> list[tuple[Source, list[str]]]:
+    """(pack, errors) for each pack whose own files fail what validate --pack checks; apply runs
+    it before linking."""
+    agent_names = {f.stem for s in srcs for f in markdown_files("agents", s)}
+    skill_names = {p.name for s in srcs for p in skills(s)}
+    found = [(src, _validate_source(src, agent_names, skill_names)) for src in srcs if not src.is_core]
+    return [(src, errors) for src, errors in found if errors]
+
+
 def cmd_validate(pack: str | None = None) -> int:
     try:
         config_warnings = check_config()

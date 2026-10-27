@@ -55,7 +55,7 @@ from .settings import FileChanged, read_current, settings_change, write_settings
 from .plugin import cmd_plugin
 from .release import cmd_release, cmd_release_notes
 from .tokens import cmd_tokens
-from .validate import cmd_validate
+from .validate import cmd_validate, pack_errors
 from .doctor import cmd_doctor
 
 
@@ -147,6 +147,14 @@ def _sync(apply: bool) -> int:
         for e in incompatible:
             print(f"ERROR {e}")
         print("\nNothing written. Update the pack or core (see CHANGELOG.md), or disable the pack.")
+        return 1
+    bad_packs = pack_errors(srcs)
+    if bad_packs:
+        for _, errors in bad_packs:
+            for e in errors:
+                print(f"ERROR {e}")
+        runs = ", ".join(f"`{config.command(f'validate --pack {tilde(src.root)}')}`" for src, _ in bad_packs)
+        print(f"\nNothing written. Fix the pack ({runs} lists every problem), then re-run.")
         return 1
     bad_fragments = invalid_fragments(srcs)
     if bad_fragments:

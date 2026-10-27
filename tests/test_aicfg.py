@@ -2043,5 +2043,65 @@ class DuplicatePackTest(TempRepoCase):
         self.assertNotIn("is used by both", out)
 
 
+class PackApplyCheckTest(TempRepoCase):
+    """apply and status run validate --pack's checks on each enabled pack before linking."""
+
+    def setUp(self):
+        super().setUp()
+        self.home = Path(tempfile.mkdtemp())
+        self.old_home = os.environ["HOME"]
+        os.environ["HOME"] = str(self.home)
+        self.pack = self.repo / "packs-src/acme"
+        (self.pack / "skills").mkdir(parents=True)
+        (self.pack / "pack.toml").write_text('name = "acme"\nrequires_core = ">=0.1"\n')
+        (self.repo / "packs.local.toml").write_text(f'[acme]\npath = "{self.pack}"\n')
+
+    def tearDown(self):
+        os.environ["HOME"] = self.old_home
+        shutil.rmtree(self.home)
+        super().tearDown()
+
+    def skill(self, name: str, description: str = "Deploy things. Use when deploying.") -> None:
+        (self.pack / "skills" / name).mkdir()
+        meta = f"description: {description}\n" if description else ""
+        (self.pack / "skills" / name / "SKILL.md").write_text(f"---\nname: {name}\n{meta}---\nBody\n")
+
+    def assert_refused(self, error: str) -> None:
+        for apply in (False, True):
+            code, out = quiet(aicfg.cmd_sync, apply)
+            self.assertEqual(code, 1, out)
+            self.assertIn(f"ERROR {error}", out)
+            self.assertIn(f"validate --pack {aicfg.tilde(self.pack)}", out)
+            self.assertIn("Nothing written", out)
+        self.assertEqual(list(self.home.iterdir()), [])
+        self.assertFalse(self.aicfg_home.joinpath("instructions.md").exists())
+
+    def test_unprefixed_skill_is_refused(self):
+        self.skill("deploy")
+        self.assert_refused("acme:skills/deploy: pack skills must start with `acme-`")
+
+    def test_any_pack_validate_error_is_refused(self):
+        self.skill("acme-deploy", description="")
+        self.assert_refused("acme:skills/acme-deploy/SKILL.md: missing `description`")
+
+    def test_only_the_failing_pack_is_named(self):
+        self.skill("deploy")
+        good = self.repo / "packs-src/good"
+        (good / "skills").mkdir(parents=True)
+        (good / "pack.toml").write_text('name = "good"\nrequires_core = ">=0.1"\n')
+        with open(self.repo / "packs.local.toml", "a") as f:
+            f.write(f'[good]\npath = "{good}"\n')
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 1, out)
+        self.assertNotIn(f"validate --pack {aicfg.tilde(good)}", out)
+
+    def test_a_valid_pack_links_as_before(self):
+        self.skill("acme-deploy")
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("ERROR", out)
+        self.assertTrue((self.home / ".claude/skills/acme-deploy").is_symlink())
+
+
 if __name__ == "__main__":
     unittest.main()

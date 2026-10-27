@@ -1945,5 +1945,26 @@ class ConfigErrorTest(TempRepoCase):
             self.assertNotIn("ERROR", out)
 
 
+    def pack(self, text: str) -> str:
+        pack = self.repo / "packs-src/acme"
+        (pack / "skills").mkdir(parents=True, exist_ok=True)
+        (pack / "pack.toml").write_text(text)
+        self.local("packs", f'[acme]\npath = "{pack}"\n')
+        return aicfg.tilde(pack / "pack.toml")
+
+    def test_pack_toml_syntax_error_names_file_and_line(self):
+        path = self.pack('name = "acme"\nprefix = acme-\n')
+        self.assert_error(f"{path}:2: invalid TOML: Invalid value")
+        code, out = quiet(aicfg.cmd_validate, str(self.repo / "packs-src/acme"))
+        self.assertEqual(code, 1, out)
+        self.assertIn(f"ERROR {path}:2: invalid TOML", out)
+
+    def test_pack_name_and_prefix_must_be_strings(self):
+        path = self.pack('requires_core = ">=0.1"\nname = 7\n')
+        self.assert_error(f"{path}:2: `name` must be a string")
+        path = self.pack('name = "acme"\nprefix = false\n')
+        self.assert_error(f"{path}:2: `prefix` must be a string")
+
+
 if __name__ == "__main__":
     unittest.main()

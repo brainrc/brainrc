@@ -27,7 +27,7 @@ Claude Code subagent format.
 name: my-agent
 description: When to delegate to this agent.
 tools: Read, Grep, Glob   # optional; omit to inherit all tools
-model: sonnet             # optional: haiku | sonnet | opus | inherit
+model: sonnet             # optional: haiku | sonnet | opus | inherit, or a full ID (claude-sonnet-5-5)
 ---
 System prompt...
 ```

@@ -37,3 +37,9 @@ _Last changed by 103-refetch-git-pack-on-change._
 ### Git calls time out
 aicfg SHALL stop any git call after 60 seconds and report it as an error. (AC6)
 _Last changed by 103-refetch-git-pack-on-change._
+
+### Agent model and tool names
+`aicfg validate` SHALL accept an agent `model` that is `haiku`, `sonnet`, `opus`, `inherit`, or
+a full `claude-` model ID, and `Task` among its `tools`, and SHALL reject any other model or
+tool name (except `mcp__` tools). (AC1, AC2, AC3)
+_Last changed by 202-validate-model-ids-task-tool._

@@ -17,6 +17,7 @@ from .config import (
     KINDS,
     KNOWN_MODELS,
     KNOWN_TOOLS,
+    MODEL_ID,
     ROLES_LINK,
     REQUIRED_CONNECTOR_OPS,
     SKILL_NAME,
@@ -114,7 +115,7 @@ def _validate_source(src: Source, agent_names: set[str], skill_names: set[str]) 
         tools = {t.strip() for t in meta.get("tools", "").split(",") if t.strip()}
         errors += [f"{rel}: unknown tool `{t}`"
                    for t in sorted(tools - KNOWN_TOOLS) if not t.startswith("mcp__")]
-        if meta.get("model") and meta["model"] not in KNOWN_MODELS:
+        if meta.get("model") and meta["model"] not in KNOWN_MODELS and not MODEL_ID.match(meta["model"]):
             errors.append(f"{rel}: unknown model `{meta['model']}`")
         errors += _check_references(src, f, agent_names, skill_names)
 

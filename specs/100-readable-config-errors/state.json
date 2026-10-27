@@ -6,7 +6,7 @@
     "id": "100",
     "title": "Readable config errors",
     "url": "https://github.com/brainrc/brainrc/issues/100",
-    "pr": null
+    "pr": "https://github.com/brainrc/brainrc/pull/221"
   },
   "slug": "100-readable-config-errors",
   "branch": "100-readable-config-errors",
@@ -15,11 +15,11 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "watch",
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [
     "scripting"
@@ -157,6 +157,10 @@
       "plan": {
         "presented_at": "2026-10-27T02:13:21Z",
         "approved_at": "2026-10-27T02:14:02Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-27T02:45:23Z",
+        "approved_at": "2026-10-27T02:46:10Z"
       }
     },
     "gate_rework": {
@@ -169,10 +173,14 @@
       "first_pass": 1
     },
     "retries": 0,
-    "interventions": 0
+    "interventions": 0,
+    "pr_opened_at": "2026-10-27T02:48:49Z"
   },
   "review_context": "shared",
   "living": [
     "aicfg-config"
-  ]
+  ],
+  "watch": {
+    "entered_at": "2026-10-27T02:48:49Z"
+  }
 }

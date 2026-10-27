@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:103",
+    "id": "103",
+    "title": "Refetch a git pack when its ref or URL changes",
+    "url": "https://github.com/brainrc/brainrc/issues/103",
+    "pr": null
+  },
+  "slug": "103-refetch-git-pack-on-change",
+  "branch": "103-refetch-git-pack-on-change",
+  "base": "102-apply-validates-packs",
+  "campaign": "specs/campaign-093-config-pack-loading",
+  "size": "standard",
+  "mode": "fallback",
+  "delivery": "normal",
+  "stage": "spec",
+  "gates": {
+    "spec": "pending",
+    "plan": "pending",
+    "deliver": "pending"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/aicfg.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-27T02:35:56Z",
+    "stage_started_at": {
+      "intake": "2026-10-27T02:35:56Z",
+      "spec": "2026-10-27T02:35:56Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-27T02:35:56Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  }
+}

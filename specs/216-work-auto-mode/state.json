@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:216",
+    "id": "216",
+    "title": "spec-agent: `--auto` mode, no gate stops, draft PR(s) as output",
+    "url": "https://github.com/brainrc/brainrc/issues/216",
+    "pr": null
+  },
+  "slug": "216-work-auto-mode",
+  "branch": "216-work-auto-mode",
+  "base": "main",
+  "size": "large",
+  "mode": "fallback",
+  "delivery": "normal",
+  "stage": "spec",
+  "gates": {
+    "spec": "pending",
+    "plan": "pending",
+    "deliver": "pending"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/aicfg.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-27T03:01:03Z",
+    "stage_started_at": {
+      "intake": "2026-10-27T03:01:03Z",
+      "spec": "2026-10-27T03:01:03Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-27T03:01:46Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  }
+}

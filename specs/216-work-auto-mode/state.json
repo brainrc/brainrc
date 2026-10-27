@@ -14,10 +14,10 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "plan",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [
@@ -37,8 +37,8 @@
       "id": "T1",
       "title": "Auto mode for single runs",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "files": [
         "skills/spec-agent/SKILL.md",
         "skills/spec-agent/references/guardrails.md",
@@ -55,14 +55,15 @@
         "AC5",
         "AC6"
       ],
-      "review": "each"
+      "review": "each",
+      "commit": "bee24f1"
     },
     {
       "id": "T2",
       "title": "Auto campaigns in campaign.md",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "files": [
         "skills/spec-agent/references/campaign.md"
       ],
@@ -72,14 +73,15 @@
       "review": "batch",
       "after": [
         "T1"
-      ]
+      ],
+      "commit": "5247b1c"
     },
     {
       "id": "T3",
       "title": "Sandbox tickets and eval cases for auto runs and hard stops",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "files": [
         "examples/sandbox/tickets/",
         "examples/sandbox/README.md",
@@ -94,14 +96,16 @@
       "review": "batch",
       "after": [
         "T1"
-      ]
+      ],
+      "red": "assertion",
+      "commit": "723b72c"
     },
     {
       "id": "T4",
       "title": "Auto campaign eval case",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "files": [
         "evals/cases/",
         "examples/sandbox/README.md",
@@ -115,7 +119,43 @@
       "after": [
         "T2",
         "T3"
-      ]
+      ],
+      "red": "assertion",
+      "commit": "03b84dd"
+    },
+    {
+      "id": "F1",
+      "title": "Say when an auto run of size large stops",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "skills/spec-agent/SKILL.md"
+      ],
+      "criteria": [
+        "AC4"
+      ],
+      "review": "batch",
+      "commit": "bb28e39"
+    },
+    {
+      "id": "F2",
+      "title": "Grade the security hard stop by its finding",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "evals/cases/sandbox-014.toml",
+        "examples/sandbox/tickets/017-auto-security.md",
+        "examples/sandbox/README.md",
+        "tests/test_evals.py"
+      ],
+      "criteria": [
+        "AC8"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "2313d50"
     }
   ],
   "blocked": null,
@@ -124,7 +164,11 @@
     "stage_started_at": {
       "intake": "2026-10-27T03:01:03Z",
       "spec": "2026-10-27T03:01:03Z",
-      "plan": "2026-10-27T03:03:39Z"
+      "plan": "2026-10-27T03:03:39Z",
+      "implement": "2026-10-27T03:25:25Z",
+      "verify": "2026-10-27T03:35:40Z",
+      "document": "2026-10-27T03:39:33Z",
+      "deliver": "2026-10-27T03:39:33Z"
     },
     "gates": {
       "spec": {
@@ -132,7 +176,11 @@
         "approved_at": "2026-10-27T03:03:39Z"
       },
       "plan": {
-        "presented_at": "2026-10-27T03:05:05Z"
+        "presented_at": "2026-10-27T03:05:05Z",
+        "approved_at": "2026-10-27T03:25:25Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-27T03:39:33Z"
       }
     },
     "gate_rework": {
@@ -141,10 +189,15 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
-      "first_pass": 0
+      "total": 3,
+      "first_pass": 1
     },
     "retries": 0,
     "interventions": 0
-  }
+  },
+  "review_context": "shared",
+  "living": [
+    "run-lifecycle",
+    "campaign-mode"
+  ]
 }

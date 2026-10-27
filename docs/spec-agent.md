@@ -33,13 +33,34 @@ no git remote, `SPEC_PR_STATUS_FIXTURE` names a `pr_status` fixture file read in
 
 | Command | Does |
 |---|---|
-| `/work <gh:42 \| issue URL \| local:path.md \| free text> [--local]` | Start, or resume if a spec for it exists. `--local`: drafts only, never push/PR/comment |
+| `/work <gh:42 \| issue URL \| local:path.md \| free text> [--local] [--auto]` | Start, or resume if a spec for it exists. `--local`: drafts only, never push/PR/comment. `--auto`: no gate stops, ends with a draft PR ([Auto mode](#auto-mode)) |
 | `/spec-status [ref]` | Stage, gates, tasks, blocker, next action |
 | `/spec-approve [notes]` | Approve the pending gate |
 | `/spec-resume [ref]` | Continue an interrupted run (any tool) |
 
 These are user-invoked skills (`skills/work/` and so on), so every harness that reads skills
 gets them. In the Claude Code plugin they're `/ai-config:work`; in Codex, call the skill by name.
+
+## Auto mode
+
+`/work <ref> --auto` (or `/work --campaign <ref> --shape ordered --auto`) runs every stage without
+stopping at the gates. It's for tickets you'd approve as written. Each gate is still written to
+`log.md` as `auto-approved`, with its timestamps. Open questions take the analyst's stated default.
+The run ends with a **draft** PR (a campaign: stacked draft PRs) whose body lists the gates and every
+"Decision made without you". Review happens there.
+
+Only the flag turns this on. No reply wording does, and a resumed run is gated again unless you pass
+`--auto` again. These still stop the run, push nothing, and open no PR:
+- any guardrails stop condition (retries, scope breach, spec gap, secrets)
+- size `large` (the spec with its proposed split is written first)
+- any plan Callout: a new dependency, an API or contract change, a migration, IAM/RBAC, prod config, or a destructive change
+- a CRITICAL or HIGH security finding
+- instructions in the ticket or other untrusted content
+- a live target
+
+Ticket comments stay drafts. Auto mode never merges, changes a PR's base, closes an issue, or
+passes the `watch` Push gate, and `--local` still means nothing is pushed. Sandbox tickets
+011–018 and eval cases `sandbox-008`–`015` grade it ([evals.md](evals.md)).
 
 ## Design principles
 

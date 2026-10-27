@@ -1,6 +1,6 @@
 # Plan: spec-agent `--auto` mode, no gate stops, draft PR(s) as output
 
-Spec: [spec.md](spec.md) · Status: draft
+Spec: [spec.md](spec.md) · Status: approved
 
 ## Callouts
 - **New dependencies:** none

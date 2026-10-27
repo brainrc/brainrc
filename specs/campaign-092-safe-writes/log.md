@@ -27,3 +27,6 @@
 
 ## 2026-10-25T23:56:12Z · stack Deliver gate approved (stacked)
 - gh:96 → #212 (base main), gh:97 → #213 (base 096), gh:98 → #214 (base 097), gh:99 → #215 (base 098). Comments posted on #96–#99. Merge in order; before each merge, merge main into the branch, re-run tests, retarget to main (`gh pr edit <n> --base main`).
+
+## 2026-10-27T01:09:40Z · landing
+- #212 → v0.3.42, #213 → v0.3.43, #214 → v0.3.44 merged in order; before each, main merged into the next branch, tests re-run, PR retargeted to main (REST, local gh is too old for `pr edit --base`). #215 retargeted to main; last to merge.

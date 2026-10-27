@@ -6,7 +6,7 @@
     "id": "202",
     "title": "Validate accepts full model IDs and the Task tool",
     "url": "https://github.com/brainrc/brainrc/issues/202",
-    "pr": null
+    "pr": "https://github.com/brainrc/brainrc/pull/225"
   },
   "slug": "202-validate-model-ids-task-tool",
   "branch": "202-validate-model-ids-task-tool",
@@ -15,11 +15,11 @@
   "size": "small",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "watch",
   "gates": {
     "spec": "approved",
     "plan": "skipped",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [
     "scripting"
@@ -71,6 +71,10 @@
       "spec": {
         "presented_at": "2026-10-27T02:43:30Z",
         "approved_at": "2026-10-27T02:44:06Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-27T02:45:23Z",
+        "approved_at": "2026-10-27T02:46:10Z"
       }
     },
     "gate_rework": {
@@ -83,9 +87,13 @@
       "first_pass": 1
     },
     "retries": 0,
-    "interventions": 0
+    "interventions": 0,
+    "pr_opened_at": "2026-10-27T02:48:49Z"
   },
   "living": [
     "aicfg-config"
-  ]
+  ],
+  "watch": {
+    "entered_at": "2026-10-27T02:48:49Z"
+  }
 }

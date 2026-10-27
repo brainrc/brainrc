@@ -27,3 +27,7 @@
 
 ## 2026-10-27T02:45:23Z · child 5 gh:202 verified; stack Deliver gate presented
 - Size small, inline. All five children verified.
+
+## 2026-10-27T02:46:10Z · stack Deliver gate approved (stacked)
+- gh:100 → #221 (base main), gh:101 → #222 (base 100), gh:102 → #223 (base 101), gh:103 → #224 (base 102), gh:202 → #225 (base 103). All draft. Comments posted on #100-#103, #202. Merge in order; before each merge, merge main into the branch, re-run tests, retarget to main.
+- #225's body first went up with a placeholder (`#PR4`) and was corrected to #224 right away.

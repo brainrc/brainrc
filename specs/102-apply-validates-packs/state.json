@@ -6,7 +6,7 @@
     "id": "102",
     "title": "apply validates packs before linking",
     "url": "https://github.com/brainrc/brainrc/issues/102",
-    "pr": null
+    "pr": "https://github.com/brainrc/brainrc/pull/223"
   },
   "slug": "102-apply-validates-packs",
   "branch": "102-apply-validates-packs",
@@ -15,11 +15,11 @@
   "size": "small",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "deliver",
+  "stage": "watch",
   "gates": {
     "spec": "approved",
     "plan": "skipped",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [
     "scripting"
@@ -71,6 +71,10 @@
       "spec": {
         "presented_at": "2026-10-27T02:31:40Z",
         "approved_at": "2026-10-27T02:32:52Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-27T02:45:23Z",
+        "approved_at": "2026-10-27T02:46:10Z"
       }
     },
     "gate_rework": {
@@ -83,9 +87,13 @@
       "first_pass": 1
     },
     "retries": 0,
-    "interventions": 0
+    "interventions": 0,
+    "pr_opened_at": "2026-10-27T02:48:49Z"
   },
   "living": [
     "aicfg-config"
-  ]
+  ],
+  "watch": {
+    "entered_at": "2026-10-27T02:48:49Z"
+  }
 }

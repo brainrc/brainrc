@@ -1,6 +1,6 @@
 # Spec: Validate accepts full model IDs and the Task tool
 
-Ticket: gh:202 · Size: small · Status: draft
+Ticket: gh:202 · Size: small · Status: approved
 
 ## Problem
 `validate` accepts an agent's `model` only as `haiku`, `sonnet`, `opus`, or `inherit`, so a pack

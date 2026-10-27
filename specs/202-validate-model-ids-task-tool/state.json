@@ -15,9 +15,9 @@
   "size": "small",
   "mode": "inline",
   "delivery": "normal",
-  "stage": "spec",
+  "stage": "deliver",
   "gates": {
-    "spec": "pending",
+    "spec": "approved",
     "plan": "skipped",
     "deliver": "pending"
   },
@@ -33,17 +33,44 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Accept full model IDs and Task",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "aicfg/config.py",
+        "aicfg/validate.py",
+        "tests/test_aicfg.py",
+        "docs/formats.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "bc517b4"
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-27T02:43:30Z",
     "stage_started_at": {
       "intake": "2026-10-27T02:43:30Z",
-      "spec": "2026-10-27T02:43:30Z"
+      "spec": "2026-10-27T02:43:30Z",
+      "implement": "2026-10-27T02:44:06Z",
+      "verify": "2026-10-27T02:45:23Z",
+      "document": "2026-10-27T02:45:23Z",
+      "deliver": "2026-10-27T02:45:23Z"
     },
     "gates": {
       "spec": {
-        "presented_at": "2026-10-27T02:43:30Z"
+        "presented_at": "2026-10-27T02:43:30Z",
+        "approved_at": "2026-10-27T02:44:06Z"
       }
     },
     "gate_rework": {
@@ -52,10 +79,13 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
-      "first_pass": 0
+      "total": 1,
+      "first_pass": 1
     },
     "retries": 0,
     "interventions": 0
-  }
+  },
+  "living": [
+    "aicfg-config"
+  ]
 }

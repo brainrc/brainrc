@@ -45,7 +45,7 @@
       "ref": "gh:202",
       "order": 5,
       "depends_on": [],
-      "status": "in_progress",
+      "status": "verified",
       "slug": "202-validate-model-ids-task-tool",
       "branch": "202-validate-model-ids-task-tool",
       "pr": null
@@ -55,6 +55,9 @@
     "campaign": {
       "presented_at": "2026-10-27T02:09:00Z",
       "approved_at": "2026-10-27T02:09:22Z"
+    },
+    "deliver": {
+      "presented_at": "2026-10-27T02:45:23Z"
     }
   }
 }

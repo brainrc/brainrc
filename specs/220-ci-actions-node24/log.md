@@ -108,3 +108,17 @@ Decide: auto-approved (--auto).
 - No CRITICAL/HIGH: no auto hard stop. LOW findings go to the PR's Follow-ups.
 
 **Next:** verifier
+
+## verifier · verify · done
+2026-10-27T04:23:01Z
+
+**Did:** verify.md: AC1, AC2, AC4, AC7 pass; AC3 pass (tag commit dates as proxy); AC5 `verify after push: validate`; AC6 `verify after merge: release`.
+
+**Evidence:**
+- tests 438 OK; `validate` and `validate --pack examples/pack-acme` exit 0; upstream shallow clones: node24, no v8 tags
+
+**Changed files:** specs/220-ci-actions-node24/verify.md
+
+**Open issues:** actionlint/zizmor not installed (YAML checked by inspection)
+
+**Next:** doc-writer

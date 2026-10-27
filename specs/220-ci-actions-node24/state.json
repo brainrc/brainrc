@@ -15,7 +15,7 @@
   "mode": "subagent",
   "delivery": "normal",
   "auto": true,
-  "stage": "verify",
+  "stage": "document",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -67,7 +67,8 @@
       "spec": "2026-10-27T04:07:20Z",
       "plan": "2026-10-27T04:08:39Z",
       "implement": "2026-10-27T04:10:42Z",
-      "verify": "2026-10-27T04:14:18Z"
+      "verify": "2026-10-27T04:14:18Z",
+      "document": "2026-10-27T04:23:01Z"
     },
     "gates": {
       "spec": {

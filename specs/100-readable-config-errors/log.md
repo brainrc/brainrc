@@ -28,3 +28,22 @@
 **Open issues:** 2 open questions (local-only harness table: keep or skip; exit code on closed stdout).
 
 **Next:** Spec gate
+
+## engine · Spec gate approved
+2026-10-27T02:11:54Z
+
+- Open questions 1 and 2 resolved with their defaults (keep loading local-only harness tables; exit 0 on closed stdout). Spec change after approval (wording only): marked both resolved.
+
+## architect · plan · done
+2026-10-27T02:13:21Z
+
+**Did:** Wrote plan.md: 4 tasks (config errors with line; unknown-name warnings; pack.toml; closed stdout). Per-file checks before the layered merge, `check_config()` called once by status/apply, validate, doctor.
+
+**Evidence:**
+- Read config.py, sources.py, cli.py, validate.py, doctor.py, packs.py, tests/test_aicfg.py (TempRepoCase)
+
+**Changed files:** specs/100-readable-config-errors/plan.md
+
+**Open issues:** none. Callouts: none.
+
+**Next:** Plan gate

@@ -1,6 +1,6 @@
 # Spec: Readable config errors
 
-Ticket: gh:100 · Size: standard · Status: draft
+Ticket: gh:100 · Size: standard · Status: approved
 
 ## Problem
 A user who edits `harnesses.toml`, `packs.toml`, their `.local.toml` overrides, or a pack's
@@ -69,6 +69,6 @@ aicfg SHALL exit without a traceback when its stdout is closed early. (AC7)
 1. A harness defined only in `harnesses.local.toml` (AC5): keep loading it after the warning
    (today's behavior, lets a user add a harness locally) or skip it? *Skipping breaks anyone who
    added a harness that way; keeping it means a typo'd table still creates a harness with only
-   the keys it sets.* Default: keep loading it, warn only.
+   the keys it sets.* Resolved at the Spec gate: keep loading it, warn only.
 2. Exit code for AC7: 0, or the conventional 141 / 1? *Scripts that check `$?` after a pipe see
-   it, e.g. with `set -o pipefail`.* Default: exit 0 quietly, since the reader chose to stop.
+   it, e.g. with `set -o pipefail`.* Default: exit 0 quietly, since the reader chose to stop. Resolved at the Spec gate: exit 0.

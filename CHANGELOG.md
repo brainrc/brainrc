@@ -12,6 +12,11 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.3.46 (2026-10-27)
+
+- Bad config in `harnesses.toml`, `packs.toml`, their `.local.toml` overrides, or a pack's `pack.toml` now prints `ERROR <file>:<line>: <what>` and exits 1 before anything is written. Before, a syntax error showed a traceback, `claude = false` raised `TypeError`, and `enabled = "false"` counted as enabled. Unknown keys and harness tables only the local file defines (`[cursr]`) print a `WARN` with file and line instead of being ignored (gh:100).
+- `aicfg doctor | head` and other early-closed pipes exit quietly instead of printing a `BrokenPipeError` traceback.
+
 ## 0.3.45 (2026-10-27)
 
 - An installed `aicfg` copies core's guard hooks to `$AICFG_HOME/hooks/core/` and links them from there, so they keep working when `uv tool upgrade` or `pipx upgrade` moves the tool to a new Python. `status` reports a copy that no longer matches the package, and the next `apply` refreshes it. Checkouts still link hooks live.

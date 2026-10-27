@@ -38,6 +38,7 @@ from . import config
 from .config import (
     ConfigError,
     aicfg_home,
+    check_config,
     extensions_file,
     home_extensions_file,
     legacy_instructions,
@@ -108,6 +109,8 @@ def _copy_hooks(overrides: Path, copy_root: Path) -> None:
 
 def _sync(apply: bool) -> int:
     try:
+        for w in check_config():
+            print(f"WARN {w}")
         pending = [(key, cfg, root) for key, cfg, root in git_packs() if not root.exists()]
     except ConfigError as e:
         print(f"ERROR {e}")
@@ -278,6 +281,17 @@ def entry() -> None:
 
 
 def main(argv: list[str]) -> int:
+    """Run one command. A reader that stops early (`aicfg doctor | head`) ends it quietly."""
+    try:
+        code = _dispatch(argv)
+        sys.stdout.flush()  # inside the try: a closed pipe fails here, not at interpreter exit
+        return code
+    except BrokenPipeError:
+        os.dup2(os.open(os.devnull, os.O_WRONLY), sys.stdout.fileno())  # so the final flush can't fail
+        return 0
+
+
+def _dispatch(argv: list[str]) -> int:
     cmd = argv[1] if len(argv) > 1 else "status"
     if cmd in ("status", "apply") and len(argv) <= 2:
         return cmd_sync(apply=cmd == "apply")

@@ -21,6 +21,7 @@ from .config import (
     REQUIRED_CONNECTOR_OPS,
     SKILL_NAME,
     _read_toml,
+    check_config,
     expand,
     load_harnesses,
 )
@@ -244,6 +245,7 @@ def check_connectors(srcs: list[Source]) -> list[str]:
 
 def cmd_validate(pack: str | None = None) -> int:
     try:
+        config_warnings = check_config()
         srcs = [Source("core", config.REPO), load_pack(expand(pack).resolve())] if pack else sources()
     except ConfigError as e:
         print(f"ERROR {e}")
@@ -257,10 +259,11 @@ def cmd_validate(pack: str | None = None) -> int:
         errors += _validate_source(src, agent_names, skill_names)
     errors += check_connectors(srcs)
     errors += check_servers(srcs)
-    warnings = []
+    warnings = config_warnings
     try:
         errors += check_changelog(core_version())
-        compat_errors, warnings = check_packs(srcs)
+        compat_errors, compat_warnings = check_packs(srcs)
+        warnings += compat_warnings
         errors += compat_errors
         if not pack:
             errors += check_plugin()

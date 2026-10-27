@@ -19,7 +19,9 @@ from .config import (
     KINDS,
     _layered,
     expand,
+    line_of,
     tilde,
+    toml_error,
 )
 
 
@@ -43,9 +45,16 @@ def load_pack(root: Path, name: str | None = None) -> Source:
     pack_toml = root / "pack.toml"
     if not pack_toml.is_file():
         raise ConfigError(f"pack {name or root}: no pack.toml at {tilde(pack_toml)}")
-    meta = tomllib.loads(pack_toml.read_text())
-    pack_name = str(meta.get("name", name or root.name))
-    return Source(pack_name, root, str(meta.get("prefix", f"{pack_name}-")), meta)
+    text = pack_toml.read_text()
+    try:
+        meta = tomllib.loads(text)
+    except tomllib.TOMLDecodeError as e:
+        raise toml_error(pack_toml, text, e) from None
+    for key in ("name", "prefix"):
+        if key in meta and not isinstance(meta[key], str):
+            raise ConfigError(f"{tilde(pack_toml)}:{line_of(text, key)}: `{key}` must be a string")
+    pack_name = meta.get("name", name or root.name)
+    return Source(pack_name, root, meta.get("prefix", f"{pack_name}-"), meta)
 
 
 def core_version() -> tuple[int, ...]:

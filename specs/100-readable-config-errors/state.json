@@ -1,0 +1,178 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:100",
+    "id": "100",
+    "title": "Readable config errors",
+    "url": "https://github.com/brainrc/brainrc/issues/100",
+    "pr": null
+  },
+  "slug": "100-readable-config-errors",
+  "branch": "100-readable-config-errors",
+  "base": "main",
+  "campaign": "specs/campaign-093-config-pack-loading",
+  "size": "standard",
+  "mode": "fallback",
+  "delivery": "normal",
+  "stage": "deliver",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "pending"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/aicfg.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Errors with file and line for harness and pack config",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "aicfg/config.py",
+        "aicfg/cli.py",
+        "aicfg/validate.py",
+        "aicfg/doctor.py",
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "1e140be"
+    },
+    {
+      "id": "T2",
+      "title": "Warnings for unknown keys and local-only harness tables",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "aicfg/config.py",
+        "aicfg/cli.py",
+        "aicfg/validate.py",
+        "aicfg/doctor.py",
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC4",
+        "AC5",
+        "AC8"
+      ],
+      "review": "batch",
+      "after": [
+        "T1"
+      ],
+      "red": "assertion",
+      "commit": "324f5a6"
+    },
+    {
+      "id": "T3",
+      "title": "pack.toml syntax and name/prefix types",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "aicfg/sources.py",
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC6"
+      ],
+      "review": "batch",
+      "after": [
+        "T1"
+      ],
+      "red": "assertion",
+      "commit": "5d4c480"
+    },
+    {
+      "id": "T4",
+      "title": "Quiet exit on a closed stdout",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "aicfg/cli.py",
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC7"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "048299d"
+    },
+    {
+      "id": "F1",
+      "title": "End-of-document TOML errors point at the last line",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "aicfg/config.py",
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC1"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "89e3bc7"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-27T02:10:27Z",
+    "stage_started_at": {
+      "intake": "2026-10-27T02:10:27Z",
+      "spec": "2026-10-27T02:10:27Z",
+      "plan": "2026-10-27T02:11:54Z",
+      "implement": "2026-10-27T02:14:02Z",
+      "verify": "2026-10-27T02:25:02Z",
+      "document": "2026-10-27T02:25:02Z",
+      "deliver": "2026-10-27T02:26:23Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-27T02:11:31Z",
+        "approved_at": "2026-10-27T02:11:54Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-27T02:13:21Z",
+        "approved_at": "2026-10-27T02:14:02Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 2,
+      "first_pass": 1
+    },
+    "retries": 0,
+    "interventions": 0
+  },
+  "review_context": "shared",
+  "living": [
+    "aicfg-config"
+  ]
+}

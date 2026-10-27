@@ -29,12 +29,12 @@ first, and the last 5 backups are kept).
 `aicfg` also installs as a command, with core's skills, agents, rules, and hooks bundled:
 
 ```bash
-uv tool install git+https://github.com/bxker/ai-config   # or: pipx install git+https://github.com/bxker/ai-config
+uv tool install git+https://github.com/brainrc/brainrc   # or: pipx install git+https://github.com/brainrc/brainrc
 aicfg status
 aicfg apply
 ```
 
-Pin a release with `git+https://github.com/bxker/ai-config@v0.3.29`.
+Pin a release with `git+https://github.com/brainrc/brainrc@v0.3.29`.
 Links then point into the installed package, so `uv tool upgrade ai-config` (or `pipx upgrade
 ai-config`) updates every harness. Guard hooks are the exception: `apply` copies them to
 `$AICFG_HOME/hooks/core/` and links there, because the package path changes when an upgrade
@@ -61,7 +61,7 @@ packs, unmerged hooks, and harnesses that aren't installed. Each problem comes w
 Claude Code users can install the skills (including `/work`), agents, and guard hooks as a plugin:
 
 ```text
-/plugin marketplace add bxker/ai-config
+/plugin marketplace add brainrc/brainrc
 /plugin install ai-config@ai-config
 ```
 
@@ -78,7 +78,7 @@ plugin, copy `rules/*.md` into your own `~/.claude/CLAUDE.md`.
 ### Codex
 
 ```text
-codex plugin marketplace add bxker/ai-config
+codex plugin marketplace add brainrc/brainrc
 codex plugin add ai-config@ai-config
 ```
 
@@ -92,7 +92,7 @@ reads. Rules don't come with a Codex plugin: run `aicfg`, or copy `rules/*.md` i
 Antigravity CLI (`agy`) installs the repo as a plugin from the root `plugin.json`:
 
 ```text
-agy plugin install https://github.com/bxker/ai-config
+agy plugin install https://github.com/brainrc/brainrc
 ```
 
 It gets the skills, the agent files, and the rules: each `rules/*.md` carries

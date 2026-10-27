@@ -1,7 +1,7 @@
 # Harness packages
 
 What each harness supports for installing ai-config as a native package, without a clone.
-Research for [#50](https://github.com/bxker/ai-config/issues/50), done 2026-10-08. Formats
+Research for [#50](https://github.com/brainrc/brainrc/issues/50), done 2026-10-08. Formats
 change fast: re-check a harness's docs before building its package. Gemini CLI was retired for
 consumer accounts on 2026-06-18; [Antigravity CLI](#antigravity-cli) replaced it.
 
@@ -78,7 +78,7 @@ was blocked here): `packages/web/src/content/docs/`.
 
 - A plugin is a JS module: hooks (`tool.execute.before`), tools, and system-prompt transforms. It
   can't ship agent, skill, or command files, so the package is a config dir plus a small plugin.
-- Agents need a transform ([#19](https://github.com/bxker/ai-config/issues/19), shipped in 0.3.19):
+- Agents need a transform ([#19](https://github.com/brainrc/brainrc/issues/19), shipped in 0.3.19):
   Claude's `tools: Read, Grep` makes OpenCode's whole config invalid (verified, 1.18.35); it wants
   `permission`, `model` as `provider/model-id`, and `mode: subagent`.
 - Guard plugin: `tool.execute.before` can block by throwing and `permission.ask` can answer a

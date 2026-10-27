@@ -33,7 +33,7 @@ New here? The [architecture overview](docs/architecture.md) has one diagram and 
 Quickest, in Claude Code:
 
 ```text
-/plugin marketplace add bxker/ai-config
+/plugin marketplace add brainrc/brainrc
 /plugin install ai-config@ai-config
 ```
 
@@ -42,7 +42,7 @@ in this repo. It writes skills, agents, commands, rules, hooks, and MCP servers 
 them into Claude Code, Codex CLI, OpenCode, Antigravity CLI, and Cursor:
 
 ```bash
-git clone https://github.com/bxker/ai-config ~/ai-config && cd ~/ai-config
+git clone https://github.com/brainrc/brainrc ~/ai-config && cd ~/ai-config
 python3 scripts/aicfg.py apply
 ```
 

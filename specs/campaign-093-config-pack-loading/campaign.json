@@ -9,7 +9,7 @@
       "ref": "gh:100",
       "order": 1,
       "depends_on": [],
-      "status": "in_progress",
+      "status": "verified",
       "slug": "100-readable-config-errors",
       "branch": "100-readable-config-errors",
       "pr": null

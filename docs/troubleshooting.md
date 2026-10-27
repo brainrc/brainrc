@@ -55,14 +55,15 @@ Errors stop the command before it writes anything; warnings don't.
 
 | Message | Fix |
 |---|---|
+| ``pack name `acme` is used by both [work] and [acme]`` | Two packs share one `name`. Change `name` in one `pack.toml`, or set `enabled = false` for one in `packs.local.toml`. `core` is taken. |
 | ``skill `acme-deploy` is defined in both acme and acme2`` | Rename one. Each pack's items carry its own `prefix`. |
 | ``acme:skills/x: pack skills must start with `acme-` `` | Rename the item to start with the pack's `prefix`. |
 | ``acme:pack.toml: `prefix` must be lowercase-hyphenated and end with '-'`` | Fix `prefix` in `pack.toml`, e.g. `acme-`. |
 | ``acme:pack.toml: requires_core `>=2.0` is not satisfied by core 1.2.3`` | Update core (`git pull`) or the pack, or set `enabled = false` for it in `packs.local.toml`. |
 | `pack acme: no pack.toml at ...` | Fix the pack's `path` in `packs.local.toml`. |
 
-`validate` reports all of these. `apply` writes nothing while a name collision or a
-`requires_core` mismatch stands. See [packs.md](packs.md).
+`validate` reports all of these. `apply` and `status` check each pack the same way first and
+write nothing while any of them stands, naming `validate --pack <dir>` for the pack to fix. See [packs.md](packs.md).
 
 ## Settings backups
 

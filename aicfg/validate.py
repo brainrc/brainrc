@@ -17,6 +17,7 @@ from .config import (
     KINDS,
     KNOWN_MODELS,
     KNOWN_TOOLS,
+    MODEL_ID,
     ROLES_LINK,
     REQUIRED_CONNECTOR_OPS,
     SKILL_NAME,
@@ -32,6 +33,7 @@ from .sources import (
     check_packs,
     collisions,
     core_version,
+    duplicate_packs,
     frontmatter,
     item_name,
     items,
@@ -113,7 +115,7 @@ def _validate_source(src: Source, agent_names: set[str], skill_names: set[str]) 
         tools = {t.strip() for t in meta.get("tools", "").split(",") if t.strip()}
         errors += [f"{rel}: unknown tool `{t}`"
                    for t in sorted(tools - KNOWN_TOOLS) if not t.startswith("mcp__")]
-        if meta.get("model") and meta["model"] not in KNOWN_MODELS:
+        if meta.get("model") and meta["model"] not in KNOWN_MODELS and not MODEL_ID.match(meta["model"]):
             errors.append(f"{rel}: unknown model `{meta['model']}`")
         errors += _check_references(src, f, agent_names, skill_names)
 
@@ -243,6 +245,15 @@ def check_connectors(srcs: list[Source]) -> list[str]:
     return errors
 
 
+def pack_errors(srcs: list[Source]) -> list[tuple[Source, list[str]]]:
+    """(pack, errors) for each pack whose own files fail what validate --pack checks; apply runs
+    it before linking."""
+    agent_names = {f.stem for s in srcs for f in markdown_files("agents", s)}
+    skill_names = {p.name for s in srcs for p in skills(s)}
+    found = [(src, _validate_source(src, agent_names, skill_names)) for src in srcs if not src.is_core]
+    return [(src, errors) for src, errors in found if errors]
+
+
 def cmd_validate(pack: str | None = None) -> int:
     try:
         config_warnings = check_config()
@@ -252,7 +263,7 @@ def cmd_validate(pack: str | None = None) -> int:
         return 1
     agent_names = {f.stem for s in srcs for f in markdown_files("agents", s)}
     skill_names = {p.name for s in srcs for p in skills(s)}
-    errors = collisions(srcs)
+    errors = duplicate_packs(srcs) + collisions(srcs)
     if roles := check_roles_link():
         errors.append(f"{roles}; {ROLES_FIX}")
     for src in srcs:

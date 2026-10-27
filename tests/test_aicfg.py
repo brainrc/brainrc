@@ -1498,6 +1498,80 @@ class GitPackTest(TempRepoCase):
         self.assertEqual(code, 1, out)
         self.assertIn("ERROR", out)
 
+    def test_apply_follows_a_ref_change(self):
+        self.use(git=self.url, ref="v1")
+        quiet(aicfg.cmd_sync, True)
+        self.use(git=self.url, ref="v2")
+        code, out = quiet(aicfg.cmd_sync, False)
+        self.assertEqual(code, 0, out)
+        self.assertIn(f"FETCH     acme      {self.url} (v2)", out)
+        self.assertFalse((self.clone / "skills/acme-new").exists())  # status doesn't fetch
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        self.assertIn("FETCH", out)
+        self.assertTrue((self.clone / "skills/acme-new").is_dir())
+        self.assertTrue((self.home / ".claude/skills/acme-new").is_symlink())
+
+    def test_apply_follows_a_url_change(self):
+        self.use(git=self.url, ref="v1")
+        quiet(aicfg.cmd_sync, True)
+        moved = self.tmp / "moved.git"
+        shutil.copytree(self.tmp / "acme.git", moved)
+        shutil.rmtree(self.tmp / "acme.git")
+        self.use(git=moved.as_uri(), ref="v2")
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        self.assertIn(f"FETCH     acme      {moved.as_uri()} (v2)", out)
+        self.assertTrue((self.clone / "skills/acme-new").is_dir())
+
+    def test_doctor_flags_a_clone_that_doesnt_match(self):
+        self.use(git=self.url, ref="v1")
+        quiet(aicfg.cmd_sync, True)
+        self.use(git=self.url, ref="v2")
+        fails = [f for f in aicfg.doctor_findings() if f[0] == "FAIL"]
+        self.assertTrue(any("v1" in what and "v2" in what and "apply" in fix for _, what, fix in fails), fails)
+
+    def test_unchanged_config_does_not_fetch(self):
+        self.use(git=self.url, ref="v1")
+        quiet(aicfg.cmd_sync, True)
+        with mock.patch("aicfg.packs.subprocess.run") as run:
+            code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("FETCH", out)
+        run.assert_not_called()
+
+    def test_a_clone_without_a_record_is_fetched_once(self):
+        self.use(git=self.url, ref="v1")
+        quiet(aicfg.cmd_sync, True)
+        record = self.clone / ".git/aicfg-fetched.json"
+        self.assertTrue(record.is_file())
+        record.unlink()  # as a clone from before aicfg recorded fetches
+        code, out = quiet(aicfg.cmd_sync, False)
+        self.assertIn("FETCH", out)
+        quiet(aicfg.cmd_sync, True)
+        self.assertTrue(record.is_file())
+        code, out = quiet(aicfg.cmd_sync, False)
+        self.assertNotIn("FETCH", out)
+
+    def test_a_hung_git_call_times_out(self):
+        self.use(git=self.url, ref="v1")
+        timeout = subprocess.TimeoutExpired(["git", "fetch"], 60)
+        with mock.patch("aicfg.packs.subprocess.run", side_effect=timeout):
+            code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 1, out)
+        self.assertIn("ERROR git init timed out after 60s", out)
+        self.assertIn("Nothing written", out)
+        self.assertFalse(self.clone.exists())
+        self.assertEqual(list(self.home.iterdir()), [])
+
+    def test_git_calls_have_a_timeout(self):
+        self.use(git=self.url, ref="v1")
+        real = subprocess.run
+        with mock.patch("aicfg.packs.subprocess.run", side_effect=real) as run:
+            quiet(aicfg.cmd_sync, True)
+        self.assertTrue(run.call_args_list)
+        self.assertTrue(all(c.kwargs.get("timeout") == 60 for c in run.call_args_list), run.call_args_list)
+
     def test_doctor_flags_an_unfetched_pack(self):
         self.use(git=self.url)
         fails = [f for f in aicfg.doctor_findings() if f[0] == "FAIL"]
@@ -1981,6 +2055,158 @@ class ClosedStdoutTest(unittest.TestCase):
             self.assertNotIn(b"Traceback", err, cmd)
             self.assertNotIn(b"BrokenPipe", err, cmd)
             self.assertEqual(p.returncode, 0, (cmd, err))
+
+
+class DuplicatePackTest(TempRepoCase):
+    """Two enabled packs with one name share a hooks dir and fight on every apply."""
+
+    def setUp(self):
+        super().setUp()
+        self.home = Path(tempfile.mkdtemp())
+        self.old_home = os.environ["HOME"]
+        os.environ["HOME"] = str(self.home)
+
+    def tearDown(self):
+        os.environ["HOME"] = self.old_home
+        shutil.rmtree(self.home)
+        super().tearDown()
+
+    def packs(self, **names: str) -> None:
+        """One pack per key, each with the given pack.toml name."""
+        lines = []
+        for key, name in names.items():
+            root = self.repo / "packs-src" / key
+            (root / "skills").mkdir(parents=True)
+            (root / "pack.toml").write_text(f'name = "{name}"\nrequires_core = ">=0.1"\n')
+            lines.append(f'[{key}]\npath = "{root}"\n')
+        (self.repo / "packs.local.toml").write_text("".join(lines))
+
+    def test_two_packs_with_one_name_are_refused(self):
+        self.packs(one="acme", two="acme")
+        error = "ERROR pack name `acme` is used by both [one] and [two]"
+        for fn, args in ((aicfg.cmd_validate, ()), (aicfg.cmd_sync, (False,)), (aicfg.cmd_sync, (True,))):
+            code, out = quiet(fn, *args)
+            self.assertEqual(code, 1, out)
+            self.assertIn(error, out)
+        self.assertEqual(list(self.home.iterdir()), [])
+
+    def test_doctor_reports_duplicate_names(self):
+        self.packs(one="acme", two="acme")
+        fails = [f for f in aicfg.doctor_findings() if f[0] == "FAIL" and "is used by both" in f[1]]
+        self.assertEqual(len(fails), 1, fails)
+        self.assertIn("[one] and [two]", fails[0][1])
+        self.assertIn("enabled = false", fails[0][2])
+        self.assertIn("pack.toml", fails[0][2])
+        code, _ = quiet(aicfg.cmd_doctor)
+        self.assertEqual(code, 1)
+
+    def test_a_pack_named_core_is_refused(self):
+        self.packs(two="core")
+        for fn, args in ((aicfg.cmd_validate, ()), (aicfg.cmd_sync, (True,))):
+            code, out = quiet(fn, *args)
+            self.assertEqual(code, 1, out)
+            self.assertIn("ERROR pack name `core` is used by both core and [two]", out)
+        code, out = quiet(aicfg.cmd_validate, str(self.repo / "packs-src/two"))
+        self.assertEqual(code, 1, out)
+        self.assertIn(f"used by both core and {aicfg.tilde(self.repo / 'packs-src/two')}", out)
+
+    def test_key_and_name_may_differ(self):
+        self.packs(work="acme")
+        code, out = quiet(aicfg.cmd_validate)
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("is used by both", out)
+
+
+class PackApplyCheckTest(TempRepoCase):
+    """apply and status run validate --pack's checks on each enabled pack before linking."""
+
+    def setUp(self):
+        super().setUp()
+        self.home = Path(tempfile.mkdtemp())
+        self.old_home = os.environ["HOME"]
+        os.environ["HOME"] = str(self.home)
+        self.pack = self.repo / "packs-src/acme"
+        (self.pack / "skills").mkdir(parents=True)
+        (self.pack / "pack.toml").write_text('name = "acme"\nrequires_core = ">=0.1"\n')
+        (self.repo / "packs.local.toml").write_text(f'[acme]\npath = "{self.pack}"\n')
+
+    def tearDown(self):
+        os.environ["HOME"] = self.old_home
+        shutil.rmtree(self.home)
+        super().tearDown()
+
+    def skill(self, name: str, description: str = "Deploy things. Use when deploying.") -> None:
+        (self.pack / "skills" / name).mkdir()
+        meta = f"description: {description}\n" if description else ""
+        (self.pack / "skills" / name / "SKILL.md").write_text(f"---\nname: {name}\n{meta}---\nBody\n")
+
+    def assert_refused(self, error: str) -> None:
+        for apply in (False, True):
+            code, out = quiet(aicfg.cmd_sync, apply)
+            self.assertEqual(code, 1, out)
+            self.assertIn(f"ERROR {error}", out)
+            self.assertIn(f"validate --pack {aicfg.tilde(self.pack)}", out)
+            self.assertIn("Nothing written", out)
+        self.assertEqual(list(self.home.iterdir()), [])
+        self.assertFalse(self.aicfg_home.joinpath("instructions.md").exists())
+
+    def test_unprefixed_skill_is_refused(self):
+        self.skill("deploy")
+        self.assert_refused("acme:skills/deploy: pack skills must start with `acme-`")
+
+    def test_any_pack_validate_error_is_refused(self):
+        self.skill("acme-deploy", description="")
+        self.assert_refused("acme:skills/acme-deploy/SKILL.md: missing `description`")
+
+    def test_only_the_failing_pack_is_named(self):
+        self.skill("deploy")
+        good = self.repo / "packs-src/good"
+        (good / "skills").mkdir(parents=True)
+        (good / "pack.toml").write_text('name = "good"\nrequires_core = ">=0.1"\n')
+        with open(self.repo / "packs.local.toml", "a") as f:
+            f.write(f'[good]\npath = "{good}"\n')
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 1, out)
+        self.assertNotIn(f"validate --pack {aicfg.tilde(good)}", out)
+
+    def test_a_valid_pack_links_as_before(self):
+        self.skill("acme-deploy")
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("ERROR", out)
+        self.assertTrue((self.home / ".claude/skills/acme-deploy").is_symlink())
+
+
+class AgentFrontmatterTest(TempRepoCase):
+    """Agent `model` and `tools` names validate accepts."""
+
+    def agent(self, model: str, tools: str) -> tuple[int, str]:
+        path = self.repo / "agents/verifier.md"
+        text = path.read_text()
+        head, sep, body = text.partition("\n---\n")
+        lines = [l for l in head.splitlines() if not l.startswith(("model:", "tools:"))]
+        path.write_text("\n".join(lines + [f"model: {model}", f"tools: {tools}"]) + sep + body)
+        return quiet(aicfg.cmd_validate)
+
+    def test_full_claude_model_id_is_accepted(self):
+        for model in ("claude-sonnet-5-5", "claude-opus-4-1-20250805", "claude-3.5-haiku"):
+            code, out = self.agent(model, "Read")
+            self.assertNotIn("unknown model", out, model)
+            self.assertEqual(code, 0, out)
+
+    def test_task_tool_is_accepted(self):
+        code, out = self.agent("haiku", "Read, Task")
+        self.assertNotIn("unknown tool", out)
+        self.assertEqual(code, 0, out)
+
+    def test_unknown_names_still_fail(self):
+        for model, tools, error in (("gpt-9", "Read", "unknown model `gpt-9`"),
+                                    ("claude-", "Read", "unknown model `claude-`"),
+                                    ("Claude-Sonnet", "Read", "unknown model `Claude-Sonnet`"),
+                                    ("haiku", "Read, Nope", "unknown tool `Nope`")):
+            code, out = self.agent(model, tools)
+            self.assertEqual(code, 1, out)
+            self.assertIn(error, out)
 
 
 if __name__ == "__main__":

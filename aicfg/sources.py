@@ -31,6 +31,7 @@ class Source:
     root: Path
     prefix: str = ""      # required name prefix for a pack's skills, agents, commands
     meta: dict = field(default_factory=dict)  # pack.toml
+    key: str = ""         # the pack's table in packs.toml ("" for core and validate --pack)
 
     @property
     def is_core(self) -> bool:
@@ -54,7 +55,7 @@ def load_pack(root: Path, name: str | None = None) -> Source:
         if key in meta and not isinstance(meta[key], str):
             raise ConfigError(f"{tilde(pack_toml)}:{line_of(text, key)}: `{key}` must be a string")
     pack_name = meta.get("name", name or root.name)
-    return Source(pack_name, root, meta.get("prefix", f"{pack_name}-"), meta)
+    return Source(pack_name, root, meta.get("prefix", f"{pack_name}-"), meta, name or "")
 
 
 def core_version() -> tuple[int, ...]:
@@ -182,6 +183,20 @@ def items(src: Source, kind: str) -> list[Path]:
 
 def item_name(path: Path) -> str:
     return path.name if path.is_dir() else path.stem
+
+
+def duplicate_packs(srcs: list[Source]) -> list[str]:
+    """A name two sources share (a pack named `core` included): they'd share a hooks dir, a
+    rules label, and owned hook entries, and overwrite each other on every apply."""
+    def label(src: Source) -> str:  # a pack has no key under validate --pack: name its dir
+        return f"[{src.key}]" if src.key else "core" if src.root == config.REPO else tilde(src.root)
+    errors, seen = [], {}
+    for src in srcs:
+        if src.name in seen:
+            errors.append(f"pack name `{src.name}` is used by both {label(seen[src.name])} and {label(src)}")
+        else:
+            seen[src.name] = src
+    return errors
 
 
 def collisions(srcs: list[Source]) -> list[str]:

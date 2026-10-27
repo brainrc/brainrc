@@ -46,16 +46,16 @@ from .config import (
     rendered_instructions,
     tilde,
 )
-from .sources import check_packs, collisions, render_extensions, render_instructions, sources
+from .sources import check_packs, collisions, duplicate_packs, render_extensions, render_instructions, sources
 from .opencode import rendered_agents
-from .packs import describe, fetch_pack, git_packs
+from .packs import describe, fetch_pack, git_packs, needs_fetch
 from .plan import hooks_copy_current, invalid_fragments, plan, stale_hooks_copy
 from .mcp import check_servers, mcp_change, mcp_plan, record_owned, write_mcp
 from .settings import FileChanged, read_current, settings_change, write_settings
 from .plugin import cmd_plugin
 from .release import cmd_release, cmd_release_notes
 from .tokens import cmd_tokens
-from .validate import cmd_validate
+from .validate import cmd_validate, pack_errors
 from .doctor import cmd_doctor
 
 
@@ -111,7 +111,7 @@ def _sync(apply: bool) -> int:
     try:
         for w in check_config():
             print(f"WARN {w}")
-        pending = [(key, cfg, root) for key, cfg, root in git_packs() if not root.exists()]
+        pending = [(key, cfg, root) for key, cfg, root in git_packs() if needs_fetch(cfg, root)]
     except ConfigError as e:
         print(f"ERROR {e}")
         return 1
@@ -131,7 +131,7 @@ def _sync(apply: bool) -> int:
     except ConfigError as e:
         print(f"ERROR {e}")
         return 1
-    clashes = collisions(srcs)
+    clashes = duplicate_packs(srcs) + collisions(srcs)
     if clashes:
         for c in clashes:
             print(f"ERROR {c}")
@@ -147,6 +147,14 @@ def _sync(apply: bool) -> int:
         for e in incompatible:
             print(f"ERROR {e}")
         print("\nNothing written. Update the pack or core (see CHANGELOG.md), or disable the pack.")
+        return 1
+    bad_packs = pack_errors(srcs)
+    if bad_packs:
+        for _, errors in bad_packs:
+            for e in errors:
+                print(f"ERROR {e}")
+        runs = ", ".join(f"`{config.command(f'validate --pack {tilde(src.root)}')}`" for src, _ in bad_packs)
+        print(f"\nNothing written. Fix the pack ({runs} lists every problem), then re-run.")
         return 1
     bad_fragments = invalid_fragments(srcs)
     if bad_fragments:

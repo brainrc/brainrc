@@ -28,12 +28,14 @@ from .sources import (
     _pack_root,
     collisions,
     core_version,
+    duplicate_packs,
     load_pack,
     pack_compat,
     render_extensions,
     render_instructions,
 )
 from .opencode import agents_format, rendered_agents
+from .packs import needs_fetch
 from .plan import FragmentError, Link, invalid_fragments, link_target, plan
 from .settings import _owned, settings_change
 from .mcp import check_servers, mcp_change, mcp_plan
@@ -65,6 +67,8 @@ def _doctor_sources() -> tuple[list[Source], list[Source], list[Finding]]:
             if cfg.get("enabled", True):
                 found.append(("FAIL", f"pack {key}: not fetched yet from {cfg['git']}", command("apply")))
             continue
+        if "git" in cfg and cfg.get("enabled", True) and (why := needs_fetch(cfg, root)):
+            found.append(("FAIL", f"pack {key}: {why}", f"{command('apply')} fetches it"))
         if not cfg.get("enabled", True):
             every_src.append(Source(key, root))
             continue
@@ -87,6 +91,8 @@ def _doctor_sources() -> tuple[list[Source], list[Source], list[Finding]]:
             found.append(("FAIL", f"pack {src.name}: validate --pack fails",
                           command(f"validate --pack {tilde(root)}")))
         srcs.append(src)
+    found += [("FAIL", d, "change `name` in one pack's pack.toml, or set `enabled = false` for one in packs.local.toml")
+              for d in duplicate_packs(srcs)]
     found += [("FAIL", c, "rename one of the pair, then apply") for c in collisions(srcs)]
     return srcs, every_src, found
 

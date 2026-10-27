@@ -60,11 +60,14 @@ BACKUPS_KEPT = 5
 KNOWN_TOOLS = {
     "Read", "Write", "Edit", "MultiEdit", "Grep", "Glob", "Bash",
     "WebFetch", "WebSearch", "NotebookEdit", "TodoWrite",
-    "AskUserQuestion", "Skill", "Agent", "TaskCreate", "TaskUpdate", "TaskList",
+    "AskUserQuestion", "Skill", "Agent", "Task", "TaskCreate", "TaskUpdate", "TaskList",
 }
 
 
 KNOWN_MODELS = {"haiku", "sonnet", "opus", "inherit"}
+
+
+MODEL_ID = re.compile(r"^claude-[a-z0-9][a-z0-9.-]*$")  # a full model ID, e.g. claude-sonnet-5-5
 
 
 SKILL_NAME = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")

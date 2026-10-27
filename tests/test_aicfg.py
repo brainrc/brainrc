@@ -1845,5 +1845,72 @@ class ValidateTest(unittest.TestCase):
             shutil.rmtree(tmp)
 
 
+class ConfigErrorTest(TempRepoCase):
+    """Bad harness and pack config: `ERROR <file>:<line>: <what>`, exit 1, nothing written."""
+
+    def setUp(self):
+        super().setUp()
+        self.home = Path(tempfile.mkdtemp())
+        self.old_home = os.environ["HOME"]
+        os.environ["HOME"] = str(self.home)
+
+    def tearDown(self):
+        os.environ["HOME"] = self.old_home
+        shutil.rmtree(self.home)
+        super().tearDown()
+
+    def assert_error(self, error: str) -> None:
+        """status, apply, and validate print the error and exit 1; apply writes nothing; doctor
+        reports it as a FAIL."""
+        for fn, args in ((aicfg.cmd_sync, (False,)), (aicfg.cmd_sync, (True,)), (aicfg.cmd_validate, ())):
+            code, out = quiet(fn, *args)
+            self.assertEqual(code, 1, out)
+            self.assertIn(f"ERROR {error}", out)
+        self.assertEqual(list(self.home.iterdir()), [])
+        fails = [f[1] for f in aicfg.doctor_findings() if f[0] == "FAIL"]
+        self.assertTrue(any(error in f for f in fails), fails)
+        code, _ = quiet(aicfg.cmd_doctor)
+        self.assertEqual(code, 1)
+
+    def local(self, name: str, text: str) -> str:
+        (self.repo / f"{name}.local.toml").write_text(text)
+        return aicfg.tilde(self.repo / f"{name}.local.toml")
+
+    def test_toml_syntax_error_names_file_and_line(self):
+        path = self.local("harnesses", "[claude]\nenabled = false\nskills = \n")
+        self.assert_error(f"{path}:3: invalid TOML: Invalid value")
+
+    def test_toml_syntax_error_at_end_of_document(self):
+        path = self.local("packs", '[acme]\npath = "unterminated\n')
+        self.assert_error(f"{path}:2: invalid TOML: ")
+
+    def test_syntax_error_in_shipped_file(self):
+        (self.repo / "harnesses.toml").write_text("[claude\n")
+        self.assert_error(f"{aicfg.tilde(self.repo / 'harnesses.toml')}:1: invalid TOML")
+
+    def test_top_level_value_needs_a_table(self):
+        path = self.local("harnesses", "# off here\nclaude = false\n")
+        self.assert_error(f"{path}:2: `claude` must be a table, e.g. [claude]")
+
+    def test_enabled_must_be_a_boolean(self):
+        path = self.local("harnesses", '[codex]\nskills = "~/x"\nenabled = "false"\n')
+        self.assert_error(f"{path}:3: [codex] `enabled` must be true or false")
+
+    def test_pack_enabled_must_be_a_boolean(self):
+        path = self.local("packs", '[acme]\npath = "/x"\nenabled = 0\n')
+        self.assert_error(f"{path}:3: [acme] `enabled` must be true or false")
+
+    def test_path_keys_must_be_strings(self):
+        path = self.local("harnesses", "[claude]\nskills = 3\n")
+        self.assert_error(f"{path}:2: [claude] `skills` must be a string")
+        (self.repo / "harnesses.local.toml").unlink()
+        path = self.local("packs", "[acme]\npath = [\"/x\"]\n")
+        self.assert_error(f"{path}:2: [acme] `path` must be a string")
+
+    def test_inline_table_value_points_at_its_line(self):
+        path = self.local("harnesses", '\nclaude = { enabled = "no" }\n')
+        self.assert_error(f"{path}:2: [claude] `enabled` must be true or false")
+
+
 if __name__ == "__main__":
     unittest.main()

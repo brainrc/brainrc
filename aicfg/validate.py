@@ -21,6 +21,7 @@ from .config import (
     REQUIRED_CONNECTOR_OPS,
     SKILL_NAME,
     _read_toml,
+    check_config,
     expand,
     load_harnesses,
 )
@@ -244,6 +245,7 @@ def check_connectors(srcs: list[Source]) -> list[str]:
 
 def cmd_validate(pack: str | None = None) -> int:
     try:
+        check_config()
         srcs = [Source("core", config.REPO), load_pack(expand(pack).resolve())] if pack else sources()
     except ConfigError as e:
         print(f"ERROR {e}")

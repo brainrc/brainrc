@@ -38,6 +38,7 @@ from . import config
 from .config import (
     ConfigError,
     aicfg_home,
+    check_config,
     extensions_file,
     home_extensions_file,
     legacy_instructions,
@@ -108,6 +109,7 @@ def _copy_hooks(overrides: Path, copy_root: Path) -> None:
 
 def _sync(apply: bool) -> int:
     try:
+        check_config()
         pending = [(key, cfg, root) for key, cfg, root in git_packs() if not root.exists()]
     except ConfigError as e:
         print(f"ERROR {e}")

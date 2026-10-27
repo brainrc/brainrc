@@ -105,16 +105,86 @@ class ConfigError(Exception):
     pass
 
 
+PATH_KEYS = ("skills", "agents", "agents_format", "commands", "plugin", "instructions",
+             "hooks_dir", "settings", "mcp")
+
+
+# Known keys of each table in <name>.toml / <name>.local.toml, and the type each must have.
+LAYERED_KEYS = {
+    "harnesses": {"enabled": bool, **dict.fromkeys(PATH_KEYS, str)},
+    "packs": {"enabled": bool, "path": str, "git": str, "ref": str},
+}
+
+
+TOML_POSITION = re.compile(r" \(at (?:line (\d+), column \d+|end of document)\)$")
+
+
+TABLE_HEADER = re.compile(r"^\s*\[\s*([^\]\s]+)\s*\]")
+
+
+def toml_error(path: Path, text: str, e: tomllib.TOMLDecodeError) -> ConfigError:
+    """`<file>:<line>: invalid TOML: <what>`; at end of document, the line is the last one."""
+    m = TOML_POSITION.search(str(e))
+    line = int(m[1]) if m and m[1] else max(text.count("\n"), 1)
+    return ConfigError(f"{tilde(path)}:{line}: invalid TOML: {TOML_POSITION.sub('', str(e))}")
+
+
+def line_of(text: str, table: str, key: str | None = None) -> int:
+    """The line of `key =` inside [table] (top-level `table =` when key is None). tomllib keeps
+    no positions, so scan: fall back to the [table] header, then `table =`, then line 1."""
+    current, header, inline = None, None, None
+    for n, line in enumerate(text.splitlines(), 1):
+        if m := TABLE_HEADER.match(line):
+            current = m[1].strip('"\'')
+            header = header or (n if current == table else None)
+        elif current == table and key and re.match(rf"\s*[\"']?{re.escape(key)}[\"']?\s*=", line):
+            return n
+        elif current is None and re.match(rf"\s*[\"']?{re.escape(table)}[\"']?\s*=", line):
+            inline = n
+    return (header if key else None) or inline or header or 1
+
+
 def _read_toml(path: Path) -> dict:
-    return tomllib.loads(path.read_text()) if path.is_file() else {}
+    if not path.is_file():
+        return {}
+    text = path.read_text()
+    try:
+        return tomllib.loads(text)
+    except tomllib.TOMLDecodeError as e:
+        raise toml_error(path, text, e) from None
+
+
+def _check_toml(name: str, path: Path, data: dict) -> None:
+    """Raise ConfigError, with file and line, for a value that isn't a table or a known key of
+    the wrong type."""
+    text = path.read_text() if data else ""
+    for table, values in data.items():
+        if not isinstance(values, dict):
+            raise ConfigError(f"{tilde(path)}:{line_of(text, table)}: `{table}` must be a table, e.g. [{table}]")
+        for key, kind in LAYERED_KEYS[name].items():
+            if key in values and not isinstance(values[key], kind):
+                want = "true or false" if kind is bool else "a string"
+                raise ConfigError(f"{tilde(path)}:{line_of(text, table, key)}: [{table}] `{key}` must be {want}")
 
 
 def _layered(name: str) -> dict[str, dict]:
-    """<name>.toml with <name>.local.toml merged over it, one table at a time."""
-    config = _read_toml(REPO / f"{name}.toml")
-    for key, overrides in _read_toml(local_dir() / f"{name}.local.toml").items():
-        config.setdefault(key, {}).update(overrides)
+    """<name>.toml with <name>.local.toml merged over it, one table at a time. Each file is
+    checked before the merge, so an error names the file the bad value is in."""
+    config: dict[str, dict] = {}
+    for path in (REPO / f"{name}.toml", local_dir() / f"{name}.local.toml"):
+        data = _read_toml(path)
+        _check_toml(name, path, data)
+        for key, overrides in data.items():
+            config.setdefault(key, {}).update(overrides)
     return config
+
+
+def check_config() -> list[str]:
+    """Check harness and pack config up front, so a command stops on the first bad value before
+    it does anything. Raises ConfigError."""
+    for name in LAYERED_KEYS:
+        _layered(name)
+    return []
 
 
 def load_harnesses(include_disabled: bool = False) -> dict[str, dict]:

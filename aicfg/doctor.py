@@ -7,7 +7,6 @@ import json
 import os
 import re
 import subprocess
-import tomllib
 from pathlib import Path
 
 from . import config
@@ -15,6 +14,7 @@ from .config import (
     ConfigError,
     KINDS,
     _layered,
+    check_config,
     command,
     expand,
     extensions_file,
@@ -52,7 +52,7 @@ def _doctor_sources() -> tuple[list[Source], list[Source], list[Finding]]:
     try:
         core = core_version()
         packs = _layered("packs")
-    except (ConfigError, tomllib.TOMLDecodeError) as e:
+    except ConfigError as e:
         return srcs, every_src, [("FAIL", str(e), "fix VERSION or packs.toml / packs.local.toml")]
     disable = "or set `enabled = false` for it in packs.local.toml"
     for key, cfg in packs.items():
@@ -128,6 +128,10 @@ def _link_finding(link: Link, roots: list[Path]) -> Finding | None:
 
 def doctor_findings() -> list[Finding]:
     """Everything wrong with this machine's install, each with its fix. Writes nothing."""
+    try:
+        check_config()
+    except ConfigError as e:  # everything below reads this config, so stop here
+        return [("FAIL", str(e), "fix that line in the file named")]
     srcs, every_src, found = _doctor_sources()
     if roles := check_roles_link():
         found.append(("FAIL", roles, ROLES_FIX))

@@ -15,10 +15,10 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "plan",
+  "stage": "implement",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [
@@ -38,8 +38,8 @@
       "id": "T1",
       "title": "Record each fetch; refetch, report, and diagnose on a change",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "files": [
         "aicfg/packs.py",
         "aicfg/cli.py",
@@ -54,14 +54,16 @@
         "AC5",
         "AC7"
       ],
-      "review": "batch"
+      "review": "batch",
+      "red": "assertion",
+      "commit": "5617979"
     },
     {
       "id": "T2",
       "title": "60s timeout on git calls",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "files": [
         "aicfg/packs.py",
         "tests/test_aicfg.py"
@@ -72,7 +74,9 @@
       "review": "batch",
       "after": [
         "T1"
-      ]
+      ],
+      "red": "assertion",
+      "commit": "4b294b3"
     }
   ],
   "blocked": null,
@@ -81,7 +85,8 @@
     "stage_started_at": {
       "intake": "2026-10-27T02:35:56Z",
       "spec": "2026-10-27T02:35:56Z",
-      "plan": "2026-10-27T02:36:48Z"
+      "plan": "2026-10-27T02:36:48Z",
+      "implement": "2026-10-27T02:38:08Z"
     },
     "gates": {
       "spec": {
@@ -89,7 +94,8 @@
         "approved_at": "2026-10-27T02:36:48Z"
       },
       "plan": {
-        "presented_at": "2026-10-27T02:36:48Z"
+        "presented_at": "2026-10-27T02:36:48Z",
+        "approved_at": "2026-10-27T02:38:08Z"
       }
     },
     "gate_rework": {

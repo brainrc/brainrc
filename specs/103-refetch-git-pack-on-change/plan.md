@@ -1,6 +1,6 @@
 # Plan: Refetch a git pack when its ref or URL changes
 
-Spec: [spec.md](spec.md) · Status: draft
+Spec: [spec.md](spec.md) · Status: approved
 
 ## Callouts
 - **New dependencies:** none

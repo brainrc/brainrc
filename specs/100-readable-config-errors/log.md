@@ -47,3 +47,66 @@
 **Open issues:** none. Callouts: none.
 
 **Next:** Plan gate
+
+## engine · Plan gate approved
+2026-10-27T02:14:02Z
+
+## implementer · T1 · done
+2026-10-27T02:15:59Z
+
+**Did:** Per-file checks in `_layered` before the merge: decode errors with line, non-table values, wrongly typed known keys (`LAYERED_KEYS`), `line_of` scanner; `check_config()` called first by `_sync`, `cmd_validate`, `doctor_findings`. Dropped doctor's now-unneeded TOMLDecodeError catch.
+
+**Evidence:**
+- red: 8 new `ConfigErrorTest` tests failed (tracebacks, TypeError, exit 0 for `enabled = "false"`)
+- `python3 -m unittest discover -s tests` → 402 passed
+
+**Changed files:** aicfg/config.py, aicfg/cli.py, aicfg/validate.py, aicfg/doctor.py, tests/test_aicfg.py
+
+**Open issues:** none
+
+**Next:** T2
+
+## implementer · T2 · done
+2026-10-27T02:17:36Z
+
+**Did:** `_check_toml` returns warnings for unknown keys and (harnesses) tables only the local file defines; `check_config()` collects them; `_sync` and `cmd_validate` print `WARN`, doctor adds WARN findings.
+
+**Evidence:**
+- red: 3 new warning tests failed on assertions (no WARN line)
+- `python3 -m unittest discover -s tests` → 406 passed; `validate` OK, `status` 0 WARN lines
+
+**Changed files:** aicfg/config.py, aicfg/cli.py, aicfg/validate.py, aicfg/doctor.py, tests/test_aicfg.py
+
+**Open issues:** none
+
+**Next:** T3
+
+## implementer · T3 · done
+2026-10-27T02:18:53Z
+
+**Did:** `load_pack` formats pack.toml decode errors with `toml_error` and rejects non-string `name`/`prefix` with their line.
+
+**Evidence:**
+- red: syntax test errored with a TOMLDecodeError traceback; type test failed (exit 0)
+- `python3 -m unittest discover -s tests` → 408 passed
+
+**Changed files:** aicfg/sources.py, tests/test_aicfg.py
+
+**Open issues:** none
+
+**Next:** T4
+
+## implementer · T4 · done
+2026-10-27T02:20:08Z
+
+**Did:** `main` wraps dispatch, flushes stdout inside the try, and on BrokenPipeError dups /dev/null onto stdout and returns 0.
+
+**Evidence:**
+- red: subprocess test saw a BrokenPipeError traceback from doctor
+- `python3 -m unittest discover -s tests` → 409 passed
+
+**Changed files:** aicfg/cli.py, tests/test_aicfg.py
+
+**Open issues:** none
+
+**Next:** batched review

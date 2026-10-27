@@ -12,6 +12,13 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.3.47 (2026-10-27)
+
+- `validate`, `status`, `apply`, and `doctor` refuse two enabled packs with the same `name`, naming both `packs.toml` keys, and a pack named `core`. Before, the two shared one hooks dir and `apply` never settled (gh:101).
+- `apply` and `status` run the checks `validate --pack` runs on each enabled pack before linking anything. A pack skill without the pack's prefix, or any other pack error, is printed and nothing is written. Before, `apply` linked it and exited 0 (gh:102).
+- `apply` fetches a git pack again when its `ref` or `git` URL changes, and `status` shows the `FETCH` line first. Before, a pack was fetched only when its clone was missing, so bumping `ref` did nothing. The fetched URL and ref are recorded in the clone's `.git/aicfg-fetched.json`, and clones from older versions are fetched once. `doctor` reports a clone that doesn't match its config. Git calls stop after 60 seconds instead of hanging `apply` (gh:103).
+- `validate` accepts an agent `model` given as a full Claude model ID (`claude-sonnet-5-5`) and `Task` in `tools`. Other model and tool names still fail (gh:202).
+
 ## 0.3.46 (2026-10-27)
 
 - Bad config in `harnesses.toml`, `packs.toml`, their `.local.toml` overrides, or a pack's `pack.toml` now prints `ERROR <file>:<line>: <what>` and exits 1 before anything is written. Before, a syntax error showed a traceback, `claude = false` raised `TypeError`, and `enabled = "false"` counted as enabled. Unknown keys and harness tables only the local file defines (`[cursr]`) print a `WARN` with file and line instead of being ignored (gh:100).

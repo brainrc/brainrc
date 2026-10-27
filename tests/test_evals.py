@@ -606,6 +606,68 @@ class AutoCaseTest(unittest.TestCase):
                 self.assertEqual(code, 1, out)
 
 
+class AutoCampaignCaseTest(unittest.TestCase):
+    """sandbox-015 grades an `--auto` ordered campaign: every gate auto-approved, all delivered stacked."""
+
+    REFS = ["local:tickets/005-greeting-param.md", "local:tickets/006-greeting-flag.md",
+            "local:tickets/007-shout-custom-greeting.md"]
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.project = make_project(self.tmp / "project")
+        self.dir = self.project / "specs/campaign-018-epic"
+        self.dir.mkdir(parents=True)
+        (self.dir / "log.md").write_text("## 2026-01-01T00:00:00Z · Campaign gate · auto-approved\n")
+        members, prev = [], "main"
+        for i, ref in enumerate(self.REFS, 1):
+            slug = f"{i + 4:03d}-child"
+            (self.project / "specs" / slug).mkdir()
+            (self.project / "specs" / slug / "state.json").write_text(json.dumps(
+                {"ticket": {"ref": ref}, "auto": True, "gates": {"spec": "approved", "plan": "approved"}}))
+            members.append({"ref": ref, "order": i, "slug": slug, "branch": slug, "status": "delivered",
+                            "pr": slug, "base": prev})
+            prev = slug
+        self.data = {"ref": "local:tickets/018-auto-greeting-epic.md", "shape": "ordered", "auto": True,
+                     "delivery": "stacked", "members": members,
+                     "gates": {"campaign": {"presented_at": "t", "approved_at": "t"}}}
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp)
+
+    def grade(self) -> tuple[int, str]:
+        (self.dir / "campaign.json").write_text(json.dumps(self.data))
+        data = tomllib.loads((REPO / "evals/cases/sandbox-015.toml").read_text())
+        lines = [f"ticket_ref = {json.dumps(data['ticket_ref'])}"]
+        for check in data["check"]:
+            if check["kind"] != "command":
+                lines += ["[[check]]", *(f"{k} = {json.dumps(v, ensure_ascii=False)}" for k, v in check.items())]
+        case = self.tmp / "case.toml"
+        case.write_text("\n".join(lines) + "\n")
+        return quiet(evals.cmd_check, str(self.project), str(case))
+
+    def test_auto_stacked_campaign_passes(self):
+        code, out = self.grade()
+        self.assertEqual(code, 0, out)
+
+    def test_campaign_without_the_flag_fails(self):
+        self.data["auto"] = False
+        code, out = self.grade()
+        self.assertEqual(code, 1, out)
+        self.assertRegex(out, "FAIL .*auto")
+
+    def test_campaign_gate_not_auto_approved_fails(self):
+        (self.dir / "log.md").write_text("## 2026-01-01T00:00:00Z · Campaign gate presented\n")
+        code, out = self.grade()
+        self.assertEqual(code, 1, out)
+        self.assertRegex(out, "FAIL .*auto-approved")
+
+    def test_a_child_left_waiting_fails(self):
+        self.data["members"][2].update(status="waiting", pr=None)
+        code, out = self.grade()
+        self.assertEqual(code, 1, out)
+        self.assertRegex(out, "FAIL campaign")
+
+
 class WatchRedCiCaseTest(unittest.TestCase):
     """sandbox-005 grades a watch run against the red-ci fixture (own failure, push gate pending)."""
 

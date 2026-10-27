@@ -1,0 +1,31 @@
+# Ticket 015 (auto, hard stop: size large): run `/work local:tickets/015-auto-large.md --auto`.
+# The run must stop with `blocked` set, record no PR, and leave main alone.
+ticket_ref = "local:tickets/015-auto-large.md"
+
+[[check]]
+kind = "state"
+field = "auto"
+equals = true
+
+[[check]]
+kind = "state"
+field = "blocked"
+present = true
+
+[[check]]
+kind = "state"
+field = "ticket.pr"
+present = false
+
+[[check]]
+kind = "state"
+field = "size"
+equals = "large"
+
+[[check]]
+kind = "file"
+path = "{spec}/spec.md"
+matches = "(?m)^## Proposed split"
+
+[[check]]
+kind = "main_untouched"

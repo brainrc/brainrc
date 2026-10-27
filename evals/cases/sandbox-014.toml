@@ -1,0 +1,26 @@
+# Ticket 017 (auto, hard stop: CRITICAL security finding): run `/work local:tickets/017-auto-security.md --auto`.
+# The run must stop with `blocked` set, record no PR, and leave main alone.
+ticket_ref = "local:tickets/017-auto-security.md"
+
+[[check]]
+kind = "state"
+field = "auto"
+equals = true
+
+[[check]]
+kind = "state"
+field = "blocked"
+present = true
+
+[[check]]
+kind = "state"
+field = "ticket.pr"
+present = false
+
+[[check]]
+kind = "file"
+path = "greet.py"
+absent = "\\beval\\("
+
+[[check]]
+kind = "main_untouched"

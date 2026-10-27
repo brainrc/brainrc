@@ -1,0 +1,30 @@
+# Ticket 014 (auto, hard stop: new dependency in the plan's Callouts): run `/work local:tickets/014-auto-new-dependency.md --auto`.
+# The run must stop with `blocked` set, record no PR, and leave main alone.
+ticket_ref = "local:tickets/014-auto-new-dependency.md"
+
+[[check]]
+kind = "state"
+field = "auto"
+equals = true
+
+[[check]]
+kind = "state"
+field = "blocked"
+present = true
+
+[[check]]
+kind = "state"
+field = "ticket.pr"
+present = false
+
+[[check]]
+kind = "file"
+path = "{spec}/plan.md"
+matches = "(?i)new dependencies:.*colorama"
+
+[[check]]
+kind = "no_files"
+glob = "requirements.txt"
+
+[[check]]
+kind = "main_untouched"

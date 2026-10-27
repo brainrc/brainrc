@@ -40,3 +40,31 @@
 Summary: standard (CI security trigger), subagent, ci-pipelines. 7 criteria; AC5-AC6 verified after push. Open questions take their defaults: (1) newest Node 24 release ≥ 14 days old; (2) assume checkout changes don't affect the release push, checked by AC6 after merge; (3) no untrusted instructions in the ticket.
 Hard stops checked: size not large; no untrusted instructions; offline only.
 Decide: auto-approved (--auto).
+
+## architect · plan · done
+2026-10-27T04:10:42Z
+
+**Did:** plan.md: 1 task (T1, review: each). checkout `3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1`, setup-python `5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0` in both workflows, plus changelog fragment. setup-python v7.1.0 skipped (2026-10-21, under 14 days).
+
+**Evidence:**
+- `git ls-remote` tags (v7 latest major for both); shallow clones: `action.yml` `using: node24`; tag commit dates 2026-07-17 / 2026-07-19; changelogs: no change to fetch-depth, ref, python-version
+
+**Changed files:** specs/220-ci-actions-node24/plan.md
+
+**Open issues:** Callouts none; release-page dates not checked (API blocked)
+
+**Next:** Plan gate
+
+## engine · plan checks and wording fix
+2026-10-27T04:10:42Z
+
+- Engine re-ran `git ls-remote` with `^{}`: no peeled entries, so both are lightweight tags and the SHAs are commit SHAs.
+- Callouts all `none` (no hard stop). Wording fix: "Security triggers touched" said none; CI/CD workflows are a security-checklist trigger, so it now names it and routes T1 to security-reviewer and infra-reviewer. Not a hard stop (auto mode stops only on a CRITICAL/HIGH finding).
+
+## engine · Plan gate · auto-approved
+2026-10-27T04:10:42Z
+
+⛔ Plan gate: 220-ci-actions-node24
+Summary: 1 task, implementer, review: each (code, infra, security). No new dependency, API, migration, IAM, prod config, or destructive change.
+Hard stops checked: Callouts none.
+Decide: auto-approved (--auto).

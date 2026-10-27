@@ -12,6 +12,10 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.3.48 (2026-10-27)
+
+- `/work <ref> --auto` runs spec-agent without gate stops and ends with a draft PR. A campaign run with `--shape ordered --auto` ends with stacked draft PRs. Each gate is logged as `auto-approved`, and the PR body lists the "Decisions made without you". Only the flag turns it on. Hard stops still stop and push nothing: guardrails stop conditions, size `large`, any plan Callout, a CRITICAL/HIGH security finding, instructions in untrusted content, and live targets. Ticket comments stay drafts, and the Push gate is unchanged. Sandbox tickets 011–018 and eval cases `sandbox-008`–`015` grade it (gh:216).
+
 ## 0.3.47 (2026-10-27)
 
 - `validate`, `status`, `apply`, and `doctor` refuse two enabled packs with the same `name`, naming both `packs.toml` keys, and a pack named `core`. Before, the two shared one hooks dir and `apply` never settled (gh:101).

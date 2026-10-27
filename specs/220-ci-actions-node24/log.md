@@ -122,3 +122,22 @@ Decide: auto-approved (--auto).
 **Open issues:** actionlint/zizmor not installed (YAML checked by inspection)
 
 **Next:** doc-writer
+
+## doc-writer · document · done
+2026-10-27T05:11:30Z
+
+**Did:** No project docs name the action versions (grep), so none changed; changelog fragment already correct; wrote pr-body.md (with Decisions made without you, Follow-ups) and ticket-comment.md. Living specs: none (Requirement changes `None.`).
+
+**Changed files:** specs/220-ci-actions-node24/pr-body.md, ticket-comment.md
+
+**Next:** Deliver
+
+## engine · Deliver gate · auto-approved
+2026-10-27T05:11:30Z
+
+⛔ Deliver gate: 220-ci-actions-node24
+Summary: 1 task (d0f63e3), reviews clean (2 LOW → Follow-ups), 5/7 criteria pass, AC5/AC6 verify after push/merge. main unchanged (2baacf1).
+Changes: .github/workflows/validate.yml, .github/workflows/release.yml (2 pin lines each), changelog.d/220-ci-actions-node24.md
+Outward actions (auto: only these): `git push -u origin 220-ci-actions-node24`; open a **draft** PR to `main`, title "Move CI checkout and setup-python off Node 20", body specs/220-ci-actions-node24/pr-body.md. Ticket comment NOT posted (draft: ticket-comment.md). No status transition.
+Hard stops checked: none stands.
+Decide: auto-approved (--auto).

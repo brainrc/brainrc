@@ -15,11 +15,11 @@
   "mode": "subagent",
   "delivery": "normal",
   "auto": true,
-  "stage": "document",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [
     "ci-pipelines"
@@ -68,7 +68,8 @@
       "plan": "2026-10-27T04:08:39Z",
       "implement": "2026-10-27T04:10:42Z",
       "verify": "2026-10-27T04:14:18Z",
-      "document": "2026-10-27T04:23:01Z"
+      "document": "2026-10-27T04:23:01Z",
+      "deliver": "2026-10-27T05:11:30Z"
     },
     "gates": {
       "spec": {
@@ -78,6 +79,10 @@
       "plan": {
         "presented_at": "2026-10-27T04:10:42Z",
         "approved_at": "2026-10-27T04:10:42Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-27T05:11:30Z",
+        "approved_at": "2026-10-27T05:11:30Z"
       }
     },
     "gate_rework": {
@@ -91,5 +96,6 @@
     },
     "retries": 0,
     "interventions": 0
-  }
+  },
+  "living": []
 }

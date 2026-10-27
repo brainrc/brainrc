@@ -15,7 +15,7 @@
   "size": "standard",
   "mode": "fallback",
   "delivery": "normal",
-  "stage": "implement",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -118,6 +118,23 @@
       "review": "batch",
       "red": "assertion",
       "commit": "048299d"
+    },
+    {
+      "id": "F1",
+      "title": "End-of-document TOML errors point at the last line",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "aicfg/config.py",
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC1"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "89e3bc7"
     }
   ],
   "blocked": null,
@@ -127,7 +144,10 @@
       "intake": "2026-10-27T02:10:27Z",
       "spec": "2026-10-27T02:10:27Z",
       "plan": "2026-10-27T02:11:54Z",
-      "implement": "2026-10-27T02:14:02Z"
+      "implement": "2026-10-27T02:14:02Z",
+      "verify": "2026-10-27T02:25:02Z",
+      "document": "2026-10-27T02:25:02Z",
+      "deliver": "2026-10-27T02:26:23Z"
     },
     "gates": {
       "spec": {
@@ -145,10 +165,14 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
-      "first_pass": 0
+      "total": 2,
+      "first_pass": 1
     },
     "retries": 0,
     "interventions": 0
-  }
+  },
+  "review_context": "shared",
+  "living": [
+    "aicfg-config"
+  ]
 }

@@ -110,3 +110,64 @@
 **Open issues:** none
 
 **Next:** batched review
+
+## code-reviewer · batched review · changes-requested
+2026-10-27T02:25:02Z
+
+**Did:** Reviewed `git diff main...HEAD` (aicfg, tests) against spec.md. review_context: shared.
+
+**Evidence:**
+- HIGH aicfg/config.py toml_error: end-of-document error one line early without a final newline (`[a]\npath = "x` → :1:) → count lines
+- MEDIUM tests: end-of-document test hit the "Illegal character" branch → drop the final newline
+- LOW validate --pack also checks the machine's harness config (accepted, AC1 scope)
+
+**Changed files:** none
+
+**Open issues:** none after F1
+
+**Next:** F1
+
+## implementer · F1 · done
+2026-10-27T02:25:02Z
+
+**Did:** `toml_error` counts lines with `splitlines()`; test now ends without a newline and asserts line 2. Re-review of the fix diff: no findings.
+
+**Evidence:**
+- red: test asserted `:2:`, got `:1:`
+- `python3 -m unittest discover -s tests` → 409 passed
+
+**Changed files:** aicfg/config.py, tests/test_aicfg.py
+
+**Open issues:** none
+
+**Next:** verify
+
+## verifier · verify · done
+2026-10-27T02:25:02Z
+
+**Did:** Re-ran tests and validate on 89e3bc7, mapped AC1-AC8 to tests plus manual runs on a scratch copy.
+
+**Evidence:**
+- `python3 -m unittest discover -s tests` → 409 passed
+- `python3 scripts/aicfg.py validate` → OK
+
+**Changed files:** specs/100-readable-config-errors/verify.md
+
+**Open issues:** none (note: apply.lock is created before the config check; pre-existing)
+
+**Next:** document
+
+## doc-writer · document · done
+2026-10-27T02:26:23Z
+
+**Did:** Applied the delta (new specs/living/aicfg-config.md). Added a "Config errors" table to docs/troubleshooting.md, changelog.d/100-readable-config-errors.md (patch), pr-body.md, ticket-comment.md.
+
+**Evidence:**
+- `living_specs.py apply` → updated specs/living/aicfg-config.md
+- `python3 scripts/aicfg.py validate` → OK (fragment valid, plugin manifests not stale)
+
+**Changed files:** docs/troubleshooting.md, changelog.d/100-readable-config-errors.md, specs/living/aicfg-config.md, specs/100-readable-config-errors/pr-body.md, ticket-comment.md
+
+**Open issues:** none
+
+**Next:** child 1 verified; child 2 gh:101

@@ -36,6 +36,21 @@ and run `apply` again. `CONFLICT` on a settings file means it isn't valid JSON: 
 hand. `CONFLICT` naming an MCP server means your harness config already defines a server of that
 name: rename or remove yours (or the registry's), then run `apply`.
 
+## Config errors
+
+`status`, `apply`, `validate`, and `doctor` check `harnesses.toml`, `packs.toml`, their
+`.local.toml` overrides, and each pack's `pack.toml` first, and name the file and line:
+
+| Message | Fix |
+|---|---|
+| `ERROR harnesses.local.toml:3: invalid TOML: Invalid value` | Fix the TOML on that line (often a missing value or quote). |
+| ``ERROR harnesses.local.toml:2: `claude` must be a table, e.g. [claude]`` | Write `[claude]` on its own line, then `enabled = false` under it. |
+| ``ERROR harnesses.local.toml:3: [codex] `enabled` must be true or false`` | Use `true` or `false` without quotes. Paths and `ref` must be quoted strings. |
+| ``WARN harnesses.local.toml:2: unknown key `enabeld` in [claude]`` | A typo: the key is ignored until you fix it. |
+| `WARN harnesses.local.toml:4: unknown harness [cursr]` | A typo, or a harness `harnesses.toml` doesn't list. It still loads. |
+
+Errors stop the command before it writes anything; warnings don't.
+
 ## Pack errors
 
 | Message | Fix |

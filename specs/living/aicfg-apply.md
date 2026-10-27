@@ -33,3 +33,10 @@ _Last changed by 098-hooks-fail-open._
 `aicfg doctor` SHALL report each ai-config hook in a harness's settings file whose script is
 missing, or that exits non-zero for an empty payload, with the fix. (AC4, AC5, AC6)
 _Last changed by 098-hooks-fail-open._
+
+### Installed hooks live in AICFG_HOME
+When `aicfg` runs from an installed package, `aicfg apply` SHALL copy core's hooks to
+`$AICFG_HOME/hooks/core/<harness>/hooks/` and link `hooks_dir` there, refresh the copy when the
+package's hooks change, and remove it when no harness with hooks is enabled. From a checkout, hooks SHALL
+stay linked into the checkout. (AC1, AC2, AC3, AC4, AC5, AC6)
+_Last changed by 099-hooks-in-aicfg-home._

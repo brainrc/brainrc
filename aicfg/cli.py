@@ -30,7 +30,9 @@ are merged (only entries owned by ai-config are replaced) and backed up first.
 from __future__ import annotations
 
 import os
+import shutil
 import sys
+from pathlib import Path
 
 from . import config
 from .config import (
@@ -46,7 +48,7 @@ from .config import (
 from .sources import check_packs, collisions, render_extensions, render_instructions, sources
 from .opencode import rendered_agents
 from .packs import describe, fetch_pack, git_packs
-from .plan import invalid_fragments, plan
+from .plan import hooks_copy_current, invalid_fragments, plan, stale_hooks_copy
 from .mcp import check_servers, mcp_change, mcp_plan, record_owned, write_mcp
 from .settings import FileChanged, read_current, settings_change, write_settings
 from .plugin import cmd_plugin
@@ -85,6 +87,23 @@ def _try_lock(f) -> bool:
     except OSError:
         return False
     return True
+
+
+def _copy_hooks(overrides: Path, copy_root: Path) -> None:
+    """Replace copy_root with every overrides/<harness>/hooks dir: build beside it, then swap."""
+    if hooks_copy_current(overrides, copy_root):
+        return
+    tmp = copy_root.with_name(f".{copy_root.name}.aicfg-tmp-{os.getpid()}")
+    old = copy_root.with_name(f".{copy_root.name}.aicfg-old-{os.getpid()}")
+    for stale in (tmp, old):
+        shutil.rmtree(stale, ignore_errors=True)
+    for hooks in sorted(overrides.glob("*/hooks")):
+        shutil.copytree(hooks, tmp / hooks.parent.name / "hooks",
+                        ignore=shutil.ignore_patterns("__pycache__"))
+    if copy_root.exists():
+        copy_root.rename(old)
+    tmp.rename(copy_root)
+    shutil.rmtree(old, ignore_errors=True)
 
 
 def _sync(apply: bool) -> int:
@@ -171,6 +190,8 @@ def _sync(apply: bool) -> int:
             continue
         changes += 1
         if apply:
+            if link.copy:
+                _copy_hooks(*link.copy)
             link.dest.parent.mkdir(parents=True, exist_ok=True)
             if link.dest.is_symlink():
                 link.dest.unlink()
@@ -180,6 +201,12 @@ def _sync(apply: bool) -> int:
         print(f"{'PRUNE':9} {'':9} {tilde(p)}")
         if apply:
             p.unlink()
+    copy = stale_hooks_copy(links)
+    if copy:
+        changes += 1
+        print(f"{'PRUNE':9} {'':9} {tilde(copy)}")
+        if apply:
+            shutil.rmtree(copy)
     for m in merges:
         before = read_current(m.dest)
         state, merged = settings_change(m)

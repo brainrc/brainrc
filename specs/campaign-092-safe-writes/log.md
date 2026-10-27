@@ -21,3 +21,12 @@
 ## 2026-10-25T23:17:24Z · child 3 gh:98 verified
 - Drafts ready. Child 4 gh:99 starts on 099-hooks-in-aicfg-home from 098-hooks-fail-open.
 - Finding: a fragment change makes the generated plugin manifests stale, and plans need to fence them (and tests that pin hook commands) in. Candidate architect rule.
+
+## 2026-10-25T23:46:44Z · child 4 gh:99 verified; stack Deliver gate presented
+- Finding: a real 3.12→3.13 upgrade shows skill/agent links into the old venv as CONFLICT (pre-existing); follow-up.
+
+## 2026-10-25T23:56:12Z · stack Deliver gate approved (stacked)
+- gh:96 → #212 (base main), gh:97 → #213 (base 096), gh:98 → #214 (base 097), gh:99 → #215 (base 098). Comments posted on #96–#99. Merge in order; before each merge, merge main into the branch, re-run tests, retarget to main (`gh pr edit <n> --base main`).
+
+## 2026-10-27T01:09:40Z · landing
+- #212 → v0.3.42, #213 → v0.3.43, #214 → v0.3.44 merged in order; before each, main merged into the next branch, tests re-run, PR retargeted to main (REST, local gh is too old for `pr edit --base`). #215 retargeted to main; last to merge.

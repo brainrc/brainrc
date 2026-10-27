@@ -30,10 +30,13 @@ git = "git@github.com:acme/acme-ai-pack.git"   # any URL git accepts; private re
 ref = "v1.2.0"                                 # tag, branch, or commit; default: the remote's default branch
 ```
 
-`apply` fetches it once (shallow, detached) into `~/.config/ai-config/packs/acme`; after that it
-works offline. `aicfg update` (or `python3 scripts/aicfg.py update`) refetches every git pack at
-its `ref`, then applies; it refuses a clone with local changes. Pin a tag, and bump `ref` to
-upgrade. `doctor` reports a git pack that hasn't been fetched yet.
+`apply` fetches it (shallow, detached) into `~/.config/ai-config/packs/acme` and records the URL
+and `ref` it fetched; after that it works offline. Change `ref` or `git` and the next `apply`
+fetches again (`status` shows the `FETCH` line first). A branch `ref` that hasn't changed isn't
+refetched: `aicfg update` (or `python3 scripts/aicfg.py update`) refetches every git pack at its
+`ref`, then applies. Both refuse a clone with local changes, and stop any git call after 60s.
+Pin a tag, and bump `ref` to upgrade. `doctor` reports a git pack that hasn't been fetched yet or
+whose clone doesn't match its `git` and `ref`.
 
 ## Layout
 

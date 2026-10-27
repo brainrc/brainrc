@@ -27,3 +27,13 @@ _Last changed by 101-reject-duplicate-pack-names._
 `aicfg status` and `aicfg apply` SHALL run the checks `validate --pack` runs on each enabled
 pack's own files, and on any error SHALL print it, write nothing, and exit 1. (AC1, AC2, AC3, AC4)
 _Last changed by 102-apply-validates-packs._
+
+### Git packs follow their config
+`aicfg apply` SHALL fetch a git pack whenever its configured `git` URL or `ref` differs from the
+one it last fetched (or none is recorded), `aicfg status` SHALL report that it would, and
+`aicfg doctor` SHALL report the mismatch. (AC1, AC2, AC3, AC4, AC5, AC7)
+_Last changed by 103-refetch-git-pack-on-change._
+
+### Git calls time out
+aicfg SHALL stop any git call after 60 seconds and report it as an error. (AC6)
+_Last changed by 103-refetch-git-pack-on-change._

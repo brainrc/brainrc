@@ -79,3 +79,60 @@
 **Open issues:** none
 
 **Next:** batched review
+
+## code-reviewer · batched review · done
+2026-10-27T02:42:56Z
+
+**Did:** Reviewed `git diff 102-apply-validates-packs...HEAD` (aicfg) against spec.md. review_context: shared.
+
+**Evidence:**
+- LOW cli._sync: refetch runs before later pack checks (as first fetches do); no change
+- LOW GIT_TIMEOUT 60s may cut a slow first clone; follow-up
+
+**Changed files:** none
+
+**Open issues:** none
+
+**Next:** security-reviewer
+
+## security-reviewer · batched review · done
+2026-10-27T02:42:56Z
+
+**Did:** security-checklist on the git execution path: args as a list, no shell; `-`-prefix refusal kept; record file aicfg-owned under $AICFG_HOME, malformed JSON → refetch.
+
+**Evidence:**
+- no findings
+
+**Changed files:** none
+
+**Open issues:** none
+
+**Next:** verify
+
+## verifier · verify · done
+2026-10-27T02:42:56Z
+
+**Did:** verify.md on 4b294b3: AC1-AC7 pass; manual run with a local bare repo (v1 → v2).
+
+**Evidence:**
+- `python3 -m unittest discover -s tests` → 424 passed; `validate` OK
+
+**Changed files:** specs/103-refetch-git-pack-on-change/verify.md
+
+**Open issues:** none
+
+**Next:** document
+
+## doc-writer · document · done
+2026-10-27T02:42:56Z
+
+**Did:** living delta (2 requirements), docs/packs.md git-pack paragraph, changelog fragment, drafts.
+
+**Evidence:**
+- `living_specs.py apply` → updated; `validate` OK
+
+**Changed files:** docs/packs.md, changelog.d/103-refetch-git-pack-on-change.md, specs/living/aicfg-config.md, drafts
+
+**Open issues:** none
+
+**Next:** child 4 verified; child 5 gh:202

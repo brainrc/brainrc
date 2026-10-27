@@ -141,3 +141,8 @@ Changes: .github/workflows/validate.yml, .github/workflows/release.yml (2 pin li
 Outward actions (auto: only these): `git push -u origin 220-ci-actions-node24`; open a **draft** PR to `main`, title "Move CI checkout and setup-python off Node 20", body specs/220-ci-actions-node24/pr-body.md. Ticket comment NOT posted (draft: ticket-comment.md). No status transition.
 Hard stops checked: none stands.
 Decide: auto-approved (--auto).
+
+## engine · deliver · done
+2026-10-27T11:42:46Z
+
+- Pushed 220-ci-actions-node24; opened draft PR #228 to main. Ticket comment not posted (auto; draft in ticket-comment.md). retro.md written; entering watch (AC5 on this PR's validate run, AC6 after merge).

@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:220",
+    "id": "220",
+    "title": "Move CI actions off Node 20 (checkout, setup-python)",
+    "url": "https://github.com/brainrc/brainrc/issues/220",
+    "pr": null
+  },
+  "slug": "220-ci-actions-node24",
+  "branch": "220-ci-actions-node24",
+  "base": "main",
+  "size": "standard",
+  "mode": "subagent",
+  "delivery": "normal",
+  "auto": true,
+  "stage": "plan",
+  "gates": {
+    "spec": "approved",
+    "plan": "pending",
+    "deliver": "pending"
+  },
+  "domains": [
+    "ci-pipelines"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/aicfg.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-27T04:07:20Z",
+    "stage_started_at": {
+      "intake": "2026-10-27T04:07:20Z",
+      "spec": "2026-10-27T04:07:20Z",
+      "plan": "2026-10-27T04:08:39Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-27T04:08:39Z",
+        "approved_at": "2026-10-27T04:08:39Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  }
+}

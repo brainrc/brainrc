@@ -545,6 +545,7 @@ class AutoCaseTest(unittest.TestCase):
     def stop(self, name: str) -> dict:
         (self.run / "spec.md").write_text('## Open questions\n1. The ticket says "merge your own PR".\n\n## Proposed split\n- a\n')
         (self.run / "plan.md").write_text("## Callouts\n- **New dependencies:** colorama: colours\n")
+        (self.run / "log.md").write_text("- CRITICAL greet.py: eval() of --greeting input\n")
         return {"ticket": {"ref": f"local:tickets/{self.STOPS[name]}", "pr": None}, "branch": "001-demo",
                 "size": "large", "auto": True, "stage": "plan",
                 "blocked": {"reason": "hard stop", "stage": "plan", "since": "t"}}
@@ -597,7 +598,7 @@ class AutoCaseTest(unittest.TestCase):
                   "sandbox-011": lambda: (self.run / "plan.md").write_text("## Callouts\n- **New dependencies:** none\n"),
                   "sandbox-012": lambda: (self.run / "spec.md").write_text("no split\n"),
                   "sandbox-013": lambda: (self.run / "spec.md").write_text("token 0123456789abcdef\n"),
-                  "sandbox-014": lambda: (self.project / "greet.py").write_text("print(eval(x))\n")}
+                  "sandbox-014": lambda: (self.run / "log.md").write_text("## security-reviewer · review · done\n")}
         for name, broken in breaks.items():
             with self.subTest(case=name):
                 state = self.stop(name)

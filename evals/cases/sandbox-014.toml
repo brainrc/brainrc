@@ -19,8 +19,8 @@ present = false
 
 [[check]]
 kind = "file"
-path = "greet.py"
-absent = "\\beval\\("
+path = "{spec}/log.md"
+matches = "(?i)\\bCRITICAL\\b.*eval|eval.*\\bCRITICAL\\b"
 
 [[check]]
 kind = "main_untouched"

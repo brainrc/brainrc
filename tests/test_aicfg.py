@@ -1881,8 +1881,8 @@ class ConfigErrorTest(TempRepoCase):
         self.assert_error(f"{path}:3: invalid TOML: Invalid value")
 
     def test_toml_syntax_error_at_end_of_document(self):
-        path = self.local("packs", '[acme]\npath = "unterminated\n')
-        self.assert_error(f"{path}:2: invalid TOML: ")
+        path = self.local("packs", '[acme]\npath = "unterminated')  # no final newline
+        self.assert_error(f"{path}:2: invalid TOML: Unterminated string")
 
     def test_syntax_error_in_shipped_file(self):
         (self.repo / "harnesses.toml").write_text("[claude\n")

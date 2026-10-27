@@ -125,7 +125,7 @@ TABLE_HEADER = re.compile(r"^\s*\[\s*([^\]\s]+)\s*\]")
 def toml_error(path: Path, text: str, e: tomllib.TOMLDecodeError) -> ConfigError:
     """`<file>:<line>: invalid TOML: <what>`; at end of document, the line is the last one."""
     m = TOML_POSITION.search(str(e))
-    line = int(m[1]) if m and m[1] else max(text.count("\n"), 1)
+    line = int(m[1]) if m and m[1] else max(len(text.splitlines()), 1)
     return ConfigError(f"{tilde(path)}:{line}: invalid TOML: {TOML_POSITION.sub('', str(e))}")
 
 

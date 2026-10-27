@@ -1983,5 +1983,65 @@ class ClosedStdoutTest(unittest.TestCase):
             self.assertEqual(p.returncode, 0, (cmd, err))
 
 
+class DuplicatePackTest(TempRepoCase):
+    """Two enabled packs with one name share a hooks dir and fight on every apply."""
+
+    def setUp(self):
+        super().setUp()
+        self.home = Path(tempfile.mkdtemp())
+        self.old_home = os.environ["HOME"]
+        os.environ["HOME"] = str(self.home)
+
+    def tearDown(self):
+        os.environ["HOME"] = self.old_home
+        shutil.rmtree(self.home)
+        super().tearDown()
+
+    def packs(self, **names: str) -> None:
+        """One pack per key, each with the given pack.toml name."""
+        lines = []
+        for key, name in names.items():
+            root = self.repo / "packs-src" / key
+            (root / "skills").mkdir(parents=True)
+            (root / "pack.toml").write_text(f'name = "{name}"\nrequires_core = ">=0.1"\n')
+            lines.append(f'[{key}]\npath = "{root}"\n')
+        (self.repo / "packs.local.toml").write_text("".join(lines))
+
+    def test_two_packs_with_one_name_are_refused(self):
+        self.packs(one="acme", two="acme")
+        error = "ERROR pack name `acme` is used by both [one] and [two]"
+        for fn, args in ((aicfg.cmd_validate, ()), (aicfg.cmd_sync, (False,)), (aicfg.cmd_sync, (True,))):
+            code, out = quiet(fn, *args)
+            self.assertEqual(code, 1, out)
+            self.assertIn(error, out)
+        self.assertEqual(list(self.home.iterdir()), [])
+
+    def test_doctor_reports_duplicate_names(self):
+        self.packs(one="acme", two="acme")
+        fails = [f for f in aicfg.doctor_findings() if f[0] == "FAIL" and "is used by both" in f[1]]
+        self.assertEqual(len(fails), 1, fails)
+        self.assertIn("[one] and [two]", fails[0][1])
+        self.assertIn("enabled = false", fails[0][2])
+        self.assertIn("pack.toml", fails[0][2])
+        code, _ = quiet(aicfg.cmd_doctor)
+        self.assertEqual(code, 1)
+
+    def test_a_pack_named_core_is_refused(self):
+        self.packs(two="core")
+        for fn, args in ((aicfg.cmd_validate, ()), (aicfg.cmd_sync, (True,))):
+            code, out = quiet(fn, *args)
+            self.assertEqual(code, 1, out)
+            self.assertIn("ERROR pack name `core` is used by both core and [two]", out)
+        code, out = quiet(aicfg.cmd_validate, str(self.repo / "packs-src/two"))
+        self.assertEqual(code, 1, out)
+        self.assertIn(f"used by both core and {aicfg.tilde(self.repo / 'packs-src/two')}", out)
+
+    def test_key_and_name_may_differ(self):
+        self.packs(work="acme")
+        code, out = quiet(aicfg.cmd_validate)
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("is used by both", out)
+
+
 if __name__ == "__main__":
     unittest.main()

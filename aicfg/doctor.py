@@ -28,6 +28,7 @@ from .sources import (
     _pack_root,
     collisions,
     core_version,
+    duplicate_packs,
     load_pack,
     pack_compat,
     render_extensions,
@@ -87,6 +88,8 @@ def _doctor_sources() -> tuple[list[Source], list[Source], list[Finding]]:
             found.append(("FAIL", f"pack {src.name}: validate --pack fails",
                           command(f"validate --pack {tilde(root)}")))
         srcs.append(src)
+    found += [("FAIL", d, "change `name` in one pack's pack.toml, or set `enabled = false` for one in packs.local.toml")
+              for d in duplicate_packs(srcs)]
     found += [("FAIL", c, "rename one of the pair, then apply") for c in collisions(srcs)]
     return srcs, every_src, found
 

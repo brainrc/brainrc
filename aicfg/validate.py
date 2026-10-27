@@ -32,6 +32,7 @@ from .sources import (
     check_packs,
     collisions,
     core_version,
+    duplicate_packs,
     frontmatter,
     item_name,
     items,
@@ -252,7 +253,7 @@ def cmd_validate(pack: str | None = None) -> int:
         return 1
     agent_names = {f.stem for s in srcs for f in markdown_files("agents", s)}
     skill_names = {p.name for s in srcs for p in skills(s)}
-    errors = collisions(srcs)
+    errors = duplicate_packs(srcs) + collisions(srcs)
     if roles := check_roles_link():
         errors.append(f"{roles}; {ROLES_FIX}")
     for src in srcs:

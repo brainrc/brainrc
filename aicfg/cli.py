@@ -46,7 +46,7 @@ from .config import (
     rendered_instructions,
     tilde,
 )
-from .sources import check_packs, collisions, render_extensions, render_instructions, sources
+from .sources import check_packs, collisions, duplicate_packs, render_extensions, render_instructions, sources
 from .opencode import rendered_agents
 from .packs import describe, fetch_pack, git_packs
 from .plan import hooks_copy_current, invalid_fragments, plan, stale_hooks_copy
@@ -131,7 +131,7 @@ def _sync(apply: bool) -> int:
     except ConfigError as e:
         print(f"ERROR {e}")
         return 1
-    clashes = collisions(srcs)
+    clashes = duplicate_packs(srcs) + collisions(srcs)
     if clashes:
         for c in clashes:
             print(f"ERROR {c}")

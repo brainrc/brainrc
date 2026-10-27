@@ -22,3 +22,8 @@ aicfg SHALL refuse, with an error naming both `packs.toml` keys, two enabled pac
 name, or a pack named `core`, in `validate`, `status`, `apply`, and `doctor`, and `apply` SHALL
 write nothing while it stands. (AC1, AC2, AC3, AC4)
 _Last changed by 101-reject-duplicate-pack-names._
+
+### Apply checks packs first
+`aicfg status` and `aicfg apply` SHALL run the checks `validate --pack` runs on each enabled
+pack's own files, and on any error SHALL print it, write nothing, and exit 1. (AC1, AC2, AC3, AC4)
+_Last changed by 102-apply-validates-packs._

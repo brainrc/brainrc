@@ -27,7 +27,7 @@
       "ref": "gh:102",
       "order": 3,
       "depends_on": [],
-      "status": "in_progress",
+      "status": "verified",
       "slug": "102-apply-validates-packs",
       "branch": "102-apply-validates-packs",
       "pr": null

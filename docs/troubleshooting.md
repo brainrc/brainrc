@@ -62,8 +62,8 @@ Errors stop the command before it writes anything; warnings don't.
 | ``acme:pack.toml: requires_core `>=2.0` is not satisfied by core 1.2.3`` | Update core (`git pull`) or the pack, or set `enabled = false` for it in `packs.local.toml`. |
 | `pack acme: no pack.toml at ...` | Fix the pack's `path` in `packs.local.toml`. |
 
-`validate` reports all of these. `apply` writes nothing while a duplicate pack name, a name collision, or a
-`requires_core` mismatch stands. See [packs.md](packs.md).
+`validate` reports all of these. `apply` and `status` check each pack the same way first and
+write nothing while any of them stands, naming `validate --pack <dir>` for the pack to fix. See [packs.md](packs.md).
 
 ## Settings backups
 

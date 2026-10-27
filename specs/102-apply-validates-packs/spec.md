@@ -1,6 +1,6 @@
 # Spec: apply validates packs before linking
 
-Ticket: gh:102 · Size: small · Status: draft
+Ticket: gh:102 · Size: small · Status: approved
 
 ## Problem
 `validate` and `validate --pack` check each pack's items (name prefix, frontmatter, references,
@@ -41,4 +41,4 @@ pack's own files, and on any error SHALL print it, write nothing, and exit 1. (A
 1. Which checks block `apply`: every error `validate --pack` reports for the pack's files
    (AC3), or only the prefix and pack.toml checks? *Every check is consistent with `doctor`,
    which already FAILs a pack whose `validate --pack` fails, but a pack with one broken doc link
-   then can't be applied until it's fixed.* Default: every check (AC3 as written).
+   then can't be applied until it's fixed.* Resolved at the Spec gate: every check (AC3 as written).

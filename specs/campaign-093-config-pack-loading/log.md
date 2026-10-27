@@ -18,3 +18,6 @@
 
 ## 2026-10-27T02:30:50Z · child 2 gh:101 verified
 - Size small, inline. Drafts ready. Child 3 gh:102 starts on 102-apply-validates-packs from 101-reject-duplicate-pack-names.
+
+## 2026-10-27T02:35:14Z · child 3 gh:102 verified
+- Size small, inline. Drafts ready. Child 4 gh:103 starts on 103-refetch-git-pack-on-change from 102-apply-validates-packs.

@@ -36,7 +36,7 @@
       "ref": "gh:103",
       "order": 4,
       "depends_on": [],
-      "status": "todo",
+      "status": "verified",
       "slug": "103-refetch-git-pack-on-change",
       "branch": "103-refetch-git-pack-on-change",
       "pr": null

@@ -294,6 +294,17 @@ def warn_deprecated(old: str, new: str = "brainrc") -> None:
     print(f"{old} is deprecated: use {new} (removed in {SHIM_REMOVED_IN})", file=sys.stderr)
 
 
+def warn_home() -> None:
+    """The one stderr line for a deprecated settings home (AICFG_HOME or ~/.config/ai-config)."""
+    origin = config.home_origin()
+    if origin == "aicfg_env":
+        warn_deprecated("AICFG_HOME", "BRAINRC_HOME")
+    elif origin == "legacy":
+        print(f"settings home {config.tilde(config.aicfg_home())} is deprecated: "
+              f"run `brainrc migrate` to move it to {config.tilde(config.new_home())} "
+              f"(removed in {SHIM_REMOVED_IN})", file=sys.stderr)
+
+
 def entry() -> None:
     """The `brainrc` console script of an installed package."""
     sys.exit(main(sys.argv))
@@ -321,6 +332,7 @@ def _dispatch(argv: list[str]) -> int:
     if cmd == "--version" and len(argv) == 2:
         print(f"brainrc {'.'.join(map(str, core_version()))}")
         return 0
+    warn_home()
     if cmd in ("status", "apply") and len(argv) <= 2:
         return cmd_sync(apply=cmd == "apply")
     if cmd == "validate":

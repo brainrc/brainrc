@@ -132,7 +132,7 @@ def main() -> int:
     try:
         home = Path(work, "home")
         home.mkdir()
-        env = {**os.environ, "HOME": str(home), "AICFG_HOME": str(home / "ai-config"), "USERPROFILE": str(home)}
+        env = {**os.environ, "HOME": str(home), "BRAINRC_HOME": str(home / "brainrc"), "USERPROFILE": str(home)}
         env.pop("PYTHONWARNINGS", None)
         env.pop("PYTHONPATH", None)
         checks(work, env, scripts)

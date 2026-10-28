@@ -215,12 +215,57 @@ def tilde(path: Path) -> str:
     return str(path).replace(str(Path.home()), "~", 1)
 
 
+def _xdg_home() -> Path | None:
+    xdg = os.environ.get("XDG_CONFIG_HOME", "")
+    return Path(xdg) / "brainrc" if xdg and os.path.isabs(xdg) else None
+
+
+def new_home() -> Path:
+    """The settings home without AICFG_HOME or the legacy dir: BRAINRC_HOME, XDG, ~/.config/brainrc."""
+    if os.environ.get("BRAINRC_HOME"):
+        return expand(os.environ["BRAINRC_HOME"])
+    return _xdg_home() or Path.home() / ".config" / "brainrc"
+
+
+def _legacy_home() -> Path:
+    return Path.home() / ".config" / "ai-config"
+
+
+def home_origin() -> str:
+    """Which rule picks the home: brainrc_env, aicfg_env, xdg, default or legacy."""
+    if os.environ.get("BRAINRC_HOME"):
+        return "brainrc_env"
+    if os.environ.get("AICFG_HOME"):
+        return "aicfg_env"
+    # Old installs never read XDG_CONFIG_HOME, so the legacy dir is found whichever new home applies.
+    if not new_home().exists() and _legacy_home().exists():
+        return "legacy"
+    return "xdg" if _xdg_home() else "default"
+
+
+def former_homes() -> list[Path]:
+    """Old homes (AICFG_HOME, ~/.config/ai-config) that are not the resolved home."""
+    home = aicfg_home()
+    olds = [expand(os.environ["AICFG_HOME"])] if os.environ.get("AICFG_HOME") else []
+    olds.append(_legacy_home())
+    return [d for i, d in enumerate(olds) if not _same_dir(d, home) and d not in olds[:i]]
+
+
+def _same_dir(a: Path, b: Path) -> bool:
+    """Equal paths, or two existing paths to one directory (a home reached through a symlink)."""
+    return a == b or (a.exists() and b.exists() and os.path.samefile(a, b))
+
+
 def aicfg_home() -> Path:
     """Where apply renders rules and extensions: outside any checkout, so packaged installs can
-    read them too. $AICFG_HOME, else ~/.config/ai-config."""
-    if os.environ.get("AICFG_HOME"):
+    read them too. $BRAINRC_HOME, $AICFG_HOME (deprecated), $XDG_CONFIG_HOME/brainrc (absolute
+    only), ~/.config/brainrc, or the legacy ~/.config/ai-config when that is all that exists."""
+    origin = home_origin()
+    if origin == "aicfg_env":
         return expand(os.environ["AICFG_HOME"])
-    return Path.home() / ".config" / "ai-config"
+    if origin == "legacy":
+        return _legacy_home()
+    return new_home()
 
 
 def legacy_instructions() -> Path:

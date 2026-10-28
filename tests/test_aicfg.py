@@ -56,7 +56,7 @@ def set_core_version(repo: Path, version: str) -> None:
 
 
 class TempRepoCase(unittest.TestCase):
-    """Point aicfg at a throwaway copy of the repo and AICFG_HOME, so tests never read local
+    """Point aicfg at a throwaway copy of the repo and BRAINRC_HOME, so tests never read local
     config or write rendered files anywhere real."""
 
     def setUp(self):
@@ -65,15 +65,15 @@ class TempRepoCase(unittest.TestCase):
         self.old_repo = aicfg.config.REPO
         aicfg.config.REPO = self.repo
         self.aicfg_home = Path(tempfile.mkdtemp()) / "ai-config"
-        self.old_aicfg_home = os.environ.get("AICFG_HOME")
-        os.environ["AICFG_HOME"] = str(self.aicfg_home)
+        self.old_brainrc_home = os.environ.get("BRAINRC_HOME")
+        os.environ["BRAINRC_HOME"] = str(self.aicfg_home)
 
     def tearDown(self):
         aicfg.config.REPO = self.old_repo
-        if self.old_aicfg_home is None:
-            os.environ.pop("AICFG_HOME", None)
+        if self.old_brainrc_home is None:
+            os.environ.pop("BRAINRC_HOME", None)
         else:
-            os.environ["AICFG_HOME"] = self.old_aicfg_home
+            os.environ["BRAINRC_HOME"] = self.old_brainrc_home
         shutil.rmtree(self.aicfg_home.parent)
         shutil.rmtree(self.repo)
 
@@ -951,8 +951,8 @@ class AicfgHomeTest(TempRepoCase):
         super().tearDown()
 
     def test_defaults_to_config_dir_under_home(self):
-        os.environ.pop("AICFG_HOME")
-        self.assertEqual(aicfg.aicfg_home(), self.home / ".config/ai-config")
+        os.environ.pop("BRAINRC_HOME")
+        self.assertEqual(aicfg.aicfg_home(), self.home / ".config/brainrc")
 
     def test_apply_renders_into_aicfg_home(self):
         code, out = quiet(aicfg.cmd_sync, True)
@@ -2046,7 +2046,7 @@ class ClosedStdoutTest(unittest.TestCase):
     def test_closed_stdout_exits_without_a_traceback(self):
         tmp = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, tmp)
-        env = {**os.environ, "HOME": str(tmp), "AICFG_HOME": str(tmp / "ai-config")}
+        env = {**os.environ, "HOME": str(tmp), "BRAINRC_HOME": str(tmp / "ai-config")}
         for cmd in ("doctor", "status"):
             p = subprocess.Popen([sys.executable, str(REPO / "scripts/aicfg.py"), cmd], env=env,
                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE)

@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
@@ -76,9 +77,18 @@ class TestXdgConfigHome(HomeCase):
         self.assertFalse(self.old.exists())
         self.assertEqual(proc.stderr, "")
 
-    def test_ac3_absolute_xdg_beats_legacy_dir_without_warning(self):
+    def test_ac3_absolute_xdg_with_only_legacy_dir_uses_legacy_and_warns(self):
         self.old.mkdir(parents=True)
         xdg = self.tmp / "xdg"
+        proc = self.ok("apply", XDG_CONFIG_HOME=str(xdg))
+        self.assertTrue((self.old / "instructions.md").is_file())
+        self.assertFalse((xdg / "brainrc").exists())
+        self.assertEqual(proc.stderr.count("brainrc migrate"), 1, proc.stderr)
+
+    def test_ac3_absolute_xdg_home_present_beats_legacy_dir_without_warning(self):
+        self.old.mkdir(parents=True)
+        xdg = self.tmp / "xdg"
+        (xdg / "brainrc").mkdir(parents=True)
         proc = self.ok("apply", XDG_CONFIG_HOME=str(xdg))
         self.assertTrue((xdg / "brainrc" / "instructions.md").is_file())
         self.assertFalse((self.old / "instructions.md").exists())
@@ -176,6 +186,55 @@ class TestBothHomesExist(HomeCase):
             self.assertEqual(proc.stderr, "", cmd)
         self.assertTrue((self.new / "instructions.md").is_file())
         self.assertEqual(sorted(p.name for p in self.old.iterdir()), ["packs.local.toml"])
+
+
+class HomeFunctionsTest(unittest.TestCase):
+    """new_home() and former_homes() in-process, for the callers that list old homes (doctor, migrate)."""
+
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.tmp = Path(tmp.name)
+        self.home = self.tmp / "home"
+        self.home.mkdir()
+        self.old = self.home / ".config" / "ai-config"
+        env = {k: v for k, v in os.environ.items() if k not in HOME_VARS}
+        env["HOME"] = str(self.home)
+        patcher = mock.patch.dict(os.environ, env, clear=True)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        sys.path.insert(0, str(REPO))
+        self.addCleanup(sys.path.remove, str(REPO))
+        from brainrc import config
+        self.config = config
+
+    def test_new_home_ignores_aicfg_home_and_legacy(self):
+        self.old.mkdir(parents=True)
+        os.environ["AICFG_HOME"] = str(self.tmp / "y")
+        self.assertEqual(self.config.new_home(), self.home / ".config" / "brainrc")
+
+    def test_former_homes_lists_aicfg_home_and_legacy_when_brainrc_home_is_set(self):
+        os.environ["BRAINRC_HOME"] = str(self.tmp / "x")
+        os.environ["AICFG_HOME"] = str(self.tmp / "y")
+        self.assertEqual(self.config.former_homes(), [self.tmp / "y", self.old])
+
+    def test_brainrc_home_at_the_legacy_path_is_not_a_former_home(self):
+        self.old.mkdir(parents=True)
+        os.environ["BRAINRC_HOME"] = str(self.old)
+        self.assertEqual(self.config.former_homes(), [])
+        self.assertEqual(self.config.home_origin(), "brainrc_env")
+
+    def test_brainrc_home_symlinked_to_the_legacy_dir_is_not_a_former_home(self):
+        self.old.mkdir(parents=True)
+        link = self.tmp / "x"
+        link.symlink_to(self.old)
+        os.environ["BRAINRC_HOME"] = str(link)
+        self.assertEqual(self.config.former_homes(), [])
+
+    def test_broken_legacy_symlink_counts_as_absent(self):
+        self.old.parent.mkdir(parents=True)
+        self.old.symlink_to(self.tmp / "gone")
+        self.assertEqual(self.config.home_origin(), "default")
 
 
 if __name__ == "__main__":

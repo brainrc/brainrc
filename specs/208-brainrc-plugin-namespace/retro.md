@@ -23,3 +23,13 @@ Ticket: gh:208 · Size: standard · PR: https://github.com/brainrc/brainrc/pull/
 - analyst role: when a criterion needs another tool's on-disk state, look up the tool's documented location before scoping it out; the first spec dropped Claude Code detection.
 - code-reviewer found that `json.loads` can raise RecursionError on hostile input; worth a line in the scripting skill's checklist for any parser of files the user's other tools write.
 - The changelog policy (minor for a breaking pack contract) conflicts with a pending removal version; the release workflow could warn when a minor bump would reach `SHIM_REMOVED_IN`.
+
+## After delivery
+- Outcome: merged
+- Merged at: 2026-10-28T17:05:54Z · Time to merge: 0 min (merged right after CI)
+- Post-merge verify: pass (see `verify-merged.md`)
+- CI failures: 0 own / 0 external
+- Review rounds: 0
+- Caught by reviewers, missed by the run's own: none
+- Follow-up title: none
+- Follow-up body: none

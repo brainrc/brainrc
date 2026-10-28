@@ -19,7 +19,7 @@ python3 scripts/aicfg.py apply    # render rules + create symlinks
 Skills, agents, commands, and hooks are **symlinked** from each harness back into this repo,
 so `git pull` updates them in every harness at once. To stay on a release instead of `main`,
 check out its tag (`git checkout v0.3.29`) and re-run `apply`. Rules are different: they are rendered
-into `~/.config/ai-config/instructions.md` (`$AICFG_HOME` to change it), so re-run `apply` after any change to `rules/` (edits included),
+into `~/.config/brainrc/instructions.md` (`$BRAINRC_HOME` to change it; `$XDG_CONFIG_HOME/brainrc` when that is set), so re-run `apply` after any change to `rules/` (edits included),
 and after you add or remove skills, agents, or commands. For Claude Code, `apply` also merges
 the guard hooks into `~/.claude/settings.json` (your other hooks are kept; a backup is written
 first, and the last 5 backups are kept).
@@ -43,13 +43,18 @@ keeps working with a deprecation warning until 0.5.0.
 
 Links then point into the installed package, so `uv tool upgrade brainrc` (or `pipx upgrade
 brainrc`) updates every harness. Guard hooks are the exception: `apply` copies them to
-`$AICFG_HOME/hooks/core/` and links there, because the package path changes when an upgrade
+`$BRAINRC_HOME/hooks/core/` and links there, because the package path changes when an upgrade
 moves the tool to a new Python. Run `brainrc apply` after upgrading to refresh the copy. After an
 upgrade to a new Python, the other links (skills, agents) point at the old path and `apply`
 reports them as `CONFLICT`; `brainrc doctor` lists each broken link with the `rm` that clears it,
-then re-run `apply`. Local files go in `~/.config/ai-config/` (`$AICFG_HOME`):
+then re-run `apply`. Local files go in `~/.config/brainrc/` (`$BRAINRC_HOME`):
 `harnesses.local.toml`, `packs.local.toml`, and `rules/*.local.md`. Packs are local
 directories or git URLs that `brainrc` fetches ([packs](packs.md#enable-a-pack)).
+
+Upgrading from `~/.config/ai-config/` (or `$AICFG_HOME`)? It keeps working, with a warning,
+until 0.5.0. Run `brainrc migrate --dry-run` to see the move, then `brainrc migrate`: it moves the
+directory and re-runs `apply`. With `AICFG_HOME` set, set `BRAINRC_HOME` to the new location first.
+
 `plugin` needs a checkout. Contributors use the clone above.
 
 `brainrc` never overwrites a file it doesn't manage. Pre-existing files show up as

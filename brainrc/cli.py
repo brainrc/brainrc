@@ -286,9 +286,23 @@ def cmd_update() -> int:
     return cmd_sync(apply=True)
 
 
+SHIM_REMOVED_IN = "0.5.0"
+
+
+def warn_deprecated(old: str, new: str = "brainrc") -> None:
+    """One line on stderr (never stdout, which scripts parse) naming the replacement."""
+    print(f"{old} is deprecated: use {new} (removed in {SHIM_REMOVED_IN})", file=sys.stderr)
+
+
 def entry() -> None:
     """The `brainrc` console script of an installed package."""
     sys.exit(main(sys.argv))
+
+
+def deprecated_entry() -> None:
+    """The deprecated `aicfg` console script: warn, then behave exactly like `brainrc`."""
+    warn_deprecated("aicfg")
+    entry()
 
 
 def main(argv: list[str]) -> int:

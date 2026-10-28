@@ -39,7 +39,7 @@ no git remote, `SPEC_PR_STATUS_FIXTURE` names a `pr_status` fixture file read in
 | `/spec-resume [ref]` | Continue an interrupted run (any tool) |
 
 These are user-invoked skills (`skills/work/` and so on), so every harness that reads skills
-gets them. In the Claude Code plugin they're `/ai-config:work`; in Codex, call the skill by name.
+gets them. In the Claude Code plugin they're `/brainrc:work`; in Codex, call the skill by name.
 
 ## Auto mode
 

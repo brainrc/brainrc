@@ -73,12 +73,12 @@ Claude Code users can install the skills (including `/work`), agents, and guard 
 
 ```text
 /plugin marketplace add brainrc/brainrc
-/plugin install ai-config@ai-config
+/plugin install brainrc@brainrc
 ```
 
 | Piece | Plugin | `aicfg` |
 |---|---|---|
-| Skills, agents | yes, named `ai-config:<name>` (`/ai-config:work`) | yes |
+| Skills, agents | yes, named `brainrc:<name>` (`/brainrc:work`) | yes |
 | Claude guard hooks | yes | yes |
 | Rules (`rules/`) | no: plugins can't load instructions into every session | yes |
 | Packs, other harnesses (Codex, OpenCode, Antigravity, Cursor) | no | yes |
@@ -90,7 +90,7 @@ plugin, copy `rules/*.md` into your own `~/.claude/CLAUDE.md`.
 
 ```text
 codex plugin marketplace add brainrc/brainrc
-codex plugin add ai-config@ai-config
+codex plugin add brainrc@brainrc
 ```
 
 Codex gets the skills (`work`, `review`, `spec-*`, and the rest) and the agent files spec-agent
@@ -117,7 +117,7 @@ and hasn't been run end to end
 Cursor loads a checkout as a local plugin from `.cursor-plugin/`:
 
 ```bash
-ln -s ~/src/ai-config ~/.cursor/plugins/local/ai-config
+ln -s ~/src/ai-config ~/.cursor/plugins/local/brainrc
 ```
 
 It gets the skills, the agents, the rules (each carries `alwaysApply: true`), and the guard
@@ -125,6 +125,17 @@ hooks for shell commands and file reads, which deny instead of asking. Use the p
 `aicfg`'s Cursor links, not both: `aicfg` links the same skills and hooks (Cursor has no user
 rules file, so rules come only with the plugin). Built from Cursor's official plugin repo and not
 yet run in a real Cursor ([harness packages](harness-packages.md#cursor)).
+
+### Moving from ai-config
+
+The plugin was renamed from `ai-config` to `brainrc`, and its skills from `ai-config:<name>` to
+`brainrc:<name>`. Remove the old one first, or every skill and hook loads twice:
+
+- Claude Code: `/plugin uninstall ai-config@ai-config`, then `/plugin marketplace remove ai-config`.
+- Codex: uninstall `ai-config@ai-config` and remove its marketplace, per Codex's docs.
+- Cursor: delete the old link `~/.cursor/plugins/local/ai-config`.
+
+Then install `brainrc@brainrc` as above. `doctor` warns until the old plugin is gone.
 
 ## Platforms
 

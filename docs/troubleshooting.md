@@ -22,7 +22,10 @@ If you moved the repo, the old links are broken. `doctor` names each one: delete
 ## Every skill shows up twice, or a hook runs twice
 
 Both the Claude Code plugin and `aicfg` are installed. Keep one: `/plugin uninstall
-ai-config@ai-config`, or uninstall `aicfg` (below).
+brainrc@brainrc`, or uninstall `aicfg` (below).
+
+If `doctor` warns that the old plugin `ai-config@ai-config` is installed, you have the plugin
+under both names: follow [Moving from ai-config](install.md#moving-from-ai-config).
 
 ## `CONFLICT` in `status` or `apply`
 

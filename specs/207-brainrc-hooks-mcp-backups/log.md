@@ -58,3 +58,7 @@ Suite 551 OK; validate OK. Within fence.
 Summary: hooks dir and backups renamed to brainrc with old names converging on one apply; MCP records in former homes honored. 13/13 criteria; security review clean of CRITICAL/HIGH.
 Decide: push 207-brainrc-hooks-mcp-backups, open a draft PR from pr-body.md; ticket comment stays a draft (auto).
 Artifacts: specs/207-brainrc-hooks-mcp-backups/{verify.md,pr-body.md,ticket-comment.md}
+
+## engine · deliver · done
+2026-10-28T14:09:45Z
+Pushed; draft PR #233; ticket comment kept as a draft (auto). Subscribed.

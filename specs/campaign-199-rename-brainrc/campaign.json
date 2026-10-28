@@ -43,10 +43,12 @@
       "ref": "gh:207",
       "order": 4,
       "depends_on": [],
-      "status": "in_progress",
+      "status": "delivered",
       "slug": "207-brainrc-hooks-mcp-backups",
       "branch": "207-brainrc-hooks-mcp-backups",
-      "pr": null
+      "pr": "https://github.com/brainrc/brainrc/pull/233",
+      "base": "main",
+      "merged": false
     },
     {
       "ref": "gh:208",

@@ -6,7 +6,7 @@
     "id": "207",
     "title": "Rename: owned hooks dir, MCP ownership and backups",
     "url": "https://github.com/brainrc/brainrc/issues/207",
-    "pr": null
+    "pr": "https://github.com/brainrc/brainrc/pull/233"
   },
   "slug": "207-brainrc-hooks-mcp-backups",
   "branch": "207-brainrc-hooks-mcp-backups",
@@ -15,7 +15,7 @@
   "mode": "subagent",
   "delivery": "normal",
   "auto": true,
-  "stage": "deliver",
+  "stage": "watch",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -214,9 +214,13 @@
       "max_width": 3,
       "task_minutes": 10,
       "wall_minutes": 4
-    }
+    },
+    "pr_opened_at": "2026-10-28T14:09:45Z"
   },
   "living": [
     "aicfg-apply"
-  ]
+  ],
+  "watch": {
+    "entered_at": "2026-10-28T14:09:45Z"
+  }
 }

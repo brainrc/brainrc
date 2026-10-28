@@ -16,9 +16,9 @@
   "delivery": "normal",
   "auto": true,
   "stop_at_deliver": true,
-  "stage": "plan",
+  "stage": "spec",
   "gates": {
-    "spec": "approved",
+    "spec": "pending",
     "plan": "pending",
     "deliver": "pending"
   },
@@ -43,14 +43,9 @@
       "spec": "2026-10-28T17:12:47Z",
       "plan": "2026-10-28T17:15:37Z"
     },
-    "gates": {
-      "spec": {
-        "presented_at": "2026-10-28T17:15:37Z",
-        "approved_at": "2026-10-28T17:15:37Z"
-      }
-    },
+    "gates": {},
     "gate_rework": {
-      "spec": 0,
+      "spec": 1,
       "plan": 0,
       "deliver": 0
     },

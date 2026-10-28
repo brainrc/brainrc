@@ -1,6 +1,6 @@
 # Spec: Rename docs and wording pass
 
-Ticket: gh:209 (epic #199, 6 of 6) · Size: standard · Status: approved
+Ticket: gh:209 (epic #199, 6 of 6) · Size: standard · Status: draft
 
 ## Problem
 After #205-#208 the code, settings home, hooks, backups and plugin are `brainrc`, but users still meet

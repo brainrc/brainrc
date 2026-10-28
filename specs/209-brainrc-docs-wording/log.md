@@ -9,3 +9,6 @@
 
 ## engine · Spec gate · auto-approved (owner: no decisions until Deliver)
 2026-10-28T17:15:37Z
+
+## engine · Spec gate approval withdrawn
+living_specs.py check failed (text outside a requirement block), and the MODIFIED blocks hold shorthand ("brainrc replaces aicfg") instead of full requirement text, which apply would write over 12 living requirements. Back to the analyst.

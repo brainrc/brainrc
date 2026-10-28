@@ -54,10 +54,12 @@
       "ref": "gh:208",
       "order": 5,
       "depends_on": [],
-      "status": "in_progress",
+      "status": "delivered",
       "slug": "208-brainrc-plugin-namespace",
       "branch": "208-brainrc-plugin-namespace",
-      "pr": null
+      "pr": "https://github.com/brainrc/brainrc/pull/234",
+      "base": "main",
+      "merged": false
     },
     {
       "ref": "gh:209",

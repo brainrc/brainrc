@@ -73,3 +73,12 @@ Fragment written inline (bump minor, [pack contract], 0.5.0 removal, uninstall a
 
 ## code-reviewer · T4 · changes-requested
 **Findings:** HIGH AC3 can pass vacuously (two identical failures); HIGH no finally cleanup, unguarded AC7 import / TimeoutExpired → traceback; MEDIUM AC8 never proves bundled _core is used; MEDIUM AC6 runs --version not status and may compare empty stdout; MEDIUM console scripts from PATH may not match sys.executable; LOW AC7 matches any DeprecationWarning. → T4 attempt 2.
+
+## implementer · T4 · done (attempt 2)
+**Evidence:** .runs/T4b-*: 6/6 PASS in temp venv, REFUSE exit 2 (not importable / in checkout), FAIL exit 1 with no traceback after deleting the venv shim; suite 456 OK.
+
+## code-reviewer · T4 re-review · done
+**Findings:** all prior findings fixed. LOW import order (fixed by engine); LOW --user installs would REFUSE (accepted: CI uses a normal install). Commit 4487d1b.
+
+## engine · batched review · done
+T5 fragment and F1 test reviewed inline: no findings. All other tasks were reviewed one at a time.

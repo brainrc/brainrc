@@ -15,7 +15,7 @@
   "mode": "subagent",
   "delivery": "normal",
   "auto": false,
-  "stage": "implement",
+  "stage": "verify",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -118,7 +118,7 @@
       "id": "T4",
       "title": "CI invokes brainrc and smoke-tests the installed wheel",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 2,
       "files": [
         "scripts/check_install.py",
@@ -137,7 +137,8 @@
       "review": "each",
       "after": [
         "T3"
-      ]
+      ],
+      "commit": "4487d1b"
     },
     {
       "id": "T5",
@@ -179,7 +180,8 @@
       "intake": "2026-10-27T18:47:44Z",
       "spec": "2026-10-27T18:47:44Z",
       "plan": "2026-10-28T01:41:32Z",
-      "implement": "2026-10-28T01:45:06Z"
+      "implement": "2026-10-28T01:45:06Z",
+      "verify": "2026-10-28T02:36:40Z"
     },
     "gates": {
       "spec": {
@@ -197,7 +199,7 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 4,
+      "total": 5,
       "first_pass": 2
     },
     "retries": 1,

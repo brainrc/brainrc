@@ -90,6 +90,9 @@ class TestModuleEntry(EntryPointCase):
     def test_ac11_python_m_aicfg_warns_once_never_on_stdout(self):
         self.assert_warned_once_off_stdout(self.run_py("-m", "aicfg", "--version"))
 
+    def test_ac11_python_m_aicfg_warns_once_with_deprecation_warnings_shown(self):
+        self.assert_warned_once_off_stdout(self.run_py("-W", "default", "-m", "aicfg", "--version"))
+
 
 class TestAicfgImport(EntryPointCase):
     def test_ac7_import_aicfg_emits_deprecation_warning(self):

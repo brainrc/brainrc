@@ -15,7 +15,7 @@
   "mode": "subagent",
   "delivery": "normal",
   "auto": false,
-  "stage": "verify",
+  "stage": "document",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -219,7 +219,8 @@
       "spec": "2026-10-28T03:15:37Z",
       "plan": "2026-10-28T03:24:09Z",
       "implement": "2026-10-28T03:27:11Z",
-      "verify": "2026-10-28T04:40:11Z"
+      "verify": "2026-10-28T04:40:11Z",
+      "document": "2026-10-28T04:50:21Z"
     },
     "gates": {
       "spec": {
@@ -242,5 +243,10 @@
     },
     "retries": 1,
     "interventions": 1
-  }
+  },
+  "living": [
+    "aicfg-config",
+    "aicfg-apply",
+    "run-pointer"
+  ]
 }

@@ -43,3 +43,14 @@ _Last changed by 103-refetch-git-pack-on-change._
 a full `claude-` model ID, and `Task` among its `tools`, and SHALL reject any other model or
 tool name (except `mcp__` tools). (AC1, AC2, AC3)
 _Last changed by 202-validate-model-ids-task-tool._
+
+### Settings home
+The system SHALL resolve its settings home by the order above, defaulting to `~/.config/brainrc`,
+use a legacy `~/.config/ai-config` or `AICFG_HOME` only as a fallback with a once-per-run stderr
+warning, and never prefer the old dir when the new one exists. (AC1 to AC6)
+_Last changed by 206-brainrc-settings-home._
+
+### Migrate
+`brainrc migrate` SHALL move the old home to the new one, re-run apply so no link points into the
+old dir, refuse a non-empty target, support `--dry-run`, and be idempotent. (AC7 to AC13)
+_Last changed by 206-brainrc-settings-home._

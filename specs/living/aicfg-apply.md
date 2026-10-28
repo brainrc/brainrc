@@ -35,8 +35,13 @@ missing, or that exits non-zero for an empty payload, with the fix. (AC4, AC5, A
 _Last changed by 098-hooks-fail-open._
 
 ### Installed hooks live in AICFG_HOME
-When `aicfg` runs from an installed package, `aicfg apply` SHALL copy core's hooks to
-`$AICFG_HOME/hooks/core/<harness>/hooks/` and link `hooks_dir` there, refresh the copy when the
-package's hooks change, and remove it when no harness with hooks is enabled. From a checkout, hooks SHALL
-stay linked into the checkout. (AC1, AC2, AC3, AC4, AC5, AC6)
-_Last changed by 099-hooks-in-aicfg-home._
+When `brainrc` runs from an installed package, `brainrc apply` SHALL copy core's hooks to
+`<settings home>/hooks/core/<harness>/hooks/` and link `hooks_dir` there, refresh the copy when
+the package's hooks change, and remove it when no harness with hooks is enabled. From a checkout,
+hooks SHALL stay linked into the checkout. (AC1, AC7)
+_Last changed by 206-brainrc-settings-home._
+
+### Doctor reports an unmigrated home
+`brainrc doctor` SHALL warn, with the fix, when the legacy dir or `AICFG_HOME` is in use or an
+unused old dir remains. (AC14)
+_Last changed by 206-brainrc-settings-home._

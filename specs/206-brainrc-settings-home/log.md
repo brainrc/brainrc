@@ -76,3 +76,7 @@ Docs (install, packs, formats) and the patch [pack contract] fragment written in
 
 ## code-reviewer · batch · done (no CRITICAL/HIGH)
 **Findings:** MEDIUM doctor "unused, rm -r" also when the new home is missing/empty and the old dir holds the only data → F1 (6c0af5d, red then green); LOW exit-code test patches doctor_findings (accepted); LOW docs/architecture.md, docs/harness-packages.md still named $AICFG_HOME as default → F2 (303ada3); LOW patch bump with [pack contract] → owner approved patch at the Plan gate. Suite 525 OK.
+
+## verifier (engine) · verify · done
+2026-10-28T04:50:21Z
+16/16 criteria pass; installed end-to-end migrate run (see verify.md). Living areas applied.

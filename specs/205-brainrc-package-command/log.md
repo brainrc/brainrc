@@ -22,3 +22,7 @@ Block cleared. Size standard, mode subagent, auto false (resume without --auto: 
 
 ## engine · Spec gate · presented
 2026-10-28T01:39:38Z
+
+## engine · Spec gate · approved
+2026-10-28T01:41:32Z
+Owner approved; answers: --version "brainrc" (asked about a v prefix; engine recommended none, recorded), shims removed next minor after ship, warning not silenceable.

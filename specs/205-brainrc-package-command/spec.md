@@ -1,6 +1,6 @@
 # Spec: Rename the PyPI package and the command to brainrc
 
-Ticket: gh:205 (epic #199, 2 of 6) · Size: standard · Status: draft
+Ticket: gh:205 (epic #199, 2 of 6) · Size: standard · Status: approved
 
 ## Problem
 Users should install and type `brainrc`, but the distribution is `ai-config`, the command and
@@ -21,7 +21,7 @@ release, with a deprecation warning. There is no `--version` flag today.
 
 ## Acceptance criteria
 - **AC1**: Given a fresh install of the built wheel, when `brainrc --version` runs, then it prints
-  the VERSION value and exits 0.
+  `brainrc <VERSION>` (no `v` prefix, e.g. `brainrc 0.3.50`) on stdout and exits 0.
 - **AC2**: Given the wheel metadata, then the distribution name is `brainrc` and the console
   scripts are `brainrc` and `aicfg`.
 - **AC3**: Given a fresh install, when `aicfg status` runs, then stderr has a deprecation warning
@@ -64,19 +64,13 @@ The system SHALL keep the `aicfg` console script, `scripts/aicfg.py`, `python -m
 Existing living requirements mention `aicfg` commands by name; their wording is left to #209.
 
 ## Open questions
-1. Should the `aicfg` import shim re-export `brainrc` submodules (`aicfg.cli`, `aicfg.hooks`...)
-   or only `main`/`entry`? Default: alias `aicfg.cli` only, since the tests and the old script
-   use that. *Matters for third-party imports.*
-2. Should the deprecation warning be silenceable (env var)? Default: no, except Python's
-   standard warning filters. *Pre-commit output noise.*
-3. Does `--version` print bare `X.Y.Z` or `brainrc X.Y.Z`? Default: `brainrc X.Y.Z`. *Scripts
-   that parse it.*
-4. Wheel force-include targets move to `brainrc/_core/`; `AICFG_HOME` stays until #206.
-   Default: confirm. *Installed users' hooks path must not break in between.*
-5. PyPI: is the name `brainrc` reserved/owned? Default: assume yes; publishing is outside
-   this ticket. *Install from PyPI fails otherwise.*
-6. The shims warn for "one minor release": which version removes them? Default: next minor
-   after this ships; stated in the warning text. *Callers need a date.*
+Resolved at the Spec gate:
+1. Import shim: alias `aicfg.cli` only (default).
+2. Warning is not silenceable beyond Python's standard warning filters (owner).
+3. `--version` prints `brainrc X.Y.Z`, no `v` prefix (owner chose `brainrc`; engine recommended no `v`, matching VERSION, PEP 440, and uv/pip; tags keep `v`).
+4. Bundled data moves to `brainrc/_core/`; `AICFG_HOME` stays until #206 (default).
+5. PyPI publishing is out of scope; the name is not yet reserved (#200) (default).
+6. Shims are removed in the minor after the one this ships in; the warning names that version (owner). This change bumps `minor`.
 
 ## Proposed split
 Not applicable: resized to standard by the owner; built as one ticket.

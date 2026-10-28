@@ -52,3 +52,7 @@ Red 4F+1E; suite 580 OK; validate OK; within fence. Engine restored "when <role>
 Summary: plugin and marketplace brainrc; doctor warns on an old install (Claude Code, Cursor); install docs and spec-agent lookup updated. 12/12 criteria.
 Decide: push 208-brainrc-plugin-namespace and open a draft PR from pr-body.md; ticket comment stays a draft (auto).
 Artifacts: specs/208-brainrc-plugin-namespace/{verify.md,pr-body.md,ticket-comment.md}
+
+## engine · deliver · done
+2026-10-28T17:05:50Z
+Pushed; draft PR #234; ticket comment kept as a draft (auto). Subscribed.

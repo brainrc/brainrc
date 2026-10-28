@@ -46,3 +46,6 @@ Artifacts: specs/campaign-199-rename-brainrc/campaign.json
 
 ## 2026-10-28T16:39:32Z · gh:207 merged (#233), v0.4.3 released
 - Post-merge verify pass. Child 5 gh:208 starts on 208-brainrc-plugin-namespace from main, auto (owner: "Auto mode go").
+
+## 2026-10-28T17:05:50Z · gh:208 delivered (auto)
+- Draft PR #234, base main. Next: gh:209 (last) after #234 merges.

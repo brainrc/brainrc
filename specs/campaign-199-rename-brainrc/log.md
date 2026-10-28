@@ -1,0 +1,21 @@
+# Campaign gh:199 · Epic E22: Rename to brainrc
+
+## 2026-10-27T18:43:34Z · intake
+- Members: gh:204, gh:205, gh:206, gh:207, gh:208, gh:209 (sub-issue order). All open, unassigned. None skipped.
+- Shape: ordered (`--shape ordered`; members differ).
+- Dependencies: MCP only, so the body fallback: no `Depends on #N` lines in any child. Source `none`: epic order.
+- Order: 204, 205, 206, 207, 208, 209. No cycle, no out-of-epic link.
+- Epic's ordering note "start after #201" (repo move): `origin` already resolves to github.com/brainrc/brainrc, so the move is done; #201 itself is still open (owner action).
+- `--auto`: `auto: true`. Stack Deliver gate will be `stacked` draft PRs, and only if no child is blocked.
+
+## engine · Campaign gate · auto-approved
+2026-10-27T18:45:03Z
+⛔ Campaign gate: campaign-199-rename-brainrc
+Summary: ordered shape, 6 children in epic order (source none). Each child gets its own Spec and Plan gates (auto-approved), and child N branches from child N-1.
+Decide: shape and order.
+Artifacts: specs/campaign-199-rename-brainrc/campaign.json
+
+- Child 1 gh:204 started: specs/204-point-urls-brainrc/ on branch 204-point-urls-brainrc (from main).
+
+## 2026-10-27T18:47:20Z · child 1 gh:204 verified
+- Size small, inline. Drafts ready; waits for the stack Deliver gate. Child 2 gh:205 starts on its branch from 204-point-urls-brainrc.

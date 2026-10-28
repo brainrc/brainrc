@@ -10,6 +10,9 @@ Usage:
   brainrc.py doctor                diagnose this machine's install (read-only): stale renders,
                                    missing/broken links, broken packs, unmerged hooks; exits 1
                                    on any problem, each with its fix
+  brainrc.py migrate [--dry-run]   move the settings home (AICFG_HOME or ~/.config/ai-config) to
+                                   BRAINRC_HOME (default ~/.config/brainrc), then apply; refuses a
+                                   non-empty target; --dry-run only prints the move
   brainrc.py plugin                write the plugin manifests (.claude-plugin/, plugin.json);
                                    validate fails when they're stale
   brainrc.py release [--dry-run]   fold changelog.d/ fragments into CHANGELOG.md, bump VERSION,
@@ -60,6 +63,7 @@ from .release import cmd_release, cmd_release_notes
 from .tokens import cmd_tokens
 from .validate import cmd_validate, pack_errors
 from .doctor import cmd_doctor
+from .migrate import cmd_migrate
 
 
 CHANGED_HINT = "(changed during apply; close Claude Code and re-run)"
@@ -294,6 +298,17 @@ def warn_deprecated(old: str, new: str = "brainrc") -> None:
     print(f"{old} is deprecated: use {new} (removed in {SHIM_REMOVED_IN})", file=sys.stderr)
 
 
+def warn_home() -> None:
+    """The one stderr line for a deprecated settings home (AICFG_HOME or ~/.config/ai-config)."""
+    origin = config.home_origin()
+    if origin == "aicfg_env":
+        warn_deprecated("AICFG_HOME", "BRAINRC_HOME")
+    elif origin == "legacy":
+        print(f"settings home {config.tilde(config.aicfg_home())} is deprecated: "
+              f"run `brainrc migrate` to move it to {config.tilde(config.new_home())} "
+              f"(removed in {SHIM_REMOVED_IN})", file=sys.stderr)
+
+
 def entry() -> None:
     """The `brainrc` console script of an installed package."""
     sys.exit(main(sys.argv))
@@ -321,6 +336,10 @@ def _dispatch(argv: list[str]) -> int:
     if cmd == "--version" and len(argv) == 2:
         print(f"brainrc {'.'.join(map(str, core_version()))}")
         return 0
+    if cmd != "migrate":
+        warn_home()
+    if cmd == "migrate" and (len(argv) == 2 or argv[2:] == ["--dry-run"]):
+        return cmd_migrate(dry_run=len(argv) == 3)
     if cmd in ("status", "apply") and len(argv) <= 2:
         return cmd_sync(apply=cmd == "apply")
     if cmd == "validate":

@@ -18,7 +18,7 @@ class EntryPointCase(unittest.TestCase):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
         self.env = {k: v for k, v in os.environ.items() if k != "PYTHONWARNINGS"}
-        self.env.update(HOME=tmp.name, AICFG_HOME=str(Path(tmp.name) / "ai-config"))
+        self.env.update(HOME=tmp.name, BRAINRC_HOME=str(Path(tmp.name) / "brainrc"))
 
     def run_py(self, *args):
         return subprocess.run(

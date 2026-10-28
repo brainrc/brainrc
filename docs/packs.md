@@ -8,7 +8,7 @@ To start one, copy the working example in [examples/pack-acme](../examples/pack-
 
 ## Enable a pack
 
-List it in `packs.local.toml` (gitignored; for an installed `aicfg`, in `~/.config/ai-config/`),
+List it in `packs.local.toml` (gitignored; for an installed `brainrc`, in `~/.config/brainrc/`),
 then apply:
 
 ```toml
@@ -30,7 +30,7 @@ git = "git@github.com:acme/acme-ai-pack.git"   # any URL git accepts; private re
 ref = "v1.2.0"                                 # tag, branch, or commit; default: the remote's default branch
 ```
 
-`apply` fetches it (shallow, detached) into `~/.config/ai-config/packs/acme` and records the URL
+`apply` fetches it (shallow, detached) into `~/.config/brainrc/packs/acme` and records the URL
 and `ref` it fetched; after that it works offline. Change `ref` or `git` and the next `apply`
 fetches again (`status` shows the `FETCH` line first). A branch `ref` that hasn't changed isn't
 refetched: `aicfg update` (or `python3 scripts/aicfg.py update`) refetches every git pack at its
@@ -86,8 +86,8 @@ deliver_checks = [        # listed in the Deliver gate as done / not applicable 
 ]
 ```
 
-`apply` renders every enabled pack's extensions into `$AICFG_HOME/extensions.md` (default
-`~/.config/ai-config/extensions.md`). spec-agent reads it at intake. The old copy at
+`apply` renders every enabled pack's extensions into `$BRAINRC_HOME/extensions.md` (default
+`~/.config/brainrc/extensions.md`). spec-agent reads it at intake. The old copy at
 `skills/spec-agent/references/extensions.md` is still written but deprecated: read the new path.
 With no packs enabled, the file says so and spec-agent runs as before.
 

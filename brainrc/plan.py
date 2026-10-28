@@ -36,8 +36,23 @@ class Link:
             target = link_target(self.dest)
             if os.path.normpath(target) == os.path.normpath(self.source):
                 return "ok" if not self.copy or hooks_copy_current(*self.copy) else "update"
+            if _from_former_home(target, self.source):
+                return "update"
             return "update" if _inside(target, roots or [config.REPO]) else "conflict"
         return "conflict" if self.dest.exists() else "create"
+
+
+def _from_former_home(target: Path, source: Path) -> bool:
+    """True if target is the same path under a former settings home that source is under the
+    current one: a link apply made before `brainrc migrate` (other links into the old dir stay)."""
+    try:
+        rel = os.path.normpath(source.relative_to(config.aicfg_home()))
+    except ValueError:
+        return False
+    for old in config.former_homes():
+        if os.path.normpath(target) == os.path.normpath(old / rel):
+            return True
+    return False
 
 
 class FragmentError(ConfigError):

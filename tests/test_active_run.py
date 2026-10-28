@@ -33,19 +33,21 @@ class ActiveRunTest(unittest.TestCase):
             os.utime(state, (mtime, mtime))
         return run
 
-    def env(self, aicfg_home: Path | str | None = "default") -> dict:
-        env = {k: v for k, v in os.environ.items() if k != "AICFG_HOME"}
+    def env(self, aicfg_home: Path | str | None = "default", **extra: str) -> dict:
+        drop = {"BRAINRC_HOME", "AICFG_HOME", "XDG_CONFIG_HOME"}
+        env = {k: v for k, v in os.environ.items() if k not in drop}
         env["HOME"] = str(self.home)
         if aicfg_home == "default":
             aicfg_home = self.aicfg
         if aicfg_home is not None:
-            env["AICFG_HOME"] = str(aicfg_home)
+            env["BRAINRC_HOME"] = str(aicfg_home)
+        env.update(extra)
         return env
 
-    def cli(self, *args, cwd=None, aicfg_home="default"):
+    def cli(self, *args, cwd=None, aicfg_home="default", **extra):
         return subprocess.run(
             [sys.executable, str(SCRIPT), *args],
-            capture_output=True, text=True, cwd=cwd or self.cwd_b, env=self.env(aicfg_home),
+            capture_output=True, text=True, cwd=cwd or self.cwd_b, env=self.env(aicfg_home, **extra),
         )
 
     @property
@@ -66,12 +68,67 @@ class ActiveRunTest(unittest.TestCase):
         self.assertEqual(self.pointer.read_text(), f"{run}\n")
 
     # AC2
-    def test_write_defaults_to_dot_config_ai_config_when_env_unset(self):
+    def test_write_defaults_to_dot_config_brainrc_when_env_unset(self):
         run = self.run_dir("071-x")
         result = self.cli("write", str(run), aicfg_home=None)
         self.assertEqual(result.returncode, 0, result.stderr)
-        default = self.home / ".config/ai-config/active-run"
+        default = self.home / ".config/brainrc/active-run"
         self.assertEqual(default.read_text(), f"{run}\n")
+
+    # AC15: resolution mirrors brainrc.config.aicfg_home, silently
+    def written(self, path: Path, run: Path, result) -> None:
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stderr, "")
+        self.assertEqual((path / "active-run").read_text(), f"{run}\n")
+
+    def test_brainrc_home_wins_over_aicfg_home_and_xdg(self):
+        run = self.run_dir("071-x")
+        other = self.root / "other"
+        r = self.cli("write", str(run), AICFG_HOME=str(other), XDG_CONFIG_HOME=str(other))
+        self.written(self.aicfg, run, r)
+        self.assertFalse(other.exists())
+
+    def test_aicfg_home_used_when_brainrc_home_unset(self):
+        run = self.run_dir("071-x")
+        old = self.root / "old"
+        r = self.cli("write", str(run), aicfg_home=None, AICFG_HOME=str(old), XDG_CONFIG_HOME=str(self.root / "x"))
+        self.written(old, run, r)
+
+    def test_absolute_xdg_config_home_uses_brainrc_subdir(self):
+        run = self.run_dir("071-x")
+        xdg = self.root / "xdg"
+        r = self.cli("write", str(run), aicfg_home=None, XDG_CONFIG_HOME=str(xdg))
+        self.written(xdg / "brainrc", run, r)
+
+    def test_relative_xdg_config_home_is_ignored(self):
+        run = self.run_dir("071-x")
+        r = self.cli("write", str(run), aicfg_home=None, XDG_CONFIG_HOME="rel/xdg")
+        self.written(self.home / ".config/brainrc", run, r)
+
+    def test_legacy_home_used_when_new_home_absent_and_legacy_exists(self):
+        run = self.run_dir("071-x")
+        legacy = self.home / ".config/ai-config"
+        legacy.mkdir(parents=True)
+        r = self.cli("write", str(run), aicfg_home=None)
+        self.written(legacy, run, r)
+        r = self.cli("read", aicfg_home=None)
+        self.assertEqual(r.stdout.strip(), str(run))
+        self.assertEqual(r.stderr, "")
+
+    def test_legacy_home_used_with_xdg_set_and_only_legacy_present(self):
+        run = self.run_dir("071-x")
+        legacy = self.home / ".config/ai-config"
+        legacy.mkdir(parents=True)
+        r = self.cli("write", str(run), aicfg_home=None, XDG_CONFIG_HOME=str(self.root / "xdg"))
+        self.written(legacy, run, r)
+
+    def test_new_home_preferred_when_both_exist(self):
+        run = self.run_dir("071-x")
+        (self.home / ".config/ai-config").mkdir(parents=True)
+        new = self.home / ".config/brainrc"
+        new.mkdir(parents=True)
+        r = self.cli("write", str(run), aicfg_home=None)
+        self.written(new, run, r)
 
     # AC3
     def test_pointer_is_single_line_path_plus_newline_only(self):

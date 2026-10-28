@@ -3,8 +3,12 @@
 Let tools outside a run's repo locate the active spec-agent run.
 
 ### Active run pointer
-The system SHALL write the absolute path of the active run directory as a single line to `$AICFG_HOME/active-run` (default `~/.config/ai-config/active-run`) at intake, on every resume, and on every checkpoint commit (each gate, block, and done), creating the directory if needed, via `skills/spec-agent/scripts/active_run.py write`. A write failure SHALL warn on stderr and exit 0. In an ordered campaign the pointer SHALL name the child currently in progress. (AC6)
-_Last changed by 074-campaign-ordered-shape._
+The system SHALL write the absolute path of the active run directory as a single line to
+`active-run` in the settings home (default `~/.config/brainrc/active-run`) at intake, on every
+resume, and on every checkpoint commit (each gate, block, and done), creating the directory if
+needed, via `skills/spec-agent/scripts/active_run.py write`. A write failure SHALL warn on stderr
+and exit 0. In an ordered campaign the pointer SHALL name the child currently in progress. (AC15)
+_Last changed by 206-brainrc-settings-home._
 
 ### Pointer read
 `active_run.py read` SHALL return the pointer's run if the file exists and names an existing

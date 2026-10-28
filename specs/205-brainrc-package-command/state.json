@@ -15,7 +15,7 @@
   "mode": "subagent",
   "delivery": "normal",
   "auto": false,
-  "stage": "watch",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -210,12 +210,16 @@
     },
     "retries": 1,
     "interventions": 1,
-    "pr_opened_at": "2026-10-28T02:47:03Z"
+    "pr_opened_at": "2026-10-28T02:47:03Z",
+    "time_to_merge": 3
   },
   "living": [
     "cli-entry-points"
   ],
   "watch": {
-    "entered_at": "2026-10-28T02:47:03Z"
+    "entered_at": "2026-10-28T02:47:03Z",
+    "merged_at": "2026-10-28T02:50:24Z",
+    "post_merge": "pass",
+    "outcome": "merged"
   }
 }

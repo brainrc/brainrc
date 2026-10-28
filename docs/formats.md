@@ -73,7 +73,7 @@ url = "https://docs.example.com/mcp"          # HTTP instead of `command`
 (`mcp`). `env_from` becomes a reference the harness expands when it starts the server
 (`${NAME}`, `env_vars`, `{env:NAME}`), so no value is written anywhere; `validate` rejects an
 `env` table. Only servers ai-config wrote are replaced or removed (tracked in
-`$AICFG_HOME/mcp-owned.json`). A server you defined yourself under the same name is reported as a
+`$BRAINRC_HOME/mcp-owned.json`). A server you defined yourself under the same name is reported as a
 conflict and left alone. Claude Code rewrites `~/.claude.json` while it runs, so apply MCP changes
 with it closed. Cursor and Antigravity aren't supported yet.
 
@@ -99,7 +99,7 @@ Cursor has no user rules file: `aicfg` links skills and merges guard hooks into
 carries `alwaysApply: true`.
 
 OpenCode can't read Claude's agent frontmatter (a `tools: Read, Grep` string makes its whole config
-invalid), so `apply` links copies rendered to `$AICFG_HOME/opencode/agents/`
+invalid), so `apply` links copies rendered to `$BRAINRC_HOME/opencode/agents/`
 (`agents_format = "opencode"` in `harnesses.toml`). Each copy has `mode: subagent` and a `deny` for
 every tool the agent lacks; tools it has follow your own OpenCode permissions. Lossy: `model` is
 dropped (the subagent uses its caller's model) and `mcp__*` tools aren't mapped.

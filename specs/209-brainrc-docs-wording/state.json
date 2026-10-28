@@ -16,7 +16,7 @@
   "delivery": "normal",
   "auto": true,
   "stop_at_deliver": true,
-  "stage": "watch",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -350,7 +350,8 @@
       "task_minutes": 6,
       "wall_minutes": 3
     },
-    "pr_opened_at": "2026-10-28T20:16:13Z"
+    "pr_opened_at": "2026-10-28T20:16:13Z",
+    "time_to_merge": 0
   },
   "living": [
     "cli-entry-points",
@@ -358,6 +359,10 @@
     "aicfg-config"
   ],
   "watch": {
-    "entered_at": "2026-10-28T20:16:13Z"
+    "entered_at": "2026-10-28T20:16:13Z",
+    "merged_at": "2026-10-28T20:16:04Z",
+    "post_merge": "pass",
+    "outcome": "merged",
+    "review_rounds": 0
   }
 }

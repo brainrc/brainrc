@@ -70,7 +70,7 @@
       "branch": "209-brainrc-docs-wording",
       "pr": "https://github.com/brainrc/brainrc/pull/235",
       "base": "main",
-      "merged": false
+      "merged": true
     }
   ],
   "gates": {
@@ -78,5 +78,6 @@
       "presented_at": "2026-10-27T18:45:03Z",
       "approved_at": "2026-10-27T18:45:03Z"
     }
-  }
+  },
+  "completed_at": "2026-10-28T20:16:04Z"
 }

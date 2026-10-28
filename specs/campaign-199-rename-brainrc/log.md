@@ -55,3 +55,6 @@ Artifacts: specs/campaign-199-rename-brainrc/campaign.json
 
 ## 2026-10-28T20:16:13Z · gh:209 delivered
 - PR #235, base main, ready for review. Last child: the campaign is done once #235 merges.
+
+## 2026-10-28T20:20:17Z · gh:209 merged (#235), v0.4.5 released · campaign done
+- All six children merged: #229 (204), #230 (205), #232 (206), #233 (207), #234 (208), #235 (209); plus fix #231. Post-merge verify pass. Close-out records live on local branch campaign-199-closeout (not pushed).

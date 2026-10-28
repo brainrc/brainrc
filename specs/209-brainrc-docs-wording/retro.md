@@ -23,3 +23,13 @@ Ticket: gh:209 · Size: standard · PR: https://github.com/brainrc/brainrc/pull/
 - Engine: never auto-approve a Spec gate before `living_specs.py check` exits 0 (this run's first approval script ran the check and approved regardless).
 - analyst role: MODIFIED blocks must carry the full requirement text; add that sentence to the role file, since a wording-only delta invites shorthand.
 - Allowlist tests: require a file-specific glob for package code; package-wide rows hid a stale docstring.
+
+## After delivery
+- Outcome: merged
+- Merged at: 2026-10-28T20:16:04Z
+- Post-merge verify: pass (see `verify-merged.md`; tutorial ran clean)
+- CI failures: 0 own / 0 external
+- Review rounds: 0
+- Caught by reviewers, missed by the run's own: none
+- Follow-up title: Rename the kept on-disk names (Codex MCP markers, ai-config-guard.js, aicfg-fetched.json)
+- Follow-up body: Rename with old-name recognition so existing installs converge on the next apply; shrink the test_old_names allowlist.

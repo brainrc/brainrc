@@ -211,7 +211,7 @@
     "retries": 1,
     "interventions": 1,
     "pr_opened_at": "2026-10-28T02:47:03Z",
-    "time_to_merge": 4
+    "time_to_merge": 3
   },
   "living": [
     "cli-entry-points"

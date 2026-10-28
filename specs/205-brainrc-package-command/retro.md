@@ -25,7 +25,7 @@ Ticket: gh:205 · Size: standard (resized from large by the owner) · PR: https:
 
 ## After delivery
 - Outcome: merged
-- Merged at: 2026-10-28T02:50:24Z · Time to merge: 4 min
+- Merged at: 2026-10-28T02:50:24Z · Time to merge: 3 min
 - Post-merge verify: pass (see `verify-merged.md`)
 - CI failures: 0 own / 0 external
 - Review rounds: 0

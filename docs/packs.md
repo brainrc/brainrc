@@ -63,7 +63,7 @@ exist in two sources. `apply` refuses to write anything if one does.
 ```toml
 name = "acme"
 prefix = "acme-"          # default: "<name>-"
-requires_core = ">=0.3, <0.4"   # core versions this pack works with (see Compatibility)
+requires_core = ">=0.4, <0.5"   # core versions this pack works with (see Compatibility)
 max_always_tokens = 800   # optional budget for rules + descriptions (see Context cost)
 
 [[extensions.domains]]    # extra rows for spec-agent's Domains table

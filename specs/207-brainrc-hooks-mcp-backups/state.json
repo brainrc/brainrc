@@ -15,10 +15,10 @@
   "mode": "subagent",
   "delivery": "normal",
   "auto": true,
-  "stage": "plan",
+  "stage": "implement",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [
@@ -33,19 +33,115 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
-  "blocked": {
-    "reason": "auto hard stop: plan Callouts not none (user-visible hooks_dir and backup names [pack contract]; first apply rewrites settings; old hook symlinks deleted)",
-    "stage": "plan",
-    "task": null,
-    "since": "2026-10-28T05:12:28Z"
-  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Backups use the brainrc name, prune across both names",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "brainrc/settings.py",
+        "tests/test_backups.py",
+        "tests/test_aicfg.py",
+        "docs/troubleshooting.md"
+      ],
+      "criteria": [
+        "AC9",
+        "AC10"
+      ],
+      "review": "batch",
+      "after": []
+    },
+    {
+      "id": "T2",
+      "title": "Hook ownership covers both dir names, by path component",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "brainrc/config.py",
+        "tests/test_ownership.py"
+      ],
+      "criteria": [
+        "AC4",
+        "AC5"
+      ],
+      "review": "each",
+      "after": []
+    },
+    {
+      "id": "T3",
+      "title": "MCP ownership records honored from former homes, read-only",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "brainrc/mcp.py",
+        "tests/test_mcp.py"
+      ],
+      "criteria": [
+        "AC6",
+        "AC7",
+        "AC8"
+      ],
+      "review": "each",
+      "after": []
+    },
+    {
+      "id": "T4",
+      "title": "Rename hook dirs, prune old links",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "harnesses.toml",
+        "brainrc/config.py",
+        "brainrc/plan.py",
+        "tests/test_aicfg.py",
+        "docs/packs.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC3"
+      ],
+      "review": "each",
+      "after": [
+        "T1",
+        "T2"
+      ]
+    },
+    {
+      "id": "T5",
+      "title": "Convergence tests for an old-name install, plus changelog fragment",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "tests/test_rename_converge.py",
+        "changelog.d/207-brainrc-hooks-mcp-backups.md"
+      ],
+      "criteria": [
+        "AC2",
+        "AC11",
+        "AC12",
+        "AC13"
+      ],
+      "review": "batch",
+      "after": [
+        "T3",
+        "T4"
+      ]
+    }
+  ],
+  "blocked": null,
   "metrics": {
     "started_at": "2026-10-28T05:08:03Z",
     "stage_started_at": {
       "intake": "2026-10-28T05:08:03Z",
       "spec": "2026-10-28T05:08:03Z",
-      "plan": "2026-10-28T05:09:32Z"
+      "plan": "2026-10-28T05:09:32Z",
+      "implement": "2026-10-28T13:00:29Z"
     },
     "gates": {
       "spec": {
@@ -53,7 +149,8 @@
         "approved_at": "2026-10-28T05:09:32Z"
       },
       "plan": {
-        "presented_at": "2026-10-28T05:12:28Z"
+        "presented_at": "2026-10-28T05:12:28Z",
+        "approved_at": "2026-10-28T13:00:29Z"
       }
     },
     "gate_rework": {
@@ -66,6 +163,6 @@
       "first_pass": 0
     },
     "retries": 0,
-    "interventions": 0
+    "interventions": 1
   }
 }

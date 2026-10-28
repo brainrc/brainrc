@@ -20,3 +20,7 @@ Artifacts: specs/207-brainrc-hooks-mcp-backups/spec.md
 ## engine · blocked · auto hard stop
 2026-10-28T05:12:28Z
 Plan Callouts are not none; the Plan gate needs the owner. Nothing pushed.
+
+## engine · Plan gate · approved by owner
+2026-10-28T13:00:29Z
+Owner: "Approve continue auto" (callouts approved; auto continues). +1 intervention.

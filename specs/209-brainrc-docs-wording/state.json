@@ -190,7 +190,7 @@
       "id": "T7",
       "title": "Usage, `--help`, doctor, error text, banners, docstrings and comments, and guard messages say `brainrc`; D markers and C deprecation lines unchanged",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "brainrc/cli.py",
@@ -217,14 +217,16 @@
       "after": [
         "T6"
       ],
-      "started_at": "2026-10-28T17:33:44Z"
+      "started_at": "2026-10-28T17:33:44Z",
+      "commit": "8ae2f9f",
+      "finished_at": "2026-10-28T17:35:50Z"
     },
     {
       "id": "T8",
       "title": "Internal identifiers: `aicfg_home` to `settings_home`, `aicfg_env` to `legacy_env`, `.aicfg-tmp-`/`.aicfg-old-` to `.brainrc-*`",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "brainrc/__init__.py",
         "brainrc/config.py",
@@ -247,7 +249,8 @@
       "review": "each",
       "after": [
         "T7"
-      ]
+      ],
+      "started_at": "2026-10-28T17:35:50Z"
     },
     {
       "id": "T9",
@@ -301,8 +304,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 1,
-      "first_pass": 1
+      "total": 2,
+      "first_pass": 2
     },
     "retries": 0,
     "interventions": 0,

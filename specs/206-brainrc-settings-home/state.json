@@ -60,14 +60,15 @@
       "id": "T2",
       "title": "Home lookup, once-per-run warning, fixtures on BRAINRC_HOME",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "brainrc/config.py",
         "brainrc/cli.py",
         "tests/test_aicfg.py",
         "tests/test_cli_entry_points.py",
-        "scripts/check_install.py"
+        "scripts/check_install.py",
+        "tests/test_settings_home.py"
       ],
       "criteria": [
         "AC1",
@@ -81,14 +82,16 @@
       "review": "each",
       "after": [
         "T1"
-      ]
+      ],
+      "commit": "914bf27",
+      "red": "assertion"
     },
     {
       "id": "T3",
       "title": "Doctor home findings",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "brainrc/doctor.py",
         "tests/test_doctor_home.py"
@@ -193,10 +196,10 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 1,
-      "first_pass": 1
+      "total": 2,
+      "first_pass": 2
     },
     "retries": 0,
-    "interventions": 0
+    "interventions": 1
   }
 }

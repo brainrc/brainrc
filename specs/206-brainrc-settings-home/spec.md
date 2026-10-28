@@ -21,15 +21,17 @@ a safe way to move.
 
 ## Acceptance criteria
 Home is resolved in this order: `BRAINRC_HOME`; `AICFG_HOME`; `$XDG_CONFIG_HOME/brainrc` (when set
-and absolute); `~/.config/brainrc`; except that if none of the first three is set and
-`~/.config/brainrc` is absent but `~/.config/ai-config` exists, the latter is used ("legacy").
+and absolute); `~/.config/brainrc`; except that if neither `BRAINRC_HOME` nor `AICFG_HOME` is set
+and the new home (`$XDG_CONFIG_HOME/brainrc` or `~/.config/brainrc`) is absent but
+`~/.config/ai-config` exists, the latter is used ("legacy").
 
 - **AC1**: Given a temp HOME with no old or new dir and no env vars, when `brainrc apply` runs, then
   files are rendered under `~/.config/brainrc`, `~/.config/ai-config` is not created, and nothing
   is warned about the home.
 - **AC2**: Given `BRAINRC_HOME=X` and `AICFG_HOME=Y` both set, then `X` is used and `Y` is ignored.
 - **AC3**: Given `XDG_CONFIG_HOME=X` (absolute) and no `BRAINRC_HOME`/`AICFG_HOME`, then
-  `X/brainrc` is used; unset (or empty or relative) it falls back to `~/.config/brainrc`.
+  `X/brainrc` is used; unset (or empty or relative) it falls back to `~/.config/brainrc`. If
+  `X/brainrc` is absent and `~/.config/ai-config` exists, the legacy dir is used and warns (AC4).
 - **AC4**: Given only `~/.config/ai-config` exists (no env vars), when `brainrc status` or `apply`
   runs, then that dir is used, it works as before, and stderr has one line naming the legacy dir
   and `brainrc migrate`; stdout is unchanged and the exit code is unaffected.

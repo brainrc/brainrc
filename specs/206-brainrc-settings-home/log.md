@@ -31,3 +31,13 @@ Owner approved (patch bump). Tasks run sequentially in the main tree.
 
 ## code-reviewer (engine inline) · T1 · done
 **Findings:** none; every case uses a temp HOME and an explicit env. Commit 374b004.
+
+## implementer · T2 · done
+**Evidence:** suite 472 OK, validate OK. Within fence.
+
+## engine · spec change after approval (owner consented)
+2026-10-28T03:37:13Z
+Engine found the approved resolution paragraph skipped the legacy fallback whenever XDG_CONFIG_HOME was set (an XDG_CONFIG_HOME=~/.config machine would ignore an old install silently, contradicting resolved question 2). Owner chose "use the old dir and warn". Amended the spec paragraph and AC3; replaced test_ac3_absolute_xdg_beats_legacy_dir_without_warning with two tests (legacy used + warns; XDG home present wins); home_origin fixed. tests/test_settings_home.py added to T2's files (scope extension, approved with the change). +1 intervention.
+
+## code-reviewer · T2 · done (no CRITICAL/HIGH)
+**Findings:** MEDIUM no direct tests for new_home/former_homes and edge cases → added 5 in-process tests (engine); LOW lexical compare in former_homes → _same_dir with samefile (mutation check: symlink test fails without it); LOW BrainrcCommandTest uses the real HOME (pre-existing, follow-up). Suite 478 OK. Commit 914bf27.

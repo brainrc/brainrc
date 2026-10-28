@@ -70,3 +70,6 @@ Refuse a source at or above $HOME; markers are brainrc-only names (+ active-run)
 
 ## implementer · T5 · done
 **Evidence:** red 12/24; suite 524 OK; validate OK. Within fence. Engine shortened the SKILL.md/state.md home lines (context cost). Review batched. Commit edb6e9f.
+
+## engine · T6 · done
+Docs (install, packs, formats) and the patch [pack contract] fragment written inline. Suite 524 OK; validate OK. Commit 434e68d.

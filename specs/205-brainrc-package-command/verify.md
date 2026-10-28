@@ -23,7 +23,7 @@ Run at 2026-10-28T02:38:17Z on commit `c2c9e56`.
 | AC7 | `check_install.py` PASS AC7; `test_ac7_import_aicfg_emits_deprecation_warning`, `test_ac7_aicfg_cli_main_is_brainrc_cli_main` | pass |
 | AC8 | `check_install.py` PASS AC8 (bundled `_core` contents, `installed()` true, `brainrc validate` outside a checkout) | pass |
 | AC9 | `scripts/brainrc.py nosuchcmd` prints usage naming `brainrc`, no `aicfg.py`, exit 2; `test_usage_names_brainrc_in_a_checkout`, `..._when_installed` | pass |
-| AC10 | suite, validate, and every command both workflows run, run locally with the new names (above); the workflows themselves run on push | pass (workflows re-checked by CI after push) |
+| AC10 | suite, validate, and every command both workflows run, run locally with the new names (above); the workflows themselves run on push | pass (validate workflow green on PR #230, 2026-10-28T02:47:21Z) |
 | AC11 | `test_ac11_*` (4 tests, including `-W default -m aicfg`): one warning, stderr only | pass |
 
 ## Notes

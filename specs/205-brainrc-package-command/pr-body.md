@@ -33,7 +33,7 @@ one minor release, so the old names stay with a deprecation warning.
 - [x] AC7: `import aicfg` emits `DeprecationWarning`, and `aicfg.cli.main` resolves, verified by `check_install.py` (AC7) and `test_ac7_*`
 - [x] AC8: bundled `_core` is found under `brainrc`, and `brainrc validate` passes outside a checkout, verified by `check_install.py` (AC8)
 - [x] AC9: usage names `brainrc`, never `aicfg.py`, verified by `test_usage_names_brainrc_*`
-- [ ] AC10: suite, `validate`, and the workflow commands pass locally. The workflows run in CI on this PR (CI pending).
+- [x] AC10: suite, `validate`, and the workflow commands pass locally, and the `validate` workflow (including `check_install.py` on the runner) passed on this PR
 - [x] AC11: each deprecated entry warns once, on stderr only, verified by `test_ac11_*`
 
 ## How to verify

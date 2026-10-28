@@ -24,3 +24,9 @@ Plan Callouts are not none; the owner decides. Nothing pushed.
 ## engine · Plan gate · approved by owner
 2026-10-28T16:44:44Z
 Owner: "Approve, patch, continue auto". Fragment bumps patch with [pack contract]; 0.5.0 stays the shim-removal release.
+
+## implementer · T2 · done (attempt 1)
+Suite 568 OK, validate OK; within fence.
+
+## code-reviewer · T2 · changes-requested
+**Findings:** HIGH deeply nested/huge installed_plugins.json raises RecursionError (doctor crashes); MEDIUM PermissionError on an unsearchable ~/.cursor/plugins/local; MEDIUM locale encoding; LOW Cursor fix text; LOW install.md Cursor example still names ai-config (→ T3). T2 attempt 2.

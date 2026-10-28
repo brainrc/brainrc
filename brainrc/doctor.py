@@ -140,10 +140,16 @@ def _home_findings() -> list[Finding]:
     elif origin == "aicfg_env":
         found.append(("WARN", f"settings home comes from the deprecated AICFG_HOME ({tilde(home)})",
                       f"set BRAINRC_HOME={tilde(config.new_home())} and run `{command('migrate')}`"))
+    home_has_content = home.is_dir() and any(home.iterdir())
     for old in config.former_homes():
-        if old.exists():
+        if not old.exists():
+            continue
+        if home_has_content:
             found.append(("WARN", f"{tilde(old)} is unused (settings home is {tilde(home)})",
                           f"move anything you still need from it into {tilde(home)}, then remove it: rm -r {tilde(old)}"))
+        else:  # the old dir may hold the only settings: move them, don't delete them
+            found.append(("WARN", f"{tilde(old)} holds settings, but the settings home is {tilde(home)}",
+                          f"`{command('migrate')}` moves it there"))
     return found
 
 

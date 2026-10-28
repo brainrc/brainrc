@@ -46,11 +46,22 @@ class TestHomeFindings(unittest.TestCase):
     def test_both_dirs_warns_old_is_unused(self):
         self.old.mkdir(parents=True)
         self.new.mkdir(parents=True)
+        (self.new / "instructions.md").write_text("x\n")
         [(level, what, fix)] = self.findings()
         self.assertEqual(level, "WARN")
         self.assertIn("~/.config/ai-config", what)
         self.assertIn("unused", what)
         self.assertIn("remove", fix)
+
+    def test_old_dir_with_an_empty_new_home_points_at_migrate_not_removal(self):
+        (self.old / "packs.local.toml").parent.mkdir(parents=True)
+        (self.old / "packs.local.toml").write_text("# mine\n")
+        target = self.home / "x"  # BRAINRC_HOME set but not created yet
+        [(level, what, fix)] = self.findings(BRAINRC_HOME=str(target))
+        self.assertEqual(level, "WARN")
+        self.assertNotIn("unused", what)
+        self.assertIn("migrate", fix)
+        self.assertNotIn("rm -r", fix)
 
     def test_only_new_dir_has_no_finding(self):
         self.new.mkdir(parents=True)

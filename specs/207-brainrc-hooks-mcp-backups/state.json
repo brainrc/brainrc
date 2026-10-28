@@ -86,7 +86,7 @@
       "id": "T3",
       "title": "MCP ownership records honored from former homes, read-only",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 2,
       "files": [
         "brainrc/mcp.py",
@@ -100,9 +100,11 @@
       "review": "each",
       "after": [],
       "wave": 1,
-      "worktree": "/tmp/spec-agent/207-brainrc-hooks-mcp-backups/T3",
+      "worktree": null,
       "started_at": "2026-10-28T13:00:38Z",
-      "finished_at": "2026-10-28T13:04:20Z"
+      "finished_at": "2026-10-28T13:04:20Z",
+      "commit": "01ec260",
+      "red": "assertion"
     },
     {
       "id": "T4",
@@ -175,8 +177,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 1,
-      "first_pass": 1
+      "total": 2,
+      "first_pass": 2
     },
     "retries": 1,
     "interventions": 1,

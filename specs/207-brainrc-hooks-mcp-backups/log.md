@@ -33,3 +33,6 @@ Owner: "Approve continue auto" (callouts approved; auto continues). +1 intervent
 
 ## code-reviewer · T2 · done
 **Findings:** LOW Windows backslashes not matched (harmless, POSIX targets); LOW mixed-case pack names (e.g. ai-config-Acme) not matched as old-name entries; pre-existing, follow-up (validate pack names). 531 OK.
+
+## code-reviewer · T3 · done (attempt 2)
+**Findings:** MEDIUM no corrupt-former-record test → engine added one (3 corrupt forms: nothing claimed, CONFLICT kept, file untouched); LOW shadow check on non-list → made exact. Landed 01ec260.

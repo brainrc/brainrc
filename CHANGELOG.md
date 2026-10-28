@@ -12,6 +12,11 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.3.50 (2026-10-28)
+
+- Install commands and issue links in the docs point at `brainrc/brainrc` instead of going
+  through the old repo's redirect, and `pyproject.toml` lists the repo and issue URLs.
+
 ## 0.3.49 (2026-10-27)
 
 - CI: bump `actions/checkout` to v7.0.1 and `actions/setup-python` to v7.0.0 (full-SHA pins) in the validate and release workflows, moving them off the deprecated Node 20 runtime to Node 24. (gh:220)

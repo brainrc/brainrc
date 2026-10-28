@@ -12,6 +12,18 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.4.0 (2026-10-28)
+
+- **[pack contract]** The tool is now `brainrc`: the PyPI distribution, the console script, the
+  Python package (`import brainrc`, `python -m brainrc`), and the checkout entry
+  `scripts/brainrc.py`. `brainrc --version` prints `brainrc <VERSION>`. The old names
+  (`aicfg`, `scripts/aicfg.py`, `python -m aicfg`, `import aicfg`) keep working until 0.5.0,
+  each printing one deprecation line on stderr; point packs' pre-commit hooks at
+  `scripts/brainrc.py` before then. Installed users: run `uv tool uninstall ai-config` (or
+  `pipx uninstall ai-config`) before installing `brainrc`, because both ship an `aicfg` command
+  and removing the old one afterwards deletes the new shim. `AICFG_HOME` and
+  `~/.config/ai-config` are unchanged for now.
+
 ## 0.3.50 (2026-10-28)
 
 - Install commands and issue links in the docs point at `brainrc/brainrc` instead of going

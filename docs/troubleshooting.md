@@ -68,7 +68,8 @@ write nothing while any of them stands, naming `validate --pack <dir>` for the p
 ## Settings backups
 
 Before `apply` changes a harness's settings file (Claude Code: `~/.claude/settings.json`), it
-copies it next to the original as `settings.json.bak-aicfg-<UTC time>`. The last 5 are kept.
+copies it next to the original as `settings.json.bak-brainrc-<UTC time>`. The last 5 are kept, counting older
+`settings.json.bak-aicfg-<UTC time>` backups too.
 No backup is made when the file didn't exist yet. MCP config files (`~/.claude.json` and the
 others) are backed up the same way.
 

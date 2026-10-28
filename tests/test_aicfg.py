@@ -249,7 +249,7 @@ class SyncFakeHomeTest(TempRepoCase):
         self.assertNotIn("hooks/ai-config", json.dumps(after))
         self.assertEqual(after["hooks"]["PreToolUse"], [FOREIGN])
         self.assertEqual(after["tui"], "fullscreen")
-        self.assertTrue(list(settings.parent.glob("settings.json.bak-aicfg-*")))
+        self.assertTrue(list(settings.parent.glob("settings.json.bak-brainrc-*")))
         self.assertIn("Everything in sync.", quiet(aicfg.cmd_sync, False)[1])
 
     def test_uninstall_restores_the_settings_file(self):
@@ -271,10 +271,10 @@ class SyncFakeHomeTest(TempRepoCase):
         (self.home / ".claude").mkdir()
         settings = self.home / ".claude/settings.json"
         for n in range(aicfg.BACKUPS_KEPT + 3):
-            (settings.parent / f"settings.json.bak-aicfg-2026010{n}T000000Z").write_text("{}")
+            (settings.parent / f"settings.json.bak-brainrc-2026010{n}T000000Z").write_text("{}")
         settings.write_text("{}")
         quiet(aicfg.cmd_sync, True)
-        self.assertEqual(len(list(settings.parent.glob("settings.json.bak-aicfg-*"))), aicfg.BACKUPS_KEPT)
+        self.assertEqual(len(list(settings.parent.glob("settings.json.bak-brainrc-*"))), aicfg.BACKUPS_KEPT)
         self.assertEqual(list(settings.parent.glob(".settings.json.aicfg-tmp*")), [])
 
     def test_checkout_hooks_link_into_the_checkout(self):
@@ -345,7 +345,7 @@ class SyncFakeHomeTest(TempRepoCase):
         self.assertRegex(out, r"CHANGED +claude +~/.claude/settings.json")
         self.assertIn("close Claude Code", out)
         self.assertEqual(settings.read_text(), '{"theme": "app"}')
-        self.assertEqual(list(settings.parent.glob("settings.json.bak-aicfg-*")), [])
+        self.assertEqual(list(settings.parent.glob("settings.json.bak-brainrc-*")), [])
 
     @unittest.skipIf(os.name == "nt", "POSIX permission bits")
     def test_settings_write_keeps_the_files_mode(self):
@@ -357,7 +357,7 @@ class SyncFakeHomeTest(TempRepoCase):
             quiet(aicfg.cmd_sync, True)
             self.assertIn("hooks", json.loads(settings.read_text()))
             self.assertEqual(stat.S_IMODE(settings.stat().st_mode), mode)
-            newest = sorted(settings.parent.glob("settings.json.bak-aicfg-*"))[-1]
+            newest = sorted(settings.parent.glob("settings.json.bak-brainrc-*"))[-1]
             self.assertEqual(stat.S_IMODE(newest.stat().st_mode), mode)
 
     @unittest.skipIf(os.name == "nt", "POSIX permission bits")
@@ -396,9 +396,9 @@ class SyncFakeHomeTest(TempRepoCase):
         data = json.loads(target.read_text())
         self.assertEqual(data["theme"], "dark")
         self.assertIn("hooks", data)
-        backups = list(dotfiles.glob("settings.json.bak-aicfg-*"))
+        backups = list(dotfiles.glob("settings.json.bak-brainrc-*"))
         self.assertEqual([b.read_text() for b in backups], ['{"theme": "dark"}\n'])
-        self.assertEqual(list(settings.parent.glob("settings.json.bak-aicfg-*")), [])
+        self.assertEqual(list(settings.parent.glob("settings.json.bak-brainrc-*")), [])
         self.assertEqual(list(self.home.rglob("*.aicfg-tmp")), [])
 
     def test_a_dangling_settings_link_creates_its_target(self):
@@ -434,7 +434,7 @@ class SyncFakeHomeTest(TempRepoCase):
         merged = json.loads(settings.read_text())
         self.assertEqual(merged["hooks"]["SessionStart"], [FOREIGN])
         self.assertTrue(any(aicfg._owned(g) for g in merged["hooks"]["PreToolUse"]))
-        self.assertEqual(len(list(settings.parent.glob("settings.json.bak-aicfg-*"))), 1)
+        self.assertEqual(len(list(settings.parent.glob("settings.json.bak-brainrc-*"))), 1)
 
         (self.home / ".codex/AGENTS.md").unlink()
         quiet(aicfg.cmd_sync, True)

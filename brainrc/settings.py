@@ -82,8 +82,12 @@ def replace_file(dest: Path, text: str, before: str | None) -> None:
     mode = stat.S_IMODE(target.stat().st_mode) if target.exists() else None
     if mode is not None:
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-        _create(target.with_name(f"{target.name}.bak-aicfg-{stamp}"), target.read_bytes(), mode)
-        backups = sorted(target.parent.glob(f"{target.name}.bak-aicfg-*"))
+        _create(target.with_name(f"{target.name}.bak-brainrc-{stamp}"), target.read_bytes(), mode)
+        # Old backups carry the former name; order both by the timestamp at the end of the name.
+        backups = sorted(
+            (p for tag in ("brainrc", "aicfg") for p in target.parent.glob(f"{target.name}.bak-{tag}-*")),
+            key=lambda p: (p.name.rsplit("-", 1)[-1], p.name),
+        )
         for old in backups[:-BACKUPS_KEPT]:
             old.unlink()
     tmp = target.with_name(f".{target.name}.aicfg-tmp-{os.getpid()}")

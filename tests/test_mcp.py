@@ -13,6 +13,8 @@ from test_aicfg import TempRepoCase, aicfg, make_pack, quiet, set_core_version
 
 GH = '[servers.gh]\ncommand = "npx"\nargs = ["-y", "@modelcontextprotocol/server-github"]\nenv_from = ["GH_TOKEN"]\n'
 DOCS = '[servers.docs]\nurl = "https://docs.example.com/mcp"\n'
+GH_CLAUDE = {"type": "stdio", "command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"],
+             "env": {"GH_TOKEN": "${GH_TOKEN}"}}
 SECRET = "s3cret-value-never-written"
 
 
@@ -223,6 +225,79 @@ class McpSyncTest(McpCase):
         self.apply()
         (aicfg.aicfg_home() / "mcp-owned.json").unlink()
         self.assertIn("Everything in sync", quiet(aicfg.cmd_sync, False)[1])
+
+    def _former_record(self, owned: dict) -> Path:
+        old = self.home / ".config" / "ai-config"
+        old.mkdir(parents=True, exist_ok=True)
+        os.environ["BRAINRC_HOME"] = str(self.home / "new-home")
+        self.addCleanup(os.environ.pop, "BRAINRC_HOME", None)
+        record = old / "mcp-owned.json"
+        record.write_text(json.dumps(owned, indent=2) + "\n")
+        return record
+
+    def test_a_former_homes_record_is_honored_read_only(self):
+        self.registry(GH + DOCS)
+        self.claude.write_text(json.dumps({"mcpServers": {"gh": {"type": "stdio", "command": "old-gh", "args": []}}}))
+        record = self._former_record({str(self.claude): ["gh"]})
+        before = record.read_text()
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("CONFLICT", out)
+        servers = json.loads(self.claude.read_text())["mcpServers"]
+        self.assertEqual(servers["gh"]["args"], ["-y", "@modelcontextprotocol/server-github"])
+        self.assertEqual(set(servers), {"gh", "docs"})
+        self.assertEqual(record.read_text(), before)
+        new = json.loads((self.home / "new-home" / "mcp-owned.json").read_text())
+        self.assertEqual(new[str(self.claude)], ["docs", "gh"])
+        self.assertIn("Everything in sync", quiet(aicfg.cmd_sync, False)[1])
+
+    def test_after_removal_the_resolved_record_keeps_an_empty_list_over_a_former_one(self):
+        self.registry(GH)
+        self.claude.write_text(json.dumps({"mcpServers": {"gh": GH_CLAUDE}}))
+        record = self._former_record({str(self.claude): ["gh"]})
+        before = record.read_text()
+        self.apply()
+        self.registry("# nothing\n")
+        self.apply()
+        self.assertEqual(json.loads(self.claude.read_text()).get("mcpServers", {}), {})
+        new = json.loads((self.home / "new-home" / "mcp-owned.json").read_text())
+        self.assertEqual(new[str(self.claude)], [])
+        # the user adds their own `gh` later: neither record may claim it
+        mine = {"type": "stdio", "command": "my-gh"}
+        self.claude.write_text(json.dumps({"mcpServers": {"gh": mine}}))
+        self.registry(GH)
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 1, out)
+        self.assertIn("CONFLICT", out)
+        self.assertEqual(json.loads(self.claude.read_text())["mcpServers"]["gh"], mine)
+        self.assertEqual(record.read_text(), before)
+
+    def test_when_both_records_list_a_file_the_resolved_home_wins(self):
+        self.registry(DOCS)
+        self.claude.write_text(json.dumps({"mcpServers": {
+            "gh": {"type": "stdio", "command": "x"}, "docs": {"type": "http", "url": "https://old"}}}))
+        self._former_record({str(self.claude): ["gh"]})
+        (self.home / "new-home").mkdir()
+        (self.home / "new-home" / "mcp-owned.json").write_text(json.dumps({str(self.claude): ["docs"]}))
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        # docs (resolved record) is updated; gh (only the former record) is not ours, so it stays
+        self.assertEqual(json.loads(self.claude.read_text())["mcpServers"],
+                         {"gh": {"type": "stdio", "command": "x"},
+                          "docs": {"type": "http", "url": "https://docs.example.com/mcp"}})
+
+    def test_a_corrupt_former_record_claims_nothing(self):
+        for raw in ("not json", "[]", json.dumps({str(self.claude): "gh"})):
+            with self.subTest(raw=raw):
+                record = self._former_record({})
+                record.write_text(raw)
+                self.claude.write_text(json.dumps({"mcpServers": {"gh": {"type": "stdio", "command": "my-gh"}}}))
+                self.registry(GH)
+                code, out = quiet(aicfg.cmd_sync, True)
+                self.assertEqual(code, 1, out)
+                self.assertIn("CONFLICT", out)
+                self.assertEqual(json.loads(self.claude.read_text())["mcpServers"]["gh"]["command"], "my-gh")
+                self.assertEqual(record.read_text(), raw)
 
     def test_codex_block_keeps_user_content_and_is_removed_cleanly(self):
         original = 'model = "o3"\n\n[mcp_servers.mine]\ncommand = "mine"\n'

@@ -12,6 +12,10 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.4.3 (2026-10-28)
+
+- **[pack contract]** Hook links are now `hooks/brainrc` and `hooks/brainrc-<pack>` (was `hooks/ai-config*`). The next apply replaces old-name settings and hooks.json entries, removes the old links, and honors MCP ownership records left in a former home. Backups are `.bak-brainrc-*`; old `.bak-aicfg-*` count toward the 5 kept. Packs using `{{hooks_dir}}` need no change; hard-coded `hooks/ai-config` paths do.
+
 ## 0.4.2 (2026-10-28)
 
 - **[pack contract]** The settings home is now `~/.config/brainrc` (`$XDG_CONFIG_HOME/brainrc`

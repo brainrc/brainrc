@@ -67,3 +67,9 @@ Engine fixes folded into T3 commit c588355 (within T3 fence). F1 (outside T3 fen
 
 ## engine · T5 · done
 Fragment written inline (bump minor, [pack contract], 0.5.0 removal, uninstall ai-config first). Commit 6f72cf2.
+
+## infra-reviewer · T4 · done
+**Findings:** LOW release.yml first real run is post-merge (failures stop before commit/tag); LOW drop the deprecated aicfg step at 0.5.0. No CRITICAL/HIGH.
+
+## code-reviewer · T4 · changes-requested
+**Findings:** HIGH AC3 can pass vacuously (two identical failures); HIGH no finally cleanup, unguarded AC7 import / TimeoutExpired → traceback; MEDIUM AC8 never proves bundled _core is used; MEDIUM AC6 runs --version not status and may compare empty stdout; MEDIUM console scripts from PATH may not match sys.executable; LOW AC7 matches any DeprecationWarning. → T4 attempt 2.

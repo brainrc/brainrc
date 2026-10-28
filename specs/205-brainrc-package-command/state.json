@@ -118,8 +118,8 @@
       "id": "T4",
       "title": "CI invokes brainrc and smoke-tests the installed wheel",
       "agent": "implementer",
-      "status": "review",
-      "attempts": 1,
+      "status": "in_progress",
+      "attempts": 2,
       "files": [
         "scripts/check_install.py",
         ".github/workflows/validate.yml",
@@ -197,10 +197,10 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 3,
+      "total": 4,
       "first_pass": 2
     },
-    "retries": 0,
+    "retries": 1,
     "interventions": 1
   }
 }

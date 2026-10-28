@@ -1,6 +1,6 @@
 # Spec: Rename docs and wording pass
 
-Ticket: gh:209 (epic #199, 6 of 6) · Size: standard · Status: draft
+Ticket: gh:209 (epic #199, 6 of 6) · Size: standard · Status: approved
 
 ## Problem
 After #205-#208 the code, settings home, hooks, backups and plugin are `brainrc`, but users still meet
@@ -31,7 +31,7 @@ comments, skills and the example pack. About 800 lines still name the old tool. 
 - **AC5**: Given `docs/tutorial.md`, when `specs/013-tutorial/run-tutorial.sh` runs (it extracts every bash block, uses a fresh local clone and temp HOME, needs no network), then it exits 0 and the tutorial commands use `scripts/brainrc.py` and `~/.config/brainrc/`. CI or the test suite runs it, or the spec's verify step records its result.
 - **AC6**: Given the changelog fragment `changelog.d/<branch>.md`, when read, then it is marked **[pack contract]**, lists the renamed docs and wording, and says `aicfg`/`ai-config` names keep working with warnings until 0.5.0 and are removed then.
 - **AC7**: Given `python3 scripts/brainrc.py validate` and the full unit tests, when run, then both pass, and behavior of the old-name paths in C is unchanged.
-- **AC8**: Given the living specs, when read, then they say `brainrc` where they said `aicfg` (wording only).
+- **AC8**: Given the living specs, when read, then they say `brainrc` where they said `aicfg` for commands a user runs (wording only).
 
 ## Constraints
 - Offline only. No new dependencies. Files stay short.
@@ -45,33 +45,33 @@ The system SHALL name itself `brainrc` in all user-facing text, and SHALL keep `
 #### ADDED: Old-name support window is published
 The changelog SHALL state, as a **[pack contract]** note, that old names work until 0.5.0. (AC6)
 #### MODIFIED: Deprecated aicfg names
-Unchanged behavior; the line "Existing living requirements mention `aicfg` commands by name; their wording is left to #209" is dropped. (AC8)
+The system SHALL keep the `aicfg` console script, `scripts/aicfg.py`, `python -m aicfg`, and `import aicfg` working through one minor release, each warning (on stderr / as a `DeprecationWarning`) and otherwise behaving as `brainrc`. (AC3, AC5, AC6, AC7, AC11)
+
 ### Area: aicfg-apply
-Wording only (`aicfg` to `brainrc`; behavior unchanged; file name kept, open question 2):
 #### MODIFIED: Symlinked config files
-`brainrc apply` replaces `aicfg apply`. (AC8)
+When a settings or MCP file path is a symlink, `brainrc apply` SHALL write through to the link's final target (creating it if the link dangles), keep the link, and back up the target's previous content. (AC3, AC4, AC6, AC7)
 #### MODIFIED: One apply at a time
-`brainrc apply` replaces `aicfg apply`. (AC8)
+`brainrc apply` SHALL hold an exclusive lock while it writes, and a second apply SHALL exit non-zero with a clear message instead of writing. Read-only commands SHALL NOT take the lock. (AC1, AC2, AC5)
 #### MODIFIED: No lost concurrent writes
-`brainrc apply` replaces `aicfg apply`. (AC8)
+`brainrc apply` SHALL use per-process temp names, and SHALL NOT overwrite a settings or MCP file whose content changed after apply read it; it warns and exits non-zero instead. (AC3, AC4)
+
 ### Area: aicfg-config
-Wording only (name `brainrc`, behavior unchanged):
 #### MODIFIED: Readable config errors
-`brainrc` replaces `aicfg`. (AC8)
+`brainrc` SHALL report a TOML syntax error, a non-table top-level value, or a wrongly typed known key in `harnesses.toml`, `packs.toml`, their `.local.toml` overrides, or a pack's `pack.toml` as `ERROR <file>:<line>: <what>`, with no traceback, and exit 1 without writing. (AC1, AC2, AC3, AC6)
 #### MODIFIED: Unknown config names warn
-`brainrc` replaces `aicfg`. (AC8)
+`brainrc` SHALL warn with file and line about an unknown key in a harness or pack table and about a harness table defined only in `harnesses.local.toml`, and continue. (AC4, AC5, AC8)
 #### MODIFIED: Closed output
-`brainrc` replaces `aicfg`. (AC8)
+`brainrc` SHALL exit without a traceback when its stdout is closed early. (AC7)
 #### MODIFIED: Unique pack names
-`brainrc` replaces `aicfg`. (AC8)
+`brainrc` SHALL refuse, with an error naming both `packs.toml` keys, two enabled packs with the same name, or a pack named `core`, in `validate`, `status`, `apply`, and `doctor`, and `apply` SHALL write nothing while it stands. (AC1, AC2, AC3, AC4)
 #### MODIFIED: Apply checks packs first
-`brainrc status` and `brainrc apply` replace the `aicfg` commands. (AC8)
+`brainrc status` and `brainrc apply` SHALL run the checks `validate --pack` runs on each enabled pack's own files, and on any error SHALL print it, write nothing, and exit 1. (AC1, AC2, AC3, AC4)
 #### MODIFIED: Git packs follow their config
-`brainrc apply`, `status` and `doctor` replace the `aicfg` commands. (AC8)
+`brainrc apply` SHALL fetch a git pack whenever its configured `git` URL or `ref` differs from the one it last fetched (or none is recorded), `brainrc status` SHALL report that it would, and `brainrc doctor` SHALL report the mismatch. (AC1, AC2, AC3, AC4, AC5, AC7)
 #### MODIFIED: Git calls time out
-`brainrc` replaces `aicfg`. (AC8)
+`brainrc` SHALL stop any git call after 60 seconds and report it as an error. (AC6)
 #### MODIFIED: Agent model and tool names
-`brainrc validate` replaces `aicfg validate`. (AC8)
+`brainrc validate` SHALL accept an agent `model` that is `haiku`, `sonnet`, `opus`, `inherit`, or a full `claude-` model ID, and `Task` among its `tools`, and SHALL reject any other model or tool name (except `mcp__` tools). (AC1, AC2, AC3)
 
 ## Open questions
 No decisions are taken before Deliver; each default below is what the run does and lists at Deliver.

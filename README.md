@@ -1,4 +1,4 @@
-# ai-config
+# brainrc
 
 **spec-agent** takes a ticket to a reviewed pull request: spec → plan → implement → verify →
 document → deliver, run by a team of small agents, with your approval at three gates. It covers
@@ -37,13 +37,13 @@ Quickest, in Claude Code:
 /plugin install brainrc@brainrc
 ```
 
-For other tools, or to also get the shared rules and private packs, use **aicfg**, the syncer
+For other tools, or to also get the shared rules and private packs, use **brainrc**, the syncer
 in this repo. It writes skills, agents, commands, rules, hooks, and MCP servers once and links
 them into Claude Code, Codex CLI, OpenCode, Antigravity CLI, and Cursor:
 
 ```bash
-git clone https://github.com/brainrc/brainrc ~/ai-config && cd ~/ai-config
-python3 scripts/aicfg.py apply
+git clone https://github.com/brainrc/brainrc ~/brainrc && cd ~/brainrc
+python3 scripts/brainrc.py apply
 ```
 
 Every install path, each harness plugin, platform notes, release pinning, and per-machine
@@ -64,7 +64,7 @@ overrides: [docs/install.md](docs/install.md).
 See [CONTRIBUTING.md](CONTRIBUTING.md) and the rules in [AGENTS.md](AGENTS.md). Before committing:
 
 ```bash
-python3 scripts/aicfg.py validate
+python3 scripts/brainrc.py validate
 python3 -m unittest discover -s tests
 ```
 

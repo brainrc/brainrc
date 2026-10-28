@@ -14,17 +14,17 @@ These rules apply to human contributors too. Setup and PR workflow: [CONTRIBUTIN
 - Commands (packs only): `commands/<name>.md` with frontmatter `description`; use `$ARGUMENTS`.
   Core ships slash commands as skills with `disable-model-invocation: true` and `argument-hint`.
 - Rules: `rules/NN-topic.md`, concatenated in filename order, each starting with
-  `trigger: always_on` frontmatter (Antigravity needs it; `aicfg` strips it). Keep them
+  `trigger: always_on` frontmatter (Antigravity needs it; `brainrc` strips it). Keep them
   harness-neutral (no tool-specific syntax like `@imports`).
 - Domain skills (`skills/<stack>/`) follow: Validate (offline commands) / Conventions /
   Review checklist / Never without approval. Register new ones in the Domains table of
   `skills/spec-agent/SKILL.md`.
 - Agents: frontmatter `model` is `haiku|sonnet|opus|inherit`; keep `tools` least-privilege.
-- Keep the `aicfg/` package (run as `scripts/aicfg.py`) and hooks stdlib-only (Python 3.11+);
+- Keep the `brainrc/` package (run as `scripts/brainrc.py`) and hooks stdlib-only (Python 3.11+);
   `hatchling` in `pyproject.toml` is build-time only. New guard patterns need tests
   for both the risky command and a safe near-miss in `tests/test_hooks.py`.
 - Keep files short: they are loaded into model context. Rules load every session.
-- After changes, run `python3 scripts/aicfg.py validate` and `python3 -m unittest discover -s tests`.
+- After changes, run `python3 scripts/brainrc.py validate` and `python3 -m unittest discover -s tests`.
 - Every PR adds one fragment, `changelog.d/<branch>.md` (`bump:` + bullets, see its README).
   Don't edit `VERSION` or `CHANGELOG.md`: the release workflow folds fragments in and tags on merge.
 - Don't edit `dist/`, `.claude-plugin/`, `.cursor-plugin/`, or the root `plugin.json`; they're generated.

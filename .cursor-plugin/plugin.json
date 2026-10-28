@@ -1,9 +1,9 @@
 {
-  "name": "ai-config",
+  "name": "brainrc",
   "version": "0.4.3",
   "description": "Skills, agents, commands, and guard hooks for spec-driven work: spec-agent takes a ticket to a reviewed PR through approval gates.",
   "author": {
-    "name": "ai-config contributors"
+    "name": "brainrc contributors"
   },
   "license": "MIT",
   "skills": "./skills/",

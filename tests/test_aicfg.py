@@ -899,20 +899,33 @@ class PluginTest(TempRepoCase):
     def test_plugin_manifest_comes_from_the_repo(self):
         set_core_version(self.repo, "1.2.3")
         plugin = self.manifest()
-        self.assertEqual((plugin["name"], plugin["version"]), ("ai-config", "1.2.3"))
-        self.assertEqual(plugin["author"], {"name": "ai-config contributors"})
+        self.assertEqual((plugin["name"], plugin["version"]), ("brainrc", "1.2.3"))
+        self.assertEqual(plugin["author"], {"name": "brainrc contributors"})
         commands = [h["command"] for groups in plugin["hooks"].values() for g in groups for h in g["hooks"]]
         self.assertIn(claude_guard("${CLAUDE_PLUGIN_ROOT}/overrides/claude/hooks", "guard_outward.py"), commands)
         self.assertNotIn("{{hooks_dir}}", json.dumps(plugin))
 
     def test_antigravity_manifest_is_the_name_only(self):
-        self.assertEqual(json.loads(aicfg.plugin_manifests()["plugin.json"]), {"name": "ai-config"})
+        self.assertEqual(json.loads(aicfg.plugin_manifests()["plugin.json"]), {"name": "brainrc"})
 
     def test_marketplace_lists_the_repo_as_the_plugin(self):
         market = self.manifest("marketplace.json")
-        self.assertEqual(market["name"], "ai-config")
+        self.assertEqual(market["name"], "brainrc")
+        self.assertEqual(f'{market["name"]}@{market["plugins"][0]["name"]}', "brainrc@brainrc")
+        self.assertEqual(market["owner"], {"name": "brainrc contributors"})
         self.assertEqual(market["plugins"][0]["source"], ".")
         self.assertEqual(market["plugins"][0]["version"], self.manifest()["version"])
+
+    def test_no_manifest_mentions_the_old_name(self):
+        for rel, text in aicfg.plugin_manifests().items():
+            self.assertNotIn("ai-config", text, rel)
+
+    def test_old_name_manifest_is_stale(self):
+        quiet(aicfg.cmd_plugin)
+        path = self.repo / ".claude-plugin/plugin.json"
+        path.write_text(path.read_text().replace('"brainrc"', '"ai-config"', 1))
+        errors = aicfg.check_plugin()
+        self.assertTrue(any("plugin.json" in e and "stale" in e and "brainrc.py plugin" in e for e in errors), errors)
 
     def test_plugin_command_writes_once(self):
         code, out = quiet(aicfg.cmd_plugin)
@@ -1761,7 +1774,7 @@ class CursorPluginTest(TempRepoCase):
     def test_manifest_points_at_core_and_runs_the_cursor_guard(self):
         set_core_version(self.repo, "1.2.3")
         plugin = self.manifest()
-        self.assertEqual((plugin["name"], plugin["version"], plugin["license"]), ("ai-config", "1.2.3", "MIT"))
+        self.assertEqual((plugin["name"], plugin["version"], plugin["license"]), ("brainrc", "1.2.3", "MIT"))
         self.assertEqual((plugin["skills"], plugin["agents"], plugin["rules"]), ("./skills/", "./agents/", "./rules/"))
         self.assertEqual(plugin["hooks"], "./.cursor-plugin/hooks.json")
         hooks = json.loads(aicfg.plugin_manifests()[".cursor-plugin/hooks.json"])

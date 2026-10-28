@@ -15,10 +15,10 @@ PLUGIN_DIR = ".claude-plugin"
 CURSOR_PLUGIN_DIR = ".cursor-plugin"  # Cursor reportedly falls back to .claude-plugin/, whose hooks it rejects
 
 
-PLUGIN_NAME = "ai-config"
+PLUGIN_NAME = "brainrc"
 
 
-PLUGIN_AUTHOR = {"name": "ai-config contributors"}
+PLUGIN_AUTHOR = {"name": "brainrc contributors"}
 
 
 PLUGIN_DESCRIPTION = ("Skills, agents, commands, and guard hooks for spec-driven work: spec-agent "

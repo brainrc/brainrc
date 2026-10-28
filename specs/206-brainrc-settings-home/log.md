@@ -73,3 +73,6 @@ Refuse a source at or above $HOME; markers are brainrc-only names (+ active-run)
 
 ## engine · T6 · done
 Docs (install, packs, formats) and the patch [pack contract] fragment written inline. Suite 524 OK; validate OK. Commit 434e68d.
+
+## code-reviewer · batch · done (no CRITICAL/HIGH)
+**Findings:** MEDIUM doctor "unused, rm -r" also when the new home is missing/empty and the old dir holds the only data → F1 (6c0af5d, red then green); LOW exit-code test patches doctor_findings (accepted); LOW docs/architecture.md, docs/harness-packages.md still named $AICFG_HOME as default → F2 (303ada3); LOW patch bump with [pack contract] → owner approved patch at the Plan gate. Suite 525 OK.

@@ -15,7 +15,7 @@
   "mode": "subagent",
   "delivery": "normal",
   "auto": false,
-  "stage": "implement",
+  "stage": "verify",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -176,6 +176,39 @@
         "T5"
       ],
       "commit": "434e68d"
+    },
+    {
+      "id": "F1",
+      "title": "Point doctor at migrate when the old home holds the only settings",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "brainrc/doctor.py",
+        "tests/test_doctor_home.py"
+      ],
+      "criteria": [
+        "AC14"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "6c0af5d"
+    },
+    {
+      "id": "F2",
+      "title": "Name the brainrc home in the architecture and packaging docs",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "docs/architecture.md",
+        "docs/harness-packages.md"
+      ],
+      "criteria": [
+        "AC16"
+      ],
+      "review": "batch",
+      "commit": "303ada3"
     }
   ],
   "blocked": null,
@@ -185,7 +218,8 @@
       "intake": "2026-10-28T03:15:37Z",
       "spec": "2026-10-28T03:15:37Z",
       "plan": "2026-10-28T03:24:09Z",
-      "implement": "2026-10-28T03:27:11Z"
+      "implement": "2026-10-28T03:27:11Z",
+      "verify": "2026-10-28T04:40:11Z"
     },
     "gates": {
       "spec": {
@@ -203,7 +237,7 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 5,
+      "total": 6,
       "first_pass": 2
     },
     "retries": 1,

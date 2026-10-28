@@ -19,7 +19,9 @@
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": "approved"
+    "deliver": "approved",
+    "push": "pending",
+    "push_sha": "7ee973c"
   },
   "domains": [
     "scripting"
@@ -209,6 +211,22 @@
       ],
       "review": "batch",
       "commit": "303ada3"
+    },
+    {
+      "id": "C1",
+      "title": "Isolate the default-home test from XDG_CONFIG_HOME",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC16"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "7ee973c"
     }
   ],
   "blocked": null,
@@ -235,6 +253,9 @@
       "deliver": {
         "presented_at": "2026-10-28T04:50:44Z",
         "approved_at": "2026-10-28T04:51:26Z"
+      },
+      "push": {
+        "presented_at": "2026-10-28T04:58:43Z"
       }
     },
     "gate_rework": {
@@ -248,7 +269,8 @@
     },
     "retries": 1,
     "interventions": 1,
-    "pr_opened_at": "2026-10-28T04:55:21Z"
+    "pr_opened_at": "2026-10-28T04:55:21Z",
+    "post_deliver_retries": 1
   },
   "living": [
     "aicfg-config",
@@ -256,6 +278,15 @@
     "run-pointer"
   ],
   "watch": {
-    "entered_at": "2026-10-28T04:55:21Z"
+    "entered_at": "2026-10-28T04:55:21Z",
+    "checked_at": "2026-10-28T04:58:43Z",
+    "ci_failures": [
+      {
+        "check": "validate",
+        "sha": "e494fef",
+        "cause": "own",
+        "task": "C1"
+      }
+    ]
   }
 }

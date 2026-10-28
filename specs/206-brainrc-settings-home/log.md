@@ -15,3 +15,9 @@ Merged origin/main (#231 fix, v0.4.1).
 ## engine · Spec gate · approved
 2026-10-28T03:24:09Z
 Owner approved with all recommended defaults (XDG folded in, closes #131; doctor WARN; symlinked dir moved as a link).
+
+## architect · plan · done
+**Did:** plan.md, 6 tasks; callouts: BRAINRC_HOME/XDG/migrate contract, user-data move (atomic rename, EXDEV copy-then-remove, rollback documented), bump patch tagged [pack contract].
+
+## engine · Plan gate · presented
+2026-10-28T03:26:49Z

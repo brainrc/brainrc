@@ -33,7 +33,139 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Contract tests for home resolution and warnings",
+      "agent": "test-writer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "tests/test_settings_home.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC6"
+      ],
+      "review": "each",
+      "after": []
+    },
+    {
+      "id": "T2",
+      "title": "Home lookup, once-per-run warning, fixtures on BRAINRC_HOME",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "brainrc/config.py",
+        "brainrc/cli.py",
+        "tests/test_aicfg.py",
+        "tests/test_cli_entry_points.py",
+        "scripts/check_install.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC6",
+        "AC16"
+      ],
+      "review": "each",
+      "after": [
+        "T1"
+      ]
+    },
+    {
+      "id": "T3",
+      "title": "Doctor home findings",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "brainrc/doctor.py",
+        "tests/test_doctor_home.py"
+      ],
+      "criteria": [
+        "AC14"
+      ],
+      "review": "batch",
+      "after": [
+        "T2"
+      ]
+    },
+    {
+      "id": "T4",
+      "title": "brainrc migrate [--dry-run], links re-pointed via former homes, usage text",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "brainrc/migrate.py",
+        "brainrc/cli.py",
+        "brainrc/plan.py",
+        "tests/test_migrate.py"
+      ],
+      "criteria": [
+        "AC7",
+        "AC8",
+        "AC9",
+        "AC10",
+        "AC11",
+        "AC12",
+        "AC13"
+      ],
+      "review": "each",
+      "after": [
+        "T2"
+      ]
+    },
+    {
+      "id": "T5",
+      "title": "active_run.py resolution plus spec-agent home lines",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "skills/spec-agent/scripts/active_run.py",
+        "tests/test_active_run.py",
+        "skills/spec-agent/SKILL.md",
+        "skills/spec-agent/references/state.md"
+      ],
+      "criteria": [
+        "AC15"
+      ],
+      "review": "batch",
+      "after": []
+    },
+    {
+      "id": "T6",
+      "title": "Docs naming the home, plus changelog fragment",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "docs/install.md",
+        "docs/packs.md",
+        "docs/formats.md",
+        "changelog.d/206-brainrc-settings-home.md"
+      ],
+      "criteria": [
+        "AC16"
+      ],
+      "review": "batch",
+      "after": [
+        "T3",
+        "T4",
+        "T5"
+      ]
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-28T03:15:37Z",
@@ -46,6 +178,9 @@
       "spec": {
         "presented_at": "2026-10-28T03:23:27Z",
         "approved_at": "2026-10-28T03:24:09Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-28T03:26:49Z"
       }
     },
     "gate_rework": {

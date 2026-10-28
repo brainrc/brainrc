@@ -12,6 +12,14 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.4.5 (2026-10-28)
+
+- **[pack contract]** Everything now says brainrc. These old names keep working with a warning until 0.5.0 removes them: the `aicfg` command, `scripts/aicfg.py`, `python -m aicfg`, `import aicfg`, `AICFG_HOME` and the legacy `~/.config/ai-config` home. Run `brainrc migrate` to move the home.
+- The next `apply` converges these silently: old `hooks/ai-config*` dirs and their settings entries, and `.bak-aicfg-*` backups.
+- `brainrc doctor` flags the old `ai-config@ai-config` plugin until you uninstall it.
+- Docs, README, AGENTS.md, CONTRIBUTING.md, skills, the example pack, messages and the pre-commit hook id now say brainrc.
+- Some on-disk names are kept for compatibility and will change in a later follow-up: the Codex MCP block markers, the OpenCode `ai-config-guard.js` link and `.git/aicfg-fetched.json`.
+
 ## 0.4.4 (2026-10-28)
 
 - **[pack contract]** The plugin and marketplace are now named `brainrc` (`brainrc@brainrc`) for

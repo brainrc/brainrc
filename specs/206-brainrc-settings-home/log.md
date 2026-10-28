@@ -25,3 +25,9 @@ Owner approved with all recommended defaults (XDG folded in, closes #131; doctor
 ## engine · Plan gate · approved
 2026-10-28T03:27:11Z
 Owner approved (patch bump). Tasks run sequentially in the main tree.
+
+## test-writer · T1 · done
+**Evidence:** 16 tests, 14 fail on assertions (no ~/.config/brainrc render, no warning); 2 --version guards pass. Within fence.
+
+## code-reviewer (engine inline) · T1 · done
+**Findings:** none; every case uses a temp HOME and an explicit env. Commit 374b004.

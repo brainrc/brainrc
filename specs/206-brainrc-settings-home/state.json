@@ -38,7 +38,7 @@
       "id": "T1",
       "title": "Contract tests for home resolution and warnings",
       "agent": "test-writer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "tests/test_settings_home.py"
@@ -52,14 +52,16 @@
         "AC6"
       ],
       "review": "each",
-      "after": []
+      "after": [],
+      "commit": "374b004",
+      "red": "assertion"
     },
     {
       "id": "T2",
       "title": "Home lookup, once-per-run warning, fixtures on BRAINRC_HOME",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "brainrc/config.py",
         "brainrc/cli.py",
@@ -191,8 +193,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
-      "first_pass": 0
+      "total": 1,
+      "first_pass": 1
     },
     "retries": 0,
     "interventions": 0

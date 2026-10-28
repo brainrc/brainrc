@@ -15,11 +15,11 @@
   "mode": "subagent",
   "delivery": "normal",
   "auto": true,
-  "stage": "implement",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [
     "scripting"
@@ -93,7 +93,7 @@
       "id": "T3",
       "title": "Docs and spec-agent use `brainrc` names; move-from note; troubleshooting points at the doctor WARN",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "README.md",
@@ -114,14 +114,16 @@
       "after": [
         "T1",
         "T2"
-      ]
+      ],
+      "commit": "90274d5",
+      "red": "assertion"
     },
     {
       "id": "T4",
       "title": "Changelog fragment: `bump: patch` (owner's choice at the Plan gate), **[pack contract]** bullet (rename, reinstall steps, pack `dependencies` name, doctor WARN) unless the owner picks patch at the Plan gate",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "files": [
         "changelog.d/208-brainrc-plugin-namespace.md"
       ],
@@ -131,7 +133,23 @@
       "review": "batch",
       "after": [
         "T3"
-      ]
+      ],
+      "commit": "7ecefe4"
+    },
+    {
+      "id": "F1",
+      "title": "Say which harness shows the brainrc: skill prefix",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "changelog.d/208-brainrc-plugin-namespace.md"
+      ],
+      "criteria": [
+        "AC12"
+      ],
+      "review": "batch",
+      "commit": "8417140"
     }
   ],
   "blocked": null,
@@ -141,7 +159,10 @@
       "intake": "2026-10-28T16:39:46Z",
       "spec": "2026-10-28T16:39:46Z",
       "plan": "2026-10-28T16:42:34Z",
-      "implement": "2026-10-28T16:44:44Z"
+      "implement": "2026-10-28T16:44:44Z",
+      "verify": "2026-10-28T17:03:51Z",
+      "document": "2026-10-28T17:03:51Z",
+      "deliver": "2026-10-28T17:03:51Z"
     },
     "gates": {
       "spec": {
@@ -151,6 +172,10 @@
       "plan": {
         "presented_at": "2026-10-28T16:44:09Z",
         "approved_at": "2026-10-28T16:44:44Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-28T17:03:51Z",
+        "approved_at": "2026-10-28T17:03:51Z"
       }
     },
     "gate_rework": {
@@ -159,8 +184,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 2,
-      "first_pass": 0
+      "total": 3,
+      "first_pass": 1
     },
     "retries": 1,
     "interventions": 1,
@@ -170,5 +195,8 @@
       "task_minutes": 6,
       "wall_minutes": 3
     }
-  }
+  },
+  "living": [
+    "plugin-packaging"
+  ]
 }

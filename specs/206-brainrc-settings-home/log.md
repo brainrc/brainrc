@@ -11,3 +11,7 @@ Merged origin/main (#231 fix, v0.4.1).
 
 ## engine · Spec gate · presented
 2026-10-28T03:23:27Z
+
+## engine · Spec gate · approved
+2026-10-28T03:24:09Z
+Owner approved with all recommended defaults (XDG folded in, closes #131; doctor WARN; symlinked dir moved as a link).

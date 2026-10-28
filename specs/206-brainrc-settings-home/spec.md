@@ -1,6 +1,6 @@
 # Spec: Settings home ~/.config/brainrc and BRAINRC_HOME
 
-Ticket: gh:206 (epic #199, 3 of 6) · Size: standard · Status: draft
+Ticket: gh:206 (epic #199, 3 of 6) · Size: standard · Status: approved
 
 ## Problem
 Local files (`packs.local.toml`, `harnesses.local.toml`, `rules/*.local.md`, git packs, rendered
@@ -100,20 +100,14 @@ needed, via `skills/spec-agent/scripts/active_run.py write`. A write failure SHA
 and exit 0. In an ordered campaign the pointer SHALL name the child currently in progress. (AC15)
 
 ## Open questions
-1. Include `XDG_CONFIG_HOME` here (folding in #131) or leave it to #131? Recommended: include, as
-   the ticket asks; #131 is then closed by this change. *Why: scope and ticket bookkeeping.*
-2. With `XDG_CONFIG_HOME` set, the legacy dir stays `~/.config/ai-config` (where old installs
-   are; they never honored XDG). Recommended: yes. *Why: otherwise legacy detection misses them.*
-3. `AICFG_HOME` set and `BRAINRC_HOME` unset: `migrate` refuses (AC11) rather than guessing the
-   target. Recommended: refuse. *Why: apply would otherwise keep rendering into the old dir.*
-4. Doctor severity for legacy use: WARN (recommended) or FAIL. *Why: FAIL could break CI that
-   runs doctor on existing installs.*
-5. `migrate` merges nothing and never overwrites (AC8). Recommended: keep it so. *Why: a merge
-   could silently lose a user's `*.local.*` files.*
-6. Should `active_run.py` stay silent on the legacy fallback (AC15, recommended, since it runs at
-   every checkpoint) or warn? *Why: noise in the spec-agent run output.*
-7. The old dir may itself be a symlink (dotfile managers). Recommended: move the link as-is and
-   leave its target. *Why: copying through it could move files the user keeps elsewhere.*
+Resolved at the Spec gate (owner took every recommended default):
+1. `XDG_CONFIG_HOME` is folded in; this change closes #131.
+2. With `XDG_CONFIG_HOME` set, the legacy dir is still `~/.config/ai-config`.
+3. `migrate` refuses while `AICFG_HOME` is set and `BRAINRC_HOME` is not (AC11).
+4. Doctor rates legacy use as WARN.
+5. `migrate` never merges or overwrites (AC8).
+6. `active_run.py` is silent on the legacy fallback (AC15).
+7. A symlinked old dir is moved as the link itself; its target is left alone.
 
 ## Proposed split
 Not applicable (standard).

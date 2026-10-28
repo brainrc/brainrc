@@ -38,8 +38,8 @@
       "id": "T1",
       "title": "Rename the plugin and marketplace; regenerate manifests with `python3 scripts/brainrc.py plugin`",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "brainrc/plugin.py",
         ".claude-plugin/plugin.json",
@@ -55,14 +55,16 @@
         "AC12"
       ],
       "review": "batch",
-      "after": []
+      "after": [],
+      "wave": 1,
+      "started_at": "2026-10-28T16:44:54Z"
     },
     {
       "id": "T2",
       "title": "Doctor warns about an old `ai-config` plugin (Claude Code, Cursor), read-only",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "brainrc/doctor.py",
         "tests/test_doctor_plugin.py"
@@ -76,7 +78,10 @@
         "AC12"
       ],
       "review": "each",
-      "after": []
+      "after": [],
+      "wave": 1,
+      "worktree": "/tmp/spec-agent/208-brainrc-plugin-namespace/T2",
+      "started_at": "2026-10-28T16:44:54Z"
     },
     {
       "id": "T3",

@@ -110,7 +110,7 @@
       "id": "T4",
       "title": "Rename hook dirs, prune old links",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "harnesses.toml",
@@ -127,14 +127,16 @@
       "after": [
         "T1",
         "T2"
-      ]
+      ],
+      "commit": "5de6abc",
+      "red": "assertion"
     },
     {
       "id": "T5",
       "title": "Convergence tests for an old-name install, plus changelog fragment",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "tests/test_rename_converge.py",
         "changelog.d/207-brainrc-hooks-mcp-backups.md"
@@ -177,8 +179,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 2,
-      "first_pass": 2
+      "total": 3,
+      "first_pass": 3
     },
     "retries": 1,
     "interventions": 1,

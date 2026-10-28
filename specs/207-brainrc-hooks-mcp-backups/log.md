@@ -36,3 +36,9 @@ Owner: "Approve continue auto" (callouts approved; auto continues). +1 intervent
 
 ## code-reviewer · T3 · done (attempt 2)
 **Findings:** MEDIUM no corrupt-former-record test → engine added one (3 corrupt forms: nothing claimed, CONFLICT kept, file untouched); LOW shadow check on non-list → made exact. Landed 01ec260.
+
+## implementer · T4 · done
+Suite 551 OK; validate OK. Within fence.
+
+## code-reviewer · T4 · done (no CRITICAL/HIGH)
+**Findings:** MEDIUM AC3 installed-mode path untested → T5; MEDIUM no Cursor hooks.json convergence from old names → T5; LOW HookDirRenameTest inherits PackSyncTest (12 reruns) → follow-up. Commit 5de6abc.

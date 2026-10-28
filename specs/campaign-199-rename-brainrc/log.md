@@ -19,3 +19,6 @@ Artifacts: specs/campaign-199-rename-brainrc/campaign.json
 
 ## 2026-10-27T18:47:20Z · child 1 gh:204 verified
 - Size small, inline. Drafts ready; waits for the stack Deliver gate. Child 2 gh:205 starts on its branch from 204-point-urls-brainrc.
+
+## 2026-10-28T01:16:33Z · gh:204 delivered on its own
+- Owner: "ship 204". Draft PR #229, base main. Campaign stays paused on gh:205 (blocked, size large). When #205 is unblocked, its branch merges main (after #229 merges) instead of building on 204-point-urls-brainrc.

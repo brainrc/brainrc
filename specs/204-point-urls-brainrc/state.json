@@ -6,7 +6,7 @@
     "id": "204",
     "title": "Rename: point URLs and manifests at brainrc/brainrc",
     "url": "https://github.com/brainrc/brainrc/issues/204",
-    "pr": null
+    "pr": "https://github.com/brainrc/brainrc/pull/229"
   },
   "slug": "204-point-urls-brainrc",
   "branch": "204-point-urls-brainrc",
@@ -15,11 +15,11 @@
   "mode": "inline",
   "delivery": "normal",
   "auto": true,
-  "stage": "deliver",
+  "stage": "watch",
   "gates": {
     "spec": "approved",
     "plan": "skipped",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [],
   "targets": {},
@@ -61,12 +61,17 @@
     "started_at": "2026-10-27T18:43:34Z",
     "stage_started_at": {
       "intake": "2026-10-27T18:43:34Z",
-      "spec": "2026-10-27T18:45:03Z"
+      "spec": "2026-10-27T18:45:03Z",
+      "deliver": "2026-10-28T01:16:33Z"
     },
     "gates": {
       "spec": {
         "presented_at": "2026-10-27T18:47:20Z",
         "approved_at": "2026-10-27T18:47:20Z"
+      },
+      "deliver": {
+        "presented_at": null,
+        "approved_at": "2026-10-28T01:16:33Z"
       }
     },
     "gate_rework": {
@@ -79,6 +84,10 @@
       "first_pass": 1
     },
     "retries": 0,
-    "interventions": 0
+    "interventions": 1,
+    "pr_opened_at": "2026-10-28T01:16:33Z"
+  },
+  "watch": {
+    "entered_at": "2026-10-28T01:16:33Z"
   }
 }

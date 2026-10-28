@@ -10,16 +10,18 @@
       "ref": "gh:204",
       "order": 1,
       "depends_on": [],
-      "status": "verified",
+      "status": "delivered",
       "slug": "204-point-urls-brainrc",
       "branch": "204-point-urls-brainrc",
-      "pr": null
+      "pr": "https://github.com/brainrc/brainrc/pull/229",
+      "base": "main",
+      "merged": false
     },
     {
       "ref": "gh:205",
       "order": 2,
       "depends_on": [],
-      "status": "todo",
+      "status": "blocked",
       "slug": null,
       "branch": null,
       "pr": null

@@ -55,3 +55,15 @@ Engine: the unused-old-dir fix said a bare `rm -r`; an old dir may hold unmigrat
 ## code-reviewer · T4 · changes-requested
 **Findings:** HIGH EXDEV + symlinked source materializes a real copy (breaks Q7); MEDIUM concurrent apply into an empty existing target → ENOTEMPTY traceback; MEDIUM uncaught OSError paths (source is a file, target symlink, target inside source); MEDIUM rmtree(source) failure after move leaves partial source and skips apply; MEDIUM plan.py former-home re-point applies to any link into the old dir on every apply; LOW lock gap before apply (accepted); LOW usage alignment; LOW relative symlink source.
 → T4 attempt 2.
+
+## implementer · T4 · done (attempt 2)
+**Evidence:** mutation red 3 tests; test_migrate 29 OK; suite 513 OK; validate OK.
+
+## security-reviewer · T4 re-review · done
+**Findings:** prior MEDIUMs fixed. LOW ancestor of $HOME not refused; LOW generic marker names; LOW same-device relative symlink dangles.
+
+## code-reviewer · T4 re-review · done
+**Findings:** prior HIGH/MEDIUMs fixed. LOW markers stricter than AC7 (active-run); LOW same-device symlink onto empty target → ENOTDIR; LOW same-device relative symlink; LOW Windows open-file caveat (follow-up).
+
+## engine · T4 LOW fixes
+Refuse a source at or above $HOME; markers are brainrc-only names (+ active-run) or rules/*.local.md; a symlinked source always moves by recreating the link (any device, empty target accepted). 4 tests added; each fails under a mutation reverting its fix. Suite 517 OK. Commit 209a4de.

@@ -110,7 +110,7 @@
       "id": "T4",
       "title": "brainrc migrate [--dry-run], links re-pointed via former homes, usage text",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 2,
       "files": [
         "brainrc/migrate.py",
@@ -130,14 +130,16 @@
       "review": "each",
       "after": [
         "T2"
-      ]
+      ],
+      "commit": "209a4de",
+      "red": "assertion"
     },
     {
       "id": "T5",
       "title": "active_run.py resolution plus spec-agent home lines",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "skills/spec-agent/scripts/active_run.py",
         "tests/test_active_run.py",
@@ -198,7 +200,7 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 3,
+      "total": 5,
       "first_pass": 2
     },
     "retries": 1,

@@ -12,6 +12,12 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.4.1 (2026-10-28)
+
+- The example pack accepts core 0.4 (`requires_core = ">=0.3, <0.5"`), and the pack examples in
+  docs/tutorial.md and docs/packs.md pin `>=0.4, <0.5`. The 0.4.0 bump left them at `<0.4`, so
+  `validate --pack examples/pack-acme` failed and a pack copied from the tutorial was rejected.
+
 ## 0.4.0 (2026-10-28)
 
 - **[pack contract]** The tool is now `brainrc`: the PyPI distribution, the console script, the

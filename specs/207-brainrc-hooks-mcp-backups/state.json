@@ -15,9 +15,9 @@
   "mode": "subagent",
   "delivery": "normal",
   "auto": true,
-  "stage": "spec",
+  "stage": "plan",
   "gates": {
-    "spec": "pending",
+    "spec": "approved",
     "plan": "pending",
     "deliver": "pending"
   },
@@ -39,9 +39,15 @@
     "started_at": "2026-10-28T05:08:03Z",
     "stage_started_at": {
       "intake": "2026-10-28T05:08:03Z",
-      "spec": "2026-10-28T05:08:03Z"
+      "spec": "2026-10-28T05:08:03Z",
+      "plan": "2026-10-28T05:09:32Z"
     },
-    "gates": {},
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-28T05:09:32Z",
+        "approved_at": "2026-10-28T05:09:32Z"
+      }
+    },
     "gate_rework": {
       "spec": 0,
       "plan": 0,

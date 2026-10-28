@@ -164,7 +164,7 @@
       "id": "T6",
       "title": "`git mv tests/test_aicfg.py tests/test_brainrc.py`; drop the `aicfg` alias and rename `self.aicfg_home` to `self.settings_home`, also in importers; rename `test_aicfg_doctor_shape...`",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "tests/test_aicfg.py",
@@ -182,14 +182,16 @@
       "after": [
         "T1"
       ],
-      "started_at": "2026-10-28T17:28:59Z"
+      "started_at": "2026-10-28T17:28:59Z",
+      "commit": "f27163d",
+      "finished_at": "2026-10-28T17:33:44Z"
     },
     {
       "id": "T7",
       "title": "Usage, `--help`, doctor, error text, banners, docstrings and comments, and guard messages say `brainrc`; D markers and C deprecation lines unchanged",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "brainrc/cli.py",
         "brainrc/doctor.py",
@@ -214,7 +216,8 @@
       "review": "each",
       "after": [
         "T6"
-      ]
+      ],
+      "started_at": "2026-10-28T17:33:44Z"
     },
     {
       "id": "T8",
@@ -298,8 +301,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
-      "first_pass": 0
+      "total": 1,
+      "first_pass": 1
     },
     "retries": 0,
     "interventions": 0,

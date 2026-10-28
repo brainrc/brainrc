@@ -34,3 +34,6 @@ T2 7c7f7dc (10 docs), T3 a1d0701 (README, AGENTS, CONTRIBUTING); fences OK. Wave
 
 ## wave 2 (T4, T5) landed
 T4 fba2f9f (config changes comment-only except the planned pre-commit hook), T5 4d8c02d. T6 next (main tree).
+
+## implementer · T6 · done
+581 tests before and after; only test_old_names fails (expected until T9). Engine review (inline): git sees a rename; changes are alias/fixture names only. Commit f27163d.

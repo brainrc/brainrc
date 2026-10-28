@@ -31,8 +31,8 @@ flowchart LR
 | When | Step | Reads | Writes |
 |---|---|---|---|
 | install | `aicfg validate` | every source, `VERSION`, `CHANGELOG.md` | nothing |
-| install | render rules | `rules/*.md` from core, then each pack, then `*.local.md` | `$AICFG_HOME/instructions.md` (default `~/.config/ai-config/`) |
-| install | render extensions | each enabled pack's `pack.toml` | `$AICFG_HOME/extensions.md` (and, deprecated, `skills/spec-agent/references/extensions.md`) |
+| install | render rules | `rules/*.md` from core, then each pack, then `*.local.md` | `$BRAINRC_HOME/instructions.md` (default `~/.config/brainrc/`) |
+| install | render extensions | each enabled pack's `pack.toml` | `$BRAINRC_HOME/extensions.md` (and, deprecated, `skills/spec-agent/references/extensions.md`) |
 | install | link and merge | `harnesses.toml`, `overrides/<harness>/` | symlinks in each harness dir, hook entries in its settings file |
 | run | every session | the instructions file, skill descriptions | nothing |
 | run | `/work <ticket>` | `extensions.md`, the connector, agents, domain skills | `specs/<slug>/` in your project, commits on a feature branch |

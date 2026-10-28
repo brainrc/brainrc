@@ -113,7 +113,7 @@ community [`cursor-hooks`](https://www.npmjs.com/package/cursor-hooks) package.
    Antigravity needs a root `plugin.json`; OpenCode needs a config dir plus a JS hook plugin.
 2. **Commands should become skills**, or be generated per harness: Codex skips `$ARGUMENTS`
    commands and Antigravity has no commands.
-3. **Rules and pack extensions need rendering outside the checkout** (`$AICFG_HOME`), then each
+3. **Rules and pack extensions need rendering outside the checkout** (`$BRAINRC_HOME`), then each
    harness loads them its own way. Codex plugins have no rules route yet.
 4. **Guard hooks need a deny fallback**: only Claude Code reliably supports ask.
 

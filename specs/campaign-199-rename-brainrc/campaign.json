@@ -26,15 +26,15 @@
       "branch": "205-brainrc-package-command",
       "pr": "https://github.com/brainrc/brainrc/pull/230",
       "base": "main",
-      "merged": false
+      "merged": true
     },
     {
       "ref": "gh:206",
       "order": 3,
       "depends_on": [],
-      "status": "todo",
-      "slug": null,
-      "branch": null,
+      "status": "in_progress",
+      "slug": "206-brainrc-settings-home",
+      "branch": "206-brainrc-settings-home",
       "pr": null
     },
     {

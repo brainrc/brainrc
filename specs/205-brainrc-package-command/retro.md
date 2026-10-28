@@ -22,3 +22,13 @@ Ticket: gh:205 · Size: standard (resized from large by the owner) · PR: https:
 ## Proposed improvements
 - architect role: check network reachability (e.g. `pip download`) before planning a check as "not provable offline"; the engine found PyPI reachable here and built the wheel locally.
 - code-reviewer found two HIGHs in a smoke-test script that its author's evidence (all PASS) could not show: plans for checker scripts should require one demonstrated FAIL path.
+
+## After delivery
+- Outcome: merged
+- Merged at: 2026-10-28T02:50:24Z · Time to merge: 4 min
+- Post-merge verify: pass (see `verify-merged.md`)
+- CI failures: 0 own / 0 external
+- Review rounds: 0
+- Caught by reviewers, missed by the run's own: none
+- Follow-up title: none
+- Follow-up body: none

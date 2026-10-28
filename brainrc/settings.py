@@ -94,7 +94,7 @@ def replace_file(dest: Path, text: str, before: str | None) -> None:
         )
         for old in backups[:-BACKUPS_KEPT]:
             old.unlink()
-    tmp = target.with_name(f".{target.name}.aicfg-tmp-{os.getpid()}")
+    tmp = target.with_name(f".{target.name}.brainrc-tmp-{os.getpid()}")
     _create(tmp, text.encode(), mode)
     os.replace(tmp, target)
 

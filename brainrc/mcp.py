@@ -12,7 +12,7 @@ import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 
-from .config import ConfigError, aicfg_home, expand, former_homes, load_harnesses
+from .config import ConfigError, expand, former_homes, load_harnesses, settings_home
 from .settings import replace_file
 from .sources import Source
 
@@ -159,7 +159,7 @@ def mcp_plan(srcs: list[Source]) -> list[McpSync]:
 
 
 def _owned_file() -> Path:
-    return aicfg_home() / "mcp-owned.json"
+    return settings_home() / "mcp-owned.json"
 
 
 def _read_record(path: Path) -> dict[str, list[str]]:

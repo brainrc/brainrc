@@ -134,10 +134,10 @@ def _link_finding(link: Link, roots: list[Path]) -> Finding | None:
 
 def _home_findings() -> list[Finding]:
     """WARN when the settings home is a legacy dir or AICFG_HOME, or an unused old dir remains."""
-    found, origin, home = [], config.home_origin(), config.aicfg_home()
+    found, origin, home = [], config.home_origin(), config.settings_home()
     if origin == "legacy":
         found.append(("WARN", f"settings home is the legacy {tilde(home)}", command("migrate")))
-    elif origin == "aicfg_env":
+    elif origin == "legacy_env":
         found.append(("WARN", f"settings home comes from the deprecated AICFG_HOME ({tilde(home)})",
                       f"set BRAINRC_HOME={tilde(config.new_home())} and run `{command('migrate')}`"))
     home_has_content = home.is_dir() and any(home.iterdir())

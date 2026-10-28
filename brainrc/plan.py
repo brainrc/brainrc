@@ -46,7 +46,7 @@ def _from_former_home(target: Path, source: Path) -> bool:
     """True if target is the same path under a former settings home that source is under the
     current one: a link apply made before `brainrc migrate` (other links into the old dir stay)."""
     try:
-        rel = os.path.normpath(source.relative_to(config.aicfg_home()))
+        rel = os.path.normpath(source.relative_to(config.settings_home()))
     except ValueError:
         return False
     for old in config.former_homes():

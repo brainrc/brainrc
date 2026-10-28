@@ -223,7 +223,7 @@ class McpSyncTest(McpCase):
     def test_an_identical_entry_is_adopted_when_ownership_was_lost(self):
         self.registry(GH)
         self.apply()
-        (brainrc.aicfg_home() / "mcp-owned.json").unlink()
+        (brainrc.settings_home() / "mcp-owned.json").unlink()
         self.assertIn("Everything in sync", quiet(brainrc.cmd_sync, False)[1])
 
     def _former_record(self, owned: dict) -> Path:

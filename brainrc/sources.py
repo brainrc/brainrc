@@ -143,7 +143,7 @@ def _pack_root(cfg: dict, key: str) -> Path:
     if ("path" in cfg) == ("git" in cfg):
         raise ConfigError(f"packs.toml [{key}]: set `path` or `git` (one of them)")
     if "git" in cfg:
-        return config.aicfg_home() / "packs" / key  # fetched by brainrc (brainrc/packs.py)
+        return config.settings_home() / "packs" / key  # fetched by brainrc (brainrc/packs.py)
     root = expand(str(cfg["path"]))
     return root if root.is_absolute() else config.local_dir() / root  # beside packs.local.toml
 

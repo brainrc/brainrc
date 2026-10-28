@@ -39,7 +39,7 @@ def command(sub: str) -> str:
 def local_dir() -> Path:
     """Where machine-local files live (*.local.toml, rules/*.local.md): the checkout, or
     $AICFG_HOME when installed."""
-    return aicfg_home() if installed() else REPO
+    return settings_home() if installed() else REPO
 
 
 # Hook commands under a hooks dir named brainrc[-<pack>] (or the former ai-config[-<pack>])
@@ -232,11 +232,11 @@ def _legacy_home() -> Path:
 
 
 def home_origin() -> str:
-    """Which rule picks the home: brainrc_env, aicfg_env, xdg, default or legacy."""
+    """Which rule picks the home: brainrc_env, legacy_env, xdg, default or legacy."""
     if os.environ.get("BRAINRC_HOME"):
         return "brainrc_env"
     if os.environ.get("AICFG_HOME"):
-        return "aicfg_env"
+        return "legacy_env"
     # Old installs never read XDG_CONFIG_HOME, so the legacy dir is found whichever new home applies.
     if not new_home().exists() and _legacy_home().exists():
         return "legacy"
@@ -245,7 +245,7 @@ def home_origin() -> str:
 
 def former_homes() -> list[Path]:
     """Old homes (AICFG_HOME, ~/.config/ai-config) that are not the resolved home."""
-    home = aicfg_home()
+    home = settings_home()
     olds = [expand(os.environ["AICFG_HOME"])] if os.environ.get("AICFG_HOME") else []
     olds.append(_legacy_home())
     return [d for i, d in enumerate(olds) if not _same_dir(d, home) and d not in olds[:i]]
@@ -256,16 +256,19 @@ def _same_dir(a: Path, b: Path) -> bool:
     return a == b or (a.exists() and b.exists() and os.path.samefile(a, b))
 
 
-def aicfg_home() -> Path:
+def settings_home() -> Path:
     """Where apply renders rules and extensions: outside any checkout, so packaged installs can
     read them too. $BRAINRC_HOME, $AICFG_HOME (deprecated), $XDG_CONFIG_HOME/brainrc (absolute
     only), ~/.config/brainrc, or the legacy ~/.config/ai-config when that is all that exists."""
     origin = home_origin()
-    if origin == "aicfg_env":
+    if origin == "legacy_env":
         return expand(os.environ["AICFG_HOME"])
     if origin == "legacy":
         return _legacy_home()
     return new_home()
+
+
+aicfg_home = settings_home  # deprecated alias until 0.5.0
 
 
 def legacy_instructions() -> Path:
@@ -274,15 +277,15 @@ def legacy_instructions() -> Path:
 
 
 def rendered_instructions() -> Path:
-    return aicfg_home() / "instructions.md"
+    return settings_home() / "instructions.md"
 
 
 def rendered_agents_dir() -> Path:
-    return aicfg_home() / "opencode" / "agents"
+    return settings_home() / "opencode" / "agents"
 
 
 def home_extensions_file() -> Path:
-    return aicfg_home() / "extensions.md"
+    return settings_home() / "extensions.md"
 
 
 def extensions_file() -> Path:
@@ -292,7 +295,7 @@ def extensions_file() -> Path:
 
 def hooks_copy_root() -> Path:
     """Where an installed brainrc copies core's hooks, so they outlive a versioned package path."""
-    return aicfg_home() / "hooks" / "core"
+    return settings_home() / "hooks" / "core"
 
 
 def hook_command_dir(hooks_dir: str) -> str:

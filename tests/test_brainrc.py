@@ -275,7 +275,7 @@ class SyncFakeHomeTest(TempRepoCase):
         settings.write_text("{}")
         quiet(brainrc.cmd_sync, True)
         self.assertEqual(len(list(settings.parent.glob("settings.json.bak-brainrc-*"))), brainrc.BACKUPS_KEPT)
-        self.assertEqual(list(settings.parent.glob(".settings.json.aicfg-tmp*")), [])
+        self.assertEqual(list(settings.parent.glob(".settings.json.brainrc-tmp*")), [])
 
     def test_checkout_hooks_link_into_the_checkout(self):
         quiet(brainrc.cmd_sync, True)
@@ -295,7 +295,7 @@ class SyncFakeHomeTest(TempRepoCase):
 
         with mock.patch("os.replace", spy):
             quiet(brainrc.cmd_sync, True)
-        self.assertEqual(names, [f".settings.json.aicfg-tmp-{os.getpid()}"])
+        self.assertEqual(names, [f".settings.json.brainrc-tmp-{os.getpid()}"])
 
     @unittest.skipIf(os.name == "nt", "fcntl")
     def test_a_second_apply_fails_while_one_holds_the_lock(self):
@@ -399,7 +399,7 @@ class SyncFakeHomeTest(TempRepoCase):
         backups = list(dotfiles.glob("settings.json.bak-brainrc-*"))
         self.assertEqual([b.read_text() for b in backups], ['{"theme": "dark"}\n'])
         self.assertEqual(list(settings.parent.glob("settings.json.bak-brainrc-*")), [])
-        self.assertEqual(list(self.home.rglob("*.aicfg-tmp")), [])
+        self.assertEqual(list(self.home.rglob("*.brainrc-tmp")), [])
 
     def test_a_dangling_settings_link_creates_its_target(self):
         dotfiles = self.home / "dotfiles"
@@ -967,7 +967,16 @@ class SettingsHomeTest(TempRepoCase):
         os.environ.pop("BRAINRC_HOME")
         with mock.patch.dict(os.environ):
             os.environ.pop("XDG_CONFIG_HOME", None)  # CI runners set it
-            self.assertEqual(brainrc.aicfg_home(), self.home / ".config/brainrc")
+            self.assertEqual(brainrc.settings_home(), self.home / ".config/brainrc")
+
+    def test_aicfg_home_is_a_deprecated_alias_of_settings_home(self):
+        self.assertIs(brainrc.config.aicfg_home, brainrc.config.settings_home)
+        self.assertIs(brainrc.aicfg_home, brainrc.settings_home)
+        # a subprocess: scripts/aicfg.py shadows the aicfg package on this suite's sys.path
+        code = "import aicfg.cli, brainrc.config as c; assert aicfg.cli.aicfg_home is c.settings_home"
+        proc = subprocess.run([sys.executable, "-W", "ignore::DeprecationWarning", "-c", code],
+                              cwd=REPO, capture_output=True, text=True)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
 
     def test_apply_renders_into_settings_home(self):
         code, out = quiet(brainrc.cmd_sync, True)

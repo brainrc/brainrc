@@ -15,11 +15,11 @@
   "mode": "subagent",
   "delivery": "normal",
   "auto": true,
-  "stage": "implement",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [
     "scripting"
@@ -135,7 +135,7 @@
       "id": "T5",
       "title": "Convergence tests for an old-name install, plus changelog fragment",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "tests/test_rename_converge.py",
@@ -151,7 +151,25 @@
       "after": [
         "T3",
         "T4"
-      ]
+      ],
+      "commit": "0eccf28"
+    },
+    {
+      "id": "F1",
+      "title": "Prune only files named exactly like a settings backup",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "brainrc/settings.py",
+        "tests/test_backups.py"
+      ],
+      "criteria": [
+        "AC10"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "bbdc408"
     }
   ],
   "blocked": null,
@@ -161,7 +179,10 @@
       "intake": "2026-10-28T05:08:03Z",
       "spec": "2026-10-28T05:08:03Z",
       "plan": "2026-10-28T05:09:32Z",
-      "implement": "2026-10-28T13:00:29Z"
+      "implement": "2026-10-28T13:00:29Z",
+      "verify": "2026-10-28T13:57:44Z",
+      "document": "2026-10-28T13:57:44Z",
+      "deliver": "2026-10-28T13:57:44Z"
     },
     "gates": {
       "spec": {
@@ -171,6 +192,10 @@
       "plan": {
         "presented_at": "2026-10-28T05:12:28Z",
         "approved_at": "2026-10-28T13:00:29Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-28T13:57:44Z",
+        "approved_at": "2026-10-28T13:57:44Z"
       }
     },
     "gate_rework": {
@@ -179,7 +204,7 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 3,
+      "total": 4,
       "first_pass": 3
     },
     "retries": 1,
@@ -190,5 +215,8 @@
       "task_minutes": 10,
       "wall_minutes": 4
     }
-  }
+  },
+  "living": [
+    "aicfg-apply"
+  ]
 }

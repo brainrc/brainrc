@@ -42,3 +42,19 @@ Suite 551 OK; validate OK. Within fence.
 
 ## code-reviewer · T4 · done (no CRITICAL/HIGH)
 **Findings:** MEDIUM AC3 installed-mode path untested → T5; MEDIUM no Cursor hooks.json convergence from old names → T5; LOW HookDirRenameTest inherits PackSyncTest (12 reruns) → follow-up. Commit 5de6abc.
+
+## implementer · T5 · done
+4 end-to-end tests; no T1-T4 bugs. Suite 555 OK (also with CI's XDG_CONFIG_HOME). Commit 0eccf28.
+
+## security-reviewer · branch · done (no CRITICAL/HIGH)
+**Findings:** MEDIUM loose backup glob could prune a user's look-alike → F1 bbdc408 (red then green); LOW unanchored ownership substring (pre-existing) → follow-up.
+
+## verifier (engine) · verify · done
+13/13 criteria pass; 556 OK with and without XDG_CONFIG_HOME. Living area aicfg-apply applied. PR body and ticket comment drafted.
+
+## engine · Deliver gate · auto-approved
+2026-10-28T13:57:44Z
+⛔ Deliver gate: 207-brainrc-hooks-mcp-backups
+Summary: hooks dir and backups renamed to brainrc with old names converging on one apply; MCP records in former homes honored. 13/13 criteria; security review clean of CRITICAL/HIGH.
+Decide: push 207-brainrc-hooks-mcp-backups, open a draft PR from pr-body.md; ticket comment stays a draft (auto).
+Artifacts: specs/207-brainrc-hooks-mcp-backups/{verify.md,pr-body.md,ticket-comment.md}

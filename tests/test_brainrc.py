@@ -56,7 +56,7 @@ def set_core_version(repo: Path, version: str) -> None:
 
 
 class TempRepoCase(unittest.TestCase):
-    """Point aicfg at a throwaway copy of the repo and BRAINRC_HOME, so tests never read local
+    """Point brainrc at a throwaway copy of the repo and BRAINRC_HOME, so tests never read local
     config or write rendered files anywhere real."""
 
     def setUp(self):
@@ -64,7 +64,7 @@ class TempRepoCase(unittest.TestCase):
         copy_repo(self.repo)
         self.old_repo = brainrc.config.REPO
         brainrc.config.REPO = self.repo
-        self.settings_home = Path(tempfile.mkdtemp()) / "ai-config"
+        self.settings_home = Path(tempfile.mkdtemp()) / "brainrc"
         self.old_brainrc_home = os.environ.get("BRAINRC_HOME")
         os.environ["BRAINRC_HOME"] = str(self.settings_home)
 
@@ -1217,7 +1217,7 @@ class OpenCodeAgentTest(TempRepoCase):
 
 
 class CrashRegressionTest(TempRepoCase):
-    """Problems the Rust parity work found aicfg crashing on instead of reporting."""
+    """Problems the Rust parity work found brainrc crashing on instead of reporting."""
 
     def setUp(self):
         super().setUp()
@@ -1513,7 +1513,7 @@ def git(*args, cwd=None):
 
 
 class GitPackTest(TempRepoCase):
-    """A pack named by git URL: aicfg fetches it into $AICFG_HOME/packs/<key> (#50)."""
+    """A pack named by git URL: brainrc fetches it into $BRAINRC_HOME/packs/<key> (#50)."""
 
     def setUp(self):
         super().setUp()
@@ -1650,7 +1650,7 @@ class GitPackTest(TempRepoCase):
         quiet(brainrc.cmd_sync, True)
         record = self.clone / ".git/aicfg-fetched.json"
         self.assertTrue(record.is_file())
-        record.unlink()  # as a clone from before aicfg recorded fetches
+        record.unlink()  # as a clone from before brainrc recorded fetches
         code, out = quiet(brainrc.cmd_sync, False)
         self.assertIn("FETCH", out)
         quiet(brainrc.cmd_sync, True)
@@ -2146,12 +2146,12 @@ class ConfigErrorTest(TempRepoCase):
 
 
 class ClosedStdoutTest(unittest.TestCase):
-    """`aicfg doctor | head -1`: the reader stops early, aicfg exits quietly."""
+    """`brainrc doctor | head -1`: the reader stops early, brainrc exits quietly."""
 
     def test_closed_stdout_exits_without_a_traceback(self):
         tmp = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, tmp)
-        env = {**os.environ, "HOME": str(tmp), "BRAINRC_HOME": str(tmp / "ai-config")}
+        env = {**os.environ, "HOME": str(tmp), "BRAINRC_HOME": str(tmp / "brainrc")}
         for cmd in ("doctor", "status"):
             p = subprocess.Popen([sys.executable, str(REPO / "scripts/aicfg.py"), cmd], env=env,
                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE)

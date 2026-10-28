@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:209",
+    "id": "209",
+    "title": "Rename: docs and wording pass",
+    "url": "https://github.com/brainrc/brainrc/issues/209",
+    "pr": null
+  },
+  "slug": "209-brainrc-docs-wording",
+  "branch": "209-brainrc-docs-wording",
+  "base": "main",
+  "size": "standard",
+  "mode": "subagent",
+  "delivery": "normal",
+  "auto": true,
+  "stop_at_deliver": true,
+  "stage": "spec",
+  "gates": {
+    "spec": "pending",
+    "plan": "pending",
+    "deliver": "pending"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/brainrc.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-28T17:12:47Z",
+    "stage_started_at": {
+      "intake": "2026-10-28T17:12:47Z",
+      "spec": "2026-10-28T17:12:47Z"
+    },
+    "gates": {},
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  }
+}

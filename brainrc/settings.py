@@ -4,6 +4,7 @@ from __future__ import annotations
 import copy
 import json
 import os
+import re
 import stat
 from datetime import datetime, timezone
 from pathlib import Path
@@ -84,8 +85,11 @@ def replace_file(dest: Path, text: str, before: str | None) -> None:
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         _create(target.with_name(f"{target.name}.bak-brainrc-{stamp}"), target.read_bytes(), mode)
         # Old backups carry the former name; order both by the timestamp at the end of the name.
+        # Only real files named exactly like a backup count: a user's look-alike is never pruned.
+        backup = re.compile(rf"{re.escape(target.name)}\.bak-(?:brainrc|aicfg)-\d{{8}}T\d{{6}}Z")
         backups = sorted(
-            (p for tag in ("brainrc", "aicfg") for p in target.parent.glob(f"{target.name}.bak-{tag}-*")),
+            (p for p in target.parent.glob(f"{target.name}.bak-*")
+             if backup.fullmatch(p.name) and not p.is_symlink() and p.is_file()),
             key=lambda p: (p.name.rsplit("-", 1)[-1], p.name),
         )
         for old in backups[:-BACKUPS_KEPT]:

@@ -43,6 +43,24 @@ class BackupTests(unittest.TestCase):
         self.assertNotIn(old[1], names)
         self.assertEqual(len([n for n in names if n not in old]), 1)  # the fresh backup
 
+    def test_prune_leaves_files_that_only_look_like_backups(self):
+        # Six real backups force pruning; the look-alikes and a symlinked backup must survive it.
+        for n in range(6):
+            (self.dir / f"settings.json.bak-aicfg-2026010{n}T000000Z").write_text("{}")
+        lookalikes = ["settings.json.bak-aicfg-1", "settings.json.bak-brainrc-manual",
+                      "settings.json.bak-aicfg-20260101T000000Z.keep"]
+        for name in lookalikes:
+            (self.dir / name).write_text("mine")
+        elsewhere = self.dir / "elsewhere.json"
+        elsewhere.write_text("mine")
+        link = self.dir / "settings.json.bak-aicfg-20250101T000000Z"
+        link.symlink_to(elsewhere)
+        replace_file(self.target, '{"a": 1}', "{}")
+        for name in lookalikes:
+            self.assertTrue((self.dir / name).exists(), name)
+        self.assertTrue(link.is_symlink())
+        self.assertEqual(elsewhere.read_text(), "mine")
+
     def test_prune_ignores_mtime(self):
         import os
         a = self.dir / "settings.json.bak-aicfg-20260101T000000Z"

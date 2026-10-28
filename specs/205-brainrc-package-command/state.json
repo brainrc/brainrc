@@ -15,10 +15,10 @@
   "mode": "subagent",
   "delivery": "normal",
   "auto": false,
-  "stage": "plan",
+  "stage": "implement",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [
@@ -39,8 +39,8 @@
       "id": "T1",
       "title": "Rename the package to brainrc with --version and brainrc usage",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "aicfg/",
         "brainrc/",
@@ -156,7 +156,8 @@
     "stage_started_at": {
       "intake": "2026-10-27T18:47:44Z",
       "spec": "2026-10-27T18:47:44Z",
-      "plan": "2026-10-28T01:41:32Z"
+      "plan": "2026-10-28T01:41:32Z",
+      "implement": "2026-10-28T01:45:06Z"
     },
     "gates": {
       "spec": {
@@ -164,7 +165,8 @@
         "approved_at": "2026-10-28T01:41:32Z"
       },
       "plan": {
-        "presented_at": "2026-10-28T01:44:30Z"
+        "presented_at": "2026-10-28T01:44:30Z",
+        "approved_at": "2026-10-28T01:45:06Z"
       }
     },
     "gate_rework": {

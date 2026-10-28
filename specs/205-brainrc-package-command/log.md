@@ -33,3 +33,7 @@ Owner approved; answers: --version "brainrc" (asked about a v prefix; engine rec
 
 ## engine · Plan gate · presented
 2026-10-28T01:44:30Z
+
+## engine · Plan gate · approved
+2026-10-28T01:45:06Z
+Owner approved, including the public contract change.

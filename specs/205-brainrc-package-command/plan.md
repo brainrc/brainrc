@@ -1,6 +1,6 @@
 # Plan: Rename the PyPI package and the command to brainrc
 
-Spec: [spec.md](spec.md) · Status: draft
+Spec: [spec.md](spec.md) · Status: approved
 
 ## Callouts
 Must be empty or explicitly approved at the Plan gate:

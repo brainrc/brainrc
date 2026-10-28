@@ -18,3 +18,10 @@ Requirement changes fixed: full requirement text in each MODIFIED block. Engine:
 
 ## engine · Spec gate · auto-approved (owner: no decisions until Deliver)
 2026-10-28T17:16:48Z
+
+## architect · plan · done
+9 tasks; T1 allowlist test first; T2-T6 parallel; T7, T8 code; T9 fragment + allowlist reconcile. Callouts (listed at Deliver, not stopping per owner): identifier rename, home_origin value, guard/banner text, pre-commit hook id, temp names, T6 ~400 mechanical lines.
+
+## engine · Plan gate · auto-approved (owner: no decisions until Deliver)
+2026-10-28T17:20:34Z
+Engine default before approval: keep `aicfg_home` as a one-line deprecated alias until 0.5.0 (import aicfg compatibility). Pre-commit hook is repo-local (.pre-commit-config.yaml), so its id rename affects only SKIP= users.

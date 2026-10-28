@@ -16,10 +16,10 @@
   "delivery": "normal",
   "auto": true,
   "stop_at_deliver": true,
-  "stage": "plan",
+  "stage": "implement",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [
@@ -34,19 +34,239 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Allowlist test with the A-F table, failing on today's tree",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "tests/test_old_names.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2"
+      ],
+      "review": "batch",
+      "after": []
+    },
+    {
+      "id": "T2",
+      "title": "Docs wording: commands, `~/brainrc` checkout, `~/.config/brainrc/`, `$BRAINRC_HOME`; tutorial commands; E sentences say old/former/deprecated/legacy",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "docs/install.md",
+        "docs/tutorial.md",
+        "docs/troubleshooting.md",
+        "docs/architecture.md",
+        "docs/e2e-runs.md",
+        "docs/formats.md",
+        "docs/guardrails.md",
+        "docs/harness-packages.md",
+        "docs/packs.md",
+        "docs/spec-agent.md"
+      ],
+      "criteria": [
+        "AC4",
+        "AC5"
+      ],
+      "review": "batch",
+      "after": [
+        "T1"
+      ]
+    },
+    {
+      "id": "T3",
+      "title": "README, AGENTS.md and CONTRIBUTING.md wording (title, clone dir, `scripts/brainrc.py`, `brainrc/` package)",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "README.md",
+        "AGENTS.md",
+        "CONTRIBUTING.md"
+      ],
+      "criteria": [
+        "AC4"
+      ],
+      "review": "batch",
+      "after": [
+        "T1"
+      ]
+    },
+    {
+      "id": "T4",
+      "title": "Skills and config-file comments; SKILL.md keeps `ai-config:<role>` after `brainrc:<role>` (`test_plugin_docs`)",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "skills/spec-agent/SKILL.md",
+        "skills/spec-agent/references/lifecycle.md",
+        "skills/spec-agent/references/state.md",
+        "skills/spec-agent/templates/retro.md",
+        "mcp/servers.toml",
+        "harnesses.toml",
+        "packs.toml",
+        ".pre-commit-config.yaml"
+      ],
+      "criteria": [
+        "AC4"
+      ],
+      "review": "batch",
+      "after": [
+        "T1"
+      ]
+    },
+    {
+      "id": "T5",
+      "title": "Example pack README commands",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "examples/pack-acme/README.md"
+      ],
+      "criteria": [
+        "AC4"
+      ],
+      "review": "batch",
+      "after": [
+        "T1"
+      ]
+    },
+    {
+      "id": "T6",
+      "title": "`git mv tests/test_aicfg.py tests/test_brainrc.py`; drop the `aicfg` alias and rename `self.aicfg_home` to `self.settings_home`, also in importers; rename `test_aicfg_doctor_shape...`",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "tests/test_aicfg.py",
+        "tests/test_brainrc.py",
+        "tests/test_mcp.py",
+        "tests/test_rename_converge.py",
+        "tests/test_hooks.py",
+        "tests/test_retro_metrics.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC7"
+      ],
+      "review": "each",
+      "after": [
+        "T1"
+      ]
+    },
+    {
+      "id": "T7",
+      "title": "Usage, `--help`, doctor, error text, banners, docstrings and comments, and guard messages say `brainrc`; D markers and C deprecation lines unchanged",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "brainrc/cli.py",
+        "brainrc/doctor.py",
+        "brainrc/sources.py",
+        "brainrc/settings.py",
+        "brainrc/mcp.py",
+        "brainrc/plan.py",
+        "brainrc/packs.py",
+        "brainrc/migrate.py",
+        "brainrc/config.py",
+        "overrides/claude/hooks/guard_outward.py",
+        "overrides/claude/hooks/guard_secrets.py",
+        "overrides/cursor/hooks/guard.py",
+        "overrides/opencode/plugin.js",
+        "tests/test_brainrc.py"
+      ],
+      "criteria": [
+        "AC3",
+        "AC4",
+        "AC7"
+      ],
+      "review": "each",
+      "after": [
+        "T6"
+      ]
+    },
+    {
+      "id": "T8",
+      "title": "Internal identifiers: `aicfg_home` to `settings_home`, `aicfg_env` to `legacy_env`, `.aicfg-tmp-`/`.aicfg-old-` to `.brainrc-*`",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "brainrc/__init__.py",
+        "brainrc/config.py",
+        "brainrc/cli.py",
+        "brainrc/doctor.py",
+        "brainrc/mcp.py",
+        "brainrc/migrate.py",
+        "brainrc/plan.py",
+        "brainrc/sources.py",
+        "brainrc/settings.py",
+        "skills/spec-agent/scripts/active_run.py",
+        "tests/test_brainrc.py",
+        "tests/test_mcp.py",
+        "tests/test_active_run.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC7"
+      ],
+      "review": "each",
+      "after": [
+        "T7"
+      ]
+    },
+    {
+      "id": "T9",
+      "title": "Changelog fragment (`bump: patch`, **[pack contract]**: old names work with warnings until 0.5.0, then removed; follow-up for D names); `changelog.d/README.md` command; reconcile the allowlist so `test_old_names` passes",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "changelog.d/209-brainrc-docs-wording.md",
+        "changelog.d/README.md",
+        "tests/test_old_names.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC6",
+        "AC7"
+      ],
+      "review": "batch",
+      "after": [
+        "T2",
+        "T3",
+        "T4",
+        "T5",
+        "T8"
+      ]
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-28T17:12:47Z",
     "stage_started_at": {
       "intake": "2026-10-28T17:12:47Z",
       "spec": "2026-10-28T17:12:47Z",
-      "plan": "2026-10-28T17:16:48Z"
+      "plan": "2026-10-28T17:16:48Z",
+      "implement": "2026-10-28T17:20:27Z"
     },
     "gates": {
       "spec": {
         "presented_at": "2026-10-28T17:16:48Z",
         "approved_at": "2026-10-28T17:16:48Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-28T17:20:27Z",
+        "approved_at": "2026-10-28T17:20:27Z"
       }
     },
     "gate_rework": {

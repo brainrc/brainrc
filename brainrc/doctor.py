@@ -132,6 +132,21 @@ def _link_finding(link: Link, roots: list[Path]) -> Finding | None:
             f"move that into a pack (or delete the link), then {command('apply')}")
 
 
+def _home_findings() -> list[Finding]:
+    """WARN when the settings home is a legacy dir or AICFG_HOME, or an unused old dir remains."""
+    found, origin, home = [], config.home_origin(), config.aicfg_home()
+    if origin == "legacy":
+        found.append(("WARN", f"settings home is the legacy {tilde(home)}", command("migrate")))
+    elif origin == "aicfg_env":
+        found.append(("WARN", f"settings home comes from the deprecated AICFG_HOME ({tilde(home)})",
+                      f"set BRAINRC_HOME={tilde(config.new_home())} and run `{command('migrate')}`"))
+    for old in config.former_homes():
+        if old.exists():
+            found.append(("WARN", f"{tilde(old)} is unused (settings home is {tilde(home)})",
+                          f"move anything you still need from it into {tilde(home)}, then remove it: rm -r {tilde(old)}"))
+    return found
+
+
 def doctor_findings() -> list[Finding]:
     """Everything wrong with this machine's install, each with its fix. Writes nothing."""
     try:
@@ -204,6 +219,7 @@ def doctor_findings() -> list[Finding]:
                           f"fix it by hand, then {command('apply')}"))
     found += _hook_findings(merges, skipped)
     found += _mcp_findings(srcs, skipped)
+    found += _home_findings()
     return found
 
 

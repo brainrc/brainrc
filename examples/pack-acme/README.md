@@ -18,15 +18,15 @@ and a tripwire. Format reference: [docs/packs.md](../../docs/packs.md).
    ```
 
    ```bash
-   python3 scripts/aicfg.py status
-   python3 scripts/aicfg.py apply
+   python3 scripts/brainrc.py status
+   python3 scripts/brainrc.py apply
    ```
 
 5. Validate it in the pack's own CI:
 
    ```bash
    git clone <core-repo> core
-   python3 core/scripts/aicfg.py validate --pack .
+   python3 core/scripts/brainrc.py validate --pack .
    ```
 
 Hooks are left out on purpose: an enabled pack's hooks run on every tool call. To add them,

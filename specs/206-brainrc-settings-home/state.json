@@ -15,10 +15,10 @@
   "mode": "subagent",
   "delivery": "normal",
   "auto": false,
-  "stage": "plan",
+  "stage": "implement",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [
@@ -38,8 +38,8 @@
       "id": "T1",
       "title": "Contract tests for home resolution and warnings",
       "agent": "test-writer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "tests/test_settings_home.py"
       ],
@@ -172,7 +172,8 @@
     "stage_started_at": {
       "intake": "2026-10-28T03:15:37Z",
       "spec": "2026-10-28T03:15:37Z",
-      "plan": "2026-10-28T03:24:09Z"
+      "plan": "2026-10-28T03:24:09Z",
+      "implement": "2026-10-28T03:27:11Z"
     },
     "gates": {
       "spec": {
@@ -180,7 +181,8 @@
         "approved_at": "2026-10-28T03:24:09Z"
       },
       "plan": {
-        "presented_at": "2026-10-28T03:26:49Z"
+        "presented_at": "2026-10-28T03:26:49Z",
+        "approved_at": "2026-10-28T03:27:11Z"
       }
     },
     "gate_rework": {

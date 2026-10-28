@@ -1,6 +1,6 @@
 # Plan: Settings home ~/.config/brainrc and BRAINRC_HOME
 
-Spec: [spec.md](spec.md) · Status: draft
+Spec: [spec.md](spec.md) · Status: approved
 
 ## Callouts
 - **New dependencies:** none (stdlib `os`, `shutil`, `pathlib`, `errno`).

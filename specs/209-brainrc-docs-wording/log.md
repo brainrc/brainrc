@@ -40,3 +40,9 @@ T4 fba2f9f (config changes comment-only except the planned pre-commit hook), T5 
 
 ## implementer · T7 · done
 Suite: only test_old_names fails. Engine review (inline): diff is strings, docstrings and comments only; no banner-based recognition exists. Two intentional old-name docstrings (cli.py, doctor.py) left for T9. Commit 8ae2f9f.
+
+## implementer · T8 · done
+582 tests; only test_old_names fails. Alias kept and tested.
+
+## code-reviewer · T8 · done
+No findings; pure rename. Commit 61c2819.

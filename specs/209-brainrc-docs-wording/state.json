@@ -225,7 +225,7 @@
       "id": "T8",
       "title": "Internal identifiers: `aicfg_home` to `settings_home`, `aicfg_env` to `legacy_env`, `.aicfg-tmp-`/`.aicfg-old-` to `.brainrc-*`",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "brainrc/__init__.py",
@@ -250,14 +250,16 @@
       "after": [
         "T7"
       ],
-      "started_at": "2026-10-28T17:35:50Z"
+      "started_at": "2026-10-28T17:35:50Z",
+      "commit": "61c2819",
+      "finished_at": "2026-10-28T17:44:50Z"
     },
     {
       "id": "T9",
       "title": "Changelog fragment (`bump: patch`, **[pack contract]**: old names work with warnings until 0.5.0, then removed; follow-up for D names); `changelog.d/README.md` command; reconcile the allowlist so `test_old_names` passes",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "changelog.d/209-brainrc-docs-wording.md",
         "changelog.d/README.md",
@@ -276,7 +278,8 @@
         "T4",
         "T5",
         "T8"
-      ]
+      ],
+      "started_at": "2026-10-28T17:44:50Z"
     }
   ],
   "blocked": null,
@@ -304,8 +307,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 2,
-      "first_pass": 2
+      "total": 3,
+      "first_pass": 3
     },
     "retries": 0,
     "interventions": 0,

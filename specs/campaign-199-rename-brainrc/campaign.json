@@ -21,10 +21,12 @@
       "ref": "gh:205",
       "order": 2,
       "depends_on": [],
-      "status": "in_progress",
+      "status": "delivered",
       "slug": "205-brainrc-package-command",
       "branch": "205-brainrc-package-command",
-      "pr": null
+      "pr": "https://github.com/brainrc/brainrc/pull/230",
+      "base": "main",
+      "merged": false
     },
     {
       "ref": "gh:206",

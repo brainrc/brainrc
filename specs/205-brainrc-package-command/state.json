@@ -6,7 +6,7 @@
     "id": "205",
     "title": "Rename: PyPI package and the brainrc command",
     "url": "https://github.com/brainrc/brainrc/issues/205",
-    "pr": null
+    "pr": "https://github.com/brainrc/brainrc/pull/230"
   },
   "slug": "205-brainrc-package-command",
   "branch": "205-brainrc-package-command",
@@ -15,7 +15,7 @@
   "mode": "subagent",
   "delivery": "normal",
   "auto": false,
-  "stage": "deliver",
+  "stage": "watch",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -209,9 +209,13 @@
       "first_pass": 2
     },
     "retries": 1,
-    "interventions": 1
+    "interventions": 1,
+    "pr_opened_at": "2026-10-28T02:47:03Z"
   },
   "living": [
     "cli-entry-points"
-  ]
+  ],
+  "watch": {
+    "entered_at": "2026-10-28T02:47:03Z"
+  }
 }

@@ -28,3 +28,6 @@ Artifacts: specs/campaign-199-rename-brainrc/campaign.json
 
 ## 2026-10-28T01:39:38Z · gh:204 merged (#229); gh:205 resumed
 - #229 merged 01:30Z (v0.3.50). Owner: "resize standard" for gh:205; campaign continues without --auto (gates stop). 205 branch now based on main.
+
+## 2026-10-28T02:47:03Z · gh:205 delivered
+- Draft PR #230, base main (sequential: #229 already merged). Next: gh:206 after #230 merges.

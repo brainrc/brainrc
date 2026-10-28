@@ -96,3 +96,7 @@ docs/install.md install section uses brainrc; PR body and ticket comment drafted
 ## engine · Deliver gate · approved
 2026-10-28T02:45:55Z
 Owner approved: push, draft PR, comment on #205.
+
+## engine · deliver · done
+2026-10-28T02:47:03Z
+Pushed 205-brainrc-package-command; draft PR #230 (base main); commented on #205. Subscribed to PR activity.

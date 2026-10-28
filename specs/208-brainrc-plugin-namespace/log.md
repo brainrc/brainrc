@@ -33,3 +33,6 @@ Suite 568 OK, validate OK; within fence.
 
 ## implementer · T1 · done
 Red 5/7; suite 558 OK; validate OK; manifests regenerated only by the plugin command (re-run is idempotent). Within fence. Review batched. Commit 317abd6.
+
+## code-reviewer · T2 re-review · done
+Prior findings fixed. LOW AttributeError catch → explicit isinstance (engine); LOW long line wrapped (engine). Suite 575 OK (1 skip as root). Landed 955086e.

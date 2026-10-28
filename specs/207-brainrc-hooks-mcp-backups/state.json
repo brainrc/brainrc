@@ -63,7 +63,7 @@
       "id": "T2",
       "title": "Hook ownership covers both dir names, by path component",
       "agent": "implementer",
-      "status": "review",
+      "status": "done",
       "attempts": 1,
       "files": [
         "brainrc/config.py",
@@ -108,8 +108,8 @@
       "id": "T4",
       "title": "Rename hook dirs, prune old links",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "harnesses.toml",
         "brainrc/config.py",
@@ -175,8 +175,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
-      "first_pass": 0
+      "total": 1,
+      "first_pass": 1
     },
     "retries": 1,
     "interventions": 1,

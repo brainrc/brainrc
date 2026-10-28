@@ -30,3 +30,6 @@ Owner: "Approve continue auto" (callouts approved; auto continues). +1 intervent
 - T2 done: OWNED_HOOK matches both names by path component; OWNED_HOOK_MARKER /hooks/brainrc/. Red 3, suite 528 OK. Landed 578766c; committed before its review (engine ordering slip), review running now.
 - T3: union of records; engine's brief contradicted spec AC7 and the plan (resolved home wins per file; `[]` kept while a former home holds the key). Re-dispatched as attempt 2 (engine's error).
 - Fence: worktree STRAY hits were only .runs logs the brief told them to save; patches exclude specs/.
+
+## code-reviewer · T2 · done
+**Findings:** LOW Windows backslashes not matched (harmless, POSIX targets); LOW mixed-case pack names (e.g. ai-config-Acme) not matched as old-name entries; pre-existing, follow-up (validate pack names). 531 OK.

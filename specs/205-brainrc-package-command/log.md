@@ -86,3 +86,9 @@ T5 fragment and F1 test reviewed inline: no findings. All other tasks were revie
 ## verifier (engine) · verify · done
 2026-10-28T02:38:17Z
 11/11 criteria pass; see verify.md.
+
+## doc-writer · document · done
+docs/install.md install section uses brainrc; PR body and ticket comment drafted. Engine changed the pin example (v0.3.29 predates the rename). Living area cli-entry-points applied.
+
+## engine · Deliver gate · presented
+2026-10-28T02:40:22Z

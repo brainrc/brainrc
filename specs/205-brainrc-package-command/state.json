@@ -15,7 +15,7 @@
   "mode": "subagent",
   "delivery": "normal",
   "auto": false,
-  "stage": "document",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -182,7 +182,8 @@
       "plan": "2026-10-28T01:41:32Z",
       "implement": "2026-10-28T01:45:06Z",
       "verify": "2026-10-28T02:36:40Z",
-      "document": "2026-10-28T02:38:17Z"
+      "document": "2026-10-28T02:38:17Z",
+      "deliver": "2026-10-28T02:40:22Z"
     },
     "gates": {
       "spec": {
@@ -192,6 +193,9 @@
       "plan": {
         "presented_at": "2026-10-28T01:44:30Z",
         "approved_at": "2026-10-28T01:45:06Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-28T02:40:22Z"
       }
     },
     "gate_rework": {
@@ -205,5 +209,8 @@
     },
     "retries": 1,
     "interventions": 1
-  }
+  },
+  "living": [
+    "cli-entry-points"
+  ]
 }

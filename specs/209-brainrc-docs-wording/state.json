@@ -113,7 +113,7 @@
       "id": "T4",
       "title": "Skills and config-file comments; SKILL.md keeps `ai-config:<role>` after `brainrc:<role>` (`test_plugin_docs`)",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "skills/spec-agent/SKILL.md",
@@ -133,14 +133,16 @@
         "T1"
       ],
       "wave": 2,
-      "worktree": "/tmp/spec-agent/209-brainrc-docs-wording/T4",
-      "started_at": "2026-10-28T17:26:50Z"
+      "worktree": null,
+      "started_at": "2026-10-28T17:26:50Z",
+      "commit": "fba2f9f",
+      "finished_at": "2026-10-28T17:28:59Z"
     },
     {
       "id": "T5",
       "title": "Example pack README commands",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "examples/pack-acme/README.md"
@@ -153,15 +155,17 @@
         "T1"
       ],
       "wave": 2,
-      "worktree": "/tmp/spec-agent/209-brainrc-docs-wording/T5",
-      "started_at": "2026-10-28T17:26:50Z"
+      "worktree": null,
+      "started_at": "2026-10-28T17:26:50Z",
+      "commit": "4d8c02d",
+      "finished_at": "2026-10-28T17:28:59Z"
     },
     {
       "id": "T6",
       "title": "`git mv tests/test_aicfg.py tests/test_brainrc.py`; drop the `aicfg` alias and rename `self.aicfg_home` to `self.settings_home`, also in importers; rename `test_aicfg_doctor_shape...`",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "tests/test_aicfg.py",
         "tests/test_brainrc.py",
@@ -177,7 +181,8 @@
       "review": "each",
       "after": [
         "T1"
-      ]
+      ],
+      "started_at": "2026-10-28T17:28:59Z"
     },
     {
       "id": "T7",
@@ -299,7 +304,7 @@
     "retries": 0,
     "interventions": 0,
     "waves": {
-      "count": 1,
+      "count": 2,
       "max_width": 2,
       "task_minutes": 6,
       "wall_minutes": 3

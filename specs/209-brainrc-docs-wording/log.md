@@ -31,3 +31,6 @@ Red as designed: 566 offending lines, 7 stale rows (test_brainrc.py rows until T
 
 ## wave 1 (T2, T3) landed
 T2 7c7f7dc (10 docs), T3 a1d0701 (README, AGENTS, CONTRIBUTING); fences OK. Wave 2: T4, T5.
+
+## wave 2 (T4, T5) landed
+T4 fba2f9f (config changes comment-only except the planned pre-commit hook), T5 4d8c02d. T6 next (main tree).

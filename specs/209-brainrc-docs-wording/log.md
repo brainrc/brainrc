@@ -49,3 +49,6 @@ No findings; pure rename. Commit 61c2819.
 
 ## engine · T9 scope widened before dispatch
 Added tests/test_brainrc.py, brainrc/cli.py, brainrc/doctor.py, docs/install.md, skills/spec-agent/SKILL.md so T9 can reword or allowlist the last hits (listed at Deliver; owner asked for no decisions before it).
+
+## implementer · T9 · done
+test_old_names OK; suite 582 OK (1 skip); validate OK. Touched only 4 of its widened files. Commit 4ece048.

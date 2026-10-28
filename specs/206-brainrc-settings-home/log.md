@@ -98,3 +98,7 @@ Pushed; PR #232 (ready for review); commented on #206; subscribed.
 ## engine · watch · CI red on #232
 2026-10-28T04:58:43Z
 validate failed: test_defaults_to_config_dir_under_home read the runner's XDG_CONFIG_HOME (GitHub sets it). Reproduced locally with XDG_CONFIG_HOME=/home/runner/.config; C1 clears it in the test. Suite 525 OK with and without XDG set. Push gate presented for 7ee973c.
+
+## engine · Push gate · approved
+2026-10-28T04:59:13Z
+Owner approved; pushed head 548a5ec to #232.

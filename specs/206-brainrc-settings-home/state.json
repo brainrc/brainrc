@@ -20,8 +20,8 @@
     "spec": "approved",
     "plan": "approved",
     "deliver": "approved",
-    "push": "pending",
-    "push_sha": "7ee973c"
+    "push": "approved",
+    "push_sha": "548a5ec"
   },
   "domains": [
     "scripting"
@@ -255,7 +255,8 @@
         "approved_at": "2026-10-28T04:51:26Z"
       },
       "push": {
-        "presented_at": "2026-10-28T04:58:43Z"
+        "presented_at": "2026-10-28T04:58:43Z",
+        "approved_at": "2026-10-28T04:59:13Z"
       }
     },
     "gate_rework": {

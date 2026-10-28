@@ -57,7 +57,7 @@
       "id": "T2",
       "title": "Docs wording: commands, `~/brainrc` checkout, `~/.config/brainrc/`, `$BRAINRC_HOME`; tutorial commands; E sentences say old/former/deprecated/legacy",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "docs/install.md",
@@ -80,15 +80,16 @@
         "T1"
       ],
       "wave": 1,
-      "worktree": "/tmp/spec-agent/209-brainrc-docs-wording/T2",
+      "worktree": null,
       "started_at": "2026-10-28T17:23:35Z",
-      "finished_at": "2026-10-28T17:26:04Z"
+      "finished_at": "2026-10-28T17:26:04Z",
+      "commit": "7c7f7dc"
     },
     {
       "id": "T3",
       "title": "README, AGENTS.md and CONTRIBUTING.md wording (title, clone dir, `scripts/brainrc.py`, `brainrc/` package)",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "README.md",
@@ -103,15 +104,17 @@
         "T1"
       ],
       "wave": 1,
-      "worktree": "/tmp/spec-agent/209-brainrc-docs-wording/T3",
-      "started_at": "2026-10-28T17:23:35Z"
+      "worktree": null,
+      "started_at": "2026-10-28T17:23:35Z",
+      "commit": "a1d0701",
+      "finished_at": "2026-10-28T17:26:50Z"
     },
     {
       "id": "T4",
       "title": "Skills and config-file comments; SKILL.md keeps `ai-config:<role>` after `brainrc:<role>` (`test_plugin_docs`)",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "skills/spec-agent/SKILL.md",
         "skills/spec-agent/references/lifecycle.md",
@@ -128,14 +131,17 @@
       "review": "batch",
       "after": [
         "T1"
-      ]
+      ],
+      "wave": 2,
+      "worktree": "/tmp/spec-agent/209-brainrc-docs-wording/T4",
+      "started_at": "2026-10-28T17:26:50Z"
     },
     {
       "id": "T5",
       "title": "Example pack README commands",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "examples/pack-acme/README.md"
       ],
@@ -145,7 +151,10 @@
       "review": "batch",
       "after": [
         "T1"
-      ]
+      ],
+      "wave": 2,
+      "worktree": "/tmp/spec-agent/209-brainrc-docs-wording/T5",
+      "started_at": "2026-10-28T17:26:50Z"
     },
     {
       "id": "T6",
@@ -288,6 +297,12 @@
       "first_pass": 0
     },
     "retries": 0,
-    "interventions": 0
+    "interventions": 0,
+    "waves": {
+      "count": 1,
+      "max_width": 2,
+      "task_minutes": 6,
+      "wall_minutes": 3
+    }
   }
 }

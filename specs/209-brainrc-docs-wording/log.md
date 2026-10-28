@@ -28,3 +28,6 @@ Engine default before approval: keep `aicfg_home` as a one-line deprecated alias
 
 ## implementer · T1 · done
 Red as designed: 566 offending lines, 7 stale rows (test_brainrc.py rows until T6). Commit 1ebec07. Wave 1: T2, T3 in worktrees.
+
+## wave 1 (T2, T3) landed
+T2 7c7f7dc (10 docs), T3 a1d0701 (README, AGENTS, CONTRIBUTING); fences OK. Wave 2: T4, T5.

@@ -151,7 +151,8 @@ def _managed_target(target: Path, roots: list[Path]) -> bool:
             return True
         if t.name in ("hooks", "plugin.js") and t.parent.parent == root / "overrides":
             return True
-    return t.name == "hooks" and t.parent.parent == hooks_copy_root().resolve()
+    copy_roots = [hooks_copy_root()] + [old / "hooks" / "core" for old in config.former_homes()]
+    return t.name == "hooks" and t.parent.parent in {r.resolve() for r in copy_roots}
 
 
 def stale_hooks_copy(links: list[Link]) -> Path | None:
@@ -221,6 +222,9 @@ def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
         if "hooks_dir" in h:
             candidates.add(expand(h["hooks_dir"]))
             candidates.update(expand(pack_hooks_dir(h["hooks_dir"], s.name)) for s in every_src)
+            for old in config.former_hooks_dirs(h["hooks_dir"]):  # the pre-rename names
+                candidates.add(expand(old))
+                candidates.update(expand(pack_hooks_dir(old, s.name)) for s in every_src)
     stale = sorted(p for p in candidates
                    if p.is_symlink() and p not in wanted and _managed_target(link_target(p), roots))
     return links, stale, merges

@@ -279,7 +279,7 @@ class SyncFakeHomeTest(TempRepoCase):
 
     def test_checkout_hooks_link_into_the_checkout(self):
         quiet(aicfg.cmd_sync, True)
-        self.assertEqual(aicfg.link_target(self.home / ".claude/hooks/ai-config"), self.repo / "overrides/claude/hooks")
+        self.assertEqual(aicfg.link_target(self.home / ".claude/hooks/brainrc"), self.repo / "overrides/claude/hooks")
         self.assertFalse((self.aicfg_home / "hooks").exists())
 
     def test_temp_name_includes_the_pid(self):
@@ -429,7 +429,7 @@ class SyncFakeHomeTest(TempRepoCase):
         skill = self.home / ".claude/skills/spec-agent"
         self.assertTrue(skill.is_symlink())
         self.assertTrue((skill / "roles" / "implementer.md").is_file())
-        self.assertTrue((self.home / ".claude/hooks/ai-config/guard_outward.py").is_file())
+        self.assertTrue((self.home / ".claude/hooks/brainrc/guard_outward.py").is_file())
 
         merged = json.loads(settings.read_text())
         self.assertEqual(merged["hooks"]["SessionStart"], [FOREIGN])
@@ -525,11 +525,11 @@ class PackSyncTest(TempRepoCase):
         rules = aicfg.rendered_instructions().read_text()
         self.assertLess(rules.index("# Security"), rules.index("- Acme rule."))
 
-        hooks_link = self.home / ".claude/hooks/ai-config-acme"
+        hooks_link = self.home / ".claude/hooks/brainrc-acme"
         self.assertEqual(aicfg.link_target(hooks_link), self.pack / "overrides/claude/hooks")
         commands = self.settings_commands()
-        self.assertIn(claude_guard("$HOME/.claude/hooks/ai-config", "guard_outward.py"), commands)
-        self.assertIn('python3 "$HOME/.claude/hooks/ai-config-acme/guard_acme.py"', commands)
+        self.assertIn(claude_guard("$HOME/.claude/hooks/brainrc", "guard_outward.py"), commands)
+        self.assertIn('python3 "$HOME/.claude/hooks/brainrc-acme/guard_acme.py"', commands)
 
         ext = aicfg.extensions_file().read_text()
         for expected in ("| `deploy/*.yaml` | acme-deploy | infra-reviewer | acme |",
@@ -547,7 +547,7 @@ class PackSyncTest(TempRepoCase):
         self.assertEqual(code, 0, out)
         self.assertFalse((self.home / ".claude/skills/acme-deploy").is_symlink())
         self.assertFalse((self.home / ".claude/agents/acme-reviewer.md").is_symlink())
-        self.assertFalse((self.home / ".claude/hooks/ai-config-acme").is_symlink())
+        self.assertFalse((self.home / ".claude/hooks/brainrc-acme").is_symlink())
         self.assertTrue((self.home / ".claude/skills/spec-agent").is_symlink())
         commands = self.settings_commands()
         self.assertFalse(any("guard_acme" in c for c in commands))
@@ -663,11 +663,11 @@ class DoctorTest(TempRepoCase):
 
     def test_missing_hook_script(self):
         (self.repo / "overrides/claude/hooks/guard_secrets.py").unlink()
-        self.assert_one_fail("claude: hook missing: ~/.claude/hooks/ai-config/guard_secrets.py", "apply")
+        self.assert_one_fail("claude: hook missing: ~/.claude/hooks/brainrc/guard_secrets.py", "apply")
 
     def test_broken_hook_script(self):
         (self.repo / "overrides/claude/hooks/guard_outward.py").write_text("import sys\nsys.exit(3)\n")
-        self.assert_one_fail("claude: hook ~/.claude/hooks/ai-config/guard_outward.py exits 3", "apply")
+        self.assert_one_fail("claude: hook ~/.claude/hooks/brainrc/guard_outward.py exits 3", "apply")
 
     def test_every_hook_runs_with_an_empty_payload(self):
         calls, real = [], subprocess.run
@@ -1260,6 +1260,87 @@ class CrashRegressionTest(TempRepoCase):
         self.assertEqual(list(merged["hooks"]), ["PreToolUse", *events])
 
 
+class HookDirRenameTest(PackSyncTest):
+    """An old-name install (hooks/ai-config*) converges on hooks/brainrc* with one apply."""
+
+    def old_install(self):
+        hooks = self.home / ".claude/hooks"
+        hooks.mkdir(parents=True)
+        (hooks / "ai-config").symlink_to(self.core_hooks())
+        (hooks / "ai-config-acme").symlink_to(self.pack / "overrides/claude/hooks")
+        old = [{"matcher": "Bash", "hooks": [{"type": "command", "command": f"python3 $HOME/.claude/hooks/{d}/x.py"}]}
+               for d in ("ai-config", "ai-config-acme")]
+        (self.home / ".claude/settings.json").write_text(json.dumps({"hooks": {"PreToolUse": old}}))
+        return hooks
+
+    def core_hooks(self) -> Path:
+        return self.repo / "overrides/claude/hooks"
+
+    def test_fresh_apply_makes_only_brainrc_links(self):
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        hooks = self.home / ".claude/hooks"
+        self.assertEqual(sorted(p.name for p in hooks.iterdir()), ["brainrc", "brainrc-acme"])
+        self.assertTrue((self.home / ".cursor/hooks/brainrc").is_symlink())
+        self.assertNotIn("hooks/ai-config", (self.home / ".claude/settings.json").read_text())
+
+    def test_old_links_are_removed_and_settings_rewritten_once(self):
+        hooks = self.old_install()
+        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        self.assertEqual(sorted(p.name for p in hooks.iterdir()), ["brainrc", "brainrc-acme"])
+        commands = self.settings_commands()
+        self.assertNotIn("hooks/ai-config", " ".join(commands))
+        self.assertEqual(len(commands), len(set(commands)))
+        self.assertEqual(sum("guard_acme" in c for c in commands), 1)
+        self.assertEqual(sum("guard_outward" in c for c in commands), 1)
+        self.assertEqual(quiet(aicfg.cmd_sync, False)[1].strip(), "Everything in sync.")
+
+    def test_cursor_old_link_is_removed(self):
+        hooks = self.home / ".cursor/hooks"
+        hooks.mkdir(parents=True)
+        (hooks / "ai-config").symlink_to(self.repo / "overrides/cursor/hooks")
+        quiet(aicfg.cmd_sync, True)
+        self.assertEqual(sorted(p.name for p in hooks.iterdir()), ["brainrc"])
+
+    def test_real_dir_or_file_at_the_old_name_is_left_alone(self):
+        hooks = self.home / ".claude/hooks"
+        (hooks / "ai-config").mkdir(parents=True)
+        (hooks / "ai-config/mine.py").write_text("x\n")
+        (hooks / "ai-config-acme").write_text("mine\n")
+        quiet(aicfg.cmd_sync, True)
+        self.assertEqual((hooks / "ai-config/mine.py").read_text(), "x\n")
+        self.assertEqual((hooks / "ai-config-acme").read_text(), "mine\n")
+
+    def test_old_symlink_to_a_foreign_target_is_left_alone(self):
+        hooks = self.home / ".claude/hooks"
+        hooks.mkdir(parents=True)
+        mine = self.home / "my-hooks"
+        mine.mkdir()
+        (hooks / "ai-config").symlink_to(mine)
+        quiet(aicfg.cmd_sync, True)
+        self.assertEqual(aicfg.link_target(hooks / "ai-config"), mine)
+
+    def test_old_link_into_a_former_home_copy_is_removed(self):
+        legacy = self.home / ".config/ai-config"
+        copy = legacy / "hooks/core/claude/hooks"
+        copy.mkdir(parents=True)
+        hooks = self.home / ".claude/hooks"
+        hooks.mkdir(parents=True)
+        (hooks / "ai-config").symlink_to(copy)
+        quiet(aicfg.cmd_sync, True)
+        self.assertFalse((hooks / "ai-config").is_symlink())
+        self.assertTrue(copy.is_dir())  # former-home copies are left for migrate
+
+    def test_custom_hooks_dir_is_used_as_given_and_siblings_are_untouched(self):
+        (self.repo / "harnesses.local.toml").write_text('[claude]\nhooks_dir = "~/.claude/hooks/mine"\n')
+        hooks = self.old_install()
+        quiet(aicfg.cmd_sync, True)
+        self.assertEqual(sorted(p.name for p in hooks.iterdir()),
+                         ["ai-config", "ai-config-acme", "mine", "mine-acme"])
+        self.assertEqual(aicfg.link_target(hooks / "ai-config"), self.core_hooks())
+
+
 class InstalledModeTest(TempRepoCase):
     """brainrc installed with pipx/uv: core comes bundled as brainrc/_core and is never written to."""
 
@@ -1319,7 +1400,7 @@ class InstalledModeTest(TempRepoCase):
         self.assertEqual(code, 0, out)
         for harness in ("claude", "cursor"):
             copy = self.copy_root() / harness / "hooks"
-            self.assertEqual(aicfg.link_target(self.home / f".{harness}/hooks/ai-config"), copy)
+            self.assertEqual(aicfg.link_target(self.home / f".{harness}/hooks/brainrc"), copy)
             self.assertEqual(sorted(p.name for p in copy.iterdir()),
                              sorted(p.name for p in (self.core / "overrides" / harness / "hooks").iterdir()))
         self.assertEqual(aicfg.doctor_findings(), [])
@@ -1344,19 +1425,19 @@ class InstalledModeTest(TempRepoCase):
         guard = self.core / "overrides/claude/hooks/guard_outward.py"
         guard.write_text(guard.read_text() + "\n# upgraded\n")
         code, out = quiet(aicfg.cmd_sync, False)
-        self.assertRegex(out, r"UPDATE +claude +~/.claude/hooks/ai-config")
+        self.assertRegex(out, r"UPDATE +claude +~/.claude/hooks/brainrc")
         quiet(aicfg.cmd_sync, True)
         self.assertEqual((self.copy_root() / "claude/hooks/guard_outward.py").read_text(), guard.read_text())
         self.assertFalse((self.copy_root() / "claude/hooks/leftover.py").exists())
         self.assertIn("Everything in sync", quiet(aicfg.cmd_sync, False)[1])
 
     def test_an_old_link_into_the_package_is_repointed(self):
-        link = self.home / ".claude/hooks/ai-config"
+        link = self.home / ".claude/hooks/brainrc"
         link.parent.mkdir(parents=True)
         link.symlink_to(self.core / "overrides/claude/hooks")
         code, out = quiet(aicfg.cmd_sync, True)
         self.assertEqual(code, 0, out)
-        self.assertRegex(out, r"UPDATE +claude +~/.claude/hooks/ai-config")
+        self.assertRegex(out, r"UPDATE +claude +~/.claude/hooks/brainrc")
         self.assertEqual(aicfg.link_target(link), self.copy_root() / "claude/hooks")
         self.assertEqual(aicfg.doctor_findings(), [])
 
@@ -1365,13 +1446,13 @@ class InstalledModeTest(TempRepoCase):
         local = self.aicfg_home / "harnesses.local.toml"
         local.write_text("[cursor]\nenabled = false\n")
         quiet(aicfg.cmd_sync, True)
-        self.assertFalse((self.home / ".cursor/hooks/ai-config").is_symlink())
+        self.assertFalse((self.home / ".cursor/hooks/brainrc").is_symlink())
         self.assertTrue(self.copy_root().is_dir())  # claude still links into it
         local.write_text("[cursor]\nenabled = false\n[claude]\nenabled = false\n")
         code, out = quiet(aicfg.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertRegex(out, r"PRUNE +~?.*hooks/core")
-        self.assertFalse((self.home / ".claude/hooks/ai-config").is_symlink())
+        self.assertFalse((self.home / ".claude/hooks/brainrc").is_symlink())
         self.assertFalse(self.copy_root().exists())
 
     def test_relative_pack_path_is_relative_to_aicfg_home(self):
@@ -1664,7 +1745,7 @@ class CursorHooksTest(TempRepoCase):
         self.assertEqual(code, 0, out)
         data = json.loads(self.hooks_json.read_text())
         self.assertEqual(data["version"], 1)
-        self.assertEqual(aicfg.link_target(self.home / ".cursor/hooks/ai-config"),
+        self.assertEqual(aicfg.link_target(self.home / ".cursor/hooks/brainrc"),
                          self.repo / "overrides/cursor/hooks")
         self.assertEqual(aicfg.doctor_findings(), [])
         code, out = quiet(aicfg.cmd_sync, True)
@@ -1887,7 +1968,7 @@ class ValidateTest(unittest.TestCase):
         try:
             copy_repo(tmp)
             toml = tmp / "harnesses.toml"
-            toml.write_text(toml.read_text().replace('hooks_dir = "~/.claude/hooks/ai-config"\n', ""))
+            toml.write_text(toml.read_text().replace('hooks_dir = "~/.claude/hooks/brainrc"\n', ""))
             old = aicfg.config.REPO
             aicfg.config.REPO = tmp
             try:

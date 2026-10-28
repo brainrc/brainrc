@@ -303,3 +303,9 @@ def hook_command_dir(hooks_dir: str) -> str:
 def pack_hooks_dir(hooks_dir: str, pack: str) -> str:
     """Packs get a sibling of the core hooks dir, never a subdir (that's a symlink into core)."""
     return hooks_dir.rstrip("/") + f"-{pack}"
+
+
+def former_hooks_dirs(hooks_dir: str) -> list[str]:
+    """The pre-rename sibling of a hooks dir named brainrc; a dir the user named is used as given."""
+    d = hooks_dir.rstrip("/")
+    return [d[:-len("brainrc")] + "ai-config"] if d.endswith("/brainrc") else []

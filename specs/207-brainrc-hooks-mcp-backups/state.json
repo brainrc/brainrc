@@ -34,7 +34,12 @@
     "baseline_failures": []
   },
   "tasks": [],
-  "blocked": null,
+  "blocked": {
+    "reason": "auto hard stop: plan Callouts not none (user-visible hooks_dir and backup names [pack contract]; first apply rewrites settings; old hook symlinks deleted)",
+    "stage": "plan",
+    "task": null,
+    "since": "2026-10-28T05:12:28Z"
+  },
   "metrics": {
     "started_at": "2026-10-28T05:08:03Z",
     "stage_started_at": {
@@ -46,6 +51,9 @@
       "spec": {
         "presented_at": "2026-10-28T05:09:32Z",
         "approved_at": "2026-10-28T05:09:32Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-28T05:12:28Z"
       }
     },
     "gate_rework": {

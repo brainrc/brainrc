@@ -13,3 +13,10 @@
 Summary: new hooks dirs hooks/brainrc(-<pack>); OWNED_HOOK matches both names, one apply replaces old entries and removes old hook links; MCP ownership honors records in the home and former homes; backups .bak-brainrc-*, old .bak-aicfg-* count toward the 5 kept. 13 criteria, defaults taken for 5 questions.
 Decide: criteria and defaults.
 Artifacts: specs/207-brainrc-hooks-mcp-backups/spec.md
+
+## architect · plan · done
+5 tasks (T1-T3 independent, T4 after T1+T2, T5 after T3+T4); Callouts: contract (hooks_dir, .bak-brainrc-*), data (first apply converges), destructive (old hook symlinks removed).
+
+## engine · blocked · auto hard stop
+2026-10-28T05:12:28Z
+Plan Callouts are not none; the Plan gate needs the owner. Nothing pushed.

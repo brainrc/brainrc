@@ -92,3 +92,7 @@ docs/install.md install section uses brainrc; PR body and ticket comment drafted
 
 ## engine · Deliver gate · presented
 2026-10-28T02:40:22Z
+
+## engine · Deliver gate · approved
+2026-10-28T02:45:55Z
+Owner approved: push, draft PR, comment on #205.

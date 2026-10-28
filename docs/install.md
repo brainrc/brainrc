@@ -26,27 +26,33 @@ first, and the last 5 backups are kept).
 
 ## Install without a clone
 
-`aicfg` also installs as a command, with core's skills, agents, rules, and hooks bundled:
+`brainrc` also installs as a command, with core's skills, agents, rules, and hooks bundled:
 
 ```bash
 uv tool install git+https://github.com/brainrc/brainrc   # or: pipx install git+https://github.com/brainrc/brainrc
-aicfg status
-aicfg apply
+brainrc status
+brainrc apply
 ```
 
-Pin a release with `git+https://github.com/brainrc/brainrc@v0.3.29`.
-Links then point into the installed package, so `uv tool upgrade ai-config` (or `pipx upgrade
-ai-config`) updates every harness. Guard hooks are the exception: `apply` copies them to
+Pin a release with `git+https://github.com/brainrc/brainrc@v<X.Y.Z>` (0.4.0 or later installs as `brainrc`).
+
+Already have `ai-config` installed? Uninstall it before installing `brainrc`. Both ship an `aicfg`
+command, and uninstalling `ai-config` after `brainrc` is installed removes the new one. Run
+`uv tool uninstall ai-config` (or `pipx uninstall ai-config`), then install `brainrc`. `aicfg`
+keeps working with a deprecation warning until 0.5.0.
+
+Links then point into the installed package, so `uv tool upgrade brainrc` (or `pipx upgrade
+brainrc`) updates every harness. Guard hooks are the exception: `apply` copies them to
 `$AICFG_HOME/hooks/core/` and links there, because the package path changes when an upgrade
-moves the tool to a new Python. Run `aicfg apply` after upgrading to refresh the copy. After an
+moves the tool to a new Python. Run `brainrc apply` after upgrading to refresh the copy. After an
 upgrade to a new Python, the other links (skills, agents) point at the old path and `apply`
-reports them as `CONFLICT`; `aicfg doctor` lists each broken link with the `rm` that clears it,
+reports them as `CONFLICT`; `brainrc doctor` lists each broken link with the `rm` that clears it,
 then re-run `apply`. Local files go in `~/.config/ai-config/` (`$AICFG_HOME`):
 `harnesses.local.toml`, `packs.local.toml`, and `rules/*.local.md`. Packs are local
-directories or git URLs that `aicfg` fetches ([packs](packs.md#enable-a-pack)).
+directories or git URLs that `brainrc` fetches ([packs](packs.md#enable-a-pack)).
 `plugin` needs a checkout. Contributors use the clone above.
 
-`aicfg` never overwrites a file it doesn't manage. Pre-existing files show up as
+`brainrc` never overwrites a file it doesn't manage. Pre-existing files show up as
 `CONFLICT` for you to move into the repo or delete.
 
 Something missing in a harness? `python3 scripts/aicfg.py doctor` checks the install without

@@ -53,3 +53,11 @@ Engine committed 6118369. Follow-up noted: docs/architecture.md and AGENTS.md st
 
 ## code-reviewer (engine inline) · T2 · done
 **Findings:** LOW test_ac6_python_m_brainrc accepts exit 0 or 1 (status may report drift on a temp HOME); acceptable. Commit cdefc0f.
+
+## implementer · T3 · done
+**Evidence:** entry-point tests 11 OK; suite 455 OK; validate OK. **Changed files:** aicfg/__init__.py, aicfg/__main__.py, brainrc/cli.py, scripts/aicfg.py, pyproject.toml — within fence.
+
+## code-reviewer · T3 · done (no CRITICAL/HIGH)
+2026-10-28T02:00:08Z
+**Findings:** MEDIUM old ai-config and brainrc both own aicfg/ files and bin/aicfg (uninstalling ai-config after installing brainrc deletes the shims) → release note in T5, docs in #209. MEDIUM -m aicfg warned twice under -W default → fixed (engine). MEDIUM warning named "brainrc" for scripts/aicfg.py → warn_deprecated(old, new), fixed (engine). LOW duplicated 0.5.0 → fixed. LOW stacklevel → accepted.
+Engine fixes folded into T3 commit c588355 (within T3 fence). F1 (outside T3 fence, so its own task): -W default regression test; mutation check red (2 != 1) against the pre-fix shim, green after. Commit 7ecd043.

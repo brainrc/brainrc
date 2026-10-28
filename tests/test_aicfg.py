@@ -952,7 +952,9 @@ class AicfgHomeTest(TempRepoCase):
 
     def test_defaults_to_config_dir_under_home(self):
         os.environ.pop("BRAINRC_HOME")
-        self.assertEqual(aicfg.aicfg_home(), self.home / ".config/brainrc")
+        with mock.patch.dict(os.environ):
+            os.environ.pop("XDG_CONFIG_HOME", None)  # CI runners set it
+            self.assertEqual(aicfg.aicfg_home(), self.home / ".config/brainrc")
 
     def test_apply_renders_into_aicfg_home(self):
         code, out = quiet(aicfg.cmd_sync, True)

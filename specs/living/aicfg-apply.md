@@ -7,21 +7,16 @@ Unchanged except that the backup made before a write is named `.bak-brainrc-*`. 
 _Last changed by 207-brainrc-hooks-mcp-backups._
 
 ### Symlinked config files
-When a settings or MCP file path is a symlink, `aicfg apply` SHALL write through to the link's
-final target (creating it if the link dangles), keep the link, and back up the target's previous
-content. (AC3, AC4, AC6, AC7)
-_Last changed by 096-keep-mode-follow-symlinks._
+When a settings or MCP file path is a symlink, `brainrc apply` SHALL write through to the link's final target (creating it if the link dangles), keep the link, and back up the target's previous content. (AC3, AC4, AC6, AC7)
+_Last changed by 209-brainrc-docs-wording._
 
 ### One apply at a time
-`aicfg apply` SHALL hold an exclusive lock while it writes, and a second apply SHALL exit
-non-zero with a clear message instead of writing. Read-only commands SHALL NOT take the lock.
-(AC1, AC2, AC5)
-_Last changed by 097-apply-lock-unique-tmp._
+`brainrc apply` SHALL hold an exclusive lock while it writes, and a second apply SHALL exit non-zero with a clear message instead of writing. Read-only commands SHALL NOT take the lock. (AC1, AC2, AC5)
+_Last changed by 209-brainrc-docs-wording._
 
 ### No lost concurrent writes
-`aicfg apply` SHALL use per-process temp names, and SHALL NOT overwrite a settings or MCP file
-whose content changed after apply read it; it warns and exits non-zero instead. (AC3, AC4)
-_Last changed by 097-apply-lock-unique-tmp._
+`brainrc apply` SHALL use per-process temp names, and SHALL NOT overwrite a settings or MCP file whose content changed after apply read it; it warns and exits non-zero instead. (AC3, AC4)
+_Last changed by 209-brainrc-docs-wording._
 
 ### Hooks fail open
 brainrc's hook commands SHALL exit 0 without blocking (Cursor: with an allow response) when their

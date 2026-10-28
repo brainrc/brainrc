@@ -16,7 +16,7 @@
   "delivery": "normal",
   "auto": true,
   "stop_at_deliver": true,
-  "stage": "implement",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -287,6 +287,24 @@
       "started_at": "2026-10-28T17:44:50Z",
       "commit": "4ece048",
       "finished_at": "2026-10-28T17:47:32Z"
+    },
+    {
+      "id": "F1",
+      "title": "Say what happens to each old name, and narrow the allowlist",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "changelog.d/209-brainrc-docs-wording.md",
+        "tests/test_old_names.py",
+        "brainrc/packs.py"
+      ],
+      "criteria": [
+        "AC2",
+        "AC6"
+      ],
+      "review": "batch",
+      "commit": "c77a2e6"
     }
   ],
   "blocked": null,
@@ -296,7 +314,10 @@
       "intake": "2026-10-28T17:12:47Z",
       "spec": "2026-10-28T17:12:47Z",
       "plan": "2026-10-28T17:16:48Z",
-      "implement": "2026-10-28T17:20:27Z"
+      "implement": "2026-10-28T17:20:27Z",
+      "verify": "2026-10-28T17:53:05Z",
+      "document": "2026-10-28T17:53:05Z",
+      "deliver": "2026-10-28T17:53:05Z"
     },
     "gates": {
       "spec": {
@@ -306,6 +327,9 @@
       "plan": {
         "presented_at": "2026-10-28T17:20:27Z",
         "approved_at": "2026-10-28T17:20:27Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-28T17:53:05Z"
       }
     },
     "gate_rework": {
@@ -314,7 +338,7 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 3,
+      "total": 4,
       "first_pass": 3
     },
     "retries": 0,
@@ -325,5 +349,10 @@
       "task_minutes": 6,
       "wall_minutes": 3
     }
-  }
+  },
+  "living": [
+    "cli-entry-points",
+    "aicfg-apply",
+    "aicfg-config"
+  ]
 }

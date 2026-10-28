@@ -52,3 +52,12 @@ Added tests/test_brainrc.py, brainrc/cli.py, brainrc/doctor.py, docs/install.md,
 
 ## implementer · T9 · done
 test_old_names OK; suite 582 OK (1 skip); validate OK. Touched only 4 of its widened files. Commit 4ece048.
+
+## code-reviewer · batch · changes-requested
+HIGH fragment claimed all old names warn; MEDIUM fragment missing bullets; MEDIUM package-wide allowlist rows (a stale $AICFG_HOME docstring slipped through); LOW docs OLD_LINE rows (accepted). → F1 c77a2e6.
+
+## verifier (engine) · verify · done
+8/8 criteria; 582 OK with and without XDG; tutorial ran clean. Living areas applied.
+
+## engine · Deliver gate · presented to the owner
+2026-10-28T17:53:05Z

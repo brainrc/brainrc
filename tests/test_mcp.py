@@ -198,7 +198,7 @@ class McpSyncTest(McpCase):
                 self.claude.write_text(json.dumps({"userID": "u", "numStartups": 2}))
             return result
 
-        with mock.patch("aicfg.cli.mcp_change", claude_writes_meanwhile):
+        with mock.patch("brainrc.cli.mcp_change", claude_writes_meanwhile):
             code, out = quiet(aicfg.cmd_sync, True)
         self.assertEqual(code, 1, out)
         self.assertRegex(out, r"CHANGED +claude +~/.claude.json")

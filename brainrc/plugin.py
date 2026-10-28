@@ -62,10 +62,10 @@ def check_plugin() -> list[str]:
     for rel, text in manifests.items():
         path = config.REPO / rel
         if not path.is_file():
-            errors.append(f"{rel}: missing; run `python3 scripts/aicfg.py plugin`")
+            errors.append(f"{rel}: missing; run `python3 scripts/brainrc.py plugin`")
         elif path.read_text() != text:
             errors.append(f"{rel}: stale (VERSION, hooks, or the fragment changed); "
-                          "run `python3 scripts/aicfg.py plugin`")
+                          "run `python3 scripts/brainrc.py plugin`")
     return errors
 
 
@@ -73,7 +73,7 @@ def cmd_plugin() -> int:
     """Write the plugin manifests; they're committed so GitHub installs work."""
     if config.installed():
         print("ERROR plugin writes the repo's manifests; run it from a checkout: "
-              "python3 scripts/aicfg.py plugin")
+              "python3 scripts/brainrc.py plugin")
         return 1
     try:
         manifests = plugin_manifests()

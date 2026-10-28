@@ -216,23 +216,23 @@ def cmd_check(project: str, case: str) -> int:
 
 # ---------- triggers ----------
 
-def _aicfg():
+def _brainrc():
     if str(REPO) not in sys.path:
         sys.path.insert(0, str(REPO))
-    import aicfg  # the package at the repo root
-    return aicfg
+    import brainrc  # the package at the repo root
+    return brainrc
 
 
 def load_skills() -> dict[str, str]:
     """name -> description for core and every enabled pack: what a harness sees."""
-    aicfg = _aicfg()
-    return {s.name: aicfg.frontmatter(s / "SKILL.md").get("description", "")
-            for src in aicfg.sources() for s in aicfg.skills(src)}
+    brainrc = _brainrc()
+    return {s.name: brainrc.frontmatter(s / "SKILL.md").get("description", "")
+            for src in brainrc.sources() for s in brainrc.skills(src)}
 
 
 def default_trigger_files() -> list[Path]:
-    aicfg = _aicfg()
-    return [p for src in aicfg.sources() if (p := src.root / "evals" / "triggers.toml").is_file()]
+    brainrc = _brainrc()
+    return [p for src in brainrc.sources() if (p := src.root / "evals" / "triggers.toml").is_file()]
 
 
 def load_cases(files: list[Path]) -> list[dict]:

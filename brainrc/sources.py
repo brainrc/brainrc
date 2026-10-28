@@ -85,7 +85,7 @@ def check_changelog(core: tuple[int, ...]) -> list[str]:
         errors.append(f"CHANGELOG.md: no `## X.Y.Z` heading (expected `## {version}`)")
     elif m.group(1) != version:
         errors.append(f"CHANGELOG.md: newest version {m.group(1)} doesn't match VERSION {version}. "
-                      "`aicfg.py release` updates both.")
+                      "`brainrc.py release` updates both.")
     return errors
 
 
@@ -143,7 +143,7 @@ def _pack_root(cfg: dict, key: str) -> Path:
     if ("path" in cfg) == ("git" in cfg):
         raise ConfigError(f"packs.toml [{key}]: set `path` or `git` (one of them)")
     if "git" in cfg:
-        return config.aicfg_home() / "packs" / key  # fetched by aicfg (aicfg/packs.py)
+        return config.aicfg_home() / "packs" / key  # fetched by brainrc (brainrc/packs.py)
     root = expand(str(cfg["path"]))
     return root if root.is_absolute() else config.local_dir() / root  # beside packs.local.toml
 
@@ -218,7 +218,7 @@ RULES_REFINE = "They refine the rules above and never override them."
 
 def rule_text(path: Path) -> str:
     """A rule's text without its frontmatter (`trigger:` is for Antigravity and `alwaysApply:` for
-    Cursor's plugin, which skip rules without them); harnesses aicfg writes to get the body."""
+    Cursor's plugin, which skip rules without them); harnesses brainrc writes to get the body."""
     text = path.read_text().strip()
     if text.startswith("---\n") and (end := text.find("\n---", 4)) != -1:
         text = text[end + 4:].strip()

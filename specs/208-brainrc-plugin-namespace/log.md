@@ -13,3 +13,10 @@
 Summary: marketplace and plugin named brainrc for Claude Code, Codex, Cursor, Antigravity (manifests regenerated); install docs and a moving-from-ai-config note; spec-agent role lookup tries brainrc:<role> then ai-config:<role>; doctor WARNs on an old plugin install for Claude Code and Cursor (tolerant, read-only). 12 criteria; defaults taken for 6 questions.
 Decide: criteria and defaults.
 Artifacts: specs/208-brainrc-plugin-namespace/spec.md
+
+## architect · plan · done
+4 tasks; Callouts: plugin rename contract (reinstall; pack plugin dependencies), bump minor vs patch.
+
+## engine · blocked · auto hard stop
+2026-10-28T16:44:09Z
+Plan Callouts are not none; the owner decides. Nothing pushed.

@@ -34,7 +34,12 @@
     "baseline_failures": []
   },
   "tasks": [],
-  "blocked": null,
+  "blocked": {
+    "reason": "auto hard stop: plan Callouts not none (plugin/marketplace rename: plugin users reinstall; packs naming ai-config in plugin dependencies; bump choice)",
+    "stage": "plan",
+    "task": null,
+    "since": "2026-10-28T16:44:09Z"
+  },
   "metrics": {
     "started_at": "2026-10-28T16:39:46Z",
     "stage_started_at": {
@@ -46,6 +51,9 @@
       "spec": {
         "presented_at": "2026-10-28T16:42:34Z",
         "approved_at": "2026-10-28T16:42:34Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-28T16:44:09Z"
       }
     },
     "gate_rework": {

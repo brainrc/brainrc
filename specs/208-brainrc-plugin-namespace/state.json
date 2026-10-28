@@ -38,7 +38,7 @@
       "id": "T1",
       "title": "Rename the plugin and marketplace; regenerate manifests with `python3 scripts/brainrc.py plugin`",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "brainrc/plugin.py",
@@ -57,7 +57,10 @@
       "review": "batch",
       "after": [],
       "wave": 1,
-      "started_at": "2026-10-28T16:44:54Z"
+      "started_at": "2026-10-28T16:44:54Z",
+      "commit": "317abd6",
+      "red": "assertion",
+      "finished_at": "2026-10-28T16:47:58Z"
     },
     {
       "id": "T2",

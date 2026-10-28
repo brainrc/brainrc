@@ -30,3 +30,6 @@ Suite 568 OK, validate OK; within fence.
 
 ## code-reviewer · T2 · changes-requested
 **Findings:** HIGH deeply nested/huge installed_plugins.json raises RecursionError (doctor crashes); MEDIUM PermissionError on an unsearchable ~/.cursor/plugins/local; MEDIUM locale encoding; LOW Cursor fix text; LOW install.md Cursor example still names ai-config (→ T3). T2 attempt 2.
+
+## implementer · T1 · done
+Red 5/7; suite 558 OK; validate OK; manifests regenerated only by the plugin command (re-run is idempotent). Within fence. Review batched. Commit 317abd6.

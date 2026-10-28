@@ -26,3 +26,10 @@ Block cleared. Size standard, mode subagent, auto false (resume without --auto: 
 ## engine · Spec gate · approved
 2026-10-28T01:41:32Z
 Owner approved; answers: --version "brainrc" (asked about a v prefix; engine recommended none, recorded), shims removed next minor after ship, warning not silenceable.
+
+## architect · plan · done
+2026-10-28T01:44:30Z
+**Did:** plan.md, 5 tasks (T1-T4 review each, sequential; T5 independent). **Open issues:** Callouts non-empty (public contract); hatchling assumed unavailable — engine found PyPI reachable and edited Test strategy before the gate to build and install the wheel locally at verify.
+
+## engine · Plan gate · presented
+2026-10-28T01:44:30Z

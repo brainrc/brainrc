@@ -34,7 +34,122 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Rename the package to brainrc with --version and brainrc usage",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "aicfg/",
+        "brainrc/",
+        "scripts/brainrc.py",
+        "scripts/aicfg.py",
+        "scripts/evals.py",
+        "pyproject.toml",
+        "tests/test_aicfg.py",
+        "tests/test_mcp.py",
+        "tests/test_hooks.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC4",
+        "AC8",
+        "AC9"
+      ],
+      "review": "each",
+      "after": []
+    },
+    {
+      "id": "T2",
+      "title": "Contract tests for the brainrc and deprecated aicfg entry points",
+      "agent": "test-writer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "tests/test_cli_entry_points.py"
+      ],
+      "criteria": [
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC6",
+        "AC7",
+        "AC11"
+      ],
+      "review": "each",
+      "after": [
+        "T1"
+      ]
+    },
+    {
+      "id": "T3",
+      "title": "Deprecated aicfg shims to pass T2",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "aicfg/__init__.py",
+        "aicfg/__main__.py",
+        "brainrc/cli.py",
+        "scripts/aicfg.py",
+        "pyproject.toml"
+      ],
+      "criteria": [
+        "AC3",
+        "AC5",
+        "AC6",
+        "AC7",
+        "AC11"
+      ],
+      "review": "each",
+      "after": [
+        "T2"
+      ]
+    },
+    {
+      "id": "T4",
+      "title": "CI invokes brainrc and smoke-tests the installed wheel",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "scripts/check_install.py",
+        ".github/workflows/validate.yml",
+        ".github/workflows/release.yml"
+      ],
+      "criteria": [
+        "AC10",
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC6",
+        "AC7",
+        "AC8"
+      ],
+      "review": "each",
+      "after": [
+        "T3"
+      ]
+    },
+    {
+      "id": "T5",
+      "title": "Changelog fragment, bump minor, [pack contract], removal in 0.5.0",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "changelog.d/205-brainrc-package-command.md"
+      ],
+      "criteria": [
+        "AC10"
+      ],
+      "review": "batch",
+      "after": []
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-27T18:47:44Z",
@@ -47,6 +162,9 @@
       "spec": {
         "presented_at": "2026-10-28T01:39:38Z",
         "approved_at": "2026-10-28T01:41:32Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-28T01:44:30Z"
       }
     },
     "gate_rework": {

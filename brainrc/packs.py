@@ -1,4 +1,4 @@
-"""Packs named by git URL: brainrc fetches them into $AICFG_HOME/packs/<key>."""
+"""Packs named by git URL: brainrc fetches them into $BRAINRC_HOME/packs/<key>."""
 from __future__ import annotations
 
 import json

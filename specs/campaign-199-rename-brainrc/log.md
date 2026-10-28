@@ -52,3 +52,6 @@ Artifacts: specs/campaign-199-rename-brainrc/campaign.json
 
 ## 2026-10-28T17:12:28Z · gh:208 merged (#234), v0.4.4 released
 - Post-merge verify pass. Child 6 gh:209 starts on 209-brainrc-docs-wording from main (carries 208's record). Owner: no alerts or decisions until the Deliver gate: auto through Spec and Plan (defaults taken, hard stops resolved by defaults and listed at Deliver), Deliver gate presented to the owner.
+
+## 2026-10-28T20:16:13Z · gh:209 delivered
+- PR #235, base main, ready for review. Last child: the campaign is done once #235 merges.

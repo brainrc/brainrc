@@ -5,7 +5,7 @@ import shutil
 import tempfile
 from pathlib import Path
 
-from test_aicfg import TempRepoCase, aicfg, make_pack, quiet, set_core_version
+from test_brainrc import TempRepoCase, brainrc, make_pack, quiet, set_core_version
 
 GH = '[servers.gh]\ncommand = "npx"\nargs = ["-y", "@modelcontextprotocol/server-github"]\nenv_from = ["GH_TOKEN"]\n'
 USER_CLAUDE_HOOK = "python3 ~/mine/ai-config-tools/check.py"  # path merely contains ai-config
@@ -44,7 +44,7 @@ class OldInstallCase(TempRepoCase):
 
     def seed_old_install(self, claude_target: Path | None = None) -> None:
         """Render a current apply, rewrite it to the old names, and add the user's own hooks."""
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         for path in (self.settings, self.hooks_json):
             path.write_text(path.read_text().replace("/hooks/brainrc", "/hooks/ai-config"))
@@ -56,11 +56,11 @@ class OldInstallCase(TempRepoCase):
         self.hooks_json.write_text(json.dumps(cursor))
         claude = self.home / ".claude/hooks"
         for new, old in (("brainrc", "ai-config"), ("brainrc-acme", "ai-config-acme")):
-            target = aicfg.link_target(claude / new)
+            target = brainrc.link_target(claude / new)
             (claude / new).unlink()
             (claude / old).symlink_to(claude_target if (claude_target and new == "brainrc") else target)
         cursor_dir = self.home / ".cursor/hooks"
-        target = aicfg.link_target(cursor_dir / "brainrc")
+        target = brainrc.link_target(cursor_dir / "brainrc")
         (cursor_dir / "brainrc").unlink()
         (cursor_dir / "ai-config").symlink_to(target)
 
@@ -116,14 +116,14 @@ class OldInstallCase(TempRepoCase):
         servers = json.loads(self.claude_json.read_text())["mcpServers"]
         self.assertEqual(servers["gh"]["args"], ["-y", "@modelcontextprotocol/server-github"])
         self.assertEqual(self.claude_json.read_text().count('"gh"'), 1)
-        self.assertEqual(quiet(aicfg.cmd_sync, False)[1].strip(), "Everything in sync.")
-        self.assertEqual([f for f in aicfg.doctor_findings() if "hook" in f[1].lower() or "mcp" in f[1].lower()], [])
+        self.assertEqual(quiet(brainrc.cmd_sync, False)[1].strip(), "Everything in sync.")
+        self.assertEqual([f for f in brainrc.doctor_findings() if "hook" in f[1].lower() or "mcp" in f[1].lower()], [])
 
     def assert_second_apply_is_a_no_op(self) -> None:
         paths = [self.settings, self.hooks_json, self.claude_json]
         before = {p: p.read_text() for p in paths}
         names = sorted(str(p.relative_to(self.home)) for p in self.home.rglob("*"))
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertEqual({p: p.read_text() for p in paths}, before)
         self.assertEqual(sorted(str(p.relative_to(self.home)) for p in self.home.rglob("*")), names)
@@ -133,9 +133,9 @@ class OldNameInstallTest(OldInstallCase):
     def test_one_apply_converges_with_the_record_in_the_resolved_home(self):
         self.seed_old_install()
         self.old_gh_entry()
-        self.seed_owned(self.aicfg_home)
+        self.seed_owned(self.settings_home)
         self.seed_backups()
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assert_converged(out)
         self.assert_second_apply_is_a_no_op()
@@ -145,7 +145,7 @@ class OldNameInstallTest(OldInstallCase):
         self.old_gh_entry()
         self.seed_owned(self.home / ".config/ai-config")
         self.seed_backups()
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assert_converged(out)
         self.assert_second_apply_is_a_no_op()
@@ -154,7 +154,7 @@ class OldNameInstallTest(OldInstallCase):
         self.seed_old_install()
         old = self.hooks_json.read_text()
         self.assertIn("hooks/ai-config", old)
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         cmds = self.all_commands(self.hooks_json)
         self.assertFalse([c for c in cmds if "hooks/ai-config/" in c], cmds)
@@ -175,14 +175,14 @@ class InstalledOldLinkTest(OldInstallCase):
         roles = self.core / "skills/spec-agent/roles"
         roles.unlink()
         shutil.copytree(self.core / "agents", roles)
-        aicfg.config.REPO = self.core
+        brainrc.config.REPO = self.core
 
     def tearDown(self):
         shutil.rmtree(self.pkg.parent)
         super().tearDown()
 
     def test_old_link_to_the_resolved_homes_copy_is_pruned_and_the_copy_used(self):
-        copy = self.aicfg_home / "hooks/core/claude/hooks"
+        copy = self.settings_home / "hooks/core/claude/hooks"
         copy.mkdir(parents=True)
         for src in (self.core / "overrides/claude/hooks").iterdir():
             if src.is_file():
@@ -190,11 +190,11 @@ class InstalledOldLinkTest(OldInstallCase):
         hooks = self.home / ".claude/hooks"
         hooks.mkdir(parents=True)
         (hooks / "ai-config").symlink_to(copy)
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertFalse((hooks / "ai-config").is_symlink())
         self.assertTrue(copy.is_dir())
-        self.assertEqual(aicfg.link_target(hooks / "brainrc"), copy)
+        self.assertEqual(brainrc.link_target(hooks / "brainrc"), copy)
         self.assertTrue((copy / "guard_outward.py").is_file())
         self.assertEqual(sorted(p.name for p in hooks.iterdir()), ["brainrc"])
-        self.assertEqual(quiet(aicfg.cmd_sync, False)[1].strip(), "Everything in sync.")
+        self.assertEqual(quiet(brainrc.cmd_sync, False)[1].strip(), "Everything in sync.")

@@ -287,7 +287,7 @@ class RetroMetricsTest(unittest.TestCase):
         self.assertTrue(any("started_at" in w for w in rec.warnings), rec.warnings)
         self.assertIsNone(rec.total_minutes)
 
-    def test_aicfg_doctor_shape_does_not_crash(self):
+    def test_brainrc_doctor_shape_does_not_crash(self):
         st = copy.deepcopy(COMPLETE)
         ts = st["metrics"]["stage_started_at"]
         ts["plan"], ts["implement"] = "2026-10-01T11:59:56Z", "2026-10-01T05:05:00Z"

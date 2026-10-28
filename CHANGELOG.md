@@ -12,6 +12,16 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.4.2 (2026-10-28)
+
+- **[pack contract]** The settings home is now `~/.config/brainrc` (`$XDG_CONFIG_HOME/brainrc`
+  when that is set), overridden by `BRAINRC_HOME`. Rendered `instructions.md` and
+  `extensions.md`, git packs, `*.local.toml`, and `rules/*.local.md` live there. An existing
+  `~/.config/ai-config`, or `AICFG_HOME`, keeps working until 0.5.0 with one warning per run.
+  `brainrc migrate` (try `--dry-run` first) moves the old directory and re-runs `apply`.
+  `brainrc doctor` reports an old home that hasn't been migrated, and spec-agent's run pointer
+  follows the same lookup. Reading `XDG_CONFIG_HOME` closes #131.
+
 ## 0.4.1 (2026-10-28)
 
 - The example pack accepts core 0.4 (`requires_core = ">=0.3, <0.5"`), and the pack examples in

@@ -90,7 +90,7 @@
       "id": "T3",
       "title": "Doctor home findings",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "brainrc/doctor.py",
@@ -102,14 +102,16 @@
       "review": "batch",
       "after": [
         "T2"
-      ]
+      ],
+      "commit": "0ba9317",
+      "red": "assertion"
     },
     {
       "id": "T4",
       "title": "brainrc migrate [--dry-run], links re-pointed via former homes, usage text",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "brainrc/migrate.py",
         "brainrc/cli.py",

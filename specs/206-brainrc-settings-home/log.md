@@ -41,3 +41,7 @@ Engine found the approved resolution paragraph skipped the legacy fallback whene
 
 ## code-reviewer · T2 · done (no CRITICAL/HIGH)
 **Findings:** MEDIUM no direct tests for new_home/former_homes and edge cases → added 5 in-process tests (engine); LOW lexical compare in former_homes → _same_dir with samefile (mutation check: symlink test fails without it); LOW BrainrcCommandTest uses the real HOME (pre-existing, follow-up). Suite 478 OK. Commit 914bf27.
+
+## implementer · T3 · done
+**Evidence:** red 3 errors with the check off; 6/6 green; suite 484 OK; validate OK. Within fence.
+Engine: the unused-old-dir fix said a bare `rm -r`; an old dir may hold unmigrated settings (migrate refuses a non-empty target), so the fix now says to move what is still needed first. Review batched. Commit 0ba9317.

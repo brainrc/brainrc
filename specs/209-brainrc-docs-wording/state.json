@@ -261,8 +261,13 @@
       "status": "in_progress",
       "attempts": 1,
       "files": [
+        "brainrc/cli.py",
+        "brainrc/doctor.py",
         "changelog.d/209-brainrc-docs-wording.md",
         "changelog.d/README.md",
+        "docs/install.md",
+        "skills/spec-agent/SKILL.md",
+        "tests/test_brainrc.py",
         "tests/test_old_names.py"
       ],
       "criteria": [

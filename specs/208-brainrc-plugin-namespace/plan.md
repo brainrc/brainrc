@@ -1,6 +1,6 @@
 # Plan: Plugin and marketplace are named brainrc; doctor flags the old plugin
 
-Spec: [spec.md](spec.md) · Status: draft
+Spec: [spec.md](spec.md) · Status: approved
 
 ## Callouts
 - **New dependencies:** none
@@ -51,7 +51,7 @@ Unit tests only, offline. T1: `PluginTest` in `tests/test_aicfg.py` (names, auth
   - files: `README.md`, `docs/install.md`, `docs/troubleshooting.md`, `docs/spec-agent.md`, `docs/harness-packages.md`, `skills/spec-agent/SKILL.md`, `tests/test_plugin_docs.py`
   - criteria: AC4, AC5, AC6, AC12
   - after: T1, T2
-- [ ] **T4** [agent: implementer] Changelog fragment: `bump: minor`, **[pack contract]** bullet (rename, reinstall steps, pack `dependencies` name, doctor WARN) unless the owner picks patch at the Plan gate
+- [ ] **T4** [agent: implementer] Changelog fragment: `bump: patch` (owner's choice at the Plan gate), **[pack contract]** bullet (rename, reinstall steps, pack `dependencies` name, doctor WARN) unless the owner picks patch at the Plan gate
   - files: `changelog.d/208-brainrc-plugin-namespace.md`
   - criteria: AC12 (`python3 scripts/brainrc.py validate` checks the fragment; full suite green)
   - after: T3

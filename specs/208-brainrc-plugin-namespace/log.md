@@ -20,3 +20,7 @@ Artifacts: specs/208-brainrc-plugin-namespace/spec.md
 ## engine · blocked · auto hard stop
 2026-10-28T16:44:09Z
 Plan Callouts are not none; the owner decides. Nothing pushed.
+
+## engine · Plan gate · approved by owner
+2026-10-28T16:44:44Z
+Owner: "Approve, patch, continue auto". Fragment bumps patch with [pack contract]; 0.5.0 stays the shim-removal release.

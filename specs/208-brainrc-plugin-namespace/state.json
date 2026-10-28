@@ -15,10 +15,10 @@
   "mode": "subagent",
   "delivery": "normal",
   "auto": true,
-  "stage": "plan",
+  "stage": "implement",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [
@@ -33,19 +33,104 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
-  "blocked": {
-    "reason": "auto hard stop: plan Callouts not none (plugin/marketplace rename: plugin users reinstall; packs naming ai-config in plugin dependencies; bump choice)",
-    "stage": "plan",
-    "task": null,
-    "since": "2026-10-28T16:44:09Z"
-  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Rename the plugin and marketplace; regenerate manifests with `python3 scripts/brainrc.py plugin`",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "brainrc/plugin.py",
+        ".claude-plugin/plugin.json",
+        ".claude-plugin/marketplace.json",
+        ".cursor-plugin/plugin.json",
+        "plugin.json",
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC12"
+      ],
+      "review": "batch",
+      "after": []
+    },
+    {
+      "id": "T2",
+      "title": "Doctor warns about an old `ai-config` plugin (Claude Code, Cursor), read-only",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "brainrc/doctor.py",
+        "tests/test_doctor_plugin.py"
+      ],
+      "criteria": [
+        "AC7",
+        "AC8",
+        "AC9",
+        "AC10",
+        "AC11",
+        "AC12"
+      ],
+      "review": "each",
+      "after": []
+    },
+    {
+      "id": "T3",
+      "title": "Docs and spec-agent use `brainrc` names; move-from note; troubleshooting points at the doctor WARN",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "README.md",
+        "docs/install.md",
+        "docs/troubleshooting.md",
+        "docs/spec-agent.md",
+        "docs/harness-packages.md",
+        "skills/spec-agent/SKILL.md",
+        "tests/test_plugin_docs.py"
+      ],
+      "criteria": [
+        "AC4",
+        "AC5",
+        "AC6",
+        "AC12"
+      ],
+      "review": "batch",
+      "after": [
+        "T1",
+        "T2"
+      ]
+    },
+    {
+      "id": "T4",
+      "title": "Changelog fragment: `bump: patch` (owner's choice at the Plan gate), **[pack contract]** bullet (rename, reinstall steps, pack `dependencies` name, doctor WARN) unless the owner picks patch at the Plan gate",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "changelog.d/208-brainrc-plugin-namespace.md"
+      ],
+      "criteria": [
+        "AC12"
+      ],
+      "review": "batch",
+      "after": [
+        "T3"
+      ]
+    }
+  ],
+  "blocked": null,
   "metrics": {
     "started_at": "2026-10-28T16:39:46Z",
     "stage_started_at": {
       "intake": "2026-10-28T16:39:46Z",
       "spec": "2026-10-28T16:39:46Z",
-      "plan": "2026-10-28T16:42:34Z"
+      "plan": "2026-10-28T16:42:34Z",
+      "implement": "2026-10-28T16:44:44Z"
     },
     "gates": {
       "spec": {
@@ -53,7 +138,8 @@
         "approved_at": "2026-10-28T16:42:34Z"
       },
       "plan": {
-        "presented_at": "2026-10-28T16:44:09Z"
+        "presented_at": "2026-10-28T16:44:09Z",
+        "approved_at": "2026-10-28T16:44:44Z"
       }
     },
     "gate_rework": {
@@ -66,6 +152,6 @@
       "first_pass": 0
     },
     "retries": 0,
-    "interventions": 0
+    "interventions": 1
   }
 }

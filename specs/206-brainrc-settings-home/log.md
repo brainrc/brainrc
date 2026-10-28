@@ -80,3 +80,9 @@ Docs (install, packs, formats) and the patch [pack contract] fragment written in
 ## verifier (engine) · verify · done
 2026-10-28T04:50:21Z
 16/16 criteria pass; installed end-to-end migrate run (see verify.md). Living areas applied.
+
+## engine · document · done
+PR body and ticket comment drafted inline.
+
+## engine · Deliver gate · presented
+2026-10-28T04:50:44Z

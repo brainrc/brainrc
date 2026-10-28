@@ -6,7 +6,7 @@
     "id": "208",
     "title": "Rename: plugin namespace brainrc@brainrc",
     "url": "https://github.com/brainrc/brainrc/issues/208",
-    "pr": null
+    "pr": "https://github.com/brainrc/brainrc/pull/234"
   },
   "slug": "208-brainrc-plugin-namespace",
   "branch": "208-brainrc-plugin-namespace",
@@ -15,7 +15,7 @@
   "mode": "subagent",
   "delivery": "normal",
   "auto": true,
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -194,9 +194,18 @@
       "max_width": 2,
       "task_minutes": 6,
       "wall_minutes": 3
-    }
+    },
+    "pr_opened_at": "2026-10-28T17:05:50Z",
+    "time_to_merge": 0
   },
   "living": [
     "plugin-packaging"
-  ]
+  ],
+  "watch": {
+    "entered_at": "2026-10-28T17:05:50Z",
+    "merged_at": "2026-10-28T17:05:54Z",
+    "post_merge": "pass",
+    "outcome": "merged",
+    "review_rounds": 0
+  }
 }

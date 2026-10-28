@@ -1,4 +1,4 @@
-"""Packs named by git URL: aicfg fetches them into $AICFG_HOME/packs/<key>."""
+"""Packs named by git URL: brainrc fetches them into $BRAINRC_HOME/packs/<key>."""
 from __future__ import annotations
 
 import json
@@ -42,7 +42,7 @@ def needs_fetch(cfg: dict, root: Path) -> str | None:
         return "not fetched yet"
     was, want = fetched(root), _wanted(cfg)
     if was is None:
-        return "fetched before aicfg recorded its ref"
+        return "fetched before brainrc recorded its ref"
     for key in ("git", "ref"):
         if was.get(key) != want[key]:
             return f"fetched {key} `{was.get(key)}`, packs.toml says `{want[key]}`"

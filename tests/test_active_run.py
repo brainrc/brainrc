@@ -75,7 +75,7 @@ class ActiveRunTest(unittest.TestCase):
         default = self.home / ".config/brainrc/active-run"
         self.assertEqual(default.read_text(), f"{run}\n")
 
-    # AC15: resolution mirrors brainrc.config.aicfg_home, silently
+    # AC15: resolution mirrors brainrc.config.settings_home, silently
     def written(self, path: Path, run: Path, result) -> None:
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stderr, "")

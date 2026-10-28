@@ -128,16 +128,16 @@ def _link_finding(link: Link, roots: list[Path]) -> Finding | None:
     if not target.exists():
         return ("FAIL", f"{link.harness}: {dest} is a broken link to {tilde(target)} (repo moved?)",
                 f"rm {dest} && {command('apply')}")
-    return ("FAIL", f"{link.harness}: {dest} links to {tilde(target)}, outside ai-config and its packs",
+    return ("FAIL", f"{link.harness}: {dest} links to {tilde(target)}, outside brainrc and its packs",
             f"move that into a pack (or delete the link), then {command('apply')}")
 
 
 def _home_findings() -> list[Finding]:
     """WARN when the settings home is a legacy dir or AICFG_HOME, or an unused old dir remains."""
-    found, origin, home = [], config.home_origin(), config.aicfg_home()
+    found, origin, home = [], config.home_origin(), config.settings_home()
     if origin == "legacy":
         found.append(("WARN", f"settings home is the legacy {tilde(home)}", command("migrate")))
-    elif origin == "aicfg_env":
+    elif origin == "legacy_env":
         found.append(("WARN", f"settings home comes from the deprecated AICFG_HOME ({tilde(home)})",
                       f"set BRAINRC_HOME={tilde(config.new_home())} and run `{command('migrate')}`"))
     home_has_content = home.is_dir() and any(home.iterdir())
@@ -224,17 +224,17 @@ def doctor_findings() -> list[Finding]:
                           command("apply")))
         else:
             found += [_link_finding(link, roots) for link in group]
-    found += [("FAIL", f"{tilde(p)} is a stale link ai-config no longer makes", f"{command('apply')} (prunes it)")
+    found += [("FAIL", f"{tilde(p)} is a stale link brainrc no longer makes", f"{command('apply')} (prunes it)")
               for p in stale]
 
-    # Broken links aicfg doesn't manage, in the directories it links into.
+    # Broken links brainrc doesn't manage, in the directories it links into.
     known = {link.dest for link in links} | set(stale)
     for name, h in load_harnesses().items():
         for kind in KINDS:
             d = expand(h[kind]) if kind in h and name not in skipped else None
             for p in sorted(d.iterdir()) if d and d.is_dir() else []:
                 if p.is_symlink() and not p.exists() and p not in known:
-                    found.append(("WARN", f"{name}: {tilde(p)} is a broken link not made by ai-config",
+                    found.append(("WARN", f"{name}: {tilde(p)} is a broken link not made by brainrc",
                                   f"rm {tilde(p)}"))
 
     found += [("FAIL", e, f"fix the JSON, then {command('apply')}") for e in invalid_fragments(srcs)]
@@ -246,10 +246,10 @@ def doctor_findings() -> list[Finding]:
         except FragmentError:
             continue  # reported above
         if state == "merge" and not m.fragments:
-            found.append(("FAIL", f"{tilde(m.dest)} has ai-config's hooks but {m.harness} is disabled",
+            found.append(("FAIL", f"{tilde(m.dest)} has brainrc's hooks but {m.harness} is disabled",
                           f"{command('apply')} (removes them)"))
         elif state == "merge":
-            found.append(("FAIL", f"{m.harness}: {tilde(m.dest)} is missing ai-config's hooks", command("apply")))
+            found.append(("FAIL", f"{m.harness}: {tilde(m.dest)} is missing brainrc's hooks", command("apply")))
         elif state == "conflict":
             found.append(("FAIL", f"{m.harness}: {tilde(m.dest)} is invalid JSON",
                           f"fix it by hand, then {command('apply')}"))
@@ -264,7 +264,7 @@ HOOK_SCRIPT = re.compile(r'"([^"]+\.py)"')  # the script in a `python3 "<dir>/<g
 
 
 def _hook_findings(merges: list, skipped: set[str]) -> list[Finding]:
-    """ai-config's hooks in each settings file: the script exists and passes an empty payload.
+    """brainrc's hooks in each settings file: the script exists and passes an empty payload.
     A missing script is skipped by the hook command, so its guard is silently off."""
     found = []
     for m in merges:
@@ -311,13 +311,13 @@ def _mcp_findings(srcs: list[Source], skipped: set[str]) -> list[Finding]:
         if s.harness in skipped:
             continue
         state, _, clashing, _ = mcp_change(s)
-        found += [("WARN", f"{s.harness}: your own MCP server `{n}` in {tilde(s.dest)} shadows ai-config's",
+        found += [("WARN", f"{s.harness}: your own MCP server `{n}` in {tilde(s.dest)} shadows brainrc's",
                    f"rename or remove yours, then {command('apply')}") for n in clashing]
         if state == "invalid":
             found.append(("FAIL", f"{s.harness}: {tilde(s.dest)} can't be parsed, so its MCP servers aren't synced",
                           f"fix it by hand, then {command('apply')}"))
         elif state == "merge":
-            found.append(("FAIL", f"{s.harness}: {tilde(s.dest)} doesn't match ai-config's MCP servers",
+            found.append(("FAIL", f"{s.harness}: {tilde(s.dest)} doesn't match brainrc's MCP servers",
                           command("apply")))
     return found
 

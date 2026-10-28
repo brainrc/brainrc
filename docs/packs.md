@@ -18,11 +18,11 @@ path = "~/src/acme-ai-pack"   # ~ and $VARS expand; relative paths are relative 
 ```
 
 ```bash
-python3 scripts/aicfg.py status   # dry run
-python3 scripts/aicfg.py apply
+python3 scripts/brainrc.py status   # dry run
+python3 scripts/brainrc.py apply
 ```
 
-Or name it by git URL and let `aicfg` fetch it, with no clone of your own:
+Or name it by git URL and let `brainrc` fetch it, with no clone of your own:
 
 ```toml
 [acme]
@@ -33,7 +33,7 @@ ref = "v1.2.0"                                 # tag, branch, or commit; default
 `apply` fetches it (shallow, detached) into `~/.config/brainrc/packs/acme` and records the URL
 and `ref` it fetched; after that it works offline. Change `ref` or `git` and the next `apply`
 fetches again (`status` shows the `FETCH` line first). A branch `ref` that hasn't changed isn't
-refetched: `aicfg update` (or `python3 scripts/aicfg.py update`) refetches every git pack at its
+refetched: `brainrc update` (or `python3 scripts/brainrc.py update`) refetches every git pack at its
 `ref`, then applies. Both refuse a clone with local changes, and stop any git call after 60s.
 Pin a tag, and bump `ref` to upgrade. `doctor` reports a git pack that hasn't been fetched yet or
 whose clone doesn't match its `git` and `ref`.
@@ -140,7 +140,7 @@ paths = ["*.md"]                              # default; fnmatch against the pat
 
 ```bash
 git clone <core-repo> core
-python3 core/scripts/aicfg.py validate --pack .
+python3 core/scripts/brainrc.py validate --pack .
 ```
 
 This checks the core plus that pack only, whatever is in `packs.toml`: frontmatter,
@@ -149,14 +149,14 @@ collisions, `pack.toml` extension references, `requires_core`, and tripwires.
 
 ## Packs and Claude Code plugins
 
-Core also ships as a Claude Code plugin (README, Install). Packs stay `aicfg` packs: a plugin
+Core also ships as a Claude Code plugin (README, Install). Packs stay `brainrc` packs: a plugin
 could carry a pack's skills, agents, and hooks, but not its rules or its spec-agent extensions
-(domains, ticket connector, Deliver checks), which `aicfg apply` renders into core. Revisit if
+(domains, ticket connector, Deliver checks), which `brainrc apply` renders into core. Revisit if
 plugins gain a way to extend another plugin.
 
 ## Context cost
 
-`python3 scripts/aicfg.py tokens` estimates tokens per skill, agent, and command across all
+`python3 scripts/brainrc.py tokens` estimates tokens per skill, agent, and command across all
 enabled sources. It also shows what loads in every session (rules and descriptions) versus on
 use. Keep pack rules short: they load in every session on that machine.
 

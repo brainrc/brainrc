@@ -54,18 +54,20 @@
       "ref": "gh:208",
       "order": 5,
       "depends_on": [],
-      "status": "in_progress",
+      "status": "delivered",
       "slug": "208-brainrc-plugin-namespace",
       "branch": "208-brainrc-plugin-namespace",
-      "pr": null
+      "pr": "https://github.com/brainrc/brainrc/pull/234",
+      "base": "main",
+      "merged": true
     },
     {
       "ref": "gh:209",
       "order": 6,
       "depends_on": [],
-      "status": "todo",
-      "slug": null,
-      "branch": null,
+      "status": "in_progress",
+      "slug": "209-brainrc-docs-wording",
+      "branch": "209-brainrc-docs-wording",
       "pr": null
     }
   ],

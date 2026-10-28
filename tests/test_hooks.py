@@ -407,7 +407,7 @@ class CursorGuardTest(unittest.TestCase):
 
 REPO = HOOKS.parent.parent.parent
 sys.path.insert(0, str(REPO))
-import brainrc as aicfg  # noqa: E402  (the package at the repo root)
+import brainrc  # noqa: E402  (the package at the repo root)
 
 RISKY = {"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": "git push origin main"}}
 SAFE = {"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": "ls"}}
@@ -416,7 +416,7 @@ CURSOR_RISKY = {"hook_event_name": "beforeShellExecution", "command": "git push 
 
 def fragment_commands(harness: str, hooks_dir: Path) -> list[str]:
     """Hook commands as apply writes them, pointing at hooks_dir."""
-    rendered = aicfg.render_fragment(REPO / "overrides" / harness / "settings.fragment.json", str(hooks_dir))
+    rendered = brainrc.render_fragment(REPO / "overrides" / harness / "settings.fragment.json", str(hooks_dir))
     return [h["command"] for groups in rendered["hooks"].values() for g in groups
             for h in [g, *g.get("hooks", [])] if "command" in h]
 
@@ -486,7 +486,7 @@ class FailOpenTest(unittest.TestCase):
         old_command = 'python3 "$HOME/.claude/hooks/ai-config/guard_outward.py"'
         current = {"hooks": {"PreToolUse": [
             {"matcher": "Bash|mcp__.*", "hooks": [{"type": "command", "command": old_command, "timeout": 5}]}]}}
-        wanted = aicfg.render_fragment(REPO / "overrides/claude/settings.fragment.json", "~/.claude/hooks/ai-config")
-        merged = aicfg.merge_settings(current, wanted)
+        wanted = brainrc.render_fragment(REPO / "overrides/claude/settings.fragment.json", "~/.claude/hooks/ai-config")
+        merged = brainrc.merge_settings(current, wanted)
         self.assertEqual(merged["hooks"], wanted["hooks"])
         self.assertNotIn(old_command, json.dumps(merged))

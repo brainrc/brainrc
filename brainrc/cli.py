@@ -29,7 +29,7 @@ its `requires_core` must match VERSION, or validate fails and apply writes nothi
 
 Safety: never overwrites a real file or a symlink pointing outside this repo or a pack.
 Those are reported as CONFLICT and left alone for you to resolve. Settings files
-are merged (only entries owned by ai-config are replaced) and backed up first.
+are merged (only entries owned by brainrc are replaced) and backed up first.
 """
 from __future__ import annotations
 
@@ -41,13 +41,14 @@ from pathlib import Path
 from . import config
 from .config import (
     ConfigError,
-    aicfg_home,
+    aicfg_home,  # noqa: F401  deprecated alias, kept so aicfg.cli.aicfg_home resolves until 0.5.0
     check_config,
     extensions_file,
     home_extensions_file,
     legacy_instructions,
     rendered_agents_dir,
     rendered_instructions,
+    settings_home,
     tilde,
 )
 from .sources import (
@@ -73,7 +74,7 @@ def cmd_sync(apply: bool) -> int:
     """status (apply=False) or apply; apply holds $AICFG_HOME/apply.lock while it runs."""
     if not apply:
         return _sync(False)
-    lock = aicfg_home() / "apply.lock"
+    lock = settings_home() / "apply.lock"
     lock.parent.mkdir(parents=True, exist_ok=True)
     with open(lock, "a") as f:
         if not _try_lock(f):
@@ -101,8 +102,8 @@ def _copy_hooks(overrides: Path, copy_root: Path) -> None:
     """Replace copy_root with every overrides/<harness>/hooks dir: build beside it, then swap."""
     if hooks_copy_current(overrides, copy_root):
         return
-    tmp = copy_root.with_name(f".{copy_root.name}.aicfg-tmp-{os.getpid()}")
-    old = copy_root.with_name(f".{copy_root.name}.aicfg-old-{os.getpid()}")
+    tmp = copy_root.with_name(f".{copy_root.name}.brainrc-tmp-{os.getpid()}")
+    old = copy_root.with_name(f".{copy_root.name}.brainrc-old-{os.getpid()}")
     for stale in (tmp, old):
         shutil.rmtree(stale, ignore_errors=True)
     for hooks in sorted(overrides.glob("*/hooks")):
@@ -248,7 +249,7 @@ def _sync(apply: bool) -> int:
         for name in clashing:
             conflicts += 1
             print(f"{'CONFLICT':9} {s.harness:9} {tilde(s.dest)}  (your own MCP server `{name}`; "
-                  "rename it or remove it to let ai-config manage it)")
+                  "rename it or remove it to let brainrc manage it)")
         if state == "invalid":
             conflicts += 1
             print(f"{'CONFLICT':9} {s.harness:9} {tilde(s.dest)}  (can't parse it, fix by hand)")
@@ -301,10 +302,10 @@ def warn_deprecated(old: str, new: str = "brainrc") -> None:
 def warn_home() -> None:
     """The one stderr line for a deprecated settings home (AICFG_HOME or ~/.config/ai-config)."""
     origin = config.home_origin()
-    if origin == "aicfg_env":
+    if origin == "legacy_env":
         warn_deprecated("AICFG_HOME", "BRAINRC_HOME")
     elif origin == "legacy":
-        print(f"settings home {config.tilde(config.aicfg_home())} is deprecated: "
+        print(f"settings home {config.tilde(config.settings_home())} is deprecated: "
               f"run `brainrc migrate` to move it to {config.tilde(config.new_home())} "
               f"(removed in {SHIM_REMOVED_IN})", file=sys.stderr)
 

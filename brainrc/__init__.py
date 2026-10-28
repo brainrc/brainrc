@@ -11,6 +11,7 @@ from .config import (
     aicfg_home,
     extensions_file,
     rendered_instructions,
+    settings_home,
     tilde,
 )
 from .sources import (

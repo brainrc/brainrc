@@ -14,7 +14,7 @@ from unittest import mock
 
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO))
-import brainrc as aicfg  # noqa: E402  (the package at the repo root)
+import brainrc  # noqa: E402  (the package at the repo root)
 
 FOREIGN = {"hooks": [{"type": "command", "command": "node /opt/other/hook.js"}]}
 OURS_OLD = {"matcher": "Bash", "hooks": [{"type": "command", "command": "python3 ~/.claude/hooks/ai-config/old.py"}]}
@@ -56,25 +56,25 @@ def set_core_version(repo: Path, version: str) -> None:
 
 
 class TempRepoCase(unittest.TestCase):
-    """Point aicfg at a throwaway copy of the repo and BRAINRC_HOME, so tests never read local
+    """Point brainrc at a throwaway copy of the repo and BRAINRC_HOME, so tests never read local
     config or write rendered files anywhere real."""
 
     def setUp(self):
         self.repo = Path(tempfile.mkdtemp())
         copy_repo(self.repo)
-        self.old_repo = aicfg.config.REPO
-        aicfg.config.REPO = self.repo
-        self.aicfg_home = Path(tempfile.mkdtemp()) / "ai-config"
+        self.old_repo = brainrc.config.REPO
+        brainrc.config.REPO = self.repo
+        self.settings_home = Path(tempfile.mkdtemp()) / "brainrc"
         self.old_brainrc_home = os.environ.get("BRAINRC_HOME")
-        os.environ["BRAINRC_HOME"] = str(self.aicfg_home)
+        os.environ["BRAINRC_HOME"] = str(self.settings_home)
 
     def tearDown(self):
-        aicfg.config.REPO = self.old_repo
+        brainrc.config.REPO = self.old_repo
         if self.old_brainrc_home is None:
             os.environ.pop("BRAINRC_HOME", None)
         else:
             os.environ["BRAINRC_HOME"] = self.old_brainrc_home
-        shutil.rmtree(self.aicfg_home.parent)
+        shutil.rmtree(self.settings_home.parent)
         shutil.rmtree(self.repo)
 
 
@@ -85,9 +85,9 @@ class ReleaseTest(TempRepoCase):
         (d / name).write_text(f"---\nbump: {bump}\n---\n{entry}\n")
 
     def test_next_version(self):
-        self.assertEqual(aicfg.next_version((0, 3, 9), "patch"), (0, 3, 10))
-        self.assertEqual(aicfg.next_version((0, 3, 9), "minor"), (0, 4, 0))
-        self.assertEqual(aicfg.next_version((0, 3, 9), "major"), (1, 0, 0))
+        self.assertEqual(brainrc.next_version((0, 3, 9), "patch"), (0, 3, 10))
+        self.assertEqual(brainrc.next_version((0, 3, 9), "minor"), (0, 4, 0))
+        self.assertEqual(brainrc.next_version((0, 3, 9), "major"), (1, 0, 0))
 
     def test_release_takes_the_largest_bump_and_removes_fragments(self):
         set_core_version(self.repo, "0.3.9")
@@ -95,7 +95,7 @@ class ReleaseTest(TempRepoCase):
         (self.repo / "changelog.d/README.md").write_text("How to write a fragment.\n")
         self.fragment("a-fix.md", "patch", "- Fixed a thing.")
         self.fragment("b-contract.md", "minor", "- **[pack contract]** New key.")
-        code, out = quiet(aicfg.cmd_release)
+        code, out = quiet(brainrc.cmd_release)
         self.assertEqual(code, 0, out)
         self.assertEqual((self.repo / "VERSION").read_text(), "0.4.0\n")
         changelog = (self.repo / "CHANGELOG.md").read_text()
@@ -107,10 +107,10 @@ class ReleaseTest(TempRepoCase):
 
     def test_dry_run_and_no_fragments_write_nothing(self):
         set_core_version(self.repo, "0.3.9")
-        code, out = quiet(aicfg.cmd_release)
+        code, out = quiet(brainrc.cmd_release)
         self.assertIn("nothing to release", out)
         self.fragment("a.md", "patch", "- Fixed.")
-        code, out = quiet(aicfg.cmd_release, True)
+        code, out = quiet(brainrc.cmd_release, True)
         self.assertIn("Would release 0.3.10", out)
         self.assertEqual((self.repo / "VERSION").read_text(), "0.3.9\n")
         self.assertTrue((self.repo / "changelog.d/a.md").is_file())
@@ -119,12 +119,12 @@ class ReleaseTest(TempRepoCase):
         (self.repo / "CHANGELOG.md").write_text(
             "# Changelog\n\nIntro.\n\n## 0.3.10 (2026-01-02)\n\n- New.\n- Also new.\n\n"
             "## 0.3.9 (2026-01-01)\n\n- Old.\n")
-        self.assertEqual(quiet(aicfg.main, ["brainrc.py", "release", "--notes", "0.3.10"]), (0, "- New.\n- Also new.\n"))
-        self.assertEqual(quiet(aicfg.main, ["brainrc.py", "release", "--notes", "0.3.9"]), (0, "- Old.\n"))
+        self.assertEqual(quiet(brainrc.main, ["brainrc.py", "release", "--notes", "0.3.10"]), (0, "- New.\n- Also new.\n"))
+        self.assertEqual(quiet(brainrc.main, ["brainrc.py", "release", "--notes", "0.3.9"]), (0, "- Old.\n"))
 
     def test_notes_for_a_missing_version_fail(self):
         (self.repo / "CHANGELOG.md").write_text("# Changelog\n\n## 0.3.10 (2026-01-02)\n\n- New.\n")
-        code, out = quiet(aicfg.main, ["brainrc.py", "release", "--notes", "0.3.1"])  # not a prefix match
+        code, out = quiet(brainrc.main, ["brainrc.py", "release", "--notes", "0.3.1"])  # not a prefix match
         self.assertEqual(code, 1, out)
         self.assertEqual(out, "ERROR CHANGELOG.md has no section for 0.3.1\n")
 
@@ -133,49 +133,49 @@ class ReleaseTest(TempRepoCase):
         self.fragment("a.md", "huge", "- Fixed.")
         self.fragment("b.md", "patch", "Not a bullet.")
         (self.repo / "changelog.d/c.md").write_text("- No frontmatter.\n")
-        errors = aicfg.check_fragments()
+        errors = brainrc.check_fragments()
         self.assertEqual(len(errors), 3, errors)
         self.assertTrue(any("a.md" in e and "bump" in e for e in errors), errors)
-        code, out = quiet(aicfg.cmd_release)
+        code, out = quiet(brainrc.cmd_release)
         self.assertEqual(code, 1)
         self.assertEqual((self.repo / "VERSION").read_text(), "0.3.9\n")
 
 
 class MergeSettingsTest(unittest.TestCase):
     def setUp(self):
-        self.fragment = aicfg.render_fragment(FRAGMENT, "~/.claude/hooks/ai-config")
+        self.fragment = brainrc.render_fragment(FRAGMENT, "~/.claude/hooks/ai-config")
 
     def test_renders_hooks_dir_placeholder(self):
         commands = [h["command"] for g in self.fragment["hooks"]["PreToolUse"] for h in g["hooks"]]
         self.assertIn(claude_guard("$HOME/.claude/hooks/ai-config", "guard_outward.py"), commands)
-        self.assertFalse(any(aicfg.HOOKS_DIR_PLACEHOLDER in c for c in commands))
+        self.assertFalse(any(brainrc.HOOKS_DIR_PLACEHOLDER in c for c in commands))
 
     def test_custom_hooks_dir_is_owned(self):
-        m = aicfg.SettingsMerge("claude", Path("unused"), [(FRAGMENT, "/opt/hooks/mine")])
-        once = aicfg.merge_settings({"hooks": {"PreToolUse": [FOREIGN]}}, m.wanted(), m.markers())
-        self.assertEqual(aicfg.merge_settings(once, m.wanted(), m.markers()), once)
+        m = brainrc.SettingsMerge("claude", Path("unused"), [(FRAGMENT, "/opt/hooks/mine")])
+        once = brainrc.merge_settings({"hooks": {"PreToolUse": [FOREIGN]}}, m.wanted(), m.markers())
+        self.assertEqual(brainrc.merge_settings(once, m.wanted(), m.markers()), once)
         self.assertIn("/opt/hooks/mine/guard_outward.py", json.dumps(once))
 
     def test_preserves_foreign_hooks_and_other_keys(self):
         current = {"tui": "fullscreen", "hooks": {"SessionStart": [FOREIGN], "PreToolUse": [FOREIGN]}}
-        merged = aicfg.merge_settings(current, self.fragment)
+        merged = brainrc.merge_settings(current, self.fragment)
         self.assertEqual(merged["tui"], "fullscreen")
         self.assertEqual(merged["hooks"]["SessionStart"], [FOREIGN])
         self.assertEqual(merged["hooks"]["PreToolUse"][0], FOREIGN)
         self.assertEqual(len(merged["hooks"]["PreToolUse"]), 1 + len(self.fragment["hooks"]["PreToolUse"]))
 
     def test_idempotent(self):
-        once = aicfg.merge_settings({"hooks": {"PreToolUse": [FOREIGN]}}, self.fragment)
-        self.assertEqual(aicfg.merge_settings(once, self.fragment), once)
+        once = brainrc.merge_settings({"hooks": {"PreToolUse": [FOREIGN]}}, self.fragment)
+        self.assertEqual(brainrc.merge_settings(once, self.fragment), once)
 
     def test_replaces_stale_owned_groups(self):
-        merged = aicfg.merge_settings({"hooks": {"PostToolUse": [OURS_OLD]}}, self.fragment)
+        merged = brainrc.merge_settings({"hooks": {"PostToolUse": [OURS_OLD]}}, self.fragment)
         self.assertNotIn("PostToolUse", merged["hooks"])
         self.assertNotIn(OURS_OLD, merged["hooks"]["PreToolUse"])
 
     def test_does_not_mutate_input(self):
         current = {"hooks": {"PreToolUse": [FOREIGN]}}
-        aicfg.merge_settings(current, self.fragment)
+        brainrc.merge_settings(current, self.fragment)
         self.assertEqual(current, {"hooks": {"PreToolUse": [FOREIGN]}})
 
 
@@ -192,44 +192,44 @@ class SyncFakeHomeTest(TempRepoCase):
         super().tearDown()
 
     def test_status_writes_nothing(self):
-        code, out = quiet(aicfg.cmd_sync, False)
+        code, out = quiet(brainrc.cmd_sync, False)
         self.assertEqual(code, 0)
         self.assertIn("Dry run", out)
         self.assertEqual(list(self.home.iterdir()), [])
         self.assertFalse((self.repo / "dist").exists())
-        self.assertFalse(self.aicfg_home.exists())
+        self.assertFalse(self.settings_home.exists())
 
     def test_relative_symlink_into_repo_is_ok(self):
-        quiet(aicfg.cmd_sync, True)
+        quiet(brainrc.cmd_sync, True)
         link = self.home / ".claude/skills/spec-agent"
         link.unlink()
         link.symlink_to(os.path.relpath(self.repo / "skills/spec-agent", link.parent))
-        self.assertEqual(aicfg.Link("claude", link, self.repo / "skills/spec-agent").state(), "ok")
+        self.assertEqual(brainrc.Link("claude", link, self.repo / "skills/spec-agent").state(), "ok")
 
     def test_updates_moved_links_and_prunes_dangling(self):
-        quiet(aicfg.cmd_sync, True)
+        quiet(brainrc.cmd_sync, True)
         skills_dir = self.home / ".claude/skills"
         (skills_dir / "spec-agent").unlink()
         (skills_dir / "spec-agent").symlink_to(self.repo / "skills/terraform")  # points at wrong skill
         (skills_dir / "gone").symlink_to(self.repo / "skills/gone")  # removed from the repo
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0)
         self.assertIn("UPDATE", out)
         self.assertIn("PRUNE", out)
-        self.assertEqual(aicfg.link_target(skills_dir / "spec-agent"), self.repo / "skills/spec-agent")
+        self.assertEqual(brainrc.link_target(skills_dir / "spec-agent"), self.repo / "skills/spec-agent")
         self.assertFalse((skills_dir / "gone").is_symlink())
 
     def test_invalid_settings_json_is_a_conflict(self):
         (self.home / ".claude").mkdir()
         settings = self.home / ".claude/settings.json"
         settings.write_text("{ not json")
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 1)
         self.assertIn("invalid JSON", out)
         self.assertEqual(settings.read_text(), "{ not json")
 
     def test_disabling_harness_removes_only_its_owned_hooks(self):
-        quiet(aicfg.cmd_sync, True)
+        quiet(brainrc.cmd_sync, True)
         settings = self.home / ".claude/settings.json"
         data = json.loads(settings.read_text())
         data["tui"] = "fullscreen"
@@ -238,49 +238,49 @@ class SyncFakeHomeTest(TempRepoCase):
         (self.repo / "harnesses.local.toml").write_text("[claude]\nenabled = false\n")
         before = settings.read_text()
 
-        code, out = quiet(aicfg.cmd_sync, False)
+        code, out = quiet(brainrc.cmd_sync, False)
         self.assertEqual(code, 0, out)
         self.assertRegex(out, r"MERGE +claude +~/.claude/settings.json")
         self.assertEqual(settings.read_text(), before)
 
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         after = json.loads(settings.read_text())
         self.assertNotIn("hooks/ai-config", json.dumps(after))
         self.assertEqual(after["hooks"]["PreToolUse"], [FOREIGN])
         self.assertEqual(after["tui"], "fullscreen")
         self.assertTrue(list(settings.parent.glob("settings.json.bak-brainrc-*")))
-        self.assertIn("Everything in sync.", quiet(aicfg.cmd_sync, False)[1])
+        self.assertIn("Everything in sync.", quiet(brainrc.cmd_sync, False)[1])
 
     def test_uninstall_restores_the_settings_file(self):
         settings = self.home / ".claude/settings.json"
         settings.parent.mkdir(parents=True)
         settings.write_text('{"theme": "dark"}\n')
-        quiet(aicfg.cmd_sync, True)
+        quiet(brainrc.cmd_sync, True)
         (self.repo / "harnesses.local.toml").write_text("[claude]\nenabled = false\n")
-        quiet(aicfg.cmd_sync, True)
+        quiet(brainrc.cmd_sync, True)
         self.assertEqual(json.loads(settings.read_text()), {"theme": "dark"})
 
     def test_disabled_harness_without_settings_is_left_alone(self):
         (self.repo / "harnesses.local.toml").write_text("[claude]\nenabled = false\n")
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertFalse((self.home / ".claude/settings.json").exists())
 
     def test_backups_are_capped(self):
         (self.home / ".claude").mkdir()
         settings = self.home / ".claude/settings.json"
-        for n in range(aicfg.BACKUPS_KEPT + 3):
+        for n in range(brainrc.BACKUPS_KEPT + 3):
             (settings.parent / f"settings.json.bak-brainrc-2026010{n}T000000Z").write_text("{}")
         settings.write_text("{}")
-        quiet(aicfg.cmd_sync, True)
-        self.assertEqual(len(list(settings.parent.glob("settings.json.bak-brainrc-*"))), aicfg.BACKUPS_KEPT)
-        self.assertEqual(list(settings.parent.glob(".settings.json.aicfg-tmp*")), [])
+        quiet(brainrc.cmd_sync, True)
+        self.assertEqual(len(list(settings.parent.glob("settings.json.bak-brainrc-*"))), brainrc.BACKUPS_KEPT)
+        self.assertEqual(list(settings.parent.glob(".settings.json.brainrc-tmp*")), [])
 
     def test_checkout_hooks_link_into_the_checkout(self):
-        quiet(aicfg.cmd_sync, True)
-        self.assertEqual(aicfg.link_target(self.home / ".claude/hooks/brainrc"), self.repo / "overrides/claude/hooks")
-        self.assertFalse((self.aicfg_home / "hooks").exists())
+        quiet(brainrc.cmd_sync, True)
+        self.assertEqual(brainrc.link_target(self.home / ".claude/hooks/brainrc"), self.repo / "overrides/claude/hooks")
+        self.assertFalse((self.settings_home / "hooks").exists())
 
     def test_temp_name_includes_the_pid(self):
         settings = self.home / ".claude/settings.json"
@@ -294,44 +294,44 @@ class SyncFakeHomeTest(TempRepoCase):
             real(src, dst)
 
         with mock.patch("os.replace", spy):
-            quiet(aicfg.cmd_sync, True)
-        self.assertEqual(names, [f".settings.json.aicfg-tmp-{os.getpid()}"])
+            quiet(brainrc.cmd_sync, True)
+        self.assertEqual(names, [f".settings.json.brainrc-tmp-{os.getpid()}"])
 
     @unittest.skipIf(os.name == "nt", "fcntl")
     def test_a_second_apply_fails_while_one_holds_the_lock(self):
         import fcntl
-        lock = self.aicfg_home / "apply.lock"
+        lock = self.settings_home / "apply.lock"
         lock.parent.mkdir(parents=True)
         with open(lock, "a") as held:
             fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            code, out = quiet(aicfg.cmd_sync, True)
-            status_code, status_out = quiet(aicfg.cmd_sync, False)
+            code, out = quiet(brainrc.cmd_sync, True)
+            status_code, status_out = quiet(brainrc.cmd_sync, False)
         self.assertEqual(code, 1, out)
         self.assertIn("another brainrc apply is running", out)
         self.assertIn("apply.lock", out)
         self.assertEqual(list(self.home.iterdir()), [])
-        self.assertEqual(list(self.aicfg_home.iterdir()), [lock])
+        self.assertEqual(list(self.settings_home.iterdir()), [lock])
         self.assertEqual(status_code, 0, status_out)
         self.assertIn("Dry run", status_out)
 
     @unittest.skipIf(os.name == "nt", "fcntl")
     def test_the_lock_is_released_after_apply_even_on_error(self):
         import fcntl
-        self.assertEqual(quiet(aicfg.cmd_sync, True)[0], 0)
+        self.assertEqual(quiet(brainrc.cmd_sync, True)[0], 0)
         with mock.patch("brainrc.cli.plan", side_effect=RuntimeError("boom")):
             with self.assertRaises(RuntimeError):
-                quiet(aicfg.cmd_sync, True)
-        with open(self.aicfg_home / "apply.lock", "a") as f:
+                quiet(brainrc.cmd_sync, True)
+        with open(self.settings_home / "apply.lock", "a") as f:
             fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)  # raises if a run leaked the lock
             fcntl.flock(f, fcntl.LOCK_UN)
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
 
     def test_settings_changed_during_apply_are_left_alone(self):
         settings = self.home / ".claude/settings.json"
         settings.parent.mkdir()
         settings.write_text("{}")
-        real = aicfg.cli.settings_change
+        real = brainrc.cli.settings_change
 
         def harness_writes_meanwhile(m):
             result = real(m)
@@ -340,7 +340,7 @@ class SyncFakeHomeTest(TempRepoCase):
             return result
 
         with mock.patch("brainrc.cli.settings_change", harness_writes_meanwhile):
-            code, out = quiet(aicfg.cmd_sync, True)
+            code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 1, out)
         self.assertRegex(out, r"CHANGED +claude +~/.claude/settings.json")
         self.assertIn("close Claude Code", out)
@@ -354,7 +354,7 @@ class SyncFakeHomeTest(TempRepoCase):
         for mode in (0o600, 0o640):
             settings.write_text("{}")
             settings.chmod(mode)
-            quiet(aicfg.cmd_sync, True)
+            quiet(brainrc.cmd_sync, True)
             self.assertIn("hooks", json.loads(settings.read_text()))
             self.assertEqual(stat.S_IMODE(settings.stat().st_mode), mode)
             newest = sorted(settings.parent.glob("settings.json.bak-brainrc-*"))[-1]
@@ -376,7 +376,7 @@ class SyncFakeHomeTest(TempRepoCase):
         old = os.umask(0)  # a loose umask must not leak into the temp file
         try:
             with mock.patch("os.replace", spy):
-                quiet(aicfg.cmd_sync, True)
+                quiet(brainrc.cmd_sync, True)
         finally:
             os.umask(old)
         self.assertEqual(seen, [0o600])
@@ -389,7 +389,7 @@ class SyncFakeHomeTest(TempRepoCase):
         settings = self.home / ".claude/settings.json"
         settings.parent.mkdir()
         settings.symlink_to(target)
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertTrue(settings.is_symlink())
         self.assertEqual(settings.readlink(), target)
@@ -399,7 +399,7 @@ class SyncFakeHomeTest(TempRepoCase):
         backups = list(dotfiles.glob("settings.json.bak-brainrc-*"))
         self.assertEqual([b.read_text() for b in backups], ['{"theme": "dark"}\n'])
         self.assertEqual(list(settings.parent.glob("settings.json.bak-brainrc-*")), [])
-        self.assertEqual(list(self.home.rglob("*.aicfg-tmp")), [])
+        self.assertEqual(list(self.home.rglob("*.brainrc-tmp")), [])
 
     def test_a_dangling_settings_link_creates_its_target(self):
         dotfiles = self.home / "dotfiles"
@@ -408,7 +408,7 @@ class SyncFakeHomeTest(TempRepoCase):
         settings = self.home / ".claude/settings.json"
         settings.parent.mkdir()
         settings.symlink_to(target)
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertTrue(settings.is_symlink())
         self.assertEqual(settings.readlink(), target)
@@ -421,7 +421,7 @@ class SyncFakeHomeTest(TempRepoCase):
         (self.home / ".codex").mkdir()
         (self.home / ".codex/AGENTS.md").write_text("mine\n")
 
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 1)  # the pre-existing codex file is a conflict
         self.assertIn("CONFLICT", out)
         self.assertEqual((self.home / ".codex/AGENTS.md").read_text(), "mine\n")
@@ -433,12 +433,12 @@ class SyncFakeHomeTest(TempRepoCase):
 
         merged = json.loads(settings.read_text())
         self.assertEqual(merged["hooks"]["SessionStart"], [FOREIGN])
-        self.assertTrue(any(aicfg._owned(g) for g in merged["hooks"]["PreToolUse"]))
+        self.assertTrue(any(brainrc._owned(g) for g in merged["hooks"]["PreToolUse"]))
         self.assertEqual(len(list(settings.parent.glob("settings.json.bak-brainrc-*"))), 1)
 
         (self.home / ".codex/AGENTS.md").unlink()
-        quiet(aicfg.cmd_sync, True)
-        code, out = quiet(aicfg.cmd_sync, False)
+        quiet(brainrc.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, False)
         self.assertEqual((code, out.strip()), (0, "Everything in sync."))
 
 
@@ -515,35 +515,35 @@ class PackSyncTest(TempRepoCase):
         return [h["command"] for g in settings["hooks"]["PreToolUse"] for h in g["hooks"]]
 
     def test_apply_layers_pack_on_core(self):
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         skills_dir = self.home / ".claude/skills"
-        self.assertEqual(aicfg.link_target(skills_dir / "acme-deploy"), self.pack / "skills/acme-deploy")
+        self.assertEqual(brainrc.link_target(skills_dir / "acme-deploy"), self.pack / "skills/acme-deploy")
         self.assertTrue((skills_dir / "spec-agent").is_symlink())
         self.assertTrue((self.home / ".claude/agents/acme-reviewer.md").is_symlink())
 
-        rules = aicfg.rendered_instructions().read_text()
+        rules = brainrc.rendered_instructions().read_text()
         self.assertLess(rules.index("# Security"), rules.index("- Acme rule."))
 
         hooks_link = self.home / ".claude/hooks/brainrc-acme"
-        self.assertEqual(aicfg.link_target(hooks_link), self.pack / "overrides/claude/hooks")
+        self.assertEqual(brainrc.link_target(hooks_link), self.pack / "overrides/claude/hooks")
         commands = self.settings_commands()
         self.assertIn(claude_guard("$HOME/.claude/hooks/brainrc", "guard_outward.py"), commands)
         self.assertIn('python3 "$HOME/.claude/hooks/brainrc-acme/guard_acme.py"', commands)
 
-        ext = aicfg.extensions_file().read_text()
+        ext = brainrc.extensions_file().read_text()
         for expected in ("| `deploy/*.yaml` | acme-deploy | infra-reviewer | acme |",
                          "- `acme-context` (acme): every ticket", '"connector": "ticket-github"',
                          "- (acme) Deploy plan reviewed"):
             self.assertIn(expected, ext)
 
-        code, out = quiet(aicfg.cmd_sync, False)
+        code, out = quiet(brainrc.cmd_sync, False)
         self.assertEqual((code, out.strip()), (0, "Everything in sync."))
 
     def test_disabling_pack_removes_its_links_and_hooks(self):
-        quiet(aicfg.cmd_sync, True)
+        quiet(brainrc.cmd_sync, True)
         self.enable_pack(False)
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertFalse((self.home / ".claude/skills/acme-deploy").is_symlink())
         self.assertFalse((self.home / ".claude/agents/acme-reviewer.md").is_symlink())
@@ -552,14 +552,14 @@ class PackSyncTest(TempRepoCase):
         commands = self.settings_commands()
         self.assertFalse(any("guard_acme" in c for c in commands))
         self.assertTrue(any("guard_outward" in c for c in commands))
-        self.assertNotIn("- Acme rule.", aicfg.rendered_instructions().read_text())
-        self.assertIn("No packs enabled", aicfg.extensions_file().read_text())
+        self.assertNotIn("- Acme rule.", brainrc.rendered_instructions().read_text())
+        self.assertIn("No packs enabled", brainrc.extensions_file().read_text())
 
     def test_disabling_harness_prunes_its_links(self):
-        quiet(aicfg.cmd_sync, True)
+        quiet(brainrc.cmd_sync, True)
         self.assertTrue((self.home / ".cursor/skills/spec-agent").is_symlink())
         (self.repo / "harnesses.local.toml").write_text("[cursor]\nenabled = false\n")
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertEqual(list((self.home / ".cursor/skills").iterdir()), [])
 
@@ -567,14 +567,14 @@ class PackSyncTest(TempRepoCase):
         clash = self.pack / "skills/spec-agent"
         clash.mkdir()
         (clash / "SKILL.md").write_text("---\nname: spec-agent\ndescription: Clash.\n---\n")
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 1)
         self.assertIn("skill `spec-agent` is defined in both core and acme", out)
         self.assertEqual(list(self.home.iterdir()), [])
 
     def test_missing_pack_is_an_error(self):
         (self.repo / "packs.local.toml").write_text('[ghost]\npath = "/nonexistent/pack"\n')
-        code, out = quiet(aicfg.cmd_sync, False)
+        code, out = quiet(brainrc.cmd_sync, False)
         self.assertEqual(code, 1)
         self.assertIn("no pack.toml", out)
 
@@ -584,7 +584,7 @@ class PackSyncTest(TempRepoCase):
     def test_incompatible_pack_writes_nothing(self):
         self.set_requires_core('requires_core = ">=2.0"')
         for apply in (False, True):
-            code, out = quiet(aicfg.cmd_sync, apply)
+            code, out = quiet(brainrc.cmd_sync, apply)
             self.assertEqual(code, 1, out)
             self.assertIn("acme:pack.toml: requires_core `>=2.0` is not satisfied by core 1.2.3", out)
             self.assertIn("Nothing written", out)
@@ -593,20 +593,20 @@ class PackSyncTest(TempRepoCase):
     def test_disabled_incompatible_pack_is_not_checked(self):
         self.set_requires_core('requires_core = ">=2.0"')
         self.enable_pack(False)
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertNotIn("requires_core", out)
 
     def test_pack_without_requires_core_applies_with_warning(self):
         self.set_requires_core("")
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertIn("WARN acme:pack.toml: no `requires_core`", out)
         self.assertIn('requires_core = ">=1.2, <2"', out)  # suggests the documented pin
         self.assertTrue((self.home / ".claude/skills/acme-deploy").is_symlink())
 
     def test_tokens_lists_pack_items(self):
-        code, out = quiet(aicfg.cmd_tokens)
+        code, out = quiet(brainrc.cmd_tokens)
         self.assertEqual(code, 0)
         self.assertIn("acme:skills/acme-deploy", out)
         self.assertIn("Always loaded:", out)
@@ -635,7 +635,7 @@ class DoctorTest(TempRepoCase):
         self.home = Path(tempfile.mkdtemp())
         self.old_home = os.environ["HOME"]
         os.environ["HOME"] = str(self.home)
-        quiet(aicfg.cmd_sync, True)
+        quiet(brainrc.cmd_sync, True)
         self.skills = self.home / ".claude/skills"
 
     def tearDown(self):
@@ -644,10 +644,10 @@ class DoctorTest(TempRepoCase):
         super().tearDown()
 
     def doctor(self, expect_code: int | None = None) -> list[tuple[str, str, str]]:
-        code, out = quiet(aicfg.cmd_doctor)
+        code, out = quiet(brainrc.cmd_doctor)
         if expect_code is not None:
             self.assertEqual(code, expect_code, out)
-        return aicfg.doctor_findings()
+        return brainrc.doctor_findings()
 
     def assert_one_fail(self, what: str, fix: str) -> None:
         findings = self.doctor(1)
@@ -657,7 +657,7 @@ class DoctorTest(TempRepoCase):
         self.assertIn(fix, fails[0][2])
 
     def test_clean_after_apply(self):
-        code, out = quiet(aicfg.cmd_doctor)
+        code, out = quiet(brainrc.cmd_doctor)
         self.assertEqual(code, 0, out)
         self.assertIn("No problems found.", out)
 
@@ -677,16 +677,16 @@ class DoctorTest(TempRepoCase):
             return real(args, **kw)
 
         with mock.patch("brainrc.doctor.subprocess.run", spy):
-            self.assertEqual([f for f in aicfg.doctor_findings() if "hook" in f[1]], [])
+            self.assertEqual([f for f in brainrc.doctor_findings() if "hook" in f[1]], [])
         self.assertIn(("guard_outward.py", "{}", 5), calls)
         self.assertIn(("guard_secrets.py", "{}", 5), calls)
         self.assertEqual([c for c in calls if c[0] == "guard.py"], [("guard.py", "{}", 5)])  # Cursor: once
 
     def test_points_to_troubleshooting_only_when_something_is_wrong(self):
-        _, clean = quiet(aicfg.cmd_doctor)
+        _, clean = quiet(brainrc.cmd_doctor)
         self.assertNotIn("troubleshooting", clean)
         (self.skills / "spec-agent").unlink()
-        _, out = quiet(aicfg.cmd_doctor)
+        _, out = quiet(brainrc.cmd_doctor)
         self.assertIn("docs/troubleshooting.md", out.splitlines()[-1])
         self.assertTrue((REPO / "docs/troubleshooting.md").is_file())
 
@@ -703,7 +703,7 @@ class DoctorTest(TempRepoCase):
         self.assert_one_fail("instructions.md", "apply")
 
     def test_missing_render(self):
-        aicfg.rendered_instructions().unlink()
+        brainrc.rendered_instructions().unlink()
         findings = self.doctor(1)
         self.assertTrue(any("instructions.md" in f[1] and "apply" in f[2] for f in findings), findings)
 
@@ -761,7 +761,7 @@ class DoctorTest(TempRepoCase):
         self.assertEqual(len(fails), 1, findings)
         self.assertIn("claude is disabled", fails[0][1])
         self.assertIn("apply", fails[0][2])
-        quiet(aicfg.cmd_sync, True)
+        quiet(brainrc.cmd_sync, True)
         self.doctor(0)
 
     def test_broken_roles_link(self):
@@ -785,25 +785,25 @@ class BudgetTest(TempRepoCase):
         super().setUp()
         self.pack = make_pack(Path(tempfile.mkdtemp()).resolve() / "acme-pack")
         set_core_version(self.repo, "1.2.3")
-        self.core = aicfg.Source("core", self.repo)
-        self.old_budget = aicfg.tokens.CORE_ALWAYS_BUDGET
+        self.core = brainrc.Source("core", self.repo)
+        self.old_budget = brainrc.tokens.CORE_ALWAYS_BUDGET
 
     def tearDown(self):
-        aicfg.tokens.CORE_ALWAYS_BUDGET = self.old_budget
+        brainrc.tokens.CORE_ALWAYS_BUDGET = self.old_budget
         shutil.rmtree(self.pack.parent)
         super().tearDown()
 
     def check(self, *packs):
-        return aicfg.check_budgets([self.core, *packs])
+        return brainrc.check_budgets([self.core, *packs])
 
     def test_core_is_within_budget_with_no_warnings(self):
-        total, items = aicfg.always_tokens(self.core)
+        total, items = brainrc.always_tokens(self.core)
         self.assertGreater(total, 1000)
-        self.assertLessEqual(total, aicfg.tokens.CORE_ALWAYS_BUDGET)
+        self.assertLessEqual(total, brainrc.tokens.CORE_ALWAYS_BUDGET)
         self.assertEqual(self.check(), ([], []))
 
     def test_always_tokens_counts_rules_and_descriptions(self):
-        total, items = aicfg.always_tokens(self.core)
+        total, items = brainrc.always_tokens(self.core)
         labels = [label for _, label in items]
         self.assertIn("rules/30-guardrails.md", labels)
         self.assertIn("skills/spec-agent", labels)
@@ -812,38 +812,38 @@ class BudgetTest(TempRepoCase):
         self.assertEqual(total, sum(n for n, _ in items))
 
     def test_core_over_budget_fails_naming_the_biggest_items(self):
-        aicfg.tokens.CORE_ALWAYS_BUDGET = 100
+        brainrc.tokens.CORE_ALWAYS_BUDGET = 100
         errors, _ = self.check()
         self.assertEqual(len(errors), 1, errors)
         self.assertIn("core", errors[0])
         self.assertIn("budget 100", errors[0])
-        _, items = aicfg.always_tokens(self.core)
+        _, items = brainrc.always_tokens(self.core)
         for _, label in sorted(items, reverse=True)[:3]:
             self.assertIn(label, errors[0])
-        code, out = quiet(aicfg.cmd_validate)
+        code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1, out)
         self.assertIn("budget 100", out)
 
     def test_pack_over_its_declared_budget_fails(self):
         toml = self.pack / "pack.toml"
         toml.write_text(toml.read_text().replace('prefix = "acme-"\n', 'prefix = "acme-"\nmax_always_tokens = 10\n'))
-        errors, _ = self.check(aicfg.load_pack(self.pack))
+        errors, _ = self.check(brainrc.load_pack(self.pack))
         self.assertTrue(any("acme" in e and "budget 10" in e for e in errors), errors)
 
     def test_pack_without_a_budget_warns_above_the_default(self):
         (self.pack / "rules/50-acme.md").write_text("# Acme\n\n" + "- Rule text here.\n" * 300)
-        errors, warnings = self.check(aicfg.load_pack(self.pack))
+        errors, warnings = self.check(brainrc.load_pack(self.pack))
         self.assertEqual(errors, [])
         self.assertTrue(any("acme" in w and "max_always_tokens" in w for w in warnings), warnings)
 
     def test_long_description_warns(self):
         skill = self.pack / "skills/acme-deploy/SKILL.md"
         skill.write_text("---\nname: acme-deploy\ndescription: " + "word " * 120 + "\n---\nBody.\n")
-        _, warnings = self.check(aicfg.load_pack(self.pack))
+        _, warnings = self.check(brainrc.load_pack(self.pack))
         self.assertTrue(any("acme:skills/acme-deploy" in w and "description" in w for w in warnings), warnings)
 
     def test_tokens_shows_budget_per_source(self):
-        code, out = quiet(aicfg.cmd_tokens)
+        code, out = quiet(brainrc.cmd_tokens)
         self.assertEqual(code, 0)
         self.assertRegex(out, r"core: ~\d+ / 3000 always-loaded tokens")
 
@@ -862,8 +862,8 @@ class UnslopSplitTest(unittest.TestCase):
         self.assertLess(len(body), 6000)
         for ref in ("structure.md", "clarity.md", "change-prose.md"):
             self.assertIn(f"references/{ref}", body)
-        description = aicfg.frontmatter(self.SKILL / "SKILL.md")["description"]
-        self.assertLessEqual(aicfg.estimate_tokens(description), 60)
+        description = brainrc.frontmatter(self.SKILL / "SKILL.md")["description"]
+        self.assertLessEqual(brainrc.estimate_tokens(description), 60)
 
 
 class RolesLinkTest(TempRepoCase):
@@ -872,14 +872,14 @@ class RolesLinkTest(TempRepoCase):
         self.roles = self.repo / "skills/spec-agent/roles"
 
     def assert_validate_fails(self):
-        code, out = quiet(aicfg.cmd_validate)
+        code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1, out)
         self.assertIn("skills/spec-agent/roles", out)
         self.assertIn("Platforms", out)
 
     def test_repo_link_passes(self):
         self.assertTrue(self.roles.is_symlink())
-        self.assertIsNone(aicfg.check_roles_link())
+        self.assertIsNone(brainrc.check_roles_link())
 
     def test_plain_file_from_a_checkout_without_symlinks_fails(self):
         self.roles.unlink()
@@ -894,7 +894,7 @@ class RolesLinkTest(TempRepoCase):
 
 class PluginTest(TempRepoCase):
     def manifest(self, name="plugin.json"):
-        return json.loads(aicfg.plugin_manifests()[f".claude-plugin/{name}"])
+        return json.loads(brainrc.plugin_manifests()[f".claude-plugin/{name}"])
 
     def test_plugin_manifest_comes_from_the_repo(self):
         set_core_version(self.repo, "1.2.3")
@@ -906,7 +906,7 @@ class PluginTest(TempRepoCase):
         self.assertNotIn("{{hooks_dir}}", json.dumps(plugin))
 
     def test_antigravity_manifest_is_the_name_only(self):
-        self.assertEqual(json.loads(aicfg.plugin_manifests()["plugin.json"]), {"name": "brainrc"})
+        self.assertEqual(json.loads(brainrc.plugin_manifests()["plugin.json"]), {"name": "brainrc"})
 
     def test_marketplace_lists_the_repo_as_the_plugin(self):
         market = self.manifest("marketplace.json")
@@ -917,41 +917,41 @@ class PluginTest(TempRepoCase):
         self.assertEqual(market["plugins"][0]["version"], self.manifest()["version"])
 
     def test_no_manifest_mentions_the_old_name(self):
-        for rel, text in aicfg.plugin_manifests().items():
+        for rel, text in brainrc.plugin_manifests().items():
             self.assertNotIn("ai-config", text, rel)
 
     def test_old_name_manifest_is_stale(self):
-        quiet(aicfg.cmd_plugin)
+        quiet(brainrc.cmd_plugin)
         path = self.repo / ".claude-plugin/plugin.json"
         path.write_text(path.read_text().replace('"brainrc"', '"ai-config"', 1))
-        errors = aicfg.check_plugin()
+        errors = brainrc.check_plugin()
         self.assertTrue(any("plugin.json" in e and "stale" in e and "brainrc.py plugin" in e for e in errors), errors)
 
     def test_plugin_command_writes_once(self):
-        code, out = quiet(aicfg.cmd_plugin)
+        code, out = quiet(brainrc.cmd_plugin)
         self.assertEqual(code, 0, out)
         self.assertTrue((self.repo / ".claude-plugin/plugin.json").is_file())
         self.assertTrue((self.repo / "plugin.json").is_file())
-        self.assertEqual(aicfg.check_plugin(), [])
-        code, out = quiet(aicfg.cmd_plugin)
+        self.assertEqual(brainrc.check_plugin(), [])
+        code, out = quiet(brainrc.cmd_plugin)
         self.assertIn("up to date", out)
 
     def test_validate_fails_on_missing_or_stale_manifests(self):
-        self.assertEqual(aicfg.check_plugin(), [])  # no .claude-plugin/: this repo doesn't publish one
-        quiet(aicfg.cmd_plugin)
+        self.assertEqual(brainrc.check_plugin(), [])  # no .claude-plugin/: this repo doesn't publish one
+        quiet(brainrc.cmd_plugin)
         (self.repo / ".claude-plugin/marketplace.json").unlink()
-        errors = aicfg.check_plugin()
+        errors = brainrc.check_plugin()
         self.assertTrue(any("marketplace.json" in e and "missing" in e and "brainrc.py plugin" in e for e in errors), errors)
-        quiet(aicfg.cmd_plugin)
+        quiet(brainrc.cmd_plugin)
         set_core_version(self.repo, "9.9.9")
-        errors = aicfg.check_plugin()
+        errors = brainrc.check_plugin()
         self.assertTrue(any("plugin.json" in e and "stale" in e for e in errors), errors)
-        code, out = quiet(aicfg.cmd_validate)
+        code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1)
         self.assertIn("brainrc.py plugin", out)
 
 
-class AicfgHomeTest(TempRepoCase):
+class SettingsHomeTest(TempRepoCase):
     def setUp(self):
         super().setUp()
         self.home = Path(tempfile.mkdtemp())
@@ -967,15 +967,24 @@ class AicfgHomeTest(TempRepoCase):
         os.environ.pop("BRAINRC_HOME")
         with mock.patch.dict(os.environ):
             os.environ.pop("XDG_CONFIG_HOME", None)  # CI runners set it
-            self.assertEqual(aicfg.aicfg_home(), self.home / ".config/brainrc")
+            self.assertEqual(brainrc.settings_home(), self.home / ".config/brainrc")
 
-    def test_apply_renders_into_aicfg_home(self):
-        code, out = quiet(aicfg.cmd_sync, True)
+    def test_aicfg_home_is_a_deprecated_alias_of_settings_home(self):
+        self.assertIs(brainrc.config.aicfg_home, brainrc.config.settings_home)
+        self.assertIs(brainrc.aicfg_home, brainrc.settings_home)
+        # a subprocess: scripts/aicfg.py shadows the aicfg package on this suite's sys.path
+        code = "import aicfg.cli, brainrc.config as c; assert aicfg.cli.aicfg_home is c.settings_home"
+        proc = subprocess.run([sys.executable, "-W", "ignore::DeprecationWarning", "-c", code],
+                              cwd=REPO, capture_output=True, text=True)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+
+    def test_apply_renders_into_settings_home(self):
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
-        self.assertTrue((self.aicfg_home / "instructions.md").is_file())
-        self.assertTrue((self.aicfg_home / "extensions.md").is_file())
-        self.assertTrue(aicfg.extensions_file().is_file())  # deprecated in-repo copy, kept for packs
-        self.assertEqual(aicfg.link_target(self.home / ".claude/CLAUDE.md"), self.aicfg_home / "instructions.md")
+        self.assertTrue((self.settings_home / "instructions.md").is_file())
+        self.assertTrue((self.settings_home / "extensions.md").is_file())
+        self.assertTrue(brainrc.extensions_file().is_file())  # deprecated in-repo copy, kept for packs
+        self.assertEqual(brainrc.link_target(self.home / ".claude/CLAUDE.md"), self.settings_home / "instructions.md")
         self.assertFalse((self.repo / "dist/instructions.md").exists())
 
     def test_old_dist_link_is_updated_and_old_file_removed(self):
@@ -985,25 +994,25 @@ class AicfgHomeTest(TempRepoCase):
         link = self.home / ".claude/CLAUDE.md"
         link.parent.mkdir(parents=True)
         link.symlink_to(old)
-        code, out = quiet(aicfg.cmd_sync, False)
+        code, out = quiet(brainrc.cmd_sync, False)
         self.assertRegex(out, r"UPDATE +claude +~/.claude/CLAUDE.md")
-        quiet(aicfg.cmd_sync, True)
-        self.assertEqual(aicfg.link_target(link), self.aicfg_home / "instructions.md")
+        quiet(brainrc.cmd_sync, True)
+        self.assertEqual(brainrc.link_target(link), self.settings_home / "instructions.md")
         self.assertFalse(old.parent.exists())  # the emptied dist/ goes too
 
-    def test_disabled_harness_link_to_aicfg_home_is_pruned(self):
-        quiet(aicfg.cmd_sync, True)
+    def test_disabled_harness_link_to_settings_home_is_pruned(self):
+        quiet(brainrc.cmd_sync, True)
         (self.repo / "harnesses.local.toml").write_text("[claude]\nenabled = false\n")
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertFalse((self.home / ".claude/CLAUDE.md").is_symlink())
 
     def test_doctor_names_the_home_render(self):
-        quiet(aicfg.cmd_sync, True)
+        quiet(brainrc.cmd_sync, True)
         (self.repo / "rules/99-new.md").write_text("# New\n\n- Rule.\n")
-        fails = [f for f in aicfg.doctor_findings() if f[0] == "FAIL"]
+        fails = [f for f in brainrc.doctor_findings() if f[0] == "FAIL"]
         self.assertEqual(len(fails), 1, fails)
-        self.assertIn(aicfg.tilde(self.aicfg_home / "instructions.md"), fails[0][1])
+        self.assertIn(brainrc.tilde(self.settings_home / "instructions.md"), fails[0][1])
 
 
 class UserInvokedSkillTest(unittest.TestCase):
@@ -1017,7 +1026,7 @@ class UserInvokedSkillTest(unittest.TestCase):
             if "$ARGUMENTS" not in skill.read_text():
                 continue
             with self.subTest(skill=skill.parent.name):
-                meta = aicfg.frontmatter(skill)
+                meta = brainrc.frontmatter(skill)
                 self.assertEqual(meta.get("disable-model-invocation"), "true")
                 self.assertTrue(meta.get("argument-hint"))
 
@@ -1050,12 +1059,12 @@ class VersionConstraintTest(unittest.TestCase):
         ]
         for version, text, expected in cases:
             with self.subTest(text=text, version=version):
-                self.assertEqual(aicfg.satisfies(version, aicfg.parse_constraint(text)), expected)
+                self.assertEqual(brainrc.satisfies(version, brainrc.parse_constraint(text)), expected)
 
     def test_rejects_malformed(self):
         for text in ("latest", ">>1", "", ">=0.1,", "=>0.1", "1.2.3.4", ">=1.x", "^1.2", "~=1.2"):
             with self.subTest(text=text), self.assertRaises(ValueError):
-                aicfg.parse_constraint(text)
+                brainrc.parse_constraint(text)
 
 
 class RenderInstructionsTest(TempRepoCase):
@@ -1070,29 +1079,29 @@ class RenderInstructionsTest(TempRepoCase):
         (beta / "rules").mkdir(parents=True)
         (beta / "pack.toml").write_text('name = "beta"\nrequires_core = ">=0"\n')
         (beta / "rules/10-beta.md").write_text("# Beta\n\n- Beta rule.\n")
-        self.core = aicfg.Source("core", self.repo)
-        self.srcs = [self.core, aicfg.load_pack(self.acme), aicfg.load_pack(beta)]
+        self.core = brainrc.Source("core", self.repo)
+        self.srcs = [self.core, brainrc.load_pack(self.acme), brainrc.load_pack(beta)]
 
     def tearDown(self):
         shutil.rmtree(self.tmp)
         super().tearDown()
 
     def last_core_rule(self, out: str) -> int:
-        last = aicfg.rule_text(aicfg.markdown_files("rules", self.core)[-1])
+        last = brainrc.rule_text(brainrc.markdown_files("rules", self.core)[-1])
         return out.index(last) + len(last)
 
     def test_core_only_render_is_unchanged(self):
-        texts = [aicfg.rule_text(p) for p in sorted((self.repo / "rules").glob("*.md"))]
-        expected = ("<!-- GENERATED by ai-config from rules/*.md (core). Edit the source repo, "
+        texts = [brainrc.rule_text(p) for p in sorted((self.repo / "rules").glob("*.md"))]
+        expected = ("<!-- GENERATED by brainrc from rules/*.md (core). Edit the source repo, "
                     "not this file. -->\n\n" + "\n\n".join(texts) + "\n")
-        self.assertEqual(aicfg.render_instructions([self.core]), expected)
+        self.assertEqual(brainrc.render_instructions([self.core]), expected)
 
     def test_pack_rules_follow_every_core_rule(self):
-        out = aicfg.render_instructions(self.srcs)
+        out = brainrc.render_instructions(self.srcs)
         self.assertLess(self.last_core_rule(out), out.index("- Early acme rule."))
 
     def test_pack_blocks_are_labelled_in_source_order(self):
-        out = aicfg.render_instructions(self.srcs)
+        out = brainrc.render_instructions(self.srcs)
         acme, beta = out.index("<!-- pack: acme -->"), out.index("<!-- pack: beta -->")
         self.assertLess(self.last_core_rule(out), acme)
         self.assertLess(acme, out.index("- Early acme rule."))
@@ -1104,7 +1113,7 @@ class RenderInstructionsTest(TempRepoCase):
     def test_local_rules_render_last_under_a_label(self):
         (self.repo / "rules/99-mine.local.md").write_text("- My local rule.\n")
         (self.acme / "rules/01-acme.local.md").write_text("- Acme local rule.\n")
-        out = aicfg.render_instructions(self.srcs)
+        out = brainrc.render_instructions(self.srcs)
         local = out.index("<!-- local -->")
         self.assertLess(out.index("- Beta rule."), local)
         self.assertLess(local, out.index("- Acme local rule."))
@@ -1118,22 +1127,22 @@ class RuleFrontmatterTest(TempRepoCase):
     def test_rule_text_strips_frontmatter(self):
         rule = self.repo / "rules/50-x.md"
         rule.write_text("---\ntrigger: always_on\n---\n\n# X\n\n- X rule.\n")
-        self.assertEqual(aicfg.rule_text(rule), "# X\n\n- X rule.")
+        self.assertEqual(brainrc.rule_text(rule), "# X\n\n- X rule.")
         plain = self.repo / "rules/51-y.md"
         plain.write_text("# Y\n\n- Y rule.\n")
-        self.assertEqual(aicfg.rule_text(plain), "# Y\n\n- Y rule.")
+        self.assertEqual(brainrc.rule_text(plain), "# Y\n\n- Y rule.")
 
     def test_render_and_budget_leave_out_the_trigger(self):
-        out = aicfg.render_instructions()
+        out = brainrc.render_instructions()
         self.assertIn("# Working agreements", out)
         self.assertNotIn("trigger:", out)
-        _, items = aicfg.always_tokens(aicfg.Source("core", self.repo))
+        _, items = brainrc.always_tokens(brainrc.Source("core", self.repo))
         rule = self.repo / "rules/00-core.md"
-        self.assertIn((aicfg.estimate_tokens(aicfg.rule_text(rule)), "rules/00-core.md"), items)
+        self.assertIn((brainrc.estimate_tokens(brainrc.rule_text(rule)), "rules/00-core.md"), items)
 
     def test_core_rules_need_a_trigger(self):
         (self.repo / "rules/50-x.md").write_text("# X\n\n- X rule.\n")
-        code, out = quiet(aicfg.cmd_validate)
+        code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1, out)
         self.assertIn("rules/50-x.md", out)
         self.assertIn("trigger", out)
@@ -1148,7 +1157,7 @@ class OpenCodeAgentTest(TempRepoCase):
         self.old_home = os.environ["HOME"]
         os.environ["HOME"] = str(self.home)
         self.agents = self.home / ".config/opencode/agents"
-        self.renders = self.aicfg_home / "opencode/agents"
+        self.renders = self.settings_home / "opencode/agents"
 
     def tearDown(self):
         os.environ["HOME"] = self.old_home
@@ -1161,7 +1170,7 @@ class OpenCodeAgentTest(TempRepoCase):
         return path
 
     def test_tools_become_denies_and_model_is_dropped(self):
-        out = aicfg.opencode_agent(self.write_agent("fixture", "tools: Read, Grep\nmodel: sonnet\n"))
+        out = brainrc.opencode_agent(self.write_agent("fixture", "tools: Read, Grep\nmodel: sonnet\n"))
         self.assertTrue(out.startswith("---\nname: fixture\ndescription: Fixture agent.\nmode: subagent\n"), out)
         self.assertTrue(out.endswith("---\n\n## Role\nBody.\n"), out)
         for key in ("edit", "bash", "glob", "webfetch", "websearch", "task", "todowrite"):
@@ -1172,43 +1181,43 @@ class OpenCodeAgentTest(TempRepoCase):
         self.assertNotIn("tools", out)
 
     def test_agent_without_tools_keeps_every_permission(self):
-        out = aicfg.opencode_agent(self.write_agent("open", ""))
+        out = brainrc.opencode_agent(self.write_agent("open", ""))
         self.assertNotIn("permission", out)
         self.assertIn("mode: subagent", out)
 
     def test_apply_links_rendered_agents(self):
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         link = self.agents / "analyst.md"
-        self.assertEqual(aicfg.link_target(link), self.renders / "analyst.md")
+        self.assertEqual(brainrc.link_target(link), self.renders / "analyst.md")
         self.assertIn("mode: subagent", link.read_text())
-        self.assertEqual(aicfg.link_target(self.home / ".claude/agents/analyst.md"), self.repo / "agents/analyst.md")
-        self.assertEqual(aicfg.doctor_findings(), [])
+        self.assertEqual(brainrc.link_target(self.home / ".claude/agents/analyst.md"), self.repo / "agents/analyst.md")
+        self.assertEqual(brainrc.doctor_findings(), [])
 
     def test_removed_agent_is_pruned(self):
-        quiet(aicfg.cmd_sync, True)
+        quiet(brainrc.cmd_sync, True)
         (self.repo / "agents/verifier.md").unlink()
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertFalse((self.agents / "verifier.md").is_symlink())
         self.assertFalse((self.renders / "verifier.md").exists())
 
     def test_doctor_flags_a_stale_render(self):
-        quiet(aicfg.cmd_sync, True)
+        quiet(brainrc.cmd_sync, True)
         (self.renders / "analyst.md").write_text("old\n")
-        fails = [f for f in aicfg.doctor_findings() if f[0] == "FAIL"]
+        fails = [f for f in brainrc.doctor_findings() if f[0] == "FAIL"]
         self.assertEqual(len(fails), 1, fails)
         self.assertIn("opencode/agents/analyst.md is stale", fails[0][1])
 
     def test_unknown_agents_format_is_an_error(self):
         (self.repo / "harnesses.local.toml").write_text('[opencode]\nagents_format = "nope"\n')
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 1, out)
         self.assertIn("agents_format", out)
 
 
 class CrashRegressionTest(TempRepoCase):
-    """Problems the Rust parity work found aicfg crashing on instead of reporting."""
+    """Problems the Rust parity work found brainrc crashing on instead of reporting."""
 
     def setUp(self):
         super().setUp()
@@ -1223,10 +1232,10 @@ class CrashRegressionTest(TempRepoCase):
 
     def test_dangling_markdown_link_in_a_skill_is_reported(self):
         (self.repo / "skills/terraform/gone.md").symlink_to(self.repo / "nowhere.md")
-        code, out = quiet(aicfg.cmd_validate)
+        code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1, out)
         self.assertIn("skills/terraform/gone.md: dangling symlink", out)
-        code, out = quiet(aicfg.cmd_tokens)
+        code, out = quiet(brainrc.cmd_tokens)
         self.assertEqual(code, 0, out)
 
     def break_fragment(self):
@@ -1236,32 +1245,32 @@ class CrashRegressionTest(TempRepoCase):
 
     def test_invalid_fragment_stops_apply_before_writing(self):
         error = self.break_fragment()
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 1, out)
         self.assertIn(f"ERROR {error}", out)
         self.assertIn("Nothing written", out)
         self.assertEqual(list(self.home.iterdir()), [])
 
     def test_invalid_fragment_is_a_doctor_finding(self):
-        quiet(aicfg.cmd_sync, True)
+        quiet(brainrc.cmd_sync, True)
         error = self.break_fragment()
-        fails = [f[1] for f in aicfg.doctor_findings() if f[0] == "FAIL"]
+        fails = [f[1] for f in brainrc.doctor_findings() if f[0] == "FAIL"]
         self.assertTrue(any(error in f for f in fails), fails)
 
     def test_invalid_fragment_in_plugin_and_validate(self):
         (self.repo / ".claude-plugin").mkdir()
         error = self.break_fragment()
-        code, out = quiet(aicfg.cmd_plugin)
+        code, out = quiet(brainrc.cmd_plugin)
         self.assertEqual(code, 1, out)
         self.assertIn("ERROR", out)
         self.assertIn("invalid JSON", out)
-        code, out = quiet(aicfg.cmd_validate)
+        code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1, out)
         self.assertEqual(out.count(error), 1, out)
 
     def test_unknown_agents_format_is_a_doctor_finding(self):
         (self.repo / "harnesses.local.toml").write_text('[opencode]\nagents_format = "nope"\n')
-        fails = [f for f in aicfg.doctor_findings() if f[0] == "FAIL"]
+        fails = [f for f in brainrc.doctor_findings() if f[0] == "FAIL"]
         self.assertTrue(any("agents_format" in what and "opencode" in fix for _, what, fix in fails), fails)
 
     def test_new_hook_events_keep_fragment_order(self):
@@ -1269,7 +1278,7 @@ class CrashRegressionTest(TempRepoCase):
                   "PreCompact", "SubagentStop", "SessionEnd"]
         group = {"hooks": [{"type": "command", "command": "python3 ~/.claude/hooks/ai-config/x.py"}]}
         fragment = {"hooks": {e: [group] for e in events}}
-        merged = aicfg.merge_settings({"hooks": {"PreToolUse": [FOREIGN]}}, fragment)
+        merged = brainrc.merge_settings({"hooks": {"PreToolUse": [FOREIGN]}}, fragment)
         self.assertEqual(list(merged["hooks"]), ["PreToolUse", *events])
 
 
@@ -1290,7 +1299,7 @@ class HookDirRenameTest(PackSyncTest):
         return self.repo / "overrides/claude/hooks"
 
     def test_fresh_apply_makes_only_brainrc_links(self):
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         hooks = self.home / ".claude/hooks"
         self.assertEqual(sorted(p.name for p in hooks.iterdir()), ["brainrc", "brainrc-acme"])
@@ -1299,7 +1308,7 @@ class HookDirRenameTest(PackSyncTest):
 
     def test_old_links_are_removed_and_settings_rewritten_once(self):
         hooks = self.old_install()
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertEqual(sorted(p.name for p in hooks.iterdir()), ["brainrc", "brainrc-acme"])
         commands = self.settings_commands()
@@ -1307,13 +1316,13 @@ class HookDirRenameTest(PackSyncTest):
         self.assertEqual(len(commands), len(set(commands)))
         self.assertEqual(sum("guard_acme" in c for c in commands), 1)
         self.assertEqual(sum("guard_outward" in c for c in commands), 1)
-        self.assertEqual(quiet(aicfg.cmd_sync, False)[1].strip(), "Everything in sync.")
+        self.assertEqual(quiet(brainrc.cmd_sync, False)[1].strip(), "Everything in sync.")
 
     def test_cursor_old_link_is_removed(self):
         hooks = self.home / ".cursor/hooks"
         hooks.mkdir(parents=True)
         (hooks / "ai-config").symlink_to(self.repo / "overrides/cursor/hooks")
-        quiet(aicfg.cmd_sync, True)
+        quiet(brainrc.cmd_sync, True)
         self.assertEqual(sorted(p.name for p in hooks.iterdir()), ["brainrc"])
 
     def test_real_dir_or_file_at_the_old_name_is_left_alone(self):
@@ -1321,7 +1330,7 @@ class HookDirRenameTest(PackSyncTest):
         (hooks / "ai-config").mkdir(parents=True)
         (hooks / "ai-config/mine.py").write_text("x\n")
         (hooks / "ai-config-acme").write_text("mine\n")
-        quiet(aicfg.cmd_sync, True)
+        quiet(brainrc.cmd_sync, True)
         self.assertEqual((hooks / "ai-config/mine.py").read_text(), "x\n")
         self.assertEqual((hooks / "ai-config-acme").read_text(), "mine\n")
 
@@ -1331,8 +1340,8 @@ class HookDirRenameTest(PackSyncTest):
         mine = self.home / "my-hooks"
         mine.mkdir()
         (hooks / "ai-config").symlink_to(mine)
-        quiet(aicfg.cmd_sync, True)
-        self.assertEqual(aicfg.link_target(hooks / "ai-config"), mine)
+        quiet(brainrc.cmd_sync, True)
+        self.assertEqual(brainrc.link_target(hooks / "ai-config"), mine)
 
     def test_old_link_into_a_former_home_copy_is_removed(self):
         legacy = self.home / ".config/ai-config"
@@ -1341,17 +1350,17 @@ class HookDirRenameTest(PackSyncTest):
         hooks = self.home / ".claude/hooks"
         hooks.mkdir(parents=True)
         (hooks / "ai-config").symlink_to(copy)
-        quiet(aicfg.cmd_sync, True)
+        quiet(brainrc.cmd_sync, True)
         self.assertFalse((hooks / "ai-config").is_symlink())
         self.assertTrue(copy.is_dir())  # former-home copies are left for migrate
 
     def test_custom_hooks_dir_is_used_as_given_and_siblings_are_untouched(self):
         (self.repo / "harnesses.local.toml").write_text('[claude]\nhooks_dir = "~/.claude/hooks/mine"\n')
         hooks = self.old_install()
-        quiet(aicfg.cmd_sync, True)
+        quiet(brainrc.cmd_sync, True)
         self.assertEqual(sorted(p.name for p in hooks.iterdir()),
                          ["ai-config", "ai-config-acme", "mine", "mine-acme"])
-        self.assertEqual(aicfg.link_target(hooks / "ai-config"), self.core_hooks())
+        self.assertEqual(brainrc.link_target(hooks / "ai-config"), self.core_hooks())
 
 
 class InstalledModeTest(TempRepoCase):
@@ -1365,7 +1374,7 @@ class InstalledModeTest(TempRepoCase):
         roles = self.core / "skills/spec-agent/roles"
         roles.unlink()
         shutil.copytree(self.core / "agents", roles)  # wheels copy the link's files
-        aicfg.config.REPO = self.core
+        brainrc.config.REPO = self.core
         self.home = Path(tempfile.mkdtemp())
         self.old_home = os.environ["HOME"]
         os.environ["HOME"] = str(self.home)
@@ -1380,46 +1389,46 @@ class InstalledModeTest(TempRepoCase):
         return sorted(str(p.relative_to(self.core)) for p in self.core.rglob("*"))
 
     def test_bundled_core_is_found_next_to_the_package(self):
-        self.assertEqual(aicfg.config.find_core(self.pkg), self.core)
-        self.assertEqual(aicfg.config.find_core(self.repo / "brainrc"), self.repo)
-        self.assertTrue(aicfg.config.installed())
+        self.assertEqual(brainrc.config.find_core(self.pkg), self.core)
+        self.assertEqual(brainrc.config.find_core(self.repo / "brainrc"), self.repo)
+        self.assertTrue(brainrc.config.installed())
 
-    def test_local_files_live_in_aicfg_home(self):
-        self.aicfg_home.mkdir(parents=True)
-        (self.aicfg_home / "harnesses.local.toml").write_text("[cursor]\nenabled = false\n")
+    def test_local_files_live_in_settings_home(self):
+        self.settings_home.mkdir(parents=True)
+        (self.settings_home / "harnesses.local.toml").write_text("[cursor]\nenabled = false\n")
         (self.core / "harnesses.local.toml").write_text("[codex]\nenabled = false\n")
-        harnesses = aicfg.config.load_harnesses()
+        harnesses = brainrc.config.load_harnesses()
         self.assertNotIn("cursor", harnesses)
         self.assertIn("codex", harnesses)
-        (self.aicfg_home / "rules").mkdir()
-        (self.aicfg_home / "rules/99-mine.local.md").write_text("- My local rule.\n")
-        self.assertIn("- My local rule.", aicfg.render_instructions())
+        (self.settings_home / "rules").mkdir()
+        (self.settings_home / "rules/99-mine.local.md").write_text("- My local rule.\n")
+        self.assertIn("- My local rule.", brainrc.render_instructions())
 
     def test_apply_never_writes_inside_the_package(self):
         (self.core / "skills/spec-agent/references/extensions.md").unlink(missing_ok=True)
         before = self.files()
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertEqual(self.files(), before)
-        self.assertTrue((self.aicfg_home / "extensions.md").is_file())
-        self.assertEqual(aicfg.link_target(self.home / ".claude/skills/spec-agent"), self.core / "skills/spec-agent")
-        self.assertEqual(aicfg.doctor_findings(), [])
+        self.assertTrue((self.settings_home / "extensions.md").is_file())
+        self.assertEqual(brainrc.link_target(self.home / ".claude/skills/spec-agent"), self.core / "skills/spec-agent")
+        self.assertEqual(brainrc.doctor_findings(), [])
 
     def copy_root(self) -> Path:
-        return self.aicfg_home / "hooks/core"
+        return self.settings_home / "hooks/core"
 
-    def test_installed_hooks_link_into_a_copy_in_aicfg_home(self):
-        code, out = quiet(aicfg.cmd_sync, True)
+    def test_installed_hooks_link_into_a_copy_in_settings_home(self):
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         for harness in ("claude", "cursor"):
             copy = self.copy_root() / harness / "hooks"
-            self.assertEqual(aicfg.link_target(self.home / f".{harness}/hooks/brainrc"), copy)
+            self.assertEqual(brainrc.link_target(self.home / f".{harness}/hooks/brainrc"), copy)
             self.assertEqual(sorted(p.name for p in copy.iterdir()),
                              sorted(p.name for p in (self.core / "overrides" / harness / "hooks").iterdir()))
-        self.assertEqual(aicfg.doctor_findings(), [])
+        self.assertEqual(brainrc.doctor_findings(), [])
 
     def test_guards_still_run_after_the_package_is_gone(self):
-        quiet(aicfg.cmd_sync, True)
+        quiet(brainrc.cmd_sync, True)
         claude = json.loads((self.home / ".claude/settings.json").read_text())
         cursor = json.loads((self.home / ".cursor/hooks.json").read_text())
         shutil.rmtree(self.core)  # an upgrade to a new Python moved the package
@@ -1433,68 +1442,68 @@ class InstalledModeTest(TempRepoCase):
         self.assertEqual(json.loads(run.stdout)["permission"], "deny")
 
     def test_an_upgraded_package_refreshes_the_copy(self):
-        quiet(aicfg.cmd_sync, True)
+        quiet(brainrc.cmd_sync, True)
         (self.copy_root() / "claude/hooks/leftover.py").write_text("")
         guard = self.core / "overrides/claude/hooks/guard_outward.py"
         guard.write_text(guard.read_text() + "\n# upgraded\n")
-        code, out = quiet(aicfg.cmd_sync, False)
+        code, out = quiet(brainrc.cmd_sync, False)
         self.assertRegex(out, r"UPDATE +claude +~/.claude/hooks/brainrc")
-        quiet(aicfg.cmd_sync, True)
+        quiet(brainrc.cmd_sync, True)
         self.assertEqual((self.copy_root() / "claude/hooks/guard_outward.py").read_text(), guard.read_text())
         self.assertFalse((self.copy_root() / "claude/hooks/leftover.py").exists())
-        self.assertIn("Everything in sync", quiet(aicfg.cmd_sync, False)[1])
+        self.assertIn("Everything in sync", quiet(brainrc.cmd_sync, False)[1])
 
     def test_an_old_link_into_the_package_is_repointed(self):
         link = self.home / ".claude/hooks/brainrc"
         link.parent.mkdir(parents=True)
         link.symlink_to(self.core / "overrides/claude/hooks")
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertRegex(out, r"UPDATE +claude +~/.claude/hooks/brainrc")
-        self.assertEqual(aicfg.link_target(link), self.copy_root() / "claude/hooks")
-        self.assertEqual(aicfg.doctor_findings(), [])
+        self.assertEqual(brainrc.link_target(link), self.copy_root() / "claude/hooks")
+        self.assertEqual(brainrc.doctor_findings(), [])
 
     def test_disabling_every_hooked_harness_removes_the_copy(self):
-        quiet(aicfg.cmd_sync, True)
-        local = self.aicfg_home / "harnesses.local.toml"
+        quiet(brainrc.cmd_sync, True)
+        local = self.settings_home / "harnesses.local.toml"
         local.write_text("[cursor]\nenabled = false\n")
-        quiet(aicfg.cmd_sync, True)
+        quiet(brainrc.cmd_sync, True)
         self.assertFalse((self.home / ".cursor/hooks/brainrc").is_symlink())
         self.assertTrue(self.copy_root().is_dir())  # claude still links into it
         local.write_text("[cursor]\nenabled = false\n[claude]\nenabled = false\n")
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertRegex(out, r"PRUNE +~?.*hooks/core")
         self.assertFalse((self.home / ".claude/hooks/brainrc").is_symlink())
         self.assertFalse(self.copy_root().exists())
 
-    def test_relative_pack_path_is_relative_to_aicfg_home(self):
-        self.aicfg_home.mkdir(parents=True)
-        shutil.copytree(REPO / "examples/pack-acme", self.aicfg_home / "packs/acme")
-        (self.aicfg_home / "packs.local.toml").write_text('[acme]\npath = "packs/acme"\n')
-        self.assertEqual([s.root for s in aicfg.sources()][-1], self.aicfg_home / "packs/acme")
+    def test_relative_pack_path_is_relative_to_settings_home(self):
+        self.settings_home.mkdir(parents=True)
+        shutil.copytree(REPO / "examples/pack-acme", self.settings_home / "packs/acme")
+        (self.settings_home / "packs.local.toml").write_text('[acme]\npath = "packs/acme"\n')
+        self.assertEqual([s.root for s in brainrc.sources()][-1], self.settings_home / "packs/acme")
 
     def test_hints_name_the_installed_command(self):
-        fixes = [fix for _, _, fix in aicfg.doctor_findings()]  # nothing applied yet
+        fixes = [fix for _, _, fix in brainrc.doctor_findings()]  # nothing applied yet
         self.assertIn("brainrc apply", fixes)
         self.assertFalse(any("scripts/brainrc.py" in f for f in fixes), fixes)
-        code, out = quiet(aicfg.main, ["brainrc", "bogus"])
+        code, out = quiet(brainrc.main, ["brainrc", "bogus"])
         self.assertEqual(code, 2)
         self.assertIn("  brainrc status", out)
         self.assertNotIn("brainrc.py", out)
 
     def test_plugin_needs_a_checkout(self):
-        code, out = quiet(aicfg.cmd_plugin)
+        code, out = quiet(brainrc.cmd_plugin)
         self.assertEqual(code, 1, out)
         self.assertIn("checkout", out)
 
     def test_copied_roles_are_fine_when_installed(self):
-        self.assertIsNone(aicfg.check_roles_link())
+        self.assertIsNone(brainrc.check_roles_link())
 
     def test_tokens_match_a_checkout(self):
-        _, installed = quiet(aicfg.cmd_tokens)
-        aicfg.config.REPO = self.repo
-        _, checkout = quiet(aicfg.cmd_tokens)
+        _, installed = quiet(brainrc.cmd_tokens)
+        brainrc.config.REPO = self.repo
+        _, checkout = quiet(brainrc.cmd_tokens)
         self.assertEqual(installed, checkout)
 
 
@@ -1504,7 +1513,7 @@ def git(*args, cwd=None):
 
 
 class GitPackTest(TempRepoCase):
-    """A pack named by git URL: aicfg fetches it into $AICFG_HOME/packs/<key> (#50)."""
+    """A pack named by git URL: brainrc fetches it into $BRAINRC_HOME/packs/<key> (#50)."""
 
     def setUp(self):
         super().setUp()
@@ -1527,7 +1536,7 @@ class GitPackTest(TempRepoCase):
         git("tag", "v2", cwd=work)
         git("clone", "-q", "--bare", str(work), str(self.tmp / "acme.git"))
         self.url = (self.tmp / "acme.git").as_uri()
-        self.clone = self.aicfg_home / "packs/acme"
+        self.clone = self.settings_home / "packs/acme"
 
     def tearDown(self):
         os.environ["HOME"] = self.old_home
@@ -1541,32 +1550,32 @@ class GitPackTest(TempRepoCase):
 
     def test_apply_fetches_and_links(self):
         self.use(git=self.url, ref="v1")
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertIn(f"FETCH     acme      {self.url} (v1)", out)
         self.assertTrue((self.clone / "pack.toml").is_file())
         self.assertTrue((self.home / ".claude/skills/acme-context").is_symlink())
         self.assertFalse((self.home / ".claude/skills/acme-new").exists())
-        self.assertEqual(aicfg.doctor_findings(), [])
+        self.assertEqual(brainrc.doctor_findings(), [])
 
     def test_status_does_not_fetch(self):
         self.use(git=self.url)
-        code, out = quiet(aicfg.cmd_sync, False)
+        code, out = quiet(brainrc.cmd_sync, False)
         self.assertEqual(code, 0, out)
         self.assertIn("FETCH", out)
         self.assertFalse(self.clone.exists())
 
     def test_update_moves_to_a_new_ref(self):
         self.use(git=self.url, ref="v1")
-        quiet(aicfg.cmd_sync, True)
+        quiet(brainrc.cmd_sync, True)
         self.use(git=self.url, ref="v2")
-        code, out = quiet(aicfg.cmd_update)
+        code, out = quiet(brainrc.cmd_update)
         self.assertEqual(code, 0, out)
         self.assertTrue((self.home / ".claude/skills/acme-new").is_symlink())
 
     def test_failed_fetch_writes_nothing(self):
         self.use(git=(self.tmp / "missing.git").as_uri())
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 1, out)
         self.assertIn("ERROR", out)
         self.assertIn("Nothing written", out)
@@ -1575,34 +1584,34 @@ class GitPackTest(TempRepoCase):
 
     def test_update_leaves_a_changed_clone_alone(self):
         self.use(git=self.url, ref="v1")
-        quiet(aicfg.cmd_sync, True)
+        quiet(brainrc.cmd_sync, True)
         (self.clone / "pack.toml").write_text((self.clone / "pack.toml").read_text() + "# mine\n")
-        code, out = quiet(aicfg.cmd_update)
+        code, out = quiet(brainrc.cmd_update)
         self.assertEqual(code, 1, out)
         self.assertIn("local changes", out)
         self.assertTrue((self.clone / "pack.toml").read_text().endswith("# mine\n"))
 
     def test_path_and_git_together_is_an_error(self):
         self.use(git=self.url, path="somewhere")
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 1, out)
         self.assertIn("`path` or `git`", out)
 
     def test_url_that_looks_like_an_option_is_refused(self):
         self.use(git="--upload-pack=touch x")
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 1, out)
         self.assertIn("ERROR", out)
 
     def test_apply_follows_a_ref_change(self):
         self.use(git=self.url, ref="v1")
-        quiet(aicfg.cmd_sync, True)
+        quiet(brainrc.cmd_sync, True)
         self.use(git=self.url, ref="v2")
-        code, out = quiet(aicfg.cmd_sync, False)
+        code, out = quiet(brainrc.cmd_sync, False)
         self.assertEqual(code, 0, out)
         self.assertIn(f"FETCH     acme      {self.url} (v2)", out)
         self.assertFalse((self.clone / "skills/acme-new").exists())  # status doesn't fetch
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertIn("FETCH", out)
         self.assertTrue((self.clone / "skills/acme-new").is_dir())
@@ -1610,50 +1619,50 @@ class GitPackTest(TempRepoCase):
 
     def test_apply_follows_a_url_change(self):
         self.use(git=self.url, ref="v1")
-        quiet(aicfg.cmd_sync, True)
+        quiet(brainrc.cmd_sync, True)
         moved = self.tmp / "moved.git"
         shutil.copytree(self.tmp / "acme.git", moved)
         shutil.rmtree(self.tmp / "acme.git")
         self.use(git=moved.as_uri(), ref="v2")
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertIn(f"FETCH     acme      {moved.as_uri()} (v2)", out)
         self.assertTrue((self.clone / "skills/acme-new").is_dir())
 
     def test_doctor_flags_a_clone_that_doesnt_match(self):
         self.use(git=self.url, ref="v1")
-        quiet(aicfg.cmd_sync, True)
+        quiet(brainrc.cmd_sync, True)
         self.use(git=self.url, ref="v2")
-        fails = [f for f in aicfg.doctor_findings() if f[0] == "FAIL"]
+        fails = [f for f in brainrc.doctor_findings() if f[0] == "FAIL"]
         self.assertTrue(any("v1" in what and "v2" in what and "apply" in fix for _, what, fix in fails), fails)
 
     def test_unchanged_config_does_not_fetch(self):
         self.use(git=self.url, ref="v1")
-        quiet(aicfg.cmd_sync, True)
+        quiet(brainrc.cmd_sync, True)
         with mock.patch("brainrc.packs.subprocess.run") as run:
-            code, out = quiet(aicfg.cmd_sync, True)
+            code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertNotIn("FETCH", out)
         run.assert_not_called()
 
     def test_a_clone_without_a_record_is_fetched_once(self):
         self.use(git=self.url, ref="v1")
-        quiet(aicfg.cmd_sync, True)
+        quiet(brainrc.cmd_sync, True)
         record = self.clone / ".git/aicfg-fetched.json"
         self.assertTrue(record.is_file())
-        record.unlink()  # as a clone from before aicfg recorded fetches
-        code, out = quiet(aicfg.cmd_sync, False)
+        record.unlink()  # as a clone from before brainrc recorded fetches
+        code, out = quiet(brainrc.cmd_sync, False)
         self.assertIn("FETCH", out)
-        quiet(aicfg.cmd_sync, True)
+        quiet(brainrc.cmd_sync, True)
         self.assertTrue(record.is_file())
-        code, out = quiet(aicfg.cmd_sync, False)
+        code, out = quiet(brainrc.cmd_sync, False)
         self.assertNotIn("FETCH", out)
 
     def test_a_hung_git_call_times_out(self):
         self.use(git=self.url, ref="v1")
         timeout = subprocess.TimeoutExpired(["git", "fetch"], 60)
         with mock.patch("brainrc.packs.subprocess.run", side_effect=timeout):
-            code, out = quiet(aicfg.cmd_sync, True)
+            code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 1, out)
         self.assertIn("ERROR git init timed out after 60s", out)
         self.assertIn("Nothing written", out)
@@ -1664,13 +1673,13 @@ class GitPackTest(TempRepoCase):
         self.use(git=self.url, ref="v1")
         real = subprocess.run
         with mock.patch("brainrc.packs.subprocess.run", side_effect=real) as run:
-            quiet(aicfg.cmd_sync, True)
+            quiet(brainrc.cmd_sync, True)
         self.assertTrue(run.call_args_list)
         self.assertTrue(all(c.kwargs.get("timeout") == 60 for c in run.call_args_list), run.call_args_list)
 
     def test_doctor_flags_an_unfetched_pack(self):
         self.use(git=self.url)
-        fails = [f for f in aicfg.doctor_findings() if f[0] == "FAIL"]
+        fails = [f for f in brainrc.doctor_findings() if f[0] == "FAIL"]
         self.assertTrue(any("not fetched" in what for _, what, _ in fails), fails)
 
 
@@ -1690,21 +1699,21 @@ class HarnessPluginTest(TempRepoCase):
         super().tearDown()
 
     def test_apply_links_the_plugin_and_doctor_is_clean(self):
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
-        self.assertEqual(aicfg.link_target(self.link), self.repo / "overrides/opencode/plugin.js")
-        self.assertEqual(aicfg.doctor_findings(), [])
+        self.assertEqual(brainrc.link_target(self.link), self.repo / "overrides/opencode/plugin.js")
+        self.assertEqual(brainrc.doctor_findings(), [])
 
     def test_disabling_the_harness_prunes_the_plugin(self):
-        quiet(aicfg.cmd_sync, True)
+        quiet(brainrc.cmd_sync, True)
         (self.repo / "harnesses.local.toml").write_text("[opencode]\nenabled = false\n")
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertFalse(self.link.is_symlink())
 
     def test_validate_needs_the_plugin_file(self):
         (self.repo / "overrides/opencode/plugin.js").unlink()
-        code, out = quiet(aicfg.cmd_validate)
+        code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1, out)
         self.assertIn("overrides/opencode/plugin.js", out)
 
@@ -1729,39 +1738,39 @@ class CursorHooksTest(TempRepoCase):
         super().tearDown()
 
     def wanted(self):
-        m = aicfg.SettingsMerge("cursor", self.hooks_json, [(CURSOR_FRAGMENT, "~/.cursor/hooks/ai-config")])
+        m = brainrc.SettingsMerge("cursor", self.hooks_json, [(CURSOR_FRAGMENT, "~/.cursor/hooks/ai-config")])
         return m.wanted(), m.markers()
 
     def test_merge_keeps_foreign_entries_replaces_ours_and_is_idempotent(self):
         wanted, markers = self.wanted()
         old = {"command": "python3 ~/.cursor/hooks/ai-config/old.py"}
         current = {"version": 1, "hooks": {"beforeShellExecution": [CURSOR_FOREIGN, old]}}
-        once = aicfg.merge_settings(current, wanted, markers)
+        once = brainrc.merge_settings(current, wanted, markers)
         shell = once["hooks"]["beforeShellExecution"]
         self.assertEqual(shell[0], CURSOR_FOREIGN)
         self.assertNotIn(old, shell)
         self.assertIn(cursor_guard("$HOME/.cursor/hooks/ai-config"), [e["command"] for e in shell])
         self.assertIn("beforeReadFile", once["hooks"])
-        self.assertEqual(aicfg.merge_settings(once, wanted, markers), once)
+        self.assertEqual(brainrc.merge_settings(once, wanted, markers), once)
 
     def test_a_new_file_gets_version_1_and_a_users_version_is_kept(self):
         wanted, markers = self.wanted()
-        self.assertEqual(aicfg.merge_settings({}, wanted, markers)["version"], 1)
-        self.assertEqual(aicfg.merge_settings({"version": 2}, wanted, markers)["version"], 2)
+        self.assertEqual(brainrc.merge_settings({}, wanted, markers)["version"], 1)
+        self.assertEqual(brainrc.merge_settings({"version": 2}, wanted, markers)["version"], 2)
 
     def test_claude_fragment_adds_no_top_level_keys(self):
-        m = aicfg.SettingsMerge("claude", self.home / "s.json", [(FRAGMENT, "~/.claude/hooks/ai-config")])
-        self.assertEqual(set(aicfg.merge_settings({}, m.wanted(), m.markers())), {"hooks"})
+        m = brainrc.SettingsMerge("claude", self.home / "s.json", [(FRAGMENT, "~/.claude/hooks/ai-config")])
+        self.assertEqual(set(brainrc.merge_settings({}, m.wanted(), m.markers())), {"hooks"})
 
     def test_apply_writes_hooks_json_links_the_hooks_dir_and_doctor_is_clean(self):
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         data = json.loads(self.hooks_json.read_text())
         self.assertEqual(data["version"], 1)
-        self.assertEqual(aicfg.link_target(self.home / ".cursor/hooks/brainrc"),
+        self.assertEqual(brainrc.link_target(self.home / ".cursor/hooks/brainrc"),
                          self.repo / "overrides/cursor/hooks")
-        self.assertEqual(aicfg.doctor_findings(), [])
-        code, out = quiet(aicfg.cmd_sync, True)
+        self.assertEqual(brainrc.doctor_findings(), [])
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(json.loads(self.hooks_json.read_text()), data)
 
 
@@ -1769,7 +1778,7 @@ class CursorPluginTest(TempRepoCase):
     """.cursor-plugin/plugin.json: Cursor's manifest, generated like the others."""
 
     def manifest(self):
-        return json.loads(aicfg.plugin_manifests()[".cursor-plugin/plugin.json"])
+        return json.loads(brainrc.plugin_manifests()[".cursor-plugin/plugin.json"])
 
     def test_manifest_points_at_core_and_runs_the_cursor_guard(self):
         set_core_version(self.repo, "1.2.3")
@@ -1777,7 +1786,7 @@ class CursorPluginTest(TempRepoCase):
         self.assertEqual((plugin["name"], plugin["version"], plugin["license"]), ("brainrc", "1.2.3", "MIT"))
         self.assertEqual((plugin["skills"], plugin["agents"], plugin["rules"]), ("./skills/", "./agents/", "./rules/"))
         self.assertEqual(plugin["hooks"], "./.cursor-plugin/hooks.json")
-        hooks = json.loads(aicfg.plugin_manifests()[".cursor-plugin/hooks.json"])
+        hooks = json.loads(brainrc.plugin_manifests()[".cursor-plugin/hooks.json"])
         self.assertEqual(hooks["version"], 1)
         commands = [e["command"] for entries in hooks["hooks"].values() for e in entries]
         self.assertEqual(set(hooks["hooks"]), {"beforeShellExecution", "beforeReadFile"})
@@ -1786,15 +1795,15 @@ class CursorPluginTest(TempRepoCase):
         self.assertNotIn("..", json.dumps(plugin))
 
     def test_validate_reports_a_missing_cursor_manifest(self):
-        quiet(aicfg.cmd_plugin)
-        self.assertEqual(aicfg.check_plugin(), [])
+        quiet(brainrc.cmd_plugin)
+        self.assertEqual(brainrc.check_plugin(), [])
         (self.repo / ".cursor-plugin/plugin.json").unlink()
-        self.assertTrue(any(".cursor-plugin/plugin.json" in e and "missing" in e for e in aicfg.check_plugin()))
+        self.assertTrue(any(".cursor-plugin/plugin.json" in e and "missing" in e for e in brainrc.check_plugin()))
 
     def test_rules_need_always_apply(self):
         rule = self.repo / "rules/10-git.md"
         rule.write_text(rule.read_text().replace("alwaysApply: true\n", ""))
-        code, out = quiet(aicfg.cmd_validate)
+        code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1, out)
         self.assertIn("rules/10-git.md", out)
         self.assertIn("alwaysApply", out)
@@ -1811,7 +1820,7 @@ class PackValidateTest(TempRepoCase):
         super().tearDown()
 
     def test_valid_pack(self):
-        code, out = quiet(aicfg.cmd_validate, str(self.pack))
+        code, out = quiet(brainrc.cmd_validate, str(self.pack))
         self.assertEqual(code, 0, out)
         self.assertIn("(packs: acme)", out)
 
@@ -1822,7 +1831,7 @@ class PackValidateTest(TempRepoCase):
         (self.pack / "skills/unprefixed/SKILL.md").write_text("---\nname: unprefixed\ndescription: x\n---\n")
         (self.pack / "tripwires.toml").write_text(
             '[[tripwire]]\nid = "T1"\npattern = "Acme rule"\nallow = "(?i)never"\nmessage = "stale rule"\n')
-        code, out = quiet(aicfg.cmd_validate, str(self.pack))
+        code, out = quiet(brainrc.cmd_validate, str(self.pack))
         self.assertEqual(code, 1)
         for expected in ("acme:skills/unprefixed: pack skills must start with `acme-`",
                          "domains names unknown skill `nope`",
@@ -1831,42 +1840,42 @@ class PackValidateTest(TempRepoCase):
             self.assertIn(expected, out)
 
     def test_compatible_pack_has_no_version_message(self):
-        code, out = quiet(aicfg.cmd_validate, str(self.pack))
+        code, out = quiet(brainrc.cmd_validate, str(self.pack))
         self.assertEqual(code, 0, out)
         self.assertNotIn("requires_core", out)
 
     def test_incompatible_pack_fails(self):
         set_requires_core(self.pack, 'requires_core = ">=1.3"')
-        code, out = quiet(aicfg.cmd_validate, str(self.pack))
+        code, out = quiet(brainrc.cmd_validate, str(self.pack))
         self.assertEqual(code, 1)
         self.assertIn("acme:pack.toml: requires_core `>=1.3` is not satisfied by core 1.2.3", out)
 
     def test_incompatible_enabled_pack_fails_plain_validate(self):
         set_requires_core(self.pack, 'requires_core = "<1"')
         (self.repo / "packs.local.toml").write_text(f'[acme]\npath = "{self.pack}"\n')
-        code, out = quiet(aicfg.cmd_validate)
+        code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1)
         self.assertIn("requires_core `<1` is not satisfied by core 1.2.3", out)
 
     def test_missing_requires_core_warns(self):
         set_requires_core(self.pack, "")
-        code, out = quiet(aicfg.cmd_validate, str(self.pack))
+        code, out = quiet(brainrc.cmd_validate, str(self.pack))
         self.assertEqual(code, 0, out)
         self.assertIn("WARN acme:pack.toml: no `requires_core`", out)
         set_core_version(self.repo, "0.3.1")
-        code, out = quiet(aicfg.cmd_validate, str(self.pack))
+        code, out = quiet(brainrc.cmd_validate, str(self.pack))
         self.assertIn('requires_core = ">=0.3, <0.4"', out)  # 0.x: breaking changes bump MINOR
 
     def test_malformed_requires_core_fails(self):
         set_requires_core(self.pack, 'requires_core = "latest"')
-        code, out = quiet(aicfg.cmd_validate, str(self.pack))
+        code, out = quiet(brainrc.cmd_validate, str(self.pack))
         self.assertEqual(code, 1)
         self.assertIn("acme:pack.toml: invalid requires_core `latest`", out)
         self.assertIn('">=0.1, <0.2"', out)  # shows the accepted syntax
 
     def test_invalid_core_version_fails(self):
         (self.repo / "VERSION").write_text("one\n")
-        code, out = quiet(aicfg.cmd_validate, str(self.pack))
+        code, out = quiet(brainrc.cmd_validate, str(self.pack))
         self.assertEqual(code, 1)
         self.assertIn("VERSION: `one` is not MAJOR.MINOR.PATCH", out)
 
@@ -1874,7 +1883,7 @@ class PackValidateTest(TempRepoCase):
         (self.pack / "rules/50-acme.md").write_text("- Never use the old Acme rule.\n")
         (self.pack / "tripwires.toml").write_text(
             '[[tripwire]]\nid = "T1"\npattern = "Acme rule"\nallow = "(?i)never"\n')
-        code, out = quiet(aicfg.cmd_validate, str(self.pack))
+        code, out = quiet(brainrc.cmd_validate, str(self.pack))
         self.assertEqual(code, 0, out)
 
 
@@ -1886,25 +1895,25 @@ class ChangelogCheckTest(TempRepoCase):
         set_core_version(self.repo, "1.2.3")
 
     def test_matching_changelog_passes(self):
-        code, out = quiet(aicfg.cmd_validate)
+        code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 0, out)
 
     def test_version_without_changelog_entry_fails(self):
         (self.repo / "VERSION").write_text("1.2.4\n")
-        code, out = quiet(aicfg.cmd_validate)
+        code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1)
         self.assertIn("CHANGELOG.md: newest version 1.2.3 doesn't match VERSION 1.2.4", out)
 
     def test_unreleased_section_fails(self):
         (self.repo / "CHANGELOG.md").write_text(
             "# Changelog\n\n## Unreleased\n\n- New.\n\n## 1.2.3 (2026-01-01)\n\n- Change.\n")
-        code, out = quiet(aicfg.cmd_validate)
+        code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1)
         self.assertIn("CHANGELOG.md: has an `## Unreleased` section", out)
 
     def test_changelog_without_version_heading_fails(self):
         (self.repo / "CHANGELOG.md").write_text("# Changelog\n")
-        code, out = quiet(aicfg.cmd_validate)
+        code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1)
         self.assertIn("CHANGELOG.md: no `## X.Y.Z` heading", out)
 
@@ -1923,30 +1932,30 @@ class ConnectorCheckTest(TempRepoCase):
         set_core_version(self.repo, "1.2.3")
 
     def test_core_connectors_pass(self):
-        code, out = quiet(aicfg.cmd_validate)
+        code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 0, out)
 
     def test_core_connector_missing_an_operation_fails(self):
         write_skill(self.repo, "ticket-x", "## fetch\n\n## comment\n\n## transition\n")
-        code, out = quiet(aicfg.cmd_validate)
+        code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1)
         self.assertIn("skills/ticket-x/SKILL.md: connector missing `##` sections for link_pr", out)
 
     def test_one_heading_may_name_several_operations(self):
         write_skill(self.repo, "ticket-y", "## fetch (read-only)\n\n## comment / transition / link_pr\n")
-        code, out = quiet(aicfg.cmd_validate)
+        code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 0, out)
 
     def test_pr_status_is_optional_for_connectors(self):
         write_skill(self.repo, "ticket-with", "## fetch\n\n## comment / transition / link_pr\n\n## pr_status\n")
         write_skill(self.repo, "ticket-without", "## fetch\n\n## comment / transition / link_pr\n")
-        code, out = quiet(aicfg.cmd_validate)
+        code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 0, out)
         self.assertNotIn("pr_status", out)
 
     def test_pr_status_does_not_replace_required_operations(self):
         write_skill(self.repo, "ticket-z", "## fetch\n\n## comment / transition\n\n## pr_status\n")
-        code, out = quiet(aicfg.cmd_validate)
+        code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1)
         self.assertIn("skills/ticket-z/SKILL.md: connector missing `##` sections for link_pr", out)
 
@@ -1955,7 +1964,7 @@ class ConnectorCheckTest(TempRepoCase):
                          PACK_TOML.replace('connector = "ticket-github"', 'connector = "acme-tickets"'))
         self.addCleanup(shutil.rmtree, pack.parent)
         write_skill(pack, "acme-tickets", "## fetch\n")
-        code, out = quiet(aicfg.cmd_validate, str(pack))
+        code, out = quiet(brainrc.cmd_validate, str(pack))
         self.assertEqual(code, 1)
         self.assertIn("acme:skills/acme-tickets/SKILL.md: connector missing `##` sections for "
                       "comment, transition, link_pr", out)
@@ -1965,7 +1974,7 @@ class ExamplePackTest(unittest.TestCase):
     """examples/pack-acme is the copyable template: it must pass against the real core VERSION."""
 
     def test_example_pack_is_valid_without_warnings(self):
-        code, out = quiet(aicfg.cmd_validate, str(REPO / "examples/pack-acme"))
+        code, out = quiet(brainrc.cmd_validate, str(REPO / "examples/pack-acme"))
         self.assertEqual(code, 0, out)
         self.assertNotIn("WARN", out)
         self.assertIn("(packs: acme)", out)
@@ -1973,7 +1982,7 @@ class ExamplePackTest(unittest.TestCase):
 
 class ValidateTest(unittest.TestCase):
     def test_repo_is_valid(self):
-        code, out = quiet(aicfg.cmd_validate)
+        code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 0, out)
 
     def test_catches_placeholder_without_hooks_dir(self):
@@ -1982,12 +1991,12 @@ class ValidateTest(unittest.TestCase):
             copy_repo(tmp)
             toml = tmp / "harnesses.toml"
             toml.write_text(toml.read_text().replace('hooks_dir = "~/.claude/hooks/brainrc"\n', ""))
-            old = aicfg.config.REPO
-            aicfg.config.REPO = tmp
+            old = brainrc.config.REPO
+            brainrc.config.REPO = tmp
             try:
-                code, out = quiet(aicfg.cmd_validate)
+                code, out = quiet(brainrc.cmd_validate)
             finally:
-                aicfg.config.REPO = old
+                brainrc.config.REPO = old
             self.assertEqual(code, 1)
             self.assertIn("has no hooks_dir", out)
         finally:
@@ -2001,12 +2010,12 @@ class ValidateTest(unittest.TestCase):
             skill.write_text(skill.read_text() + "\n[agent: ghost] [x](missing.md) the `nope` skill\n")
             (tmp / "agents/verifier.md").write_text(
                 (tmp / "agents/verifier.md").read_text().replace("model: haiku", "model: gpt-9"))
-            old = aicfg.config.REPO
-            aicfg.config.REPO = tmp
+            old = brainrc.config.REPO
+            brainrc.config.REPO = tmp
             try:
-                code, out = quiet(aicfg.cmd_validate)
+                code, out = quiet(brainrc.cmd_validate)
             finally:
-                aicfg.config.REPO = old
+                brainrc.config.REPO = old
             self.assertEqual(code, 1)
             for expected in ("unknown agent `ghost`", "broken link `missing.md`",
                              "unknown skill `nope`", "unknown model `gpt-9`"):
@@ -2032,19 +2041,19 @@ class ConfigErrorTest(TempRepoCase):
     def assert_error(self, error: str) -> None:
         """status, apply, and validate print the error and exit 1; apply writes nothing; doctor
         reports it as a FAIL."""
-        for fn, args in ((aicfg.cmd_sync, (False,)), (aicfg.cmd_sync, (True,)), (aicfg.cmd_validate, ())):
+        for fn, args in ((brainrc.cmd_sync, (False,)), (brainrc.cmd_sync, (True,)), (brainrc.cmd_validate, ())):
             code, out = quiet(fn, *args)
             self.assertEqual(code, 1, out)
             self.assertIn(f"ERROR {error}", out)
         self.assertEqual(list(self.home.iterdir()), [])
-        fails = [f[1] for f in aicfg.doctor_findings() if f[0] == "FAIL"]
+        fails = [f[1] for f in brainrc.doctor_findings() if f[0] == "FAIL"]
         self.assertTrue(any(error in f for f in fails), fails)
-        code, _ = quiet(aicfg.cmd_doctor)
+        code, _ = quiet(brainrc.cmd_doctor)
         self.assertEqual(code, 1)
 
     def local(self, name: str, text: str) -> str:
         (self.repo / f"{name}.local.toml").write_text(text)
-        return aicfg.tilde(self.repo / f"{name}.local.toml")
+        return brainrc.tilde(self.repo / f"{name}.local.toml")
 
     def test_toml_syntax_error_names_file_and_line(self):
         path = self.local("harnesses", "[claude]\nenabled = false\nskills = \n")
@@ -2056,7 +2065,7 @@ class ConfigErrorTest(TempRepoCase):
 
     def test_syntax_error_in_shipped_file(self):
         (self.repo / "harnesses.toml").write_text("[claude\n")
-        self.assert_error(f"{aicfg.tilde(self.repo / 'harnesses.toml')}:1: invalid TOML")
+        self.assert_error(f"{brainrc.tilde(self.repo / 'harnesses.toml')}:1: invalid TOML")
 
     def test_top_level_value_needs_a_table(self):
         path = self.local("harnesses", "# off here\nclaude = false\n")
@@ -2084,11 +2093,11 @@ class ConfigErrorTest(TempRepoCase):
 
     def assert_warning(self, warning: str) -> None:
         """status, apply, and validate print the warning once and carry on; doctor reports it."""
-        for fn, args in ((aicfg.cmd_sync, (False,)), (aicfg.cmd_sync, (True,)), (aicfg.cmd_validate, ())):
+        for fn, args in ((brainrc.cmd_sync, (False,)), (brainrc.cmd_sync, (True,)), (brainrc.cmd_validate, ())):
             code, out = quiet(fn, *args)
             self.assertEqual(code, 0, out)
             self.assertEqual(out.count(f"WARN {warning}"), 1, out)
-        warns = [f[1] for f in aicfg.doctor_findings() if f[0] == "WARN"]
+        warns = [f[1] for f in brainrc.doctor_findings() if f[0] == "WARN"]
         self.assertIn(warning, warns)
 
     def test_unknown_harness_key_warns(self):
@@ -2108,7 +2117,7 @@ class ConfigErrorTest(TempRepoCase):
         self.assertTrue((self.home / ".cursr/skills/spec-agent").is_symlink())
 
     def test_shipped_config_is_quiet(self):
-        for fn, args in ((aicfg.cmd_sync, (False,)), (aicfg.cmd_validate, ())):
+        for fn, args in ((brainrc.cmd_sync, (False,)), (brainrc.cmd_validate, ())):
             code, out = quiet(fn, *args)
             self.assertEqual(code, 0, out)
             self.assertNotIn("WARN", out)
@@ -2120,12 +2129,12 @@ class ConfigErrorTest(TempRepoCase):
         (pack / "skills").mkdir(parents=True, exist_ok=True)
         (pack / "pack.toml").write_text(text)
         self.local("packs", f'[acme]\npath = "{pack}"\n')
-        return aicfg.tilde(pack / "pack.toml")
+        return brainrc.tilde(pack / "pack.toml")
 
     def test_pack_toml_syntax_error_names_file_and_line(self):
         path = self.pack('name = "acme"\nprefix = acme-\n')
         self.assert_error(f"{path}:2: invalid TOML: Invalid value")
-        code, out = quiet(aicfg.cmd_validate, str(self.repo / "packs-src/acme"))
+        code, out = quiet(brainrc.cmd_validate, str(self.repo / "packs-src/acme"))
         self.assertEqual(code, 1, out)
         self.assertIn(f"ERROR {path}:2: invalid TOML", out)
 
@@ -2137,12 +2146,12 @@ class ConfigErrorTest(TempRepoCase):
 
 
 class ClosedStdoutTest(unittest.TestCase):
-    """`aicfg doctor | head -1`: the reader stops early, aicfg exits quietly."""
+    """`brainrc doctor | head -1`: the reader stops early, brainrc exits quietly."""
 
     def test_closed_stdout_exits_without_a_traceback(self):
         tmp = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, tmp)
-        env = {**os.environ, "HOME": str(tmp), "BRAINRC_HOME": str(tmp / "ai-config")}
+        env = {**os.environ, "HOME": str(tmp), "BRAINRC_HOME": str(tmp / "brainrc")}
         for cmd in ("doctor", "status"):
             p = subprocess.Popen([sys.executable, str(REPO / "scripts/aicfg.py"), cmd], env=env,
                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -2180,7 +2189,7 @@ class DuplicatePackTest(TempRepoCase):
     def test_two_packs_with_one_name_are_refused(self):
         self.packs(one="acme", two="acme")
         error = "ERROR pack name `acme` is used by both [one] and [two]"
-        for fn, args in ((aicfg.cmd_validate, ()), (aicfg.cmd_sync, (False,)), (aicfg.cmd_sync, (True,))):
+        for fn, args in ((brainrc.cmd_validate, ()), (brainrc.cmd_sync, (False,)), (brainrc.cmd_sync, (True,))):
             code, out = quiet(fn, *args)
             self.assertEqual(code, 1, out)
             self.assertIn(error, out)
@@ -2188,27 +2197,27 @@ class DuplicatePackTest(TempRepoCase):
 
     def test_doctor_reports_duplicate_names(self):
         self.packs(one="acme", two="acme")
-        fails = [f for f in aicfg.doctor_findings() if f[0] == "FAIL" and "is used by both" in f[1]]
+        fails = [f for f in brainrc.doctor_findings() if f[0] == "FAIL" and "is used by both" in f[1]]
         self.assertEqual(len(fails), 1, fails)
         self.assertIn("[one] and [two]", fails[0][1])
         self.assertIn("enabled = false", fails[0][2])
         self.assertIn("pack.toml", fails[0][2])
-        code, _ = quiet(aicfg.cmd_doctor)
+        code, _ = quiet(brainrc.cmd_doctor)
         self.assertEqual(code, 1)
 
     def test_a_pack_named_core_is_refused(self):
         self.packs(two="core")
-        for fn, args in ((aicfg.cmd_validate, ()), (aicfg.cmd_sync, (True,))):
+        for fn, args in ((brainrc.cmd_validate, ()), (brainrc.cmd_sync, (True,))):
             code, out = quiet(fn, *args)
             self.assertEqual(code, 1, out)
             self.assertIn("ERROR pack name `core` is used by both core and [two]", out)
-        code, out = quiet(aicfg.cmd_validate, str(self.repo / "packs-src/two"))
+        code, out = quiet(brainrc.cmd_validate, str(self.repo / "packs-src/two"))
         self.assertEqual(code, 1, out)
-        self.assertIn(f"used by both core and {aicfg.tilde(self.repo / 'packs-src/two')}", out)
+        self.assertIn(f"used by both core and {brainrc.tilde(self.repo / 'packs-src/two')}", out)
 
     def test_key_and_name_may_differ(self):
         self.packs(work="acme")
-        code, out = quiet(aicfg.cmd_validate)
+        code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 0, out)
         self.assertNotIn("is used by both", out)
 
@@ -2238,13 +2247,13 @@ class PackApplyCheckTest(TempRepoCase):
 
     def assert_refused(self, error: str) -> None:
         for apply in (False, True):
-            code, out = quiet(aicfg.cmd_sync, apply)
+            code, out = quiet(brainrc.cmd_sync, apply)
             self.assertEqual(code, 1, out)
             self.assertIn(f"ERROR {error}", out)
-            self.assertIn(f"validate --pack {aicfg.tilde(self.pack)}", out)
+            self.assertIn(f"validate --pack {brainrc.tilde(self.pack)}", out)
             self.assertIn("Nothing written", out)
         self.assertEqual(list(self.home.iterdir()), [])
-        self.assertFalse(self.aicfg_home.joinpath("instructions.md").exists())
+        self.assertFalse(self.settings_home.joinpath("instructions.md").exists())
 
     def test_unprefixed_skill_is_refused(self):
         self.skill("deploy")
@@ -2261,13 +2270,13 @@ class PackApplyCheckTest(TempRepoCase):
         (good / "pack.toml").write_text('name = "good"\nrequires_core = ">=0.1"\n')
         with open(self.repo / "packs.local.toml", "a") as f:
             f.write(f'[good]\npath = "{good}"\n')
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 1, out)
-        self.assertNotIn(f"validate --pack {aicfg.tilde(good)}", out)
+        self.assertNotIn(f"validate --pack {brainrc.tilde(good)}", out)
 
     def test_a_valid_pack_links_as_before(self):
         self.skill("acme-deploy")
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertNotIn("ERROR", out)
         self.assertTrue((self.home / ".claude/skills/acme-deploy").is_symlink())
@@ -2282,7 +2291,7 @@ class AgentFrontmatterTest(TempRepoCase):
         head, sep, body = text.partition("\n---\n")
         lines = [l for l in head.splitlines() if not l.startswith(("model:", "tools:"))]
         path.write_text("\n".join(lines + [f"model: {model}", f"tools: {tools}"]) + sep + body)
-        return quiet(aicfg.cmd_validate)
+        return quiet(brainrc.cmd_validate)
 
     def test_full_claude_model_id_is_accepted(self):
         for model in ("claude-sonnet-5-5", "claude-opus-4-1-20250805", "claude-3.5-haiku"):
@@ -2326,7 +2335,7 @@ class BrainrcCommandTest(unittest.TestCase):
 
     def test_usage_names_brainrc_when_installed(self):
         with mock.patch("brainrc.config.installed", return_value=True):
-            code, out = quiet(aicfg.cli.main, ["brainrc", "bogus"])
+            code, out = quiet(brainrc.cli.main, ["brainrc", "bogus"])
         self.assertEqual(code, 2)
         self.assertIn("brainrc status", out)
         self.assertNotIn("brainrc.py", out)

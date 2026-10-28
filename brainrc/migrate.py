@@ -143,8 +143,8 @@ def cmd_migrate(dry_run: bool) -> int:
         return 0
     # The locks apply takes: the source's, and the resolved home's (they differ when both env vars are set).
     locks = [source / "apply.lock"]
-    if config.aicfg_home() / "apply.lock" not in locks:
-        locks.append(config.aicfg_home() / "apply.lock")
+    if config.settings_home() / "apply.lock" not in locks:
+        locks.append(config.settings_home() / "apply.lock")
     own = next((l for l in locks if l.parent == target), None)
     made_target = not os.path.lexists(target)
     leftover = None

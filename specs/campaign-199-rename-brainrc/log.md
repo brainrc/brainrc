@@ -46,3 +46,9 @@ Artifacts: specs/campaign-199-rename-brainrc/campaign.json
 
 ## 2026-10-28T16:39:32Z · gh:207 merged (#233), v0.4.3 released
 - Post-merge verify pass. Child 5 gh:208 starts on 208-brainrc-plugin-namespace from main, auto (owner: "Auto mode go").
+
+## 2026-10-28T17:05:50Z · gh:208 delivered (auto)
+- Draft PR #234, base main. Next: gh:209 (last) after #234 merges.
+
+## 2026-10-28T17:12:28Z · gh:208 merged (#234), v0.4.4 released
+- Post-merge verify pass. Child 6 gh:209 starts on 209-brainrc-docs-wording from main (carries 208's record). Owner: no alerts or decisions until the Deliver gate: auto through Spec and Plan (defaults taken, hard stops resolved by defaults and listed at Deliver), Deliver gate presented to the owner.

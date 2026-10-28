@@ -1,6 +1,6 @@
 # Architecture
 
-ai-config has two moments. At install time, `aicfg apply` turns source repos into files each AI
+brainrc has two moments. At install time, `brainrc apply` turns source repos into files each AI
 tool reads. At run time, the tool loads those files, and spec-agent drives a ticket through them.
 
 ```mermaid
@@ -10,7 +10,7 @@ flowchart LR
     packs["packs<br/>(packs.local.toml)"]
     local["*.local.* files<br/>(this machine only)"]
   end
-  apply["aicfg apply<br/>render rules · render extensions<br/>link · merge settings"]
+  apply["brainrc apply<br/>render rules · render extensions<br/>link · merge settings"]
   subgraph harnesses["Per-harness directories (harnesses.toml)"]
     files["skills/ · agents/ · commands/<br/>instructions file · hooks · settings.json"]
   end
@@ -30,7 +30,7 @@ flowchart LR
 
 | When | Step | Reads | Writes |
 |---|---|---|---|
-| install | `aicfg validate` | every source, `VERSION`, `CHANGELOG.md` | nothing |
+| install | `brainrc validate` | every source, `VERSION`, `CHANGELOG.md` | nothing |
 | install | render rules | `rules/*.md` from core, then each pack, then `*.local.md` | `$BRAINRC_HOME/instructions.md` (default `~/.config/brainrc/`) |
 | install | render extensions | each enabled pack's `pack.toml` | `$BRAINRC_HOME/extensions.md` (and, deprecated, `skills/spec-agent/references/extensions.md`) |
 | install | link and merge | `harnesses.toml`, `overrides/<harness>/` | symlinks in each harness dir, hook entries in its settings file |
@@ -41,13 +41,13 @@ flowchart LR
 Skills, agents, commands, and hooks are symlinks, so `git pull` updates them at once. Rules and
 extensions are rendered, so re-run `apply` after changing them or enabling a pack.
 
-The code is the `aicfg/` package (`python3 scripts/aicfg.py` or `python3 -m aicfg`), one module
+The code is the `brainrc/` package (`python3 scripts/brainrc.py` or `python3 -m brainrc`), one module
 per stage: `config`, `sources`, `opencode`, `plan`, `settings`, `plugin`, `tokens`, `validate`,
 `doctor`, and `cli` for the commands.
 
 ## Glossary
 
-- **Harness**: an AI coding tool ai-config syncs into: Claude Code, Codex, OpenCode, Antigravity CLI, Cursor ([support](formats.md#harness-support)).
+- **Harness**: an AI coding tool brainrc syncs into: Claude Code, Codex, OpenCode, Antigravity CLI, Cursor ([support](formats.md#harness-support)).
 - **Core**: this repo. Generic content only, versioned by `VERSION` ([CHANGELOG](../CHANGELOG.md)).
 - **Pack**: a separate repo layered on core for content that can't live here ([packs](packs.md)).
 - **Skill**: instructions a tool loads on demand, triggered by its description ([format](formats.md#skills-skillsnameskillmd)).

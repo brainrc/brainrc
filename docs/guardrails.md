@@ -93,7 +93,7 @@ difference: a plugin can't prompt, so anything the guards would ask about is blo
 model is told to ask you to run it yourself. MCP tools aren't guarded there yet.
 
 Cursor runs them through `overrides/cursor/hooks/guard.py` on `beforeShellExecution` (both
-guards) and `beforeReadFile` (secrets), from `~/.cursor/hooks.json` (`aicfg`) or the plugin's
+guards) and `beforeReadFile` (secrets), from `~/.cursor/hooks.json` (`brainrc`) or the plugin's
 `.cursor-plugin/hooks.json`. Cursor's `ask` was reported broken and reads accept only allow or
 deny, so ask becomes deny there too. File writes and MCP calls aren't guarded in Cursor: it has no
 reliable pre-write hook. Not yet run in a real Cursor.

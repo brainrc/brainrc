@@ -1,4 +1,4 @@
-"""Merging ai-config's hooks into a harness settings file."""
+"""Merging brainrc's hooks into a harness settings file."""
 from __future__ import annotations
 
 import copy
@@ -23,7 +23,7 @@ def _owned(group: dict, markers: set[str] = frozenset()) -> bool:
 
 
 def merge_settings(current: dict, fragment: dict, markers: set[str] = frozenset()) -> dict:
-    """Return current with ai-config's hook groups replaced by the fragment's.
+    """Return current with brainrc's hook groups replaced by the fragment's.
 
     Hook groups owned by other tools/plugins are kept in place and order. The fragment's other
     keys (Cursor's `version`) are only set when missing; the rest stays under user control.
@@ -41,7 +41,7 @@ def merge_settings(current: dict, fragment: dict, markers: set[str] = frozenset(
             hooks[event] = groups
         else:
             hooks.pop(event, None)
-    if not hooks and current.get("hooks") != {}:  # drop the key ai-config emptied, keep a user's own {}
+    if not hooks and current.get("hooks") != {}:  # drop the key brainrc emptied, keep a user's own {}
         merged.pop("hooks")
     return merged
 
@@ -94,7 +94,7 @@ def replace_file(dest: Path, text: str, before: str | None) -> None:
         )
         for old in backups[:-BACKUPS_KEPT]:
             old.unlink()
-    tmp = target.with_name(f".{target.name}.aicfg-tmp-{os.getpid()}")
+    tmp = target.with_name(f".{target.name}.brainrc-tmp-{os.getpid()}")
     _create(tmp, text.encode(), mode)
     os.replace(tmp, target)
 

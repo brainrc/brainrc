@@ -1,8 +1,8 @@
-# Install and sync (aicfg)
+# Install and sync (brainrc)
 
-ai-config is one Git repo of AI coding-assistant configuration (skills, agents, slash
+brainrc is one Git repo of AI coding-assistant configuration (skills, agents, slash
 commands, rules, hooks, and MCP servers), written once and synced into Claude Code, Codex CLI,
-OpenCode, Antigravity CLI, and Cursor by `aicfg`. Skills reach every harness. Rules, commands,
+OpenCode, Antigravity CLI, and Cursor by `brainrc`. Skills reach every harness. Rules, commands,
 and agents reach only some so far. Guard hooks run in Claude Code, OpenCode, and Cursor (deny
 only in the last two), and MCP servers sync to Claude Code, Codex, and OpenCode.
 Details per harness: [harness support](formats.md#harness-support).
@@ -10,10 +10,10 @@ Details per harness: [harness support](formats.md#harness-support).
 ## Install with a clone
 
 ```bash
-git clone <this-repo> ~/ai-config
-cd ~/ai-config
-python3 scripts/aicfg.py status   # dry run: shows what would be linked
-python3 scripts/aicfg.py apply    # render rules + create symlinks
+git clone <this-repo> ~/brainrc
+cd ~/brainrc
+python3 scripts/brainrc.py status   # dry run: shows what would be linked
+python3 scripts/brainrc.py apply    # render rules + create symlinks
 ```
 
 Skills, agents, commands, and hooks are **symlinked** from each harness back into this repo,
@@ -36,10 +36,10 @@ brainrc apply
 
 Pin a release with `git+https://github.com/brainrc/brainrc@v<X.Y.Z>` (0.4.0 or later installs as `brainrc`).
 
-Already have `ai-config` installed? Uninstall it before installing `brainrc`. Both ship an `aicfg`
-command, and uninstalling `ai-config` after `brainrc` is installed removes the new one. Run
-`uv tool uninstall ai-config` (or `pipx uninstall ai-config`), then install `brainrc`. `aicfg`
-keeps working with a deprecation warning until 0.5.0.
+Already have the old `ai-config` package installed? Uninstall it before installing `brainrc`. Both
+ship the deprecated `aicfg` command, and uninstalling old `ai-config` after `brainrc` is installed
+removes the new one. Run `uv tool uninstall ai-config` (or `pipx uninstall ai-config`), then install
+`brainrc`. The old `aicfg` command keeps working with a deprecation warning until 0.5.0.
 
 Links then point into the installed package, so `uv tool upgrade brainrc` (or `pipx upgrade
 brainrc`) updates every harness. Guard hooks are the exception: `apply` copies them to
@@ -51,16 +51,16 @@ then re-run `apply`. Local files go in `~/.config/brainrc/` (`$BRAINRC_HOME`):
 `harnesses.local.toml`, `packs.local.toml`, and `rules/*.local.md`. Packs are local
 directories or git URLs that `brainrc` fetches ([packs](packs.md#enable-a-pack)).
 
-Upgrading from `~/.config/ai-config/` (or `$AICFG_HOME`)? It keeps working, with a warning,
-until 0.5.0. Run `brainrc migrate --dry-run` to see the move, then `brainrc migrate`: it moves the
-directory and re-runs `apply`. With `AICFG_HOME` set, set `BRAINRC_HOME` to the new location first.
+Upgrading from the legacy `~/.config/ai-config/` (or deprecated `$AICFG_HOME`)? It keeps working,
+with a warning, until 0.5.0. Run `brainrc migrate --dry-run` to see the move, then `brainrc migrate`: it moves the
+directory and re-runs `apply`. With the old `AICFG_HOME` set, set `BRAINRC_HOME` to the new location first.
 
 `plugin` needs a checkout. Contributors use the clone above.
 
 `brainrc` never overwrites a file it doesn't manage. Pre-existing files show up as
 `CONFLICT` for you to move into the repo or delete.
 
-Something missing in a harness? `python3 scripts/aicfg.py doctor` checks the install without
+Something missing in a harness? `python3 scripts/brainrc.py doctor` checks the install without
 changing anything: stale rules, missing or broken links (after moving the repo, say), broken
 packs, unmerged hooks, and harnesses that aren't installed. Each problem comes with its fix.
 [troubleshooting.md](troubleshooting.md) covers the rest, including how to uninstall.
@@ -76,7 +76,7 @@ Claude Code users can install the skills (including `/work`), agents, and guard 
 /plugin install brainrc@brainrc
 ```
 
-| Piece | Plugin | `aicfg` |
+| Piece | Plugin | `brainrc` |
 |---|---|---|
 | Skills, agents | yes, named `brainrc:<name>` (`/brainrc:work`) | yes |
 | Claude guard hooks | yes | yes |
@@ -94,7 +94,7 @@ codex plugin add brainrc@brainrc
 ```
 
 Codex gets the skills (`work`, `review`, `spec-*`, and the rest) and the agent files spec-agent
-reads. Rules don't come with a Codex plugin: run `aicfg`, or copy `rules/*.md` into
+reads. Rules don't come with a Codex plugin: run `brainrc`, or copy `rules/*.md` into
 `~/.codex/AGENTS.md`. Whether Codex runs the plugin's guard hooks is not yet verified
 ([harness packages](harness-packages.md#codex)).
 
@@ -117,18 +117,18 @@ and hasn't been run end to end
 Cursor loads a checkout as a local plugin from `.cursor-plugin/`:
 
 ```bash
-ln -s ~/src/ai-config ~/.cursor/plugins/local/brainrc
+ln -s ~/src/brainrc ~/.cursor/plugins/local/brainrc
 ```
 
 It gets the skills, the agents, the rules (each carries `alwaysApply: true`), and the guard
 hooks for shell commands and file reads, which deny instead of asking. Use the plugin or
-`aicfg`'s Cursor links, not both: `aicfg` links the same skills and hooks (Cursor has no user
+`brainrc`'s Cursor links, not both: `brainrc` links the same skills and hooks (Cursor has no user
 rules file, so rules come only with the plugin). Built from Cursor's official plugin repo and not
 yet run in a real Cursor ([harness packages](harness-packages.md#cursor)).
 
 ### Moving from ai-config
 
-The plugin was renamed from `ai-config` to `brainrc`, and its skills from `ai-config:<name>` to
+The plugin was renamed from the old `ai-config` to `brainrc`, and its skills from the old `ai-config:<name>` to
 `brainrc:<name>`. Remove the old one first, or every skill and hook loads twice:
 
 - Claude Code: `/plugin uninstall ai-config@ai-config`, then `/plugin marketplace remove ai-config`.
@@ -154,7 +154,7 @@ or turn on Developer Mode and run `git config --global core.symlinks true` befor
 
 Content that must never live in this repo (an employer's facts and skills, for example) goes
 in a **pack**: a separate repo with the same layout. See [packs.md](packs.md).
-`python3 scripts/aicfg.py tokens` shows what each skill, agent, and rule costs in context.
+`python3 scripts/brainrc.py tokens` shows what each skill, agent, and rule costs in context.
 
 ## Layout
 
@@ -170,10 +170,10 @@ harnesses.toml  Where each harness reads each content type.
 packs.toml      Extra source repos ("packs") layered on top; usually set in packs.local.toml.
 VERSION         Core version that packs pin with `requires_core`; changes in CHANGELOG.md.
 changelog.d/    One fragment per unreleased change; folded into CHANGELOG.md on release.
-aicfg/          The aicfg package: sync, validate, doctor, plugin, tokens (Python 3.11+, stdlib only).
-scripts/        aicfg.py (runs the package), evals.py, release.py.
+brainrc/        The brainrc package: sync, validate, doctor, plugin, tokens (Python 3.11+, stdlib only).
+scripts/        brainrc.py (runs the package), evals.py, release.py.
 docs/           spec-agent, guardrails, efficiency, formats, troubleshooting, harness packages, roadmap.
-tests/          stdlib unittest for aicfg and hooks.
+tests/          stdlib unittest for brainrc and hooks.
 examples/       Sandbox project + tickets for trying spec-agent.
 dist/           Generated output (gitignored).
 ```

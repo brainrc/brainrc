@@ -22,3 +22,7 @@ Artifacts: specs/204-point-urls-brainrc/spec.md
 ## verifier (inline) · verify · done
 2026-10-27T18:47:04Z
 **Evidence:** see verify.md; 3/3 criteria pass.
+
+## engine · deliver · done
+2026-10-28T01:16:33Z
+Owner said "ship 204" (outside the stack gate, while #205 is blocked; counted as an intervention). Merged origin/main (v0.3.49) first: tests OK, validate OK, manifests unchanged, grep clean. Pushed 204-point-urls-brainrc, opened draft PR #229 against main. Ticket comment not posted (draft only). Deliver presented_at unset: no gate message was shown, the owner asked directly.

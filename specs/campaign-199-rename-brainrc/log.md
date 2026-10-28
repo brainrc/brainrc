@@ -22,3 +22,6 @@ Artifacts: specs/campaign-199-rename-brainrc/campaign.json
 
 ## 2026-10-27T18:48:46Z · child 2 gh:205 blocked (auto hard stop: size large)
 - Spec written with a 3-child Proposed split; needs approval. Children 3-6 paused. Stack has a blocked child, so no PRs open (gh:204 stays verified, unpushed).
+
+## 2026-10-28T01:16:33Z · gh:204 delivered on its own
+- Owner: "ship 204". Draft PR #229, base main. Campaign stays paused on gh:205 (blocked, size large). When #205 is unblocked, its branch merges main (after #229 merges) instead of building on 204-point-urls-brainrc.

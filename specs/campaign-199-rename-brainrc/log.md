@@ -37,3 +37,6 @@ Artifacts: specs/campaign-199-rename-brainrc/campaign.json
 
 ## 2026-10-28T04:55:21Z · gh:206 delivered
 - PR #232, base main, ready for review. Next: gh:207 after #232 merges.
+
+## 2026-10-28T05:06:29Z · gh:206 merged (#232), v0.4.2 released
+- Post-merge verify pass. Child 4 gh:207 starts on 207-brainrc-hooks-mcp-backups from main, auto (owner: "Do 207 auto").

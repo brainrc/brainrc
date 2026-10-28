@@ -23,3 +23,13 @@ Ticket: gh:206 (also closes #131) · Size: standard · PR: https://github.com/br
 - analyst role: when a spec has an ordered lookup with a fallback, state each fallback's condition against every earlier rule and check it against the resolved questions; here question 2 and the paragraph disagreed.
 - A minor changelog fragment should also check `examples/pack-acme`'s `requires_core` (the 0.4.0 break fixed in #231); consider a validate rule.
 - Data-moving commands deserve a security review by default; it found the `AICFG_HOME=$HOME` deletion path.
+
+## After delivery
+- Outcome: merged
+- Merged at: 2026-10-28T05:02:24Z · Time to merge: 7 min
+- Post-merge verify: pass (see `verify-merged.md`)
+- CI failures: 1 own (CI runners set `XDG_CONFIG_HOME`; a pre-existing test isolated only `HOME`) / 0 external
+- Review rounds: 0
+- Caught by reviewers, missed by the run's own: CI caught the XDG test leak; the run's verify never set `XDG_CONFIG_HOME`
+- Follow-up title: none
+- Follow-up body: none

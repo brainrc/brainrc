@@ -32,10 +32,12 @@
       "ref": "gh:206",
       "order": 3,
       "depends_on": [],
-      "status": "in_progress",
+      "status": "delivered",
       "slug": "206-brainrc-settings-home",
       "branch": "206-brainrc-settings-home",
-      "pr": null
+      "pr": "https://github.com/brainrc/brainrc/pull/232",
+      "base": "main",
+      "merged": false
     },
     {
       "ref": "gh:207",

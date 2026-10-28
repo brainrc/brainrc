@@ -34,3 +34,6 @@ Artifacts: specs/campaign-199-rename-brainrc/campaign.json
 
 ## 2026-10-28T03:15:07Z · gh:205 merged (#230), v0.4.0 released
 - Post-merge verify pass. Child 3 gh:206 starts on 206-brainrc-settings-home from main.
+
+## 2026-10-28T04:55:21Z · gh:206 delivered
+- PR #232, base main, ready for review. Next: gh:207 after #232 merges.

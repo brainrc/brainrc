@@ -90,3 +90,7 @@ PR body and ticket comment drafted inline.
 ## engine · Deliver gate · approved
 2026-10-28T04:51:26Z
 Owner approved, PR ready for review (not draft).
+
+## engine · deliver · done
+2026-10-28T04:55:21Z
+Pushed; PR #232 (ready for review); commented on #206; subscribed.

@@ -6,7 +6,7 @@
     "id": "206",
     "title": "Rename: settings home ~/.config/brainrc and BRAINRC_HOME",
     "url": "https://github.com/brainrc/brainrc/issues/206",
-    "pr": null
+    "pr": "https://github.com/brainrc/brainrc/pull/232"
   },
   "slug": "206-brainrc-settings-home",
   "branch": "206-brainrc-settings-home",
@@ -15,7 +15,7 @@
   "mode": "subagent",
   "delivery": "normal",
   "auto": false,
-  "stage": "deliver",
+  "stage": "watch",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -247,11 +247,15 @@
       "first_pass": 2
     },
     "retries": 1,
-    "interventions": 1
+    "interventions": 1,
+    "pr_opened_at": "2026-10-28T04:55:21Z"
   },
   "living": [
     "aicfg-config",
     "aicfg-apply",
     "run-pointer"
-  ]
+  ],
+  "watch": {
+    "entered_at": "2026-10-28T04:55:21Z"
+  }
 }

@@ -45,3 +45,13 @@ Engine found the approved resolution paragraph skipped the legacy fallback whene
 ## implementer · T3 · done
 **Evidence:** red 3 errors with the check off; 6/6 green; suite 484 OK; validate OK. Within fence.
 Engine: the unused-old-dir fix said a bare `rm -r`; an old dir may hold unmigrated settings (migrate refuses a non-empty target), so the fix now says to move what is still needed first. Review batched. Commit 0ba9317.
+
+## implementer · T4 · done (attempt 1)
+**Evidence:** red 7/12; green 12 OK; suite 496 OK; validate OK. Within fence.
+
+## security-reviewer · T4 · done (no CRITICAL/HIGH)
+**Findings:** MEDIUM no path sanity (AICFG_HOME=$HOME or / with EXDEV copies then rmtrees it; relative env values; target inside source); MEDIUM migrate locks source/apply.lock while apply locks aicfg_home()/apply.lock (differ when both env vars set); LOW predictable temp name; LOW temp dir mode briefly wider than source; LOW former_homes re-point (symlinks only).
+
+## code-reviewer · T4 · changes-requested
+**Findings:** HIGH EXDEV + symlinked source materializes a real copy (breaks Q7); MEDIUM concurrent apply into an empty existing target → ENOTEMPTY traceback; MEDIUM uncaught OSError paths (source is a file, target symlink, target inside source); MEDIUM rmtree(source) failure after move leaves partial source and skips apply; MEDIUM plan.py former-home re-point applies to any link into the old dir on every apply; LOW lock gap before apply (accepted); LOW usage alignment; LOW relative symlink source.
+→ T4 attempt 2.

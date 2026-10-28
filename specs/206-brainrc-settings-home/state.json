@@ -111,7 +111,7 @@
       "title": "brainrc migrate [--dry-run], links re-pointed via former homes, usage text",
       "agent": "implementer",
       "status": "in_progress",
-      "attempts": 1,
+      "attempts": 2,
       "files": [
         "brainrc/migrate.py",
         "brainrc/cli.py",
@@ -198,10 +198,10 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 2,
+      "total": 3,
       "first_pass": 2
     },
-    "retries": 0,
+    "retries": 1,
     "interventions": 1
   }
 }

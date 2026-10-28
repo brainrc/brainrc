@@ -25,3 +25,6 @@ Artifacts: specs/campaign-199-rename-brainrc/campaign.json
 
 ## 2026-10-28T01:16:33Z · gh:204 delivered on its own
 - Owner: "ship 204". Draft PR #229, base main. Campaign stays paused on gh:205 (blocked, size large). When #205 is unblocked, its branch merges main (after #229 merges) instead of building on 204-point-urls-brainrc.
+
+## 2026-10-28T01:39:38Z · gh:204 merged (#229); gh:205 resumed
+- #229 merged 01:30Z (v0.3.50). Owner: "resize standard" for gh:205; campaign continues without --auto (gates stop). 205 branch now based on main.

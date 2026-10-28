@@ -1,6 +1,6 @@
 # Spec: Rename the PyPI package and the command to brainrc
 
-Ticket: gh:205 (epic #199, 2 of 6) · Size: large · Status: draft
+Ticket: gh:205 (epic #199, 2 of 6) · Size: standard · Status: draft
 
 ## Problem
 Users should install and type `brainrc`, but the distribution is `ai-config`, the command and
@@ -79,14 +79,4 @@ Existing living requirements mention `aicfg` commands by name; their wording is 
    after this ships; stated in the warning text. *Callers need a date.*
 
 ## Proposed split
-Build order; each child standard or smaller.
-
-1. **Rename the Python package to brainrc, with import shim**: `git mv aicfg brainrc`; `aicfg/`
-   becomes a shim package; `python -m brainrc`, `--version`, usage text names `brainrc`; tests
-   updated. Criteria: AC6 (`-m` part), AC7, AC9, plus `--version` prints the version.
-2. **Add brainrc script, console scripts, and distribution name**: `scripts/brainrc.py`;
-   `scripts/aicfg.py` and `aicfg` console script warn and delegate; pyproject name `brainrc`,
-   wheel packages and `_core` paths. Criteria: AC1, AC2, AC3, AC4, AC5, AC6 (`python -m aicfg`),
-   AC8, AC11.
-3. **Point CI and callers at brainrc**: `validate.yml`, `release.yml`, other in-repo invocations
-   use `brainrc`/`scripts/brainrc.py`; a CI step proves the old names still work. Criteria: AC10.
+Not applicable: resized to standard by the owner; built as one ticket.

@@ -10,11 +10,11 @@
   },
   "slug": "205-brainrc-package-command",
   "branch": "205-brainrc-package-command",
-  "base": "204-point-urls-brainrc",
-  "size": "large",
+  "base": "main",
+  "size": "standard",
   "mode": "subagent",
   "delivery": "normal",
-  "auto": true,
+  "auto": false,
   "stage": "spec",
   "gates": {
     "spec": "pending",
@@ -35,19 +35,18 @@
     "baseline_failures": []
   },
   "tasks": [],
-  "blocked": {
-    "reason": "auto hard stop: size large; Proposed split needs approval and child tickets",
-    "stage": "spec",
-    "task": null,
-    "since": "2026-10-27T18:48:46Z"
-  },
+  "blocked": null,
   "metrics": {
     "started_at": "2026-10-27T18:47:44Z",
     "stage_started_at": {
       "intake": "2026-10-27T18:47:44Z",
       "spec": "2026-10-27T18:47:44Z"
     },
-    "gates": {},
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-28T01:39:38Z"
+      }
+    },
     "gate_rework": {
       "spec": 0,
       "plan": 0,
@@ -58,6 +57,6 @@
       "first_pass": 0
     },
     "retries": 0,
-    "interventions": 0
+    "interventions": 1
   }
 }

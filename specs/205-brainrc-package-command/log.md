@@ -15,3 +15,10 @@
 ## engine · blocked · auto hard stop
 2026-10-27T18:48:46Z
 Size large: auto mode stops after spec.md and its Proposed split. Spec gate not approved. Nothing pushed.
+
+## engine · resume · owner "resize standard"
+2026-10-28T01:39:38Z
+Block cleared. Size standard, mode subagent, auto false (resume without --auto: every gate stops). Branch merged 204-point-urls-brainrc (run record) and origin/main (v0.3.50, #229 merged). Proposed split dropped from spec.md.
+
+## engine · Spec gate · presented
+2026-10-28T01:39:38Z

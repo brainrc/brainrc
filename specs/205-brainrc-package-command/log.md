@@ -37,3 +37,13 @@ Owner approved; answers: --version "brainrc" (asked about a v prefix; engine rec
 ## engine · Plan gate · approved
 2026-10-28T01:45:06Z
 Owner approved, including the public contract change.
+
+## implementer · T1 · done
+**Did:** git mv aicfg brainrc; self-refs, usage, --version; scripts/brainrc.py; pyproject; tests import brainrc as aicfg.
+**Evidence:** red 5 fail + 1 error (.runs/T1-red.txt); engine re-ran: suite OK, both validates OK, --version → brainrc 0.3.50.
+**Changed files:** brainrc/*, scripts/{brainrc,aicfg,evals}.py, pyproject.toml, tests/test_{aicfg,mcp,hooks}.py — within fence.
+
+## code-reviewer · T1 · done
+2026-10-28T01:53:09Z
+**Findings:** LOW test classes after the __main__ block (fixed by engine); LOW usage lacks --version (fixed by engine); LOW scripts/brainrc.py docstring "no command for usage" is pre-existing (follow-up).
+Engine committed 6118369. Follow-up noted: docs/architecture.md and AGENTS.md still describe the aicfg/ package (#209 wording pass).

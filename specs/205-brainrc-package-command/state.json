@@ -30,7 +30,7 @@
     "test": "python3 -m unittest discover -s tests",
     "lint": null,
     "build": null,
-    "validate": "python3 scripts/aicfg.py validate",
+    "validate": "python3 scripts/brainrc.py validate",
     "plan": null,
     "baseline_failures": []
   },
@@ -39,7 +39,7 @@
       "id": "T1",
       "title": "Rename the package to brainrc with --version and brainrc usage",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "aicfg/",
@@ -60,14 +60,16 @@
         "AC9"
       ],
       "review": "each",
-      "after": []
+      "after": [],
+      "commit": "6118369",
+      "red": "assertion"
     },
     {
       "id": "T2",
       "title": "Contract tests for the brainrc and deprecated aicfg entry points",
       "agent": "test-writer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "tests/test_cli_entry_points.py"
       ],
@@ -175,8 +177,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
-      "first_pass": 0
+      "total": 1,
+      "first_pass": 1
     },
     "retries": 0,
     "interventions": 1

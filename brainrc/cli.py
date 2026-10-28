@@ -29,7 +29,7 @@ its `requires_core` must match VERSION, or validate fails and apply writes nothi
 
 Safety: never overwrites a real file or a symlink pointing outside this repo or a pack.
 Those are reported as CONFLICT and left alone for you to resolve. Settings files
-are merged (only entries owned by ai-config are replaced) and backed up first.
+are merged (only entries owned by brainrc are replaced) and backed up first.
 """
 from __future__ import annotations
 
@@ -248,7 +248,7 @@ def _sync(apply: bool) -> int:
         for name in clashing:
             conflicts += 1
             print(f"{'CONFLICT':9} {s.harness:9} {tilde(s.dest)}  (your own MCP server `{name}`; "
-                  "rename it or remove it to let ai-config manage it)")
+                  "rename it or remove it to let brainrc manage it)")
         if state == "invalid":
             conflicts += 1
             print(f"{'CONFLICT':9} {s.harness:9} {tilde(s.dest)}  (can't parse it, fix by hand)")

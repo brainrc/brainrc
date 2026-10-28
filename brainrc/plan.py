@@ -140,7 +140,7 @@ def hooks_copy_current(overrides: Path, copy_root: Path) -> bool:
 
 
 def _managed_target(target: Path, roots: list[Path]) -> bool:
-    """True if target is a path aicfg itself links to: in a source root, or the hooks copy."""
+    """True if target is a path brainrc itself links to: in a source root, or the hooks copy."""
     t = Path(os.path.abspath(target)).resolve()
     if t == rendered_instructions().resolve() or t.parent == rendered_agents_dir().resolve():
         return True
@@ -196,8 +196,8 @@ def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
         if "settings" in h and fragments:
             known = {pack_hooks_dir(h["hooks_dir"], s.name) for s in every_src if "hooks_dir" in h}
             merges.append(SettingsMerge(name, expand(h["settings"]), fragments, known))
-    # A disabled harness keeps its settings file, so take ai-config's hooks back out of it:
-    # merging no fragments removes only the groups ai-config owns.
+    # A disabled harness keeps its settings file, so take brainrc's hooks back out of it:
+    # merging no fragments removes only the groups brainrc owns.
     enabled = load_harnesses()
     for name, h in load_harnesses(include_disabled=True).items():
         if name not in enabled and "settings" in h:
@@ -206,8 +206,8 @@ def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
                 known = {h["hooks_dir"]} | {pack_hooks_dir(h["hooks_dir"], s.name) for s in every_src}
             merges.append(SettingsMerge(name, expand(h["settings"]), [], known))
 
-    # Stale: links aicfg made earlier that it wouldn't make now (removed items, disabled packs,
-    # disabled harnesses). Only symlinks pointing at a path aicfg links to are touched.
+    # Stale: links brainrc made earlier that it wouldn't make now (removed items, disabled packs,
+    # disabled harnesses). Only symlinks pointing at a path brainrc links to are touched.
     wanted = {link.dest for link in links}
     candidates: set[Path] = set()
     for h in load_harnesses(include_disabled=True).values():

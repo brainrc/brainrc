@@ -20,7 +20,7 @@ REGISTRY = Path("mcp") / "servers.toml"
 SERVER_KEYS = {"command", "args", "url", "env_from", "harnesses"}
 NAME = re.compile(r"^[A-Za-z0-9_-]+$")
 ENV_NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
-# The harnesses aicfg can write MCP servers for, and the key their JSON config keeps them under.
+# The harnesses brainrc can write MCP servers for, and the key their JSON config keeps them under.
 ADAPTERS = {"claude": "mcpServers", "codex": None, "opencode": "mcp"}
 BLOCK_START = "# >>> ai-config mcp servers (written by aicfg apply; edits here are replaced)"
 BLOCK_END = "# <<< ai-config mcp servers"
@@ -84,7 +84,7 @@ def check_servers(srcs: list[Source]) -> list[str]:
                     bad(f"unknown harness `{h}` in `harnesses`")
     for name, h in load_harnesses(include_disabled=True).items():
         if "mcp" in h and name not in ADAPTERS:
-            errors.append(f"harnesses.toml [{name}] sets `mcp`, but aicfg can only write MCP servers "
+            errors.append(f"harnesses.toml [{name}] sets `mcp`, but brainrc can only write MCP servers "
                           f"for {', '.join(ADAPTERS)}")
     return errors
 
@@ -181,7 +181,7 @@ def _owned() -> dict[str, list[str]]:
 
 
 def _strip_block(text: str) -> tuple[str, str]:
-    """(text without ai-config's block, the block's body)."""
+    """(text without brainrc's block, the block's body)."""
     start, end = text.find(BLOCK_START), text.find(BLOCK_END)
     if start == -1 or end < start:
         return text, ""
@@ -227,7 +227,7 @@ def _json_change(m: McpSync, text: str) -> tuple[str, list[str], list[str]]:
 
 
 def mcp_change(m: McpSync) -> tuple[str, str | None, list[str], list[str]]:
-    """(state, new text, conflicting names, names ai-config owns afterwards).
+    """(state, new text, conflicting names, names brainrc owns afterwards).
     state is ok | merge | invalid (the file can't be parsed, so it's left alone)."""
     text = m.dest.read_text() if m.dest.is_file() else ""
     try:
@@ -238,7 +238,7 @@ def mcp_change(m: McpSync) -> tuple[str, str | None, list[str], list[str]]:
 
 
 def write_mcp(m: McpSync, text: str, owned: list[str], before: str | None) -> None:
-    """Back up, then replace atomically, as for settings files; record what ai-config owns."""
+    """Back up, then replace atomically, as for settings files; record what brainrc owns."""
     replace_file(m.dest, text, before)
     record_owned(m, owned)
 

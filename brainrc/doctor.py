@@ -153,6 +153,36 @@ def _home_findings() -> list[Finding]:
     return found
 
 
+PLUGIN_LIST_MAX = 1024 * 1024  # bytes; a real installed_plugins.json is a few KB
+
+
+def _plugin_findings() -> list[Finding]:
+    """WARN when the old `ai-config` plugin is installed in Claude Code or Cursor. Read-only."""
+    found, home = [], Path.home()
+    installed = home / ".claude" / "plugins" / "installed_plugins.json"
+    try:
+        if installed.stat().st_size > PLUGIN_LIST_MAX:
+            raise ValueError("implausibly large")
+        data = json.loads(installed.read_text(encoding="utf-8"))
+    except (OSError, ValueError, RecursionError, MemoryError):
+        data = None  # missing, unreadable, huge, too deeply nested, or not JSON
+    plugins = data.get("plugins") if isinstance(data, dict) else None
+    if isinstance(plugins, dict) and "ai-config@ai-config" in plugins:
+        found.append(("WARN", f"the old plugin ai-config@ai-config is installed in Claude Code ({tilde(installed)})",
+                      "run `/plugin uninstall ai-config@ai-config`, then `/plugin marketplace remove ai-config`, "
+                      "then install brainrc@brainrc"))
+    old = home / ".cursor" / "plugins" / "local" / "ai-config"
+    try:
+        has_old = old.is_symlink() or old.exists()
+    except OSError:  # e.g. the parent isn't searchable
+        has_old = False
+    if has_old:
+        found.append(("WARN", f"{tilde(old)} is the old ai-config plugin for Cursor",
+                      f"remove the link (or directory) at {tilde(old)}, "
+                      "then link the repo as ~/.cursor/plugins/local/brainrc"))
+    return found
+
+
 def doctor_findings() -> list[Finding]:
     """Everything wrong with this machine's install, each with its fix. Writes nothing."""
     try:
@@ -226,6 +256,7 @@ def doctor_findings() -> list[Finding]:
     found += _hook_findings(merges, skipped)
     found += _mcp_findings(srcs, skipped)
     found += _home_findings()
+    found += _plugin_findings()
     return found
 
 

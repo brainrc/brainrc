@@ -65,3 +65,7 @@ HIGH fragment claimed all old names warn; MEDIUM fragment missing bullets; MEDIU
 ## engine · Deliver gate · approved by owner
 2026-10-28T19:59:21Z
 Owner: "Approve: ready PR + comment".
+
+## engine · deliver · done
+2026-10-28T20:16:13Z
+Pushed; PR #235 (ready for review); commented on #209; subscribed.

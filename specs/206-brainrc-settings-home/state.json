@@ -138,7 +138,7 @@
       "id": "T5",
       "title": "active_run.py resolution plus spec-agent home lines",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "skills/spec-agent/scripts/active_run.py",
@@ -150,14 +150,16 @@
         "AC15"
       ],
       "review": "batch",
-      "after": []
+      "after": [],
+      "commit": "edb6e9f",
+      "red": "assertion"
     },
     {
       "id": "T6",
       "title": "Docs naming the home, plus changelog fragment",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "docs/install.md",
         "docs/packs.md",

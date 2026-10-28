@@ -67,3 +67,6 @@ Engine: the unused-old-dir fix said a bare `rm -r`; an old dir may hold unmigrat
 
 ## engine · T4 LOW fixes
 Refuse a source at or above $HOME; markers are brainrc-only names (+ active-run) or rules/*.local.md; a symlinked source always moves by recreating the link (any device, empty target accepted). 4 tests added; each fails under a mutation reverting its fix. Suite 517 OK. Commit 209a4de.
+
+## implementer · T5 · done
+**Evidence:** red 12/24; suite 524 OK; validate OK. Within fence. Engine shortened the SKILL.md/state.md home lines (context cost). Review batched. Commit edb6e9f.

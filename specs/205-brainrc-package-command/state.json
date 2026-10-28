@@ -118,7 +118,7 @@
       "id": "T4",
       "title": "CI invokes brainrc and smoke-tests the installed wheel",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "review",
       "attempts": 1,
       "files": [
         "scripts/check_install.py",
@@ -143,8 +143,8 @@
       "id": "T5",
       "title": "Changelog fragment, bump minor, [pack contract], removal in 0.5.0",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "files": [
         "changelog.d/205-brainrc-package-command.md"
       ],
@@ -152,7 +152,8 @@
         "AC10"
       ],
       "review": "batch",
-      "after": []
+      "after": [],
+      "commit": "6f72cf2"
     },
     {
       "id": "F1",

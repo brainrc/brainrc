@@ -61,3 +61,9 @@ Engine committed 6118369. Follow-up noted: docs/architecture.md and AGENTS.md st
 2026-10-28T02:00:08Z
 **Findings:** MEDIUM old ai-config and brainrc both own aicfg/ files and bin/aicfg (uninstalling ai-config after installing brainrc deletes the shims) → release note in T5, docs in #209. MEDIUM -m aicfg warned twice under -W default → fixed (engine). MEDIUM warning named "brainrc" for scripts/aicfg.py → warn_deprecated(old, new), fixed (engine). LOW duplicated 0.5.0 → fixed. LOW stacklevel → accepted.
 Engine fixes folded into T3 commit c588355 (within T3 fence). F1 (outside T3 fence, so its own task): -W default regression test; mutation check red (2 != 1) against the pre-fix shim, green after. Commit 7ecd043.
+
+## implementer · T4 · done
+**Evidence:** check_install.py in a temp venv: 6/6 PASS; refuses against the checkout (exit 2); suite 456 OK; validate OK. **Changed files:** scripts/check_install.py, .github/workflows/{validate,release}.yml — within fence. Reviews (infra + code) running.
+
+## engine · T5 · done
+Fragment written inline (bump minor, [pack contract], 0.5.0 removal, uninstall ai-config first). Commit 6f72cf2.

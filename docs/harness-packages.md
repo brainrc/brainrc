@@ -9,7 +9,7 @@ consumer accounts on 2026-06-18; [Antigravity CLI](#antigravity-cli) replaced it
 
 | Harness | Package and install | Rules without a clone | Hooks | Agents | Packs |
 |---|---|---|---|---|---|
-| Claude Code | `.claude-plugin/` ([shipped](install.md#claude-code)); `/plugin install` | `SessionStart` hook output (10,000-char cap) | yes: allow, ask, deny | yes, as `ai-config:<name>` | plugin `dependencies` with semver ranges |
+| Claude Code | `.claude-plugin/` ([shipped](install.md#claude-code)); `/plugin install` | `SessionStart` hook output (10,000-char cap) | yes: allow, ask, deny | yes, as `brainrc:<name>` | plugin `dependencies` with semver ranges |
 | Codex | `.codex-plugin/` **or `.claude-plugin/`** (verified); `codex plugin marketplace add owner/repo` | no plugin route: `~/.codex/AGENTS.md` or config `developer_instructions` | yes: `PreToolUse`, `SessionStart` | TOML roles in config; not shippable in a plugin | separate plugin; no dependencies found |
 | Antigravity CLI | root `plugin.json` ([shipped](install.md#antigravity-cli), unverified); `agy plugin install <git url>` | plugin `rules/*.md` with `trigger:` frontmatter | yes: `PreToolUse` ask or deny; no known "no opinion" reply | markdown, `agents/` | separate plugin; no dependencies found |
 | OpenCode | JS plugin (npm or `~/.config/opencode/plugins/`): hooks and tools only | `instructions[]` config or `AGENTS.md` | blocks by throwing; no ask | markdown files with a different frontmatter | `plugin[]`, `instructions[]`, `skills.paths` |
@@ -27,7 +27,7 @@ Sources: [hooks](https://code.claude.com/docs/en/hooks.md),
   compaction. Over 10,000 characters, Claude sees a 2,000-character preview only. A plugin-root
   `CLAUDE.md`, rules, and most settings are not loaded. `claude plugin validate` accepts the hook
   (checked here); that the text reaches the model is **unconfirmed** (needs a live session).
-- Packs: `"dependencies": [{"name": "ai-config", "version": "^0.3"}]` installs core with a pack;
+- Packs: `"dependencies": [{"name": "brainrc", "version": "^0.3"}]` installs core with a pack;
   versions resolve to git tags `<plugin>--v<version>`. `claude plugin list --json` lists installed
   plugins with their paths. A pack skill dispatching a core agent across plugins is **unconfirmed**.
 - Hooks from several plugins all run; `deny` > `ask` > `allow`.
@@ -39,7 +39,7 @@ here): `codex-rs/core-plugins/`, `codex-rs/hooks/`, `codex-rs/agent-roles/`.
 
 - Reads `.claude-plugin/marketplace.json` and `.claude-plugin/plugin.json` as well as its own
   `.codex-plugin/`. **Verified** with Codex 0.161.0: `codex plugin marketplace add <repo>` and
-  `codex plugin add ai-config@ai-config` install our plugin unchanged. The install copy **drops
+  `codex plugin add brainrc@brainrc` install our plugin unchanged. The install copy **drops
   symlinks** (`skills/spec-agent/roles`), so spec-agent falls back to `../../agents/`.
 - Skills: native, `~/.agents/skills` (`~/.codex/skills` deprecated). Custom prompts are deprecated
   for skills; a plugin's `commands/` become skills, **except any that use `$ARGUMENTS`** (verified:

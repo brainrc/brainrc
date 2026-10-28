@@ -24,3 +24,13 @@ Ticket: gh:207 · Size: standard · PR: https://github.com/brainrc/brainrc/pull/
 - Engine: commit a `review: each` task only after its review (T2 was committed first by mistake).
 - Worktree briefs: save run logs outside `specs/` in the worktree, or teach worktree_fence.py to ignore `specs/<slug>/.runs/`.
 - Verify: always also run the suite with `XDG_CONFIG_HOME` set, as CI runners do.
+
+## After delivery
+- Outcome: merged
+- Merged at: 2026-10-28T16:31:58Z · Time to merge: 142 min
+- Post-merge verify: pass (see `verify-merged.md`)
+- CI failures: 0 own / 0 external
+- Review rounds: 0
+- Caught by reviewers, missed by the run's own: none
+- Follow-up title: none
+- Follow-up body: none

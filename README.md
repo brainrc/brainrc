@@ -34,7 +34,7 @@ Quickest, in Claude Code:
 
 ```text
 /plugin marketplace add brainrc/brainrc
-/plugin install ai-config@ai-config
+/plugin install brainrc@brainrc
 ```
 
 For other tools, or to also get the shared rules and private packs, use **aicfg**, the syncer

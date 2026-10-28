@@ -15,7 +15,7 @@
   "mode": "subagent",
   "delivery": "normal",
   "auto": true,
-  "stage": "watch",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -215,12 +215,17 @@
       "task_minutes": 10,
       "wall_minutes": 4
     },
-    "pr_opened_at": "2026-10-28T14:09:45Z"
+    "pr_opened_at": "2026-10-28T14:09:45Z",
+    "time_to_merge": 142
   },
   "living": [
     "aicfg-apply"
   ],
   "watch": {
-    "entered_at": "2026-10-28T14:09:45Z"
+    "entered_at": "2026-10-28T14:09:45Z",
+    "merged_at": "2026-10-28T16:31:58Z",
+    "post_merge": "pass",
+    "outcome": "merged",
+    "review_rounds": 0
   }
 }

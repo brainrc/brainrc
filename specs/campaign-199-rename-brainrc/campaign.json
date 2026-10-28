@@ -48,15 +48,15 @@
       "branch": "207-brainrc-hooks-mcp-backups",
       "pr": "https://github.com/brainrc/brainrc/pull/233",
       "base": "main",
-      "merged": false
+      "merged": true
     },
     {
       "ref": "gh:208",
       "order": 5,
       "depends_on": [],
-      "status": "todo",
-      "slug": null,
-      "branch": null,
+      "status": "in_progress",
+      "slug": "208-brainrc-plugin-namespace",
+      "branch": "208-brainrc-plugin-namespace",
       "pr": null
     },
     {

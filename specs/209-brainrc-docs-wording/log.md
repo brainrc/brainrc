@@ -25,3 +25,6 @@ Requirement changes fixed: full requirement text in each MODIFIED block. Engine:
 ## engine · Plan gate · auto-approved (owner: no decisions until Deliver)
 2026-10-28T17:20:34Z
 Engine default before approval: keep `aicfg_home` as a one-line deprecated alias until 0.5.0 (import aicfg compatibility). Pre-commit hook is repo-local (.pre-commit-config.yaml), so its id rename affects only SKIP= users.
+
+## implementer · T1 · done
+Red as designed: 566 offending lines, 7 stale rows (test_brainrc.py rows until T6). Commit 1ebec07. Wave 1: T2, T3 in worktrees.

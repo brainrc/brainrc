@@ -39,8 +39,8 @@
       "id": "T1",
       "title": "Allowlist test with the A-F table, failing on today's tree",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "files": [
         "tests/test_old_names.py"
       ],
@@ -49,14 +49,16 @@
         "AC2"
       ],
       "review": "batch",
-      "after": []
+      "after": [],
+      "commit": "1ebec07",
+      "red": "assertion"
     },
     {
       "id": "T2",
       "title": "Docs wording: commands, `~/brainrc` checkout, `~/.config/brainrc/`, `$BRAINRC_HOME`; tutorial commands; E sentences say old/former/deprecated/legacy",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "docs/install.md",
         "docs/tutorial.md",
@@ -76,14 +78,17 @@
       "review": "batch",
       "after": [
         "T1"
-      ]
+      ],
+      "wave": 1,
+      "worktree": "/tmp/spec-agent/209-brainrc-docs-wording/T2",
+      "started_at": "2026-10-28T17:23:35Z"
     },
     {
       "id": "T3",
       "title": "README, AGENTS.md and CONTRIBUTING.md wording (title, clone dir, `scripts/brainrc.py`, `brainrc/` package)",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "README.md",
         "AGENTS.md",
@@ -95,7 +100,10 @@
       "review": "batch",
       "after": [
         "T1"
-      ]
+      ],
+      "wave": 1,
+      "worktree": "/tmp/spec-agent/209-brainrc-docs-wording/T3",
+      "started_at": "2026-10-28T17:23:35Z"
     },
     {
       "id": "T4",

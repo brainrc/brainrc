@@ -1,0 +1,221 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:205",
+    "id": "205",
+    "title": "Rename: PyPI package and the brainrc command",
+    "url": "https://github.com/brainrc/brainrc/issues/205",
+    "pr": "https://github.com/brainrc/brainrc/pull/230"
+  },
+  "slug": "205-brainrc-package-command",
+  "branch": "205-brainrc-package-command",
+  "base": "main",
+  "size": "standard",
+  "mode": "subagent",
+  "delivery": "normal",
+  "auto": false,
+  "stage": "watch",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [
+    "scripting",
+    "ci-pipelines"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/brainrc.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Rename the package to brainrc with --version and brainrc usage",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "aicfg/",
+        "brainrc/",
+        "scripts/brainrc.py",
+        "scripts/aicfg.py",
+        "scripts/evals.py",
+        "pyproject.toml",
+        "tests/test_aicfg.py",
+        "tests/test_mcp.py",
+        "tests/test_hooks.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC4",
+        "AC8",
+        "AC9"
+      ],
+      "review": "each",
+      "after": [],
+      "commit": "6118369",
+      "red": "assertion"
+    },
+    {
+      "id": "T2",
+      "title": "Contract tests for the brainrc and deprecated aicfg entry points",
+      "agent": "test-writer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "tests/test_cli_entry_points.py"
+      ],
+      "criteria": [
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC6",
+        "AC7",
+        "AC11"
+      ],
+      "review": "each",
+      "after": [
+        "T1"
+      ],
+      "commit": "cdefc0f",
+      "red": "assertion"
+    },
+    {
+      "id": "T3",
+      "title": "Deprecated aicfg shims to pass T2",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "aicfg/__init__.py",
+        "aicfg/__main__.py",
+        "brainrc/cli.py",
+        "scripts/aicfg.py",
+        "pyproject.toml"
+      ],
+      "criteria": [
+        "AC3",
+        "AC5",
+        "AC6",
+        "AC7",
+        "AC11"
+      ],
+      "review": "each",
+      "after": [
+        "T2"
+      ],
+      "commit": "c588355"
+    },
+    {
+      "id": "T4",
+      "title": "CI invokes brainrc and smoke-tests the installed wheel",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 2,
+      "files": [
+        "scripts/check_install.py",
+        ".github/workflows/validate.yml",
+        ".github/workflows/release.yml"
+      ],
+      "criteria": [
+        "AC10",
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC6",
+        "AC7",
+        "AC8"
+      ],
+      "review": "each",
+      "after": [
+        "T3"
+      ],
+      "commit": "4487d1b"
+    },
+    {
+      "id": "T5",
+      "title": "Changelog fragment, bump minor, [pack contract], removal in 0.5.0",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "changelog.d/205-brainrc-package-command.md"
+      ],
+      "criteria": [
+        "AC10"
+      ],
+      "review": "batch",
+      "after": [],
+      "commit": "6f72cf2"
+    },
+    {
+      "id": "F1",
+      "title": "Test that python -m aicfg warns once when warnings are shown",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "tests/test_cli_entry_points.py"
+      ],
+      "criteria": [
+        "AC11"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "7ecd043"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-27T18:47:44Z",
+    "stage_started_at": {
+      "intake": "2026-10-27T18:47:44Z",
+      "spec": "2026-10-27T18:47:44Z",
+      "plan": "2026-10-28T01:41:32Z",
+      "implement": "2026-10-28T01:45:06Z",
+      "verify": "2026-10-28T02:36:40Z",
+      "document": "2026-10-28T02:38:17Z",
+      "deliver": "2026-10-28T02:40:22Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-28T01:39:38Z",
+        "approved_at": "2026-10-28T01:41:32Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-28T01:44:30Z",
+        "approved_at": "2026-10-28T01:45:06Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-28T02:40:22Z",
+        "approved_at": "2026-10-28T02:45:55Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 5,
+      "first_pass": 2
+    },
+    "retries": 1,
+    "interventions": 1,
+    "pr_opened_at": "2026-10-28T02:47:03Z"
+  },
+  "living": [
+    "cli-entry-points"
+  ],
+  "watch": {
+    "entered_at": "2026-10-28T02:47:03Z"
+  }
+}

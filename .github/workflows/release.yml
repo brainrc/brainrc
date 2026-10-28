@@ -32,8 +32,8 @@ jobs:
           python-version: "3.12"
       - name: Fold fragments
         run: |
-          python3 scripts/aicfg.py release
-          python3 scripts/aicfg.py validate
+          python3 scripts/brainrc.py release
+          python3 scripts/brainrc.py validate
       - name: Commit, tag, and push
         run: |
           version="$(cat VERSION)"
@@ -58,6 +58,6 @@ jobs:
           if gh release view "v${version}" >/dev/null 2>&1; then
             echo "v${version} already released"
           else
-            python3 scripts/aicfg.py release --notes "$version" > "$RUNNER_TEMP/notes.md"
+            python3 scripts/brainrc.py release --notes "$version" > "$RUNNER_TEMP/notes.md"
             gh release create "v${version}" --verify-tag --title "v${version}" --notes-file "$RUNNER_TEMP/notes.md"
           fi

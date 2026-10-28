@@ -1,22 +1,23 @@
-"""aicfg: sync this repo's skills, agents, commands, rules, and hooks into AI harnesses.
+"""brainrc: sync this repo's skills, agents, commands, rules, and hooks into AI harnesses.
 
 Usage:
-  aicfg.py status                show what would change (default, no writes)
-  aicfg.py apply                 render rules and pack extensions to $AICFG_HOME (default
-                                 ~/.config/ai-config), create/refresh symlinks, merge settings
-                                 and MCP servers (mcp/servers.toml)
-  aicfg.py validate [--pack DIR] check frontmatter, cross-references, packs, and tripwires
-                                 (used in CI); --pack checks core plus that pack only
-  aicfg.py doctor                diagnose this machine's install (read-only): stale renders,
-                                 missing/broken links, broken packs, unmerged hooks; exits 1
-                                 on any problem, each with its fix
-  aicfg.py plugin                write the plugin manifests (.claude-plugin/, plugin.json);
-                                 validate fails when they're stale
-  aicfg.py release [--dry-run]   fold changelog.d/ fragments into CHANGELOG.md, bump VERSION,
-                                 and rewrite the plugin manifests (the release workflow runs it)
-  aicfg.py release --notes X.Y.Z print that version's CHANGELOG.md section (GitHub Release body)
-  aicfg.py tokens                estimate the context cost of every skill, agent, and command
-  aicfg.py update                refetch packs named by `git` URL at their `ref`, then apply
+  brainrc.py status                show what would change (default, no writes)
+  brainrc.py apply                 render rules and pack extensions to $AICFG_HOME (default
+                                   ~/.config/ai-config), create/refresh symlinks, merge settings
+                                   and MCP servers (mcp/servers.toml)
+  brainrc.py validate [--pack DIR] check frontmatter, cross-references, packs, and tripwires
+                                   (used in CI); --pack checks core plus that pack only
+  brainrc.py doctor                diagnose this machine's install (read-only): stale renders,
+                                   missing/broken links, broken packs, unmerged hooks; exits 1
+                                   on any problem, each with its fix
+  brainrc.py plugin                write the plugin manifests (.claude-plugin/, plugin.json);
+                                   validate fails when they're stale
+  brainrc.py release [--dry-run]   fold changelog.d/ fragments into CHANGELOG.md, bump VERSION,
+                                   and rewrite the plugin manifests (the release workflow runs it)
+  brainrc.py release --notes X.Y.Z print that version's CHANGELOG.md section (GitHub Release body)
+  brainrc.py tokens                estimate the context cost of every skill, agent, and command
+  brainrc.py update                refetch packs named by `git` URL at their `ref`, then apply
+  brainrc.py --version             print `brainrc <VERSION>`
 
 Sources: this repo ("core", versioned by VERSION) plus any packs listed in packs.toml /
 packs.local.toml, by `path` or by `git` URL (fetched into $AICFG_HOME/packs). A pack is a
@@ -46,7 +47,9 @@ from .config import (
     rendered_instructions,
     tilde,
 )
-from .sources import check_packs, collisions, duplicate_packs, render_extensions, render_instructions, sources
+from .sources import (
+    check_packs, collisions, core_version, duplicate_packs, render_extensions, render_instructions, sources,
+)
 from .opencode import rendered_agents
 from .packs import describe, fetch_pack, git_packs, needs_fetch
 from .plan import hooks_copy_current, invalid_fragments, plan, stale_hooks_copy
@@ -70,7 +73,7 @@ def cmd_sync(apply: bool) -> int:
     lock.parent.mkdir(parents=True, exist_ok=True)
     with open(lock, "a") as f:
         if not _try_lock(f):
-            print(f"ERROR another aicfg apply is running (lock: {tilde(lock)})")
+            print(f"ERROR another brainrc apply is running (lock: {tilde(lock)})")
             print("\nNothing written. Let it finish, then re-run.")
             return 1
         return _sync(True)
@@ -283,13 +286,27 @@ def cmd_update() -> int:
     return cmd_sync(apply=True)
 
 
+SHIM_REMOVED_IN = "0.5.0"
+
+
+def warn_deprecated(old: str, new: str = "brainrc") -> None:
+    """One line on stderr (never stdout, which scripts parse) naming the replacement."""
+    print(f"{old} is deprecated: use {new} (removed in {SHIM_REMOVED_IN})", file=sys.stderr)
+
+
 def entry() -> None:
-    """The `aicfg` console script of an installed package."""
+    """The `brainrc` console script of an installed package."""
     sys.exit(main(sys.argv))
 
 
+def deprecated_entry() -> None:
+    """The deprecated `aicfg` console script: warn, then behave exactly like `brainrc`."""
+    warn_deprecated("aicfg")
+    entry()
+
+
 def main(argv: list[str]) -> int:
-    """Run one command. A reader that stops early (`aicfg doctor | head`) ends it quietly."""
+    """Run one command. A reader that stops early (`brainrc doctor | head`) ends it quietly."""
     try:
         code = _dispatch(argv)
         sys.stdout.flush()  # inside the try: a closed pipe fails here, not at interpreter exit
@@ -301,6 +318,9 @@ def main(argv: list[str]) -> int:
 
 def _dispatch(argv: list[str]) -> int:
     cmd = argv[1] if len(argv) > 1 else "status"
+    if cmd == "--version" and len(argv) == 2:
+        print(f"brainrc {'.'.join(map(str, core_version()))}")
+        return 0
     if cmd in ("status", "apply") and len(argv) <= 2:
         return cmd_sync(apply=cmd == "apply")
     if cmd == "validate":
@@ -320,5 +340,5 @@ def _dispatch(argv: list[str]) -> int:
         return cmd_update()
     if cmd == "tokens" and len(argv) == 2:
         return cmd_tokens()
-    print(__doc__.replace("aicfg.py ", "aicfg ") if config.installed() else __doc__)
+    print(__doc__.replace("brainrc.py ", "brainrc ") if config.installed() else __doc__)
     return 2

@@ -4,25 +4,29 @@
   "dependency_source": "none",
   "started_at": "2026-10-27T18:43:34Z",
   "delivery": "sequential",
-  "auto": true,
+  "auto": false,
   "members": [
     {
       "ref": "gh:204",
       "order": 1,
       "depends_on": [],
-      "status": "verified",
+      "status": "delivered",
       "slug": "204-point-urls-brainrc",
       "branch": "204-point-urls-brainrc",
-      "pr": null
+      "pr": "https://github.com/brainrc/brainrc/pull/229",
+      "base": "main",
+      "merged": true
     },
     {
       "ref": "gh:205",
       "order": 2,
       "depends_on": [],
-      "status": "todo",
-      "slug": null,
-      "branch": null,
-      "pr": null
+      "status": "delivered",
+      "slug": "205-brainrc-package-command",
+      "branch": "205-brainrc-package-command",
+      "pr": "https://github.com/brainrc/brainrc/pull/230",
+      "base": "main",
+      "merged": false
     },
     {
       "ref": "gh:206",

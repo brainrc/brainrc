@@ -1,4 +1,4 @@
-"""Tests for scripts/aicfg.py: settings merge, sync against a fake HOME, and validation."""
+"""Tests for scripts/brainrc.py: settings merge, sync against a fake HOME, and validation."""
 import contextlib
 import io
 import json
@@ -14,7 +14,7 @@ from unittest import mock
 
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO))
-import aicfg  # noqa: E402  (the package at the repo root)
+import brainrc as aicfg  # noqa: E402  (the package at the repo root)
 
 FOREIGN = {"hooks": [{"type": "command", "command": "node /opt/other/hook.js"}]}
 OURS_OLD = {"matcher": "Bash", "hooks": [{"type": "command", "command": "python3 ~/.claude/hooks/ai-config/old.py"}]}
@@ -102,7 +102,7 @@ class ReleaseTest(TempRepoCase):
         self.assertRegex(changelog, r"## 0\.4\.0 \(\d{4}-\d\d-\d\d\)\n\n- Fixed a thing\.\n- \*\*\[pack contract\]")
         self.assertLess(changelog.index("## 0.4.0"), changelog.index("## 0.3.9"))
         self.assertEqual([p.name for p in (self.repo / "changelog.d").iterdir()], ["README.md"])
-        from aicfg.sources import check_changelog, core_version
+        from brainrc.sources import check_changelog, core_version
         self.assertEqual(check_changelog(core_version()), [])
 
     def test_dry_run_and_no_fragments_write_nothing(self):
@@ -119,12 +119,12 @@ class ReleaseTest(TempRepoCase):
         (self.repo / "CHANGELOG.md").write_text(
             "# Changelog\n\nIntro.\n\n## 0.3.10 (2026-01-02)\n\n- New.\n- Also new.\n\n"
             "## 0.3.9 (2026-01-01)\n\n- Old.\n")
-        self.assertEqual(quiet(aicfg.main, ["aicfg.py", "release", "--notes", "0.3.10"]), (0, "- New.\n- Also new.\n"))
-        self.assertEqual(quiet(aicfg.main, ["aicfg.py", "release", "--notes", "0.3.9"]), (0, "- Old.\n"))
+        self.assertEqual(quiet(aicfg.main, ["brainrc.py", "release", "--notes", "0.3.10"]), (0, "- New.\n- Also new.\n"))
+        self.assertEqual(quiet(aicfg.main, ["brainrc.py", "release", "--notes", "0.3.9"]), (0, "- Old.\n"))
 
     def test_notes_for_a_missing_version_fail(self):
         (self.repo / "CHANGELOG.md").write_text("# Changelog\n\n## 0.3.10 (2026-01-02)\n\n- New.\n")
-        code, out = quiet(aicfg.main, ["aicfg.py", "release", "--notes", "0.3.1"])  # not a prefix match
+        code, out = quiet(aicfg.main, ["brainrc.py", "release", "--notes", "0.3.1"])  # not a prefix match
         self.assertEqual(code, 1, out)
         self.assertEqual(out, "ERROR CHANGELOG.md has no section for 0.3.1\n")
 
@@ -307,7 +307,7 @@ class SyncFakeHomeTest(TempRepoCase):
             code, out = quiet(aicfg.cmd_sync, True)
             status_code, status_out = quiet(aicfg.cmd_sync, False)
         self.assertEqual(code, 1, out)
-        self.assertIn("another aicfg apply is running", out)
+        self.assertIn("another brainrc apply is running", out)
         self.assertIn("apply.lock", out)
         self.assertEqual(list(self.home.iterdir()), [])
         self.assertEqual(list(self.aicfg_home.iterdir()), [lock])
@@ -318,7 +318,7 @@ class SyncFakeHomeTest(TempRepoCase):
     def test_the_lock_is_released_after_apply_even_on_error(self):
         import fcntl
         self.assertEqual(quiet(aicfg.cmd_sync, True)[0], 0)
-        with mock.patch("aicfg.cli.plan", side_effect=RuntimeError("boom")):
+        with mock.patch("brainrc.cli.plan", side_effect=RuntimeError("boom")):
             with self.assertRaises(RuntimeError):
                 quiet(aicfg.cmd_sync, True)
         with open(self.aicfg_home / "apply.lock", "a") as f:
@@ -339,7 +339,7 @@ class SyncFakeHomeTest(TempRepoCase):
                 settings.write_text('{"theme": "app"}')
             return result
 
-        with mock.patch("aicfg.cli.settings_change", harness_writes_meanwhile):
+        with mock.patch("brainrc.cli.settings_change", harness_writes_meanwhile):
             code, out = quiet(aicfg.cmd_sync, True)
         self.assertEqual(code, 1, out)
         self.assertRegex(out, r"CHANGED +claude +~/.claude/settings.json")
@@ -676,7 +676,7 @@ class DoctorTest(TempRepoCase):
             calls.append((Path(args[-1]).name, kw.get("input"), kw.get("timeout")))
             return real(args, **kw)
 
-        with mock.patch("aicfg.doctor.subprocess.run", spy):
+        with mock.patch("brainrc.doctor.subprocess.run", spy):
             self.assertEqual([f for f in aicfg.doctor_findings() if "hook" in f[1]], [])
         self.assertIn(("guard_outward.py", "{}", 5), calls)
         self.assertIn(("guard_secrets.py", "{}", 5), calls)
@@ -928,14 +928,14 @@ class PluginTest(TempRepoCase):
         quiet(aicfg.cmd_plugin)
         (self.repo / ".claude-plugin/marketplace.json").unlink()
         errors = aicfg.check_plugin()
-        self.assertTrue(any("marketplace.json" in e and "missing" in e and "aicfg.py plugin" in e for e in errors), errors)
+        self.assertTrue(any("marketplace.json" in e and "missing" in e and "brainrc.py plugin" in e for e in errors), errors)
         quiet(aicfg.cmd_plugin)
         set_core_version(self.repo, "9.9.9")
         errors = aicfg.check_plugin()
         self.assertTrue(any("plugin.json" in e and "stale" in e for e in errors), errors)
         code, out = quiet(aicfg.cmd_validate)
         self.assertEqual(code, 1)
-        self.assertIn("aicfg.py plugin", out)
+        self.assertIn("brainrc.py plugin", out)
 
 
 class AicfgHomeTest(TempRepoCase):
@@ -1010,7 +1010,7 @@ class UserInvokedSkillTest(unittest.TestCase):
 class PythonVersionTest(unittest.TestCase):
     def test_old_python_gets_a_message_not_a_traceback(self):
         # Hiding tomllib is what Python 3.10 looks like to the script.
-        code = ("import runpy, sys; sys.modules['tomllib'] = None; sys.argv = ['aicfg.py', 'status']; "
+        code = ("import runpy, sys; sys.modules['tomllib'] = None; sys.argv = ['brainrc.py', 'status']; "
                 f"runpy.run_path({str(REPO / 'scripts/aicfg.py')!r}, run_name='__main__')")
         result = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True)
         self.assertEqual(result.returncode, 1, result.stderr)
@@ -1259,11 +1259,11 @@ class CrashRegressionTest(TempRepoCase):
 
 
 class InstalledModeTest(TempRepoCase):
-    """aicfg installed with pipx/uv: core comes bundled as aicfg/_core and is never written to."""
+    """brainrc installed with pipx/uv: core comes bundled as brainrc/_core and is never written to."""
 
     def setUp(self):
         super().setUp()
-        self.pkg = Path(tempfile.mkdtemp()) / "aicfg"
+        self.pkg = Path(tempfile.mkdtemp()) / "brainrc"
         self.core = self.pkg / "_core"
         copy_repo(self.core)
         roles = self.core / "skills/spec-agent/roles"
@@ -1285,7 +1285,7 @@ class InstalledModeTest(TempRepoCase):
 
     def test_bundled_core_is_found_next_to_the_package(self):
         self.assertEqual(aicfg.config.find_core(self.pkg), self.core)
-        self.assertEqual(aicfg.config.find_core(self.repo / "aicfg"), self.repo)
+        self.assertEqual(aicfg.config.find_core(self.repo / "brainrc"), self.repo)
         self.assertTrue(aicfg.config.installed())
 
     def test_local_files_live_in_aicfg_home(self):
@@ -1380,12 +1380,12 @@ class InstalledModeTest(TempRepoCase):
 
     def test_hints_name_the_installed_command(self):
         fixes = [fix for _, _, fix in aicfg.doctor_findings()]  # nothing applied yet
-        self.assertIn("aicfg apply", fixes)
-        self.assertFalse(any("scripts/aicfg.py" in f for f in fixes), fixes)
-        code, out = quiet(aicfg.main, ["aicfg", "bogus"])
+        self.assertIn("brainrc apply", fixes)
+        self.assertFalse(any("scripts/brainrc.py" in f for f in fixes), fixes)
+        code, out = quiet(aicfg.main, ["brainrc", "bogus"])
         self.assertEqual(code, 2)
-        self.assertIn("  aicfg status", out)
-        self.assertNotIn("aicfg.py", out)
+        self.assertIn("  brainrc status", out)
+        self.assertNotIn("brainrc.py", out)
 
     def test_plugin_needs_a_checkout(self):
         code, out = quiet(aicfg.cmd_plugin)
@@ -1534,7 +1534,7 @@ class GitPackTest(TempRepoCase):
     def test_unchanged_config_does_not_fetch(self):
         self.use(git=self.url, ref="v1")
         quiet(aicfg.cmd_sync, True)
-        with mock.patch("aicfg.packs.subprocess.run") as run:
+        with mock.patch("brainrc.packs.subprocess.run") as run:
             code, out = quiet(aicfg.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertNotIn("FETCH", out)
@@ -1556,7 +1556,7 @@ class GitPackTest(TempRepoCase):
     def test_a_hung_git_call_times_out(self):
         self.use(git=self.url, ref="v1")
         timeout = subprocess.TimeoutExpired(["git", "fetch"], 60)
-        with mock.patch("aicfg.packs.subprocess.run", side_effect=timeout):
+        with mock.patch("brainrc.packs.subprocess.run", side_effect=timeout):
             code, out = quiet(aicfg.cmd_sync, True)
         self.assertEqual(code, 1, out)
         self.assertIn("ERROR git init timed out after 60s", out)
@@ -1567,7 +1567,7 @@ class GitPackTest(TempRepoCase):
     def test_git_calls_have_a_timeout(self):
         self.use(git=self.url, ref="v1")
         real = subprocess.run
-        with mock.patch("aicfg.packs.subprocess.run", side_effect=real) as run:
+        with mock.patch("brainrc.packs.subprocess.run", side_effect=real) as run:
             quiet(aicfg.cmd_sync, True)
         self.assertTrue(run.call_args_list)
         self.assertTrue(all(c.kwargs.get("timeout") == 60 for c in run.call_args_list), run.call_args_list)
@@ -2207,6 +2207,59 @@ class AgentFrontmatterTest(TempRepoCase):
             code, out = self.agent(model, tools)
             self.assertEqual(code, 1, out)
             self.assertIn(error, out)
+
+
+class BrainrcCommandTest(unittest.TestCase):
+    """The package and command are named brainrc (#205)."""
+
+    def run_script(self, *args):
+        return subprocess.run([sys.executable, str(REPO / "scripts/brainrc.py"), *args],
+                              capture_output=True, text=True)
+
+    def test_version_prints_name_and_version_without_v(self):
+        result = self.run_script("--version")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, f"brainrc {(REPO / 'VERSION').read_text().strip()}\n")
+
+    def test_usage_names_brainrc_in_a_checkout(self):
+        for arg in ("help", "bogus"):
+            result = self.run_script(arg)
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("brainrc.py status", result.stdout)
+            self.assertNotIn("aicfg.py", result.stdout)
+
+    def test_usage_names_brainrc_when_installed(self):
+        with mock.patch("brainrc.config.installed", return_value=True):
+            code, out = quiet(aicfg.cli.main, ["brainrc", "bogus"])
+        self.assertEqual(code, 2)
+        self.assertIn("brainrc status", out)
+        self.assertNotIn("brainrc.py", out)
+        self.assertNotIn("aicfg", out.replace("$AICFG_HOME", ""))
+
+    def test_checkout_script_validates(self):
+        self.assertEqual(self.run_script("validate").returncode, 0)
+
+
+class PyprojectTest(unittest.TestCase):
+    def setUp(self):
+        import tomllib
+        self.data = tomllib.loads((REPO / "pyproject.toml").read_text())
+
+    def test_distribution_and_console_scripts(self):
+        self.assertEqual(self.data["project"]["name"], "brainrc")
+        scripts = self.data["project"]["scripts"]
+        self.assertEqual(scripts["brainrc"], "brainrc.cli:entry")
+        self.assertIn("aicfg", scripts)
+        self.assertIn("brainrc", self.data["tool"]["hatch"]["build"]["targets"]["wheel"]["packages"])
+
+    def test_bundled_core_lands_under_brainrc(self):
+        include = self.data["tool"]["hatch"]["build"]["targets"]["wheel"]["force-include"]
+        self.assertTrue(include)
+        for src, dest in include.items():
+            self.assertTrue((REPO / src).exists(), src)
+            self.assertTrue(dest.startswith("brainrc/_core/"), dest)
+        for needed in ("skills", "agents", "rules", "harnesses.toml", "VERSION", "CHANGELOG.md"):
+            self.assertIn(needed, include)
 
 
 if __name__ == "__main__":

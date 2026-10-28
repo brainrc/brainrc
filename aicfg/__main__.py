@@ -1,6 +1,7 @@
-"""`python3 -m aicfg <command>`: the same commands as `python3 scripts/aicfg.py`."""
+"""Deprecated `python -m aicfg`: warn, then run brainrc."""
 import sys
 
-from .cli import main
+from brainrc.cli import main, warn_deprecated
 
+warn_deprecated("python -m aicfg", "python -m brainrc")
 sys.exit(main(sys.argv))

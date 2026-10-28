@@ -407,7 +407,7 @@ class CursorGuardTest(unittest.TestCase):
 
 REPO = HOOKS.parent.parent.parent
 sys.path.insert(0, str(REPO))
-import aicfg  # noqa: E402  (the package at the repo root)
+import brainrc as aicfg  # noqa: E402  (the package at the repo root)
 
 RISKY = {"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": "git push origin main"}}
 SAFE = {"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": "ls"}}

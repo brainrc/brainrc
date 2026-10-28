@@ -9,13 +9,13 @@ import sys
 try:
     import tomllib
 except ImportError:  # Python < 3.11; say so instead of a traceback
-    sys.exit(f"aicfg needs Python 3.11+ (this is {sys.version.split()[0]}).")
+    sys.exit(f"brainrc needs Python 3.11+ (this is {sys.version.split()[0]}).")
 
 from pathlib import Path
 
 
 def find_core(pkg: Path) -> Path:
-    """Core's content: bundled as aicfg/_core when aicfg is installed (pipx, uv), else the checkout."""
+    """Core's content: bundled as brainrc/_core when brainrc is installed (pipx, uv), else the checkout."""
     bundled = pkg / "_core"
     return bundled if bundled.is_dir() else pkg.parent
 
@@ -32,8 +32,8 @@ def installed() -> bool:
 
 
 def command(sub: str) -> str:
-    """How to run an aicfg command here, for hints: the installed `aicfg`, or the checkout's script."""
-    return f"aicfg {sub}" if installed() else f"python3 scripts/aicfg.py {sub}"
+    """How to run a brainrc command here, for hints: the installed `brainrc`, or the checkout's script."""
+    return f"brainrc {sub}" if installed() else f"python3 scripts/brainrc.py {sub}"
 
 
 def local_dir() -> Path:
@@ -246,7 +246,7 @@ def extensions_file() -> Path:
 
 
 def hooks_copy_root() -> Path:
-    """Where an installed aicfg copies core's hooks, so they outlive a versioned package path."""
+    """Where an installed brainrc copies core's hooks, so they outlive a versioned package path."""
     return aicfg_home() / "hooks" / "core"
 
 

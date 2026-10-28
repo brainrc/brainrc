@@ -60,7 +60,7 @@ def next_version(core: tuple[int, ...], bump: str) -> tuple[int, ...]:
 def cmd_release(dry_run: bool = False) -> int:
     """Bump VERSION by the largest fragment bump, prepend the entries, delete the fragments."""
     if config.installed():
-        print("ERROR release edits the repo; run it from a checkout: python3 scripts/aicfg.py release")
+        print("ERROR release edits the repo; run it from a checkout: python3 scripts/brainrc.py release")
         return 1
     paths = fragment_paths()
     if not paths:

@@ -1,36 +1,12 @@
-"""aicfg: sync this repo's skills, agents, commands, rules, and hooks into AI harnesses.
+"""Deprecated: `aicfg` is now `brainrc`. This shim is removed in brainrc.cli.SHIM_REMOVED_IN."""
+import sys
+import warnings
 
-Run it with `python3 scripts/aicfg.py <command>` or `python3 -m aicfg <command>`; usage is in
-`aicfg.cli`. Below are the names tests and scripts/evals.py use. Shared state such as `REPO`
-lives in the module that owns it (`aicfg.config.REPO`), so patch it there.
-"""
-from . import cli, config, doctor, mcp, opencode, plan, plugin, settings, tokens, validate  # noqa: F401
-from .config import (
-    BACKUPS_KEPT,
-    HOOKS_DIR_PLACEHOLDER,
-    aicfg_home,
-    extensions_file,
-    rendered_instructions,
-    tilde,
-)
-from .sources import (
-    Source,
-    frontmatter,
-    load_pack,
-    markdown_files,
-    parse_constraint,
-    render_instructions,
-    rule_text,
-    satisfies,
-    skills,
-    sources,
-)
-from .opencode import opencode_agent
-from .plan import Link, SettingsMerge, link_target, render_fragment
-from .settings import _owned, merge_settings
-from .plugin import check_plugin, cmd_plugin, plugin_manifests
-from .release import check_fragments, cmd_release, next_version, parse_fragment
-from .tokens import always_tokens, check_budgets, cmd_tokens, estimate_tokens
-from .validate import check_roles_link, cmd_validate
-from .doctor import cmd_doctor, doctor_findings
-from .cli import cmd_sync, cmd_update, main
+import brainrc.cli as cli
+
+# `python -m aicfg` imports this package first, then aicfg/__main__.py prints its own warning.
+if not (sys.argv[:1] == ["-m"] and "aicfg" in sys.orig_argv):
+    warnings.warn(f"aicfg is deprecated: import brainrc instead (removed in {cli.SHIM_REMOVED_IN})",
+                  DeprecationWarning, stacklevel=2)
+
+sys.modules["aicfg.cli"] = cli

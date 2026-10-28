@@ -38,7 +38,7 @@
       "id": "T1",
       "title": "Backups use the brainrc name, prune across both names",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "brainrc/settings.py",
@@ -53,14 +53,17 @@
       "review": "batch",
       "after": [],
       "wave": 1,
-      "worktree": "/tmp/spec-agent/207-brainrc-hooks-mcp-backups/T1",
-      "started_at": "2026-10-28T13:00:38Z"
+      "worktree": null,
+      "started_at": "2026-10-28T13:00:38Z",
+      "commit": "b907aaa",
+      "red": "assertion",
+      "finished_at": "2026-10-28T13:04:20Z"
     },
     {
       "id": "T2",
       "title": "Hook ownership covers both dir names, by path component",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "review",
       "attempts": 1,
       "files": [
         "brainrc/config.py",
@@ -73,16 +76,18 @@
       "review": "each",
       "after": [],
       "wave": 1,
-      "worktree": "/tmp/spec-agent/207-brainrc-hooks-mcp-backups/T2",
+      "worktree": null,
       "started_at": "2026-10-28T13:00:38Z",
-      "finished_at": "2026-10-28T13:02:46Z"
+      "finished_at": "2026-10-28T13:02:46Z",
+      "commit": "578766c",
+      "red": "assertion"
     },
     {
       "id": "T3",
       "title": "MCP ownership records honored from former homes, read-only",
       "agent": "implementer",
       "status": "in_progress",
-      "attempts": 1,
+      "attempts": 2,
       "files": [
         "brainrc/mcp.py",
         "tests/test_mcp.py"
@@ -96,7 +101,8 @@
       "after": [],
       "wave": 1,
       "worktree": "/tmp/spec-agent/207-brainrc-hooks-mcp-backups/T3",
-      "started_at": "2026-10-28T13:00:38Z"
+      "started_at": "2026-10-28T13:00:38Z",
+      "finished_at": "2026-10-28T13:04:20Z"
     },
     {
       "id": "T4",
@@ -172,7 +178,13 @@
       "total": 0,
       "first_pass": 0
     },
-    "retries": 0,
-    "interventions": 1
+    "retries": 1,
+    "interventions": 1,
+    "waves": {
+      "count": 1,
+      "max_width": 3,
+      "task_minutes": 10,
+      "wall_minutes": 4
+    }
   }
 }

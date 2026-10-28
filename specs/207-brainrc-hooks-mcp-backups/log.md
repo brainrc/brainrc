@@ -24,3 +24,9 @@ Plan Callouts are not none; the Plan gate needs the owner. Nothing pushed.
 ## engine · Plan gate · approved by owner
 2026-10-28T13:00:29Z
 Owner: "Approve continue auto" (callouts approved; auto continues). +1 intervention.
+
+## engine · wave 1 (T1, T2, T3) · handoffs in
+- T1 done: backups .bak-brainrc, prune across both names by stamp. Red 3, suite 528 OK, validate OK. Landed b907aaa.
+- T2 done: OWNED_HOOK matches both names by path component; OWNED_HOOK_MARKER /hooks/brainrc/. Red 3, suite 528 OK. Landed 578766c; committed before its review (engine ordering slip), review running now.
+- T3: union of records; engine's brief contradicted spec AC7 and the plan (resolved home wins per file; `[]` kept while a former home holds the key). Re-dispatched as attempt 2 (engine's error).
+- Fence: worktree STRAY hits were only .runs logs the brief told them to save; patches exclude specs/.

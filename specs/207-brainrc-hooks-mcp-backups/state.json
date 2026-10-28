@@ -38,8 +38,8 @@
       "id": "T1",
       "title": "Backups use the brainrc name, prune across both names",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "brainrc/settings.py",
         "tests/test_backups.py",
@@ -51,14 +51,17 @@
         "AC10"
       ],
       "review": "batch",
-      "after": []
+      "after": [],
+      "wave": 1,
+      "worktree": "/tmp/spec-agent/207-brainrc-hooks-mcp-backups/T1",
+      "started_at": "2026-10-28T13:00:38Z"
     },
     {
       "id": "T2",
       "title": "Hook ownership covers both dir names, by path component",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "brainrc/config.py",
         "tests/test_ownership.py"
@@ -68,14 +71,17 @@
         "AC5"
       ],
       "review": "each",
-      "after": []
+      "after": [],
+      "wave": 1,
+      "worktree": "/tmp/spec-agent/207-brainrc-hooks-mcp-backups/T2",
+      "started_at": "2026-10-28T13:00:38Z"
     },
     {
       "id": "T3",
       "title": "MCP ownership records honored from former homes, read-only",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "brainrc/mcp.py",
         "tests/test_mcp.py"
@@ -86,7 +92,10 @@
         "AC8"
       ],
       "review": "each",
-      "after": []
+      "after": [],
+      "wave": 1,
+      "worktree": "/tmp/spec-agent/207-brainrc-hooks-mcp-backups/T3",
+      "started_at": "2026-10-28T13:00:38Z"
     },
     {
       "id": "T4",

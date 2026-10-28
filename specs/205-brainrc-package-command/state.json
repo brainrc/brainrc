@@ -68,7 +68,7 @@
       "id": "T2",
       "title": "Contract tests for the brainrc and deprecated aicfg entry points",
       "agent": "test-writer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "tests/test_cli_entry_points.py"
@@ -84,14 +84,16 @@
       "review": "each",
       "after": [
         "T1"
-      ]
+      ],
+      "commit": "cdefc0f",
+      "red": "assertion"
     },
     {
       "id": "T3",
       "title": "Deprecated aicfg shims to pass T2",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "aicfg/__init__.py",
         "aicfg/__main__.py",
@@ -177,8 +179,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 1,
-      "first_pass": 1
+      "total": 2,
+      "first_pass": 2
     },
     "retries": 0,
     "interventions": 1

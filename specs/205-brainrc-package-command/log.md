@@ -47,3 +47,9 @@ Owner approved, including the public contract change.
 2026-10-28T01:53:09Z
 **Findings:** LOW test classes after the __main__ block (fixed by engine); LOW usage lacks --version (fixed by engine); LOW scripts/brainrc.py docstring "no command for usage" is pre-existing (follow-up).
 Engine committed 6118369. Follow-up noted: docs/architecture.md and AGENTS.md still describe the aicfg/ package (#209 wording pass).
+
+## test-writer · T2 · done
+**Evidence:** 11 tests, 9 fail for the right reason (no deprecated_entry, no aicfg module, no warning); 2 guard existing behavior (.runs/T2-red.txt). **Changed files:** tests/test_cli_entry_points.py.
+
+## code-reviewer (engine inline) · T2 · done
+**Findings:** LOW test_ac6_python_m_brainrc accepts exit 0 or 1 (status may report drift on a temp HOME); acceptable. Commit cdefc0f.

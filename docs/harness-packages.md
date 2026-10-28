@@ -1,6 +1,6 @@
 # Harness packages
 
-What each harness supports for installing ai-config as a native package, without a clone.
+What each harness supports for installing brainrc as a native package, without a clone.
 Research for [#50](https://github.com/brainrc/brainrc/issues/50), done 2026-10-08. Formats
 change fast: re-check a harness's docs before building its package. Gemini CLI was retired for
 consumer accounts on 2026-06-18; [Antigravity CLI](#antigravity-cli) replaced it.
@@ -119,10 +119,10 @@ community [`cursor-hooks`](https://www.npmjs.com/package/cursor-hooks) package.
 
 ## Proposed order for #50
 
-1. Render to `$AICFG_HOME`; spec-agent reads extensions from there (every harness needs it).
+1. Render to `$BRAINRC_HOME`; spec-agent reads extensions from there (every harness needs it).
 2. Codex through the existing `.claude-plugin/`: test the install, convert commands to skills.
 3. Antigravity plugin: root `plugin.json`, rule triggers (done, unverified); hooks after a live test.
 4. OpenCode: agent transform (#19, done); guard plugin (deny only) done in 0.3.25.
 5. Cursor: `.cursor-plugin/` plugin and guard hooks (deny only) done in 0.3.26; unverified in a real Cursor.
-6. Installable `aicfg` (`uv tool install` or `pipx install` from GitHub, core bundled): done in
-   0.3.22. Packs by git URL, fetched by `aicfg` (`git` + `ref`, `aicfg update`): done in 0.3.23.
+6. Installable `brainrc` (`uv tool install` or `pipx install` from GitHub, core bundled): done in
+   0.3.22. Packs by git URL, fetched by `brainrc` (`git` + `ref`, `brainrc update`): done in 0.3.23.

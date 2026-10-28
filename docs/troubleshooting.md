@@ -4,16 +4,16 @@ Start here: this lists what's wrong with the install on this machine and how to 
 It changes nothing.
 
 ```bash
-python3 scripts/aicfg.py doctor
+python3 scripts/brainrc.py doctor
 ```
 
 Then find the symptom below.
 
 ## A harness doesn't see a skill, agent, command, or rule
 
-Run `python3 scripts/aicfg.py apply`. Skills, agents, and commands are symlinks, so edits to
+Run `python3 scripts/brainrc.py apply`. Skills, agents, and commands are symlinks, so edits to
 existing ones show up at once, but new or removed ones need `apply`. Rules are different:
-they're rendered into `~/.config/ai-config/instructions.md` (or `$AICFG_HOME`), so **every** change to `rules/` (or a pack's
+they're rendered into `~/.config/brainrc/instructions.md` (or `$BRAINRC_HOME`), so **every** change to `rules/` (or a pack's
 rules) needs `apply`, edits included. Restart the harness or start a new session afterwards.
 
 If you moved the repo, the old links are broken. `doctor` names each one: delete it, then
@@ -21,16 +21,16 @@ If you moved the repo, the old links are broken. `doctor` names each one: delete
 
 ## Every skill shows up twice, or a hook runs twice
 
-Both the Claude Code plugin and `aicfg` are installed. Keep one: `/plugin uninstall
-brainrc@brainrc`, or uninstall `aicfg` (below).
+Both the Claude Code plugin and the `brainrc` command's links are installed. Keep one: `/plugin uninstall
+brainrc@brainrc`, or remove the links (below).
 
 If `doctor` warns that the old plugin `ai-config@ai-config` is installed, you have the plugin
 under both names: follow [Moving from ai-config](install.md#moving-from-ai-config).
 
 ## `CONFLICT` in `status` or `apply`
 
-A real file, or a symlink pointing outside this repo and your packs, sits where `aicfg` wants
-a link. `aicfg` never overwrites it. Look at it, then either:
+A real file, or a symlink pointing outside this repo and your packs, sits where `brainrc` wants
+a link. `brainrc` never overwrites it. Look at it, then either:
 
 - move it into the repo or a pack (as a skill, agent, or command) and delete the original, or
 - delete it if you don't need it,
@@ -71,8 +71,8 @@ write nothing while any of them stands, naming `validate --pack <dir>` for the p
 ## Settings backups
 
 Before `apply` changes a harness's settings file (Claude Code: `~/.claude/settings.json`), it
-copies it next to the original as `settings.json.bak-brainrc-<UTC time>`. The last 5 are kept, counting older
-`settings.json.bak-aicfg-<UTC time>` backups too.
+copies it next to the original as `settings.json.bak-brainrc-<UTC time>`. The last 5 are kept, counting
+old `settings.json.bak-aicfg-<UTC time>` backups too.
 No backup is made when the file didn't exist yet. MCP config files (`~/.claude.json` and the
 others) are backed up the same way.
 
@@ -86,7 +86,7 @@ Close Claude Code before `apply` changes MCP servers: it rewrites `~/.claude.jso
 
 | Message | Fix |
 |---|---|
-| `ERROR another aicfg apply is running (lock: <path>)` | Another `apply` (or `update`) holds `$AICFG_HOME/apply.lock`. Let it finish, then re-run. The lock is released when that process exits, even if it crashed, so there is nothing to delete. |
+| `ERROR another brainrc apply is running (lock: <path>)` | Another `apply` (or `update`) holds `$BRAINRC_HOME/apply.lock`. Let it finish, then re-run. The lock is released when that process exits, even if it crashed, so there is nothing to delete. |
 | `CHANGED <harness> <file>  (changed during apply; close Claude Code and re-run)` | The file changed after `apply` read it, so `apply` left it alone and exited 1. Close the harness that writes it, then re-run. |
 
 ## Uninstall
@@ -99,8 +99,8 @@ Close Claude Code before `apply` changes MCP servers: it rewrites `~/.claude.jso
    ```
 
    Repeat for `codex`, `opencode`, `antigravity`, and `cursor`.
-2. Run `python3 scripts/aicfg.py apply`. It removes every link it made, including the hooks
-   directory, takes ai-config's hooks out of `~/.claude/settings.json`, and removes the MCP
+2. Run `python3 scripts/brainrc.py apply`. It removes every link it made, including the hooks
+   directory, takes brainrc's hooks out of `~/.claude/settings.json`, and removes the MCP
    servers it added (backing each file up first). Your other settings, hooks, and servers stay.
 3. Delete the repo.
 

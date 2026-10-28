@@ -112,7 +112,7 @@ that already have runs start with no living specs; the first run that touches an
 ## Active run pointer
 
 For tools outside the run's repo (a pack repo, a workspace root), spec-agent writes the active
-run's absolute path to `$AICFG_HOME/active-run` (default `~/.config/ai-config/active-run`) at
+run's absolute path to `$BRAINRC_HOME/active-run` (default `~/.config/brainrc/active-run`) at
 intake, on resume, and at every checkpoint commit. The file is one line. It is not cleared when
 a run finishes, and the last write wins across sessions. A tool reads it through
 `skills/spec-agent/scripts/active_run.py read`, or falls back to `<cwd>/specs/` when the file
@@ -178,7 +178,7 @@ For standard and large runs the engine stops before batched review and recommend
   headings. Existing ones: `ticket-local`, `ticket-github`, `ticket-jira`.
   Optional: `pr_status` (read-only; without it `watch` skips).
 
-`python3 scripts/aicfg.py validate` checks that every agent, skill, and link referenced exists.
+`python3 scripts/brainrc.py validate` checks that every agent, skill, and link referenced exists.
 
 ## Credits
 

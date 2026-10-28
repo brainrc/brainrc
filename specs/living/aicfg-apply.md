@@ -3,9 +3,8 @@
 How `aicfg apply` writes harness settings and MCP config files.
 
 ### Safe atomic writes
-`aicfg apply` SHALL write settings and MCP files atomically, keep an existing file's permission
-bits, and never expose the new content with looser permissions than the file had. (AC1, AC2, AC5)
-_Last changed by 096-keep-mode-follow-symlinks._
+Unchanged except that the backup made before a write is named `.bak-brainrc-*`. (AC9)
+_Last changed by 207-brainrc-hooks-mcp-backups._
 
 ### Symlinked config files
 When a settings or MCP file path is a symlink, `aicfg apply` SHALL write through to the link's
@@ -25,14 +24,14 @@ whose content changed after apply read it; it warns and exits non-zero instead. 
 _Last changed by 097-apply-lock-unique-tmp._
 
 ### Hooks fail open
-ai-config's hook commands SHALL exit 0 without blocking (Cursor: with an allow response) when
-their script file is missing, and behave as the guard otherwise. (AC1, AC2, AC3, AC7)
-_Last changed by 098-hooks-fail-open._
+brainrc's hook commands SHALL exit 0 without blocking (Cursor: with an allow response) when their
+script file is missing, and behave as the guard otherwise. (Wording only; behavior unchanged.)
+_Last changed by 207-brainrc-hooks-mcp-backups._
 
 ### Doctor checks hooks
-`aicfg doctor` SHALL report each ai-config hook in a harness's settings file whose script is
-missing, or that exits non-zero for an empty payload, with the fix. (AC4, AC5, AC6)
-_Last changed by 098-hooks-fail-open._
+`brainrc doctor` SHALL report each brainrc hook (new or old dir name) in a harness's settings file
+whose script is missing, or that exits non-zero for an empty payload, with the fix. (AC11)
+_Last changed by 207-brainrc-hooks-mcp-backups._
 
 ### Installed hooks live in AICFG_HOME
 When `brainrc` runs from an installed package, `brainrc apply` SHALL copy core's hooks to
@@ -45,3 +44,25 @@ _Last changed by 206-brainrc-settings-home._
 `brainrc doctor` SHALL warn, with the fix, when the legacy dir or `AICFG_HOME` is in use or an
 unused old dir remains. (AC14)
 _Last changed by 206-brainrc-settings-home._
+
+### Owned hook dirs are renamed without duplicates
+`brainrc apply` SHALL link hooks at `hooks/brainrc` and `hooks/brainrc-<pack>`, treat hook entries
+under those and the former `hooks/ai-config(-<pack>)` dirs as its own, replace them with the new
+ones, and remove the old links on the first apply; entries that only mention `ai-config` elsewhere
+SHALL be left alone. (AC1 to AC5)
+_Last changed by 207-brainrc-hooks-mcp-backups._
+
+### MCP ownership survives the rename
+`brainrc apply` SHALL honor ownership records in the resolved home and, read-only, in former homes,
+so servers it wrote earlier are updated rather than duplicated or reported as conflicts. (AC6 to AC8)
+_Last changed by 207-brainrc-hooks-mcp-backups._
+
+### Backups use the brainrc name
+`brainrc apply` SHALL name backups `<file>.bak-brainrc-<UTC time>` and keep the newest 5 counting
+existing `.bak-aicfg-*` ones, pruning the oldest first. (AC9, AC10)
+_Last changed by 207-brainrc-hooks-mcp-backups._
+
+### Convergence
+After one `apply` of an old-name install `brainrc status` SHALL report in sync and a second `apply`
+SHALL change nothing. (AC11, AC12)
+_Last changed by 207-brainrc-hooks-mcp-backups._

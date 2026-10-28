@@ -24,7 +24,7 @@ skills = "~/.claude/skills"
 agents = "~/.claude/agents"
 commands = "~/.claude/commands"
 instructions = "~/.claude/CLAUDE.md"
-hooks_dir = "~/.claude/hooks/ai-config"
+hooks_dir = "~/.claude/hooks/brainrc"
 settings = "~/.claude/settings.json"
 mcp = "~/.claude.json"
 
@@ -61,6 +61,6 @@ instructions = "~/.gemini/GEMINI.md"
 [cursor]
 enabled = true
 skills = "~/.cursor/skills"
-hooks_dir = "~/.cursor/hooks/ai-config"
+hooks_dir = "~/.cursor/hooks/brainrc"
 settings = "~/.cursor/hooks.json"
 # instructions: Cursor's global User Rules live in the Settings UI, not a file

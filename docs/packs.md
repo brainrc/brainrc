@@ -49,7 +49,7 @@ acme-ai-pack/
   agents/acme-*.md       linked next to the core agents
   commands/acme-*.md
   rules/NN-*.md          rendered after all core rules, as one labelled block (see Rules)
-  overrides/claude/hooks/                 linked to <hooks_dir>-acme (e.g. ~/.claude/hooks/ai-config-acme)
+  overrides/claude/hooks/                 linked to <hooks_dir>-acme (e.g. ~/.claude/hooks/brainrc-acme)
   overrides/claude/settings.fragment.json merged after the core fragment; {{hooks_dir}} = the pack's hooks dir
   mcp/servers.toml       MCP servers, synced after core's (see formats.md#mcp-servers-mcpserverstoml)
   tripwires.toml         patterns that must not appear in the pack (checked by validate)

@@ -12,7 +12,7 @@ import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 
-from .config import ConfigError, aicfg_home, expand, load_harnesses
+from .config import ConfigError, aicfg_home, expand, former_homes, load_harnesses
 from .settings import replace_file
 from .sources import Source
 
@@ -162,12 +162,22 @@ def _owned_file() -> Path:
     return aicfg_home() / "mcp-owned.json"
 
 
-def _owned() -> dict[str, list[str]]:
+def _read_record(path: Path) -> dict[str, list[str]]:
     try:
-        data = json.loads(_owned_file().read_text())
+        data = json.loads(path.read_text())
     except (OSError, ValueError):
         return {}
     return data if isinstance(data, dict) else {}
+
+
+def _owned() -> dict[str, list[str]]:
+    """Former homes' records (read-only), overlaid per file by the resolved home's, which wins."""
+    merged: dict[str, list[str]] = {}
+    for path in [*(h / "mcp-owned.json" for h in former_homes()), _owned_file()]:
+        for dest, names in _read_record(path).items():
+            if isinstance(names, list):
+                merged[dest] = sorted({n for n in names if isinstance(n, str)})
+    return merged
 
 
 def _strip_block(text: str) -> tuple[str, str]:
@@ -236,11 +246,14 @@ def write_mcp(m: McpSync, text: str, owned: list[str], before: str | None) -> No
 def record_owned(m: McpSync, owned: list[str]) -> None:
     if m.harness == "codex":
         return  # the marked block is the record
-    data = _owned()
+    data = _read_record(_owned_file())  # only the resolved home's own record is ever written
+    dest = str(m.dest)
     if owned:
-        data[str(m.dest)] = sorted(owned)
+        data[dest] = sorted(owned)
+    elif any(isinstance(_read_record(h / "mcp-owned.json").get(dest), list) for h in former_homes()):
+        data[dest] = []  # shadows a former record, so it can't claim a server added later
     else:
-        data.pop(str(m.dest), None)
+        data.pop(dest, None)
     if data or _owned_file().exists():
         _owned_file().parent.mkdir(parents=True, exist_ok=True)
         _owned_file().write_text(json.dumps(data, indent=2) + "\n")

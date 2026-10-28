@@ -42,12 +42,12 @@ def local_dir() -> Path:
     return aicfg_home() if installed() else REPO
 
 
-# Hook commands under a hooks dir named ai-config or ai-config-<pack> are owned by ai-config
-# and replaced on merge (so a disabled pack's hooks are removed too).
-OWNED_HOOK = re.compile(r"/hooks/ai-config(?:-[a-z0-9-]+)?/")
+# Hook commands under a hooks dir named brainrc[-<pack>] (or the former ai-config[-<pack>])
+# are owned by brainrc and replaced on merge (so a disabled pack's hooks are removed too).
+OWNED_HOOK = re.compile(r"/hooks/(?:ai-config|brainrc)(?:-[a-z0-9-]+)?/")
 
 
-OWNED_HOOK_MARKER = "/hooks/ai-config/"  # kept for callers that check a plain substring
+OWNED_HOOK_MARKER = "/hooks/brainrc/"  # kept for callers that check a plain substring
 
 
 # Placeholder in settings fragments, replaced with the source's hooks dir.
@@ -303,3 +303,9 @@ def hook_command_dir(hooks_dir: str) -> str:
 def pack_hooks_dir(hooks_dir: str, pack: str) -> str:
     """Packs get a sibling of the core hooks dir, never a subdir (that's a symlink into core)."""
     return hooks_dir.rstrip("/") + f"-{pack}"
+
+
+def former_hooks_dirs(hooks_dir: str) -> list[str]:
+    """The pre-rename sibling of a hooks dir named brainrc; a dir the user named is used as given."""
+    d = hooks_dir.rstrip("/")
+    return [d[:-len("brainrc")] + "ai-config"] if d.endswith("/brainrc") else []

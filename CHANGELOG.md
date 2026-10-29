@@ -12,6 +12,11 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.5.0 (2026-10-29)
+
+- **[pack contract]** 0.5.0 removes the old names that have warned since 0.4.0. Use `brainrc` for the `aicfg` command, `scripts/brainrc.py` for `scripts/aicfg.py`, and `python -m brainrc` / `import brainrc` for `python -m aicfg` / `import aicfg` (the `aicfg_home` alias is gone too). Use `BRAINRC_HOME` for `AICFG_HOME`. The legacy `~/.config/ai-config` and `AICFG_HOME` are no longer read: while either holds an unmigrated home, `status`, `apply` and `update` write nothing and exit 1 naming `brainrc migrate`, and `doctor` reports a FAIL. Run `brainrc migrate` to move it. Packs should allow `requires_core` `<0.6`.
+- Record the brainrc rename campaign (#199) as done: #209's post-merge verify and retro, and the campaign log.
+
 ## 0.4.7 (2026-10-29)
 
 - `apply` now writes brainrc names for the Codex MCP block markers, the OpenCode guard link (`brainrc-guard.js`) and the git pack fetch record (`.git/brainrc-fetched.json`). It still recognizes the old ai-config ones: it replaces an old Codex block in place, prunes the old guard link when it points at the managed guard, and reads then removes the old fetch record, so nothing is duplicated or re-fetched.

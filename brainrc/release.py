@@ -39,13 +39,30 @@ def parse_fragment(text: str, rel: str) -> tuple[str, str]:
 
 
 def check_fragments() -> list[str]:
-    errors = []
+    errors, bumps = [], []
     for p in fragment_paths():
         try:
-            parse_fragment(p.read_text(), f"{FRAGMENTS}/{p.name}")
+            bumps.append(parse_fragment(p.read_text(), f"{FRAGMENTS}/{p.name}")[0])
         except ConfigError as e:
             errors.append(str(e))
+    if bumps and not errors:
+        errors += _removal_release_errors(max(bumps, key=BUMPS.index))
     return errors
+
+
+def _removal_release_errors(bump: str) -> list[str]:
+    """A bump may not reach the release that removes the deprecated names while they still exist."""
+    from . import cli  # cli imports this module
+    removed_in = getattr(cli, "SHIM_REMOVED_IN", None)
+    if not removed_in:
+        return []
+    target = tuple(int(n) for n in removed_in.split("."))
+    version = next_version(core_version(), bump)
+    if version < target:
+        return []
+    return [f"{FRAGMENTS}: a `{bump}` bump releases {'.'.join(map(str, version))}, but the deprecated "
+            f"names are removed in {removed_in} (`SHIM_REMOVED_IN`) and still exist: remove them in "
+            "this change, or bump `patch`"]
 
 
 def next_version(core: tuple[int, ...], bump: str) -> tuple[int, ...]:

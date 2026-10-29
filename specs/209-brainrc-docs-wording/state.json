@@ -6,7 +6,7 @@
     "id": "209",
     "title": "Rename: docs and wording pass",
     "url": "https://github.com/brainrc/brainrc/issues/209",
-    "pr": null
+    "pr": "https://github.com/brainrc/brainrc/pull/235"
   },
   "slug": "209-brainrc-docs-wording",
   "branch": "209-brainrc-docs-wording",
@@ -16,7 +16,7 @@
   "delivery": "normal",
   "auto": true,
   "stop_at_deliver": true,
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -349,11 +349,20 @@
       "max_width": 2,
       "task_minutes": 6,
       "wall_minutes": 3
-    }
+    },
+    "pr_opened_at": "2026-10-28T20:16:13Z",
+    "time_to_merge": 0
   },
   "living": [
     "cli-entry-points",
     "aicfg-apply",
     "aicfg-config"
-  ]
+  ],
+  "watch": {
+    "entered_at": "2026-10-28T20:16:13Z",
+    "merged_at": "2026-10-28T20:16:04Z",
+    "post_merge": "pass",
+    "outcome": "merged",
+    "review_rounds": 0
+  }
 }

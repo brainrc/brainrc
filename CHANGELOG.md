@@ -12,6 +12,15 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.4.6 (2026-10-29)
+
+- `validate` and `release` refuse changelog fragments whose bump would release the version that
+  removes the deprecated `aicfg` names (`SHIM_REMOVED_IN`) while those names still exist.
+- spec-agent: an auto Spec gate is never approved while `living_specs.py check` fails;
+  dispatches quote spec and plan rules word for word; the analyst writes MODIFIED blocks as the
+  requirement's full new text. Tests clear `XDG_CONFIG_HOME`, so they behave the same locally as
+  on CI.
+
 ## 0.4.5 (2026-10-28)
 
 - **[pack contract]** Everything now says brainrc. These old names keep working with a warning until 0.5.0 removes them: the `aicfg` command, `scripts/aicfg.py`, `python -m aicfg`, `import aicfg`, `AICFG_HOME` and the legacy `~/.config/ai-config` home. Run `brainrc migrate` to move the home.

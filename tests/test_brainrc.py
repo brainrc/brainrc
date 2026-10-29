@@ -134,16 +134,17 @@ class ReleaseTest(TempRepoCase):
     def test_a_bump_into_the_shim_removal_release_fails_while_shims_remain(self):
         set_core_version(self.repo, "0.4.5")
         self.fragment("a.md", "minor", "- Breaking.")
-        errors = brainrc.check_fragments()
-        self.assertTrue(any("0.5.0" in e and "deprecated" in e for e in errors), errors)
-        self.fragment("a.md", "patch", "- Fine.")
-        self.assertEqual(brainrc.check_fragments(), [])
+        with mock.patch.object(brainrc.cli, "SHIM_REMOVED_IN", "0.5.0", create=True):
+            errors = brainrc.check_fragments()
+            self.assertTrue(any("0.5.0" in e and "deprecated" in e for e in errors), errors)
+            self.fragment("a.md", "patch", "- Fine.")
+            self.assertEqual(brainrc.check_fragments(), [])
 
     def test_the_removal_check_is_off_once_the_shims_are_gone(self):
         set_core_version(self.repo, "0.4.5")
         self.fragment("a.md", "minor", "- Removes the old names.")
-        with mock.patch.object(brainrc.cli, "SHIM_REMOVED_IN", None):
-            self.assertEqual(brainrc.check_fragments(), [])
+        self.assertFalse(hasattr(brainrc.cli, "SHIM_REMOVED_IN"))  # 0.5.0 removed them
+        self.assertEqual(brainrc.check_fragments(), [])
 
     def test_bad_fragments_fail_validation_and_release(self):
         set_core_version(self.repo, "0.3.9")

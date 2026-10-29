@@ -15,3 +15,7 @@ No blocking findings. Fixed: the install note wording, the living specs (applied
 ## engine · verify, document · done
 2026-10-29T04:10:00Z
 Suite OK with and without XDG; validate OK, including the example pack. Wheel install check OK. Deliver gate pending.
+
+## owner · deliver gate · approved
+2026-10-29T04:20:00Z
+The owner approved: push, then a ready PR.

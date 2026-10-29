@@ -15,3 +15,7 @@ The implementer implemented AC1-AC3 and the fallback and write sides of AC4. It 
 ## engine · verify, document · done
 2026-10-29T03:05:00Z
 Suite OK with and without XDG; validate OK. verify.md and pr-body.md written. Living spec applied. Deliver gate pending.
+
+## owner · deliver gate · approved
+2026-10-29T04:20:00Z
+The owner approved: push, then a ready PR.

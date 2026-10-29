@@ -1,8 +1,8 @@
 ---
 id: 236
 title: spec-agent fixes from the rename campaign's retros
-status: in-progress
-pr:
+status: in-review
+pr: https://github.com/brainrc/brainrc/pull/236
 ---
 From the epic #199 retros: never auto-approve a Spec gate whose living-spec check fails; MODIFIED
 blocks carry full requirement text; dispatches quote spec and plan rules verbatim; tests behave

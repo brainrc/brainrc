@@ -5,3 +5,7 @@
 Owner: stop only at Deliver. Spec auto-approved after living_specs check passed. T1 red then green; suite 584 OK with and without XDG. Inline review: no findings.
 
 ## engine · Deliver gate · presented
+
+## owner · deliver gate · approved
+2026-10-29T04:20:00Z
+The owner approved: push, then a ready PR.

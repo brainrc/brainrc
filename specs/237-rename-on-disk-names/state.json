@@ -6,7 +6,7 @@
     "id": "237",
     "title": "Rename the on-disk names kept for compatibility",
     "url": null,
-    "pr": null
+    "pr": "https://github.com/brainrc/brainrc/pull/237"
   },
   "slug": "237-rename-on-disk-names",
   "branch": "237-rename-on-disk-names",
@@ -16,7 +16,7 @@
   "delivery": "normal",
   "auto": true,
   "stop_at_deliver": true,
-  "stage": "deliver",
+  "stage": "watch",
   "gates": {
     "spec": "approved",
     "plan": "approved",

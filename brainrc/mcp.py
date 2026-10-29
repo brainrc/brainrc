@@ -22,8 +22,11 @@ NAME = re.compile(r"^[A-Za-z0-9_-]+$")
 ENV_NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 # The harnesses brainrc can write MCP servers for, and the key their JSON config keeps them under.
 ADAPTERS = {"claude": "mcpServers", "codex": None, "opencode": "mcp"}
-BLOCK_START = "# >>> ai-config mcp servers (written by aicfg apply; edits here are replaced)"
-BLOCK_END = "# <<< ai-config mcp servers"
+BLOCK_START = "# >>> brainrc mcp servers (written by brainrc apply; edits here are replaced)"
+BLOCK_END = "# <<< brainrc mcp servers"
+# The pre-rename markers: still recognized, so the next apply replaces an old block.
+OLD_BLOCKS = [("# >>> ai-config mcp servers (written by aicfg apply; edits here are replaced)",
+               "# <<< ai-config mcp servers")]
 
 
 def _registry(src: Source) -> dict:
@@ -180,24 +183,52 @@ def _owned() -> dict[str, list[str]]:
     return merged
 
 
-def _strip_block(text: str) -> tuple[str, str]:
-    """(text without brainrc's block, the block's body)."""
-    start, end = text.find(BLOCK_START), text.find(BLOCK_END)
-    if start == -1 or end < start:
-        return text, ""
-    before, body, after = text[:start], text[start + len(BLOCK_START):end], text[end + len(BLOCK_END):]
-    return before.rstrip("\n") + ("\n" if before.strip() else "") + after.lstrip("\n"), body
+def _blocks(text: str) -> list[tuple[int, int]]:
+    """(start, end) offsets of each complete brainrc block, old markers included, end after its newline."""
+    spans, pos = [], 0
+    while True:
+        found = [(text.find(o, pos), o, c) for o, c in [(BLOCK_START, BLOCK_END), *OLD_BLOCKS]]
+        found = [f for f in found if f[0] != -1]
+        if not found:
+            return spans
+        start, open_, close = min(found)
+        end = text.find(close, start + len(open_))
+        if end == -1:
+            return spans
+        end += len(close)
+        spans.append((start, end + 1 if text[end:end + 1] == "\n" else end))
+        pos = spans[-1][1]
+
+
+def _drop(text: str, start: int, end: int) -> str:
+    """Remove text[start:end] and one blank line beside it, so removing a block leaves no gap."""
+    if text[end:end + 1] == "\n":
+        end += 1
+    elif start and text[start - 1] == "\n" and (start == 1 or text[start - 2] == "\n"):
+        start -= 1
+    return text[:start] + text[end:]
 
 
 def _codex_change(m: McpSync, text: str) -> tuple[str, list[str], list[str]]:
-    rest, _ = _strip_block(text)
+    spans = _blocks(text)
+    rest = text
+    for start, end in reversed(spans):
+        rest = rest[:start] + rest[end:]
     foreign = tomllib.loads(rest).get("mcp_servers", {})
     conflicts = sorted(n for n in m.servers if n in foreign)
     block = render_codex_block({n: s for n, s in m.servers.items() if n not in conflicts})
-    if block:
-        rest = (rest.rstrip("\n") + "\n\n" if rest.strip() else "") + f"{BLOCK_START}\n{block}{BLOCK_END}\n"
+    new = f"{BLOCK_START}\n{block}{BLOCK_END}\n" if block else ""
+    if not spans:
+        out = (text.rstrip("\n") + "\n\n" if text.strip() else "") + new if new else text
+    else:
+        # The first block is replaced where it is, so the user's bytes around it never move.
+        out = text
+        for start, end in reversed(spans[1:]):
+            out = _drop(out, start, end)
+        start, end = spans[0]
+        out = out[:start] + new + out[end:] if new else _drop(out, start, end)
     owned = [n for n in m.servers if n not in conflicts]
-    return rest, conflicts, owned
+    return out, conflicts, owned
 
 
 def _json_change(m: McpSync, text: str) -> tuple[str, list[str], list[str]]:

@@ -61,3 +61,7 @@ _Last changed by 207-brainrc-hooks-mcp-backups._
 After one `apply` of an old-name install `brainrc status` SHALL report in sync and a second `apply`
 SHALL change nothing. (AC11, AC12)
 _Last changed by 207-brainrc-hooks-mcp-backups._
+
+### Old on-disk names converge
+`brainrc apply` SHALL write the brainrc Codex markers, OpenCode guard link and fetch record, and SHALL recognize and replace the old ai-config ones on the next apply without duplicating them. (AC1, AC2, AC3, AC4)
+_Last changed by 237-rename-on-disk-names._

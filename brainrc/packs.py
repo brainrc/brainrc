@@ -21,19 +21,41 @@ def describe(key: str, cfg: dict) -> str:
     return f"{'FETCH':9} {key:9} {cfg['git']} ({cfg.get('ref', 'default branch')})"
 
 
-FETCHED = ".git/aicfg-fetched.json"  # inside .git: invisible to `git status` and the pack's items
+FETCHED = ".git/brainrc-fetched.json"  # inside .git: invisible to `git status` and the pack's items
+OLD_FETCHED = ".git/aicfg-fetched.json"  # read when FETCHED is absent or unreadable; removed on apply
 
 
 def _wanted(cfg: dict) -> dict:
     return {"git": str(cfg["git"]), "ref": str(cfg.get("ref", "HEAD"))}
 
 
-def fetched(root: Path) -> dict | None:
-    """The `git` and `ref` the clone at root was last fetched from, or None if not recorded."""
+def _read_record(path: Path) -> dict | None:
     try:
-        return json.loads((root / FETCHED).read_text())
+        return json.loads(path.read_text())
     except (OSError, ValueError):
         return None
+
+
+def fetched(root: Path) -> dict | None:
+    """The `git` and `ref` the clone at root was last fetched from, or None if not recorded."""
+    return _read_record(root / FETCHED) or _read_record(root / OLD_FETCHED)
+
+
+def adopt_record(cfg: dict, root: Path) -> None:
+    """On apply, once the clone matches, keep only a valid new-named record (no fetch needed)."""
+    if needs_fetch(cfg, root) or (_read_record(root / FETCHED) == _wanted(cfg)
+                                  and not (root / OLD_FETCHED).exists()):
+        return
+    try:
+        _record(root, cfg)
+    except OSError:
+        pass  # a read-only clone still works from the record it has
+
+
+def _record(root: Path, cfg: dict) -> None:
+    """Write the fetch record, then drop the old-named one."""
+    (root / FETCHED).write_text(json.dumps(_wanted(cfg)) + "\n")
+    (root / OLD_FETCHED).unlink(missing_ok=True)
 
 
 def needs_fetch(cfg: dict, root: Path) -> str | None:
@@ -75,7 +97,7 @@ def fetch_pack(key: str, cfg: dict, root: Path) -> None:
             raise ConfigError(f"pack {key}: {root} has local changes; commit or discard them, then update")
         _git("fetch", "-q", "--depth", "1", url, ref, cwd=root)
         _git("checkout", "-q", "--detach", "FETCH_HEAD", cwd=root)
-        (root / FETCHED).write_text(json.dumps(_wanted(cfg)) + "\n")
+        _record(root, cfg)
         return
     tmp = root.with_name(f".{root.name}.fetching")
     shutil.rmtree(tmp, ignore_errors=True)
@@ -84,7 +106,7 @@ def fetch_pack(key: str, cfg: dict, root: Path) -> None:
         _git("init", "-q", cwd=tmp)
         _git("fetch", "-q", "--depth", "1", url, ref, cwd=tmp)
         _git("checkout", "-q", "--detach", "FETCH_HEAD", cwd=tmp)
-        (tmp / FETCHED).write_text(json.dumps(_wanted(cfg)) + "\n")
+        _record(tmp, cfg)
     except ConfigError:
         shutil.rmtree(tmp, ignore_errors=True)
         raise

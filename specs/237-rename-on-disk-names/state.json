@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "local",
+    "ref": "local:specs/tickets/237-rename-on-disk-names.md",
+    "id": "237",
+    "title": "Rename the on-disk names kept for compatibility",
+    "url": null,
+    "pr": "https://github.com/brainrc/brainrc/pull/237"
+  },
+  "slug": "237-rename-on-disk-names",
+  "branch": "237-rename-on-disk-names",
+  "base": "main",
+  "size": "standard",
+  "mode": "subagent",
+  "delivery": "normal",
+  "auto": true,
+  "stop_at_deliver": true,
+  "stage": "watch",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/brainrc.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Rename the three on-disk names with old-name recognition",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "brainrc/cli.py",
+        "brainrc/mcp.py",
+        "brainrc/packs.py",
+        "brainrc/plan.py",
+        "brainrc/config.py",
+        "harnesses.toml",
+        "tests/test_mcp.py",
+        "tests/test_brainrc.py",
+        "tests/test_old_names.py",
+        "changelog.d/237-rename-on-disk-names.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5"
+      ],
+      "review": "each"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-29T02:16:01Z",
+    "stage_started_at": {
+      "intake": "2026-10-29T02:16:01Z",
+      "spec": "2026-10-29T02:16:01Z",
+      "plan": "2026-10-29T02:16:01Z",
+      "implement": "2026-10-29T02:16:01Z",
+      "verify": "2026-10-29T03:05:00Z",
+      "document": "2026-10-29T03:05:00Z",
+      "deliver": "2026-10-29T03:05:00Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-29T02:16:01Z",
+        "approved_at": "2026-10-29T02:16:01Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-29T02:16:01Z",
+        "approved_at": "2026-10-29T02:16:01Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-29T03:05:00Z",
+        "approved_at": "2026-10-29T04:20:00Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 1,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  }
+}

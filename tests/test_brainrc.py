@@ -1665,7 +1665,7 @@ class GitPackTest(TempRepoCase):
     def test_a_clone_without_a_record_is_fetched_once(self):
         self.use(git=self.url, ref="v1")
         quiet(brainrc.cmd_sync, True)
-        record = self.clone / ".git/aicfg-fetched.json"
+        record = self.clone / ".git/brainrc-fetched.json"
         self.assertTrue(record.is_file())
         record.unlink()  # as a clone from before brainrc recorded fetches
         code, out = quiet(brainrc.cmd_sync, False)
@@ -1674,6 +1674,47 @@ class GitPackTest(TempRepoCase):
         self.assertTrue(record.is_file())
         code, out = quiet(brainrc.cmd_sync, False)
         self.assertNotIn("FETCH", out)
+
+    def test_an_old_record_is_read_then_replaced_by_the_new_one(self):
+        self.use(git=self.url, ref="v1")
+        quiet(brainrc.cmd_sync, True)
+        new, old = self.clone / ".git/brainrc-fetched.json", self.clone / ".git/aicfg-fetched.json"
+        new.rename(old)
+        with mock.patch("brainrc.packs.subprocess.run") as run:
+            code, out = quiet(brainrc.cmd_sync, False)
+        self.assertNotIn("FETCH", out)
+        run.assert_not_called()
+        self.assertTrue(old.is_file())  # status writes nothing
+        with mock.patch("brainrc.packs.subprocess.run") as run:
+            code, out = quiet(brainrc.cmd_sync, True)
+        run.assert_not_called()
+        self.assertTrue(new.is_file())
+        self.assertFalse(old.exists())
+        self.assertIsNone(brainrc.packs.needs_fetch({"git": self.url, "ref": "v1"}, self.clone))
+
+    def test_apply_leaves_only_a_valid_new_record(self):
+        self.use(git=self.url, ref="v1")
+        quiet(brainrc.cmd_sync, True)
+        new, old = self.clone / ".git/brainrc-fetched.json", self.clone / ".git/aicfg-fetched.json"
+        for broken in ("not json", None):  # a corrupt new record; a stale old one beside a valid new one
+            old.write_text(new.read_text())
+            if broken:
+                new.write_text(broken)
+            with mock.patch("brainrc.packs.subprocess.run") as run:
+                quiet(brainrc.cmd_sync, True)
+            run.assert_not_called()
+            self.assertFalse(old.exists())
+            self.assertEqual(json.loads(new.read_text()), {"git": self.url, "ref": "v1"})
+
+    def test_a_mismatching_old_record_still_fetches(self):
+        self.use(git=self.url, ref="v1")
+        quiet(brainrc.cmd_sync, True)
+        (self.clone / ".git/brainrc-fetched.json").unlink()
+        (self.clone / ".git/aicfg-fetched.json").write_text('{"git": "elsewhere", "ref": "v1"}\n')
+        code, out = quiet(brainrc.cmd_sync, True)
+        self.assertIn("FETCH", out)
+        self.assertFalse((self.clone / ".git/aicfg-fetched.json").exists())
+        self.assertTrue((self.clone / ".git/brainrc-fetched.json").is_file())
 
     def test_a_hung_git_call_times_out(self):
         self.use(git=self.url, ref="v1")
@@ -1708,7 +1749,8 @@ class HarnessPluginTest(TempRepoCase):
         self.home = Path(tempfile.mkdtemp())
         self.old_home = os.environ["HOME"]
         os.environ["HOME"] = str(self.home)
-        self.link = self.home / ".config/opencode/plugins/ai-config-guard.js"
+        self.link = self.home / ".config/opencode/plugins/brainrc-guard.js"
+        self.old_link = self.home / ".config/opencode/plugins/ai-config-guard.js"
 
     def tearDown(self):
         os.environ["HOME"] = self.old_home
@@ -1720,6 +1762,32 @@ class HarnessPluginTest(TempRepoCase):
         self.assertEqual(code, 0, out)
         self.assertEqual(brainrc.link_target(self.link), self.repo / "overrides/opencode/plugin.js")
         self.assertEqual(brainrc.doctor_findings(), [])
+
+    def test_apply_replaces_the_old_guard_link(self):
+        self.old_link.parent.mkdir(parents=True)
+        self.old_link.symlink_to(self.repo / "overrides/opencode/plugin.js")
+        code, out = quiet(brainrc.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        self.assertEqual(brainrc.link_target(self.link), self.repo / "overrides/opencode/plugin.js")
+        self.assertFalse(self.old_link.is_symlink())
+        self.assertEqual(brainrc.doctor_findings(), [])
+        code, out = quiet(brainrc.cmd_sync, False)
+        self.assertIn("in sync", out.lower())
+
+    def test_a_real_file_at_the_old_guard_path_is_left_alone(self):
+        self.old_link.parent.mkdir(parents=True)
+        self.old_link.write_text("// mine\n")
+        code, out = quiet(brainrc.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        self.assertEqual(self.old_link.read_text(), "// mine\n")
+        self.assertTrue(self.link.is_symlink())
+
+    def test_a_foreign_symlink_at_the_old_guard_path_is_left_alone(self):
+        self.old_link.parent.mkdir(parents=True)
+        self.old_link.symlink_to(self.home)
+        quiet(brainrc.cmd_sync, True)
+        self.assertTrue(self.old_link.is_symlink())
+        self.assertEqual(brainrc.link_target(self.link), self.repo / "overrides/opencode/plugin.js")
 
     def test_disabling_the_harness_prunes_the_plugin(self):
         quiet(brainrc.cmd_sync, True)

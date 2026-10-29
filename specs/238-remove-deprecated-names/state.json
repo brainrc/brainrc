@@ -16,7 +16,7 @@
   "delivery": "normal",
   "auto": true,
   "stop_at_deliver": true,
-  "stage": "watch",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -114,6 +114,7 @@
       "first_pass": 1
     },
     "retries": 0,
-    "interventions": 0
+    "interventions": 0,
+    "finished_at": "2026-10-29T04:50:00Z"
   }
 }

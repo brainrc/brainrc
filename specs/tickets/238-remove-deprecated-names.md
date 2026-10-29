@@ -1,7 +1,7 @@
 ---
 id: 238
 title: Remove the deprecated aicfg names in 0.5.0
-status: in-review
+status: done
 pr: https://github.com/brainrc/brainrc/pull/239
 ---
 Follow-up from #199: the deprecation warnings promise that the `aicfg` command, `scripts/aicfg.py`,

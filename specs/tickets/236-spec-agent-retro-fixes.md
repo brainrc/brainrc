@@ -1,7 +1,7 @@
 ---
 id: 236
 title: spec-agent fixes from the rename campaign's retros
-status: in-review
+status: done
 pr: https://github.com/brainrc/brainrc/pull/236
 ---
 From the epic #199 retros: never auto-approve a Spec gate whose living-spec check fails; MODIFIED

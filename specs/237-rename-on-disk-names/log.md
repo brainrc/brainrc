@@ -23,3 +23,7 @@ The owner approved: push, then a ready PR.
 ## engine · deliver · done
 2026-10-29T04:30:00Z
 Pushed; ready PR #237 opened.
+
+## engine · watch · done
+2026-10-29T04:50:00Z
+#237 merged; release v0.4.7 (c43c0bd). Post-merge verify passed on main (verify-merged.md).

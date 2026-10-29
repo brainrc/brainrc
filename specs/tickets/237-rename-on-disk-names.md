@@ -1,7 +1,7 @@
 ---
 id: 237
 title: Rename the on-disk names kept for compatibility
-status: in-review
+status: done
 pr: https://github.com/brainrc/brainrc/pull/237
 ---
 Follow-up from #209: the Codex MCP block markers (`# >>> ai-config mcp servers`), the OpenCode

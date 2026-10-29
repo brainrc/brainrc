@@ -26,22 +26,31 @@ class TestHomeFindings(unittest.TestCase):
         with mock.patch.dict(os.environ, env, clear=True):
             return _home_findings()
 
-    def test_legacy_only_warns_with_dir_and_migrate(self):
+    def test_legacy_only_fails_with_dir_and_migrate(self):
         self.old.mkdir(parents=True)
         [(level, what, fix)] = self.findings()
-        self.assertEqual(level, "WARN")
+        self.assertEqual(level, "FAIL")
         self.assertIn("~/.config/ai-config", what)
         self.assertIn("migrate", fix)
 
-    def test_aicfg_home_in_use_warns_with_working_fix(self):
+    def test_aicfg_home_unmigrated_fails_with_working_fix(self):
         legacy = self.home / "old-home"
         legacy.mkdir()
         [(level, what, fix)] = self.findings(AICFG_HOME=str(legacy))
-        self.assertEqual(level, "WARN")
+        self.assertEqual(level, "FAIL")
         self.assertIn("AICFG_HOME", what)
         self.assertIn("~/old-home", what)
-        self.assertIn("BRAINRC_HOME=", fix)
+        self.assertIn("BRAINRC_HOME=~/.config/brainrc", fix)
         self.assertIn("migrate", fix)
+
+    def test_aicfg_home_beside_a_filled_new_home_only_warns(self):
+        legacy = self.home / "old-home"
+        legacy.mkdir()
+        self.new.mkdir(parents=True)
+        (self.new / "instructions.md").write_text("x\n")
+        [(level, what, fix)] = self.findings(AICFG_HOME=str(legacy))
+        self.assertEqual(level, "WARN")
+        self.assertIn("unused", what)
 
     def test_both_dirs_warns_old_is_unused(self):
         self.old.mkdir(parents=True)
@@ -72,6 +81,8 @@ class TestHomeFindings(unittest.TestCase):
 
     def test_warnings_do_not_change_exit_code(self):
         self.old.mkdir(parents=True)
+        self.new.mkdir(parents=True)
+        (self.new / "instructions.md").write_text("x\n")
         env = {k: v for k, v in os.environ.items() if k not in HOME_VARS}
         env["HOME"] = str(self.home)
         with mock.patch.dict(os.environ, env, clear=True), \

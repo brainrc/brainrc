@@ -1,4 +1,5 @@
-"""Contract tests for the settings home: resolution order, legacy fallback, warnings (spec 206, AC1-AC6).
+"""Contract tests for the settings home: resolution order and the refusal while an old home is unmigrated
+(specs 206 and 238).
 
 Every case runs `scripts/brainrc.py` as a subprocess against a fresh temp HOME with an explicit env.
 """
@@ -38,8 +39,20 @@ class HomeCase(unittest.TestCase):
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
         return proc
 
-    def stderr_lines(self, proc):
-        return [line for line in proc.stderr.splitlines() if line.strip()]
+    def snapshot(self):
+        return sorted(str(p.relative_to(self.tmp)) for p in self.tmp.rglob("*"))
+
+    def refused(self, cmd, *needles, **env_vars):
+        """cmd exits 1, writes nothing, and prints one ERROR line holding every needle."""
+        before = self.snapshot()
+        proc = self.run_cli(cmd, **env_vars)
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertEqual(self.snapshot(), before)
+        errors = [l for l in proc.stdout.splitlines() if l.startswith("ERROR")]
+        self.assertEqual(len(errors), 1, proc.stdout)
+        for needle in needles:
+            self.assertIn(needle, errors[0])
+        return proc
 
 
 class TestDefaultHome(HomeCase):
@@ -77,13 +90,11 @@ class TestXdgConfigHome(HomeCase):
         self.assertFalse(self.old.exists())
         self.assertEqual(proc.stderr, "")
 
-    def test_ac3_absolute_xdg_with_only_legacy_dir_uses_legacy_and_warns(self):
+    def test_ac4_absolute_xdg_with_only_legacy_dir_is_refused(self):
         self.old.mkdir(parents=True)
         xdg = self.tmp / "xdg"
-        proc = self.ok("apply", XDG_CONFIG_HOME=str(xdg))
-        self.assertTrue((self.old / "instructions.md").is_file())
+        self.refused("apply", "ai-config", "brainrc migrate", XDG_CONFIG_HOME=str(xdg))
         self.assertFalse((xdg / "brainrc").exists())
-        self.assertEqual(proc.stderr.count("brainrc migrate"), 1, proc.stderr)
 
     def test_ac3_absolute_xdg_home_present_beats_legacy_dir_without_warning(self):
         self.old.mkdir(parents=True)
@@ -113,66 +124,88 @@ class TestXdgConfigHome(HomeCase):
 
 
 class TestLegacyHome(HomeCase):
-    def test_ac4_legacy_only_dir_is_used_and_warns_once_on_stderr(self):
+    def test_ac4_status_apply_and_update_refuse_and_write_nothing(self):
         self.old.mkdir(parents=True)
-        proc = self.ok("apply")
-        self.assertTrue((self.old / "instructions.md").is_file())
+        (self.old / "packs.local.toml").write_text("")
+        for cmd in ("status", "apply", "update"):
+            with self.subTest(cmd=cmd):
+                proc = self.refused(cmd, "~/.config/ai-config", "brainrc migrate")
+                self.assertEqual(proc.stderr, "")
         self.assertFalse(self.new.exists())
-        lines = self.stderr_lines(proc)
-        self.assertEqual(len(lines), 1, proc.stderr)
-        self.assertIn(".config/ai-config", lines[0])
-        self.assertIn("brainrc migrate", lines[0])
-        self.assertNotIn("brainrc migrate", proc.stdout)
 
-    def test_ac4_status_in_legacy_home_warns_once_and_keeps_exit_code(self):
+    def test_ac4_an_existing_new_home_makes_the_old_dir_ignored(self):
+        self.new.mkdir(parents=True)
         self.old.mkdir(parents=True)
+        (self.old / "packs.local.toml").write_text("this is [not valid toml\n")
+        for cmd in ("apply", "status"):
+            self.assertEqual(self.ok(cmd).stderr, "", cmd)
+
+    def test_ac5_migrate_then_apply_succeeds(self):
+        self.old.mkdir(parents=True)
+        (self.old / "packs.local.toml").write_text("")
+        self.ok("migrate")
+        self.assertFalse(self.old.exists())
+        self.assertTrue((self.new / "packs.local.toml").is_file())
         self.ok("apply")
-        proc = self.ok("status")
-        lines = self.stderr_lines(proc)
-        self.assertEqual(len(lines), 1, proc.stderr)
-        self.assertIn(".config/ai-config", lines[0])
-        self.assertIn("brainrc migrate", lines[0])
-        self.assertNotIn("migrate", proc.stdout)
+        self.ok("status")
 
-    def test_ac4_stdout_matches_a_default_home_install(self):
+    def test_ac5_other_commands_do_not_refuse(self):
         self.old.mkdir(parents=True)
-        other = self.tmp / "other"
-        other.mkdir()
-        legacy = self.ok("apply")
-        default = self.ok("apply", home=other)
-        self.assertIn("brainrc migrate", legacy.stderr)
-        self.assertTrue((other / ".config" / "brainrc" / "instructions.md").is_file())
-        self.assertEqual(legacy.stdout, default.stdout)
-        self.assertEqual(self.ok("status").stdout, self.ok("status", home=other).stdout)
+        for args in (("validate",), ("plugin",), ("--version",), ("migrate", "--dry-run")):
+            with self.subTest(args=args):
+                proc = self.run_cli(*args)
+                self.assertNotIn("no longer read", proc.stdout + proc.stderr)
+        proc = self.run_cli("doctor")
+        self.assertNotIn("no longer read: run", proc.stdout.split("FAIL")[0])
+        self.assertIn("no longer read", proc.stdout)
 
 
 class TestAicfgHomeEnv(HomeCase):
-    def test_ac5_aicfg_home_is_used_and_warns_once_naming_brainrc_home(self):
+    def message(self):
+        return "ERROR AICFG_HOME is no longer read: set BRAINRC_HOME=~/.config/brainrc and run brainrc migrate"
+
+    def test_ac3_status_apply_and_update_refuse_with_the_exact_error(self):
         y = self.tmp / "y"
-        proc = self.ok("apply", AICFG_HOME=str(y))
-        self.assertTrue((y / "instructions.md").is_file())
+        y.mkdir()
+        (y / "packs.local.toml").write_text("")
+        for cmd in ("status", "apply", "update"):
+            with self.subTest(cmd=cmd):
+                proc = self.refused(cmd, AICFG_HOME=str(y))
+                self.assertEqual(proc.stdout.splitlines()[0], self.message())
         self.assertFalse(self.new.exists())
-        lines = self.stderr_lines(proc)
-        self.assertEqual(len(lines), 1, proc.stderr)
-        self.assertIn("BRAINRC_HOME", lines[0])
-        self.assertNotIn("BRAINRC_HOME", proc.stdout)
 
-    def test_ac5_status_warns_once_never_on_stdout(self):
+    def test_ac3_an_empty_new_home_still_refuses_but_a_filled_one_does_not(self):
         y = self.tmp / "y"
+        self.new.mkdir(parents=True)
+        self.refused("status", "AICFG_HOME is no longer read", AICFG_HOME=str(y))
+        (self.new / "packs.local.toml").write_text("")
         self.ok("apply", AICFG_HOME=str(y))
-        proc = self.ok("status", AICFG_HOME=str(y))
-        self.assertEqual(proc.stderr.count("BRAINRC_HOME"), 1, proc.stderr)
-        self.assertEqual(len(self.stderr_lines(proc)), 1, proc.stderr)
-        self.assertNotIn("AICFG_HOME", proc.stdout)
+        self.assertFalse(y.exists())
 
-    def test_ac5_version_does_not_warn(self):
-        proc = self.ok("--version", AICFG_HOME=str(self.tmp / "y"))
-        self.assertEqual(proc.stderr, "")
+    def test_ac3_brainrc_home_set_means_aicfg_home_is_ignored(self):
+        y = self.tmp / "y"
+        self.assertEqual(self.ok("apply", AICFG_HOME=str(y), BRAINRC_HOME=str(self.tmp / "x")).stderr, "")
+        self.assertFalse(y.exists())
 
-    def test_ac5_version_does_not_warn_for_legacy_dir(self):
-        self.old.mkdir(parents=True)
-        proc = self.ok("--version")
-        self.assertEqual(proc.stderr, "")
+    def test_ac5_migrate_with_brainrc_home_then_apply_succeeds(self):
+        y, x = self.tmp / "y", self.tmp / "x"
+        y.mkdir()
+        (y / "packs.local.toml").write_text("")
+        self.ok("migrate", AICFG_HOME=str(y), BRAINRC_HOME=str(x))
+        self.assertTrue((x / "packs.local.toml").is_file())
+        self.ok("apply", BRAINRC_HOME=str(x))
+
+    def test_ac5_doctor_fails_with_the_migrate_fix(self):
+        proc = self.run_cli("doctor", AICFG_HOME=str(self.tmp / "y"))
+        self.assertEqual(proc.returncode, 1)
+        self.assertIn("AICFG_HOME", proc.stdout)
+        self.assertIn("migrate", proc.stdout)
+
+    def test_ac5_version_validate_and_plugin_do_not_refuse(self):
+        for args in (("--version",), ("validate",), ("plugin",)):
+            proc = self.run_cli(*args, AICFG_HOME=str(self.tmp / "y"))
+            self.assertNotIn("no longer read", proc.stdout + proc.stderr, args)
+        self.assertEqual(self.run_cli("--version", AICFG_HOME=str(self.tmp / "y")).stderr, "")
 
 
 class TestBothHomesExist(HomeCase):
@@ -222,7 +255,7 @@ class HomeFunctionsTest(unittest.TestCase):
         self.old.mkdir(parents=True)
         os.environ["BRAINRC_HOME"] = str(self.old)
         self.assertEqual(self.config.former_homes(), [])
-        self.assertEqual(self.config.home_origin(), "brainrc_env")
+        self.assertIsNone(self.config.unmigrated_home())
 
     def test_brainrc_home_symlinked_to_the_legacy_dir_is_not_a_former_home(self):
         self.old.mkdir(parents=True)
@@ -234,7 +267,16 @@ class HomeFunctionsTest(unittest.TestCase):
     def test_broken_legacy_symlink_counts_as_absent(self):
         self.old.parent.mkdir(parents=True)
         self.old.symlink_to(self.tmp / "gone")
-        self.assertEqual(self.config.home_origin(), "default")
+        self.assertIsNone(self.config.unmigrated_home())
+
+    def test_unmigrated_home_names_which_old_home(self):
+        self.assertIsNone(self.config.unmigrated_home())
+        self.old.mkdir(parents=True)
+        self.assertEqual(self.config.unmigrated_home(), ("legacy", self.old))
+        os.environ["AICFG_HOME"] = str(self.tmp / "y")
+        self.assertEqual(self.config.unmigrated_home(), ("env", self.tmp / "y"))
+        os.environ["BRAINRC_HOME"] = str(self.tmp / "x")
+        self.assertIsNone(self.config.unmigrated_home())
 
 
 if __name__ == "__main__":

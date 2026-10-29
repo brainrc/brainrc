@@ -88,11 +88,12 @@ class ActiveRunTest(unittest.TestCase):
         self.written(self.aicfg, run, r)
         self.assertFalse(other.exists())
 
-    def test_aicfg_home_used_when_brainrc_home_unset(self):
+    def test_aicfg_home_is_not_read(self):
         run = self.run_dir("071-x")
         old = self.root / "old"
-        r = self.cli("write", str(run), aicfg_home=None, AICFG_HOME=str(old), XDG_CONFIG_HOME=str(self.root / "x"))
-        self.written(old, run, r)
+        r = self.cli("write", str(run), aicfg_home=None, AICFG_HOME=str(old))
+        self.written(self.home / ".config/brainrc", run, r)
+        self.assertFalse(old.exists())
 
     def test_absolute_xdg_config_home_uses_brainrc_subdir(self):
         run = self.run_dir("071-x")
@@ -105,22 +106,22 @@ class ActiveRunTest(unittest.TestCase):
         r = self.cli("write", str(run), aicfg_home=None, XDG_CONFIG_HOME="rel/xdg")
         self.written(self.home / ".config/brainrc", run, r)
 
-    def test_legacy_home_used_when_new_home_absent_and_legacy_exists(self):
+    def test_legacy_home_is_not_read(self):
         run = self.run_dir("071-x")
         legacy = self.home / ".config/ai-config"
         legacy.mkdir(parents=True)
         r = self.cli("write", str(run), aicfg_home=None)
-        self.written(legacy, run, r)
+        self.written(self.home / ".config/brainrc", run, r)
+        self.assertFalse((legacy / "active-run").exists())
         r = self.cli("read", aicfg_home=None)
         self.assertEqual(r.stdout.strip(), str(run))
-        self.assertEqual(r.stderr, "")
 
-    def test_legacy_home_used_with_xdg_set_and_only_legacy_present(self):
+    def test_legacy_home_is_not_read_with_xdg_set(self):
         run = self.run_dir("071-x")
-        legacy = self.home / ".config/ai-config"
-        legacy.mkdir(parents=True)
-        r = self.cli("write", str(run), aicfg_home=None, XDG_CONFIG_HOME=str(self.root / "xdg"))
-        self.written(legacy, run, r)
+        (self.home / ".config/ai-config").mkdir(parents=True)
+        xdg = self.root / "xdg"
+        r = self.cli("write", str(run), aicfg_home=None, XDG_CONFIG_HOME=str(xdg))
+        self.written(xdg / "brainrc", run, r)
 
     def test_new_home_preferred_when_both_exist(self):
         run = self.run_dir("071-x")

@@ -969,14 +969,16 @@ class SettingsHomeTest(TempRepoCase):
             os.environ.pop("XDG_CONFIG_HOME", None)  # CI runners set it
             self.assertEqual(brainrc.settings_home(), self.home / ".config/brainrc")
 
-    def test_aicfg_home_is_a_deprecated_alias_of_settings_home(self):
-        self.assertIs(brainrc.config.aicfg_home, brainrc.config.settings_home)
-        self.assertIs(brainrc.aicfg_home, brainrc.settings_home)
-        # a subprocess: scripts/aicfg.py shadows the aicfg package on this suite's sys.path
-        code = "import aicfg.cli, brainrc.config as c; assert aicfg.cli.aicfg_home is c.settings_home"
-        proc = subprocess.run([sys.executable, "-W", "ignore::DeprecationWarning", "-c", code],
-                              cwd=REPO, capture_output=True, text=True)
-        self.assertEqual(proc.returncode, 0, proc.stderr)
+    def test_removed_names_are_gone(self):
+        for mod in (brainrc, brainrc.config, brainrc.cli):
+            for name in ("aicfg_home", "SHIM_REMOVED_IN", "warn_deprecated", "warn_home"):
+                self.assertFalse(hasattr(mod, name), (mod.__name__, name))
+
+    def test_aicfg_home_is_not_read(self):
+        os.environ.pop("BRAINRC_HOME")
+        with mock.patch.dict(os.environ, {"AICFG_HOME": str(self.home / "old")}):
+            os.environ.pop("XDG_CONFIG_HOME", None)
+            self.assertEqual(brainrc.settings_home(), self.home / ".config/brainrc")
 
     def test_apply_renders_into_settings_home(self):
         code, out = quiet(brainrc.cmd_sync, True)
@@ -1035,7 +1037,7 @@ class PythonVersionTest(unittest.TestCase):
     def test_old_python_gets_a_message_not_a_traceback(self):
         # Hiding tomllib is what Python 3.10 looks like to the script.
         code = ("import runpy, sys; sys.modules['tomllib'] = None; sys.argv = ['brainrc.py', 'status']; "
-                f"runpy.run_path({str(REPO / 'scripts/aicfg.py')!r}, run_name='__main__')")
+                f"runpy.run_path({str(REPO / 'scripts/brainrc.py')!r}, run_name='__main__')")
         result = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True)
         self.assertEqual(result.returncode, 1, result.stderr)
         self.assertIn("needs Python 3.11+", result.stderr)
@@ -2221,7 +2223,7 @@ class ClosedStdoutTest(unittest.TestCase):
         self.addCleanup(shutil.rmtree, tmp)
         env = {**os.environ, "HOME": str(tmp), "BRAINRC_HOME": str(tmp / "brainrc")}
         for cmd in ("doctor", "status"):
-            p = subprocess.Popen([sys.executable, str(REPO / "scripts/aicfg.py"), cmd], env=env,
+            p = subprocess.Popen([sys.executable, str(REPO / "scripts/brainrc.py"), cmd], env=env,
                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             p.stdout.close()  # nobody reads: every write gets EPIPE
             _, err = p.communicate(timeout=60)
@@ -2407,7 +2409,7 @@ class BrainrcCommandTest(unittest.TestCase):
         self.assertEqual(code, 2)
         self.assertIn("brainrc status", out)
         self.assertNotIn("brainrc.py", out)
-        self.assertNotIn("aicfg", out.replace("$AICFG_HOME", ""))
+        self.assertNotIn("aicfg", out.replace("AICFG_HOME", ""))
 
     def test_checkout_script_validates(self):
         self.assertEqual(self.run_script("validate").returncode, 0)
@@ -2422,7 +2424,8 @@ class PyprojectTest(unittest.TestCase):
         self.assertEqual(self.data["project"]["name"], "brainrc")
         scripts = self.data["project"]["scripts"]
         self.assertEqual(scripts["brainrc"], "brainrc.cli:entry")
-        self.assertIn("aicfg", scripts)
+        self.assertEqual(list(scripts), ["brainrc"])
+        self.assertEqual(self.data["tool"]["hatch"]["build"]["targets"]["wheel"]["packages"], ["brainrc"])
         self.assertIn("brainrc", self.data["tool"]["hatch"]["build"]["targets"]["wheel"]["packages"])
 
     def test_bundled_core_lands_under_brainrc(self):

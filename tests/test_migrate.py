@@ -45,7 +45,7 @@ class MigrateCase(unittest.TestCase):
         for rel, text in LOCAL_FILES.items():
             (self.old / rel).parent.mkdir(parents=True, exist_ok=True)
             (self.old / rel).write_text(text)
-        proc = self.run_cli("apply")
+        proc = self.run_cli("apply", BRAINRC_HOME=str(self.old))  # 0.5.0 no longer reads the old dir
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
 
     def links_into(self, directory):

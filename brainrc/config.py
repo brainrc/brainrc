@@ -38,7 +38,7 @@ def command(sub: str) -> str:
 
 def local_dir() -> Path:
     """Where machine-local files live (*.local.toml, rules/*.local.md): the checkout, or
-    $AICFG_HOME when installed."""
+    the settings home when installed."""
     return settings_home() if installed() else REPO
 
 
@@ -221,7 +221,7 @@ def _xdg_home() -> Path | None:
 
 
 def new_home() -> Path:
-    """The settings home without AICFG_HOME or the legacy dir: BRAINRC_HOME, XDG, ~/.config/brainrc."""
+    """The settings home: BRAINRC_HOME, XDG, ~/.config/brainrc."""
     if os.environ.get("BRAINRC_HOME"):
         return expand(os.environ["BRAINRC_HOME"])
     return _xdg_home() or Path.home() / ".config" / "brainrc"
@@ -231,16 +231,17 @@ def _legacy_home() -> Path:
     return Path.home() / ".config" / "ai-config"
 
 
-def home_origin() -> str:
-    """Which rule picks the home: brainrc_env, legacy_env, xdg, default or legacy."""
-    if os.environ.get("BRAINRC_HOME"):
-        return "brainrc_env"
-    if os.environ.get("AICFG_HOME"):
-        return "legacy_env"
-    # Old installs never read XDG_CONFIG_HOME, so the legacy dir is found whichever new home applies.
-    if not new_home().exists() and _legacy_home().exists():
-        return "legacy"
-    return "xdg" if _xdg_home() else "default"
+def unmigrated_home() -> tuple[str, Path] | None:
+    """The old home that still holds the user's settings and is no longer read, as ("env", dir)
+    for AICFG_HOME or ("legacy", dir) for ~/.config/ai-config; None when nothing needs migrating."""
+    if os.environ.get("BRAINRC_HOME"):  # an explicit new home: the old ones are just unused
+        return None
+    new = new_home()
+    if os.environ.get("AICFG_HOME") and (not new.is_dir() or not any(new.iterdir())):
+        return "env", expand(os.environ["AICFG_HOME"])
+    if not new.exists() and _legacy_home().exists():
+        return "legacy", _legacy_home()
+    return None
 
 
 def former_homes() -> list[Path]:
@@ -258,17 +259,8 @@ def _same_dir(a: Path, b: Path) -> bool:
 
 def settings_home() -> Path:
     """Where apply renders rules and extensions: outside any checkout, so packaged installs can
-    read them too. $BRAINRC_HOME, $AICFG_HOME (deprecated), $XDG_CONFIG_HOME/brainrc (absolute
-    only), ~/.config/brainrc, or the legacy ~/.config/ai-config when that is all that exists."""
-    origin = home_origin()
-    if origin == "legacy_env":
-        return expand(os.environ["AICFG_HOME"])
-    if origin == "legacy":
-        return _legacy_home()
+    read them too. $BRAINRC_HOME, $XDG_CONFIG_HOME/brainrc (absolute only), or ~/.config/brainrc."""
     return new_home()
-
-
-aicfg_home = settings_home  # deprecated alias until 0.5.0
 
 
 def legacy_instructions() -> Path:

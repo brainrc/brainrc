@@ -1,4 +1,4 @@
-"""Contract tests for the brainrc entry points and the deprecated aicfg shims (spec 205)."""
+"""Contract tests for the brainrc entry points and that the aicfg names are gone (specs 205, 238)."""
 import os
 import subprocess
 import sys
@@ -7,10 +7,6 @@ import unittest
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-DEPRECATED_ENTRY = (
-    "import sys; from brainrc.cli import deprecated_entry; "
-    "sys.argv=['aicfg']+sys.argv[1:]; deprecated_entry()"
-)
 
 
 class EntryPointCase(unittest.TestCase):
@@ -25,87 +21,35 @@ class EntryPointCase(unittest.TestCase):
             [sys.executable, *args], cwd=REPO, env=self.env, capture_output=True, text=True, timeout=120,
         )
 
-    def assert_warns_deprecated(self, proc):
-        self.assertIn("brainrc", proc.stderr)
-        self.assertIn("0.5.0", proc.stderr)
-
-    def assert_same_result(self, old, new):
-        self.assertEqual(old.stdout, new.stdout)
-        self.assertEqual(old.returncode, new.returncode)
-
-    def assert_warned_once_off_stdout(self, proc):
-        self.assertEqual(proc.stderr.count("0.5.0"), 1, proc.stderr)
-        self.assertNotIn("0.5.0", proc.stdout)
-        self.assertNotIn("deprecated", proc.stdout.lower())
-
-
-class TestDeprecatedConsoleScript(EntryPointCase):
-    def test_ac3_aicfg_status_warns_and_matches_brainrc(self):
-        old = self.run_py("-c", DEPRECATED_ENTRY, "status")
-        new = self.run_py("-m", "brainrc", "status")
-        self.assert_warns_deprecated(old)
-        self.assert_same_result(old, new)
-
-    def test_ac3_aicfg_version_matches_brainrc(self):
-        old = self.run_py("-c", DEPRECATED_ENTRY, "--version")
-        new = self.run_py("-m", "brainrc", "--version")
-        self.assert_warns_deprecated(old)
-        self.assertEqual(new.returncode, 0)
-        self.assert_same_result(old, new)
-
-    def test_ac11_console_script_warns_once_never_on_stdout(self):
-        self.assert_warned_once_off_stdout(self.run_py("-c", DEPRECATED_ENTRY, "status"))
-
+    def assert_no_deprecation(self, proc):
+        self.assertNotIn("deprecat", proc.stderr.lower())
+        self.assertNotIn("0.5.0", proc.stderr)
 
 class TestScripts(EntryPointCase):
-    def test_ac4_scripts_brainrc_validate_has_no_warning(self):
+    def test_scripts_brainrc_validate_has_no_warning(self):
         proc = self.run_py("scripts/brainrc.py", "validate")
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
-        self.assertNotIn("deprecat", proc.stderr.lower())
-        self.assertNotIn("0.5.0", proc.stderr)
+        self.assert_no_deprecation(proc)
 
-    def test_ac5_scripts_aicfg_validate_warns_and_matches_brainrc(self):
-        old = self.run_py("scripts/aicfg.py", "validate", "--pack", ".")
-        new = self.run_py("scripts/brainrc.py", "validate", "--pack", ".")
-        self.assert_warns_deprecated(old)
-        self.assert_same_result(old, new)
-
-    def test_ac11_scripts_aicfg_warns_once_never_on_stdout(self):
-        self.assert_warned_once_off_stdout(self.run_py("scripts/aicfg.py", "validate", "--pack", "."))
-
+    def test_scripts_aicfg_is_gone(self):
+        self.assertFalse((REPO / "scripts/aicfg.py").exists())
+        self.assertFalse((REPO / "aicfg").exists())
 
 class TestModuleEntry(EntryPointCase):
-    def test_ac6_python_m_brainrc_works_without_warning(self):
+    def test_python_m_brainrc_works_without_warning(self):
         proc = self.run_py("-m", "brainrc", "status")
-        self.assertNotIn("deprecat", proc.stderr.lower())
-        self.assertNotIn("0.5.0", proc.stderr)
+        self.assert_no_deprecation(proc)
         self.assertIn(proc.returncode, (0, 1), proc.stderr)
 
-    def test_ac6_python_m_aicfg_warns_and_matches_brainrc(self):
-        old = self.run_py("-m", "aicfg", "status")
-        new = self.run_py("-m", "brainrc", "status")
-        self.assert_warns_deprecated(old)
-        self.assert_same_result(old, new)
+    def test_python_m_aicfg_and_import_aicfg_are_gone(self):
+        self.assertNotEqual(self.run_py("-m", "aicfg", "--version").returncode, 0)
+        self.assertNotEqual(self.run_py("-c", "import aicfg").returncode, 0)
 
-    def test_ac11_python_m_aicfg_warns_once_never_on_stdout(self):
-        self.assert_warned_once_off_stdout(self.run_py("-m", "aicfg", "--version"))
-
-    def test_ac11_python_m_aicfg_warns_once_with_deprecation_warnings_shown(self):
-        self.assert_warned_once_off_stdout(self.run_py("-W", "default", "-m", "aicfg", "--version"))
-
-
-class TestAicfgImport(EntryPointCase):
-    def test_ac7_import_aicfg_emits_deprecation_warning(self):
-        proc = self.run_py("-W", "error::DeprecationWarning", "-c", "import aicfg")
-        self.assertNotEqual(proc.returncode, 0)
-        self.assertIn("DeprecationWarning", proc.stderr)
-        self.assertIn("brainrc", proc.stderr)
-
-    def test_ac7_aicfg_cli_main_is_brainrc_cli_main(self):
-        code = "import aicfg.cli, brainrc.cli; assert aicfg.cli.main is brainrc.cli.main"
-        proc = self.run_py("-W", "ignore::DeprecationWarning", "-c", code)
-        self.assertEqual(proc.returncode, 0, proc.stderr)
-
+    def test_no_command_prints_a_deprecation_line_for_the_old_home_vars(self):
+        self.env["AICFG_HOME"] = str(Path(self.env["HOME"]) / "old")
+        del self.env["BRAINRC_HOME"]
+        proc = self.run_py("-m", "brainrc", "--version")
+        self.assertEqual(proc.stderr, "")
 
 if __name__ == "__main__":
     unittest.main()

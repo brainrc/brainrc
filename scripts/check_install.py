@@ -4,23 +4,22 @@
 Run it from a directory outside the checkout, with the install's bin dir on PATH:
   cd "$RUNNER_TEMP" && python3 "$GITHUB_WORKSPACE/scripts/check_install.py"
 Prints one PASS/FAIL line per check; exits 1 on any FAIL, 2 if brainrc isn't the installed copy.
-The `brainrc` and `aicfg` on PATH must live in this interpreter's scripts dir.
+The `brainrc` on PATH must live in this interpreter's scripts dir.
 """
-import importlib
 import importlib.metadata as md
+import importlib.util
 import os
 import shutil
 import subprocess
 import sys
 import sysconfig
 import tempfile
-import warnings
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 # scripts/brainrc.py would shadow the package; drop this directory from the import path.
 sys.path[:] = [p for p in sys.path if Path(p or ".").resolve() != Path(__file__).resolve().parent]
-EXPECTED_SCRIPTS = {"brainrc": "brainrc.cli:entry", "aicfg": "brainrc.cli:deprecated_entry"}
+EXPECTED_SCRIPTS = {"brainrc": "brainrc.cli:entry"}
 failed = False
 
 
@@ -36,16 +35,6 @@ def run(args: list[str], env: dict[str, str], cwd: str) -> subprocess.CompletedP
 
 def lines(text: str) -> list[str]:
     return [line for line in text.splitlines() if line.strip()]
-
-
-def deprecation_lines(text: str) -> list[str]:
-    return [line for line in lines(text) if "deprecated" in line]
-
-
-def one_warning(text: str) -> bool:
-    from brainrc.cli import SHIM_REMOVED_IN
-    err = lines(text)
-    return len(err) == 1 and "brainrc" in err[0] and SHIM_REMOVED_IN in err[0]
 
 
 def checks(work: str, env: dict[str, str], scripts: dict[str, str]) -> None:
@@ -78,32 +67,18 @@ def checks(work: str, env: dict[str, str], scripts: dict[str, str]) -> None:
            f"exit {r.returncode}; _core dir {core.is_dir()}, missing {absent}, installed() {config.installed()}\n"
            f"{r.stdout[-500:]}{r.stderr[-500:]}")
 
-    new, old = sh("brainrc", "status"), sh("aicfg", "status")
-    report("AC3 aicfg status == brainrc status",
-           new.returncode == 0 and bool(new.stdout.strip()) and not deprecation_lines(new.stderr)
-           and (old.stdout, old.returncode) == (new.stdout, new.returncode) and one_warning(old.stderr),
-           f"exit aicfg {old.returncode} vs brainrc {new.returncode}; brainrc stdout empty: {not new.stdout.strip()}; "
-           f"brainrc stderr {new.stderr!r}; aicfg stderr {old.stderr!r}")
+    new = sh("brainrc", "status")
+    report("AC3 brainrc status",
+           new.returncode == 0 and bool(new.stdout.strip()) and not new.stderr.strip(),
+           f"exit {new.returncode}; stdout empty: {not new.stdout.strip()}; stderr {new.stderr!r}")
 
     a = run([py, "-m", "brainrc", "status"], env, work)
-    b = run([py, "-m", "aicfg", "status"], env, work)
-    report("AC6 python -m brainrc / -m aicfg status and warnings",
-           a.returncode == b.returncode and a.returncode == new.returncode and bool(a.stdout.strip())
-           and a.stdout == b.stdout and not deprecation_lines(a.stderr) and one_warning(b.stderr),
-           f"exit {a.returncode} vs {b.returncode}; brainrc stderr {a.stderr!r}; aicfg stderr {b.stderr!r}")
+    report("AC6 python -m brainrc status matches the script",
+           (a.returncode, a.stdout) == (new.returncode, new.stdout) and not a.stderr.strip(),
+           f"exit {a.returncode} vs {new.returncode}; stderr {a.stderr!r}")
 
-    with warnings.catch_warnings(record=True) as caught:
-        warnings.simplefilter("always")
-        sys.modules.pop("aicfg", None)
-        sys.modules.pop("aicfg.cli", None)
-        aicfg = importlib.import_module("aicfg")
-        import aicfg.cli
-        import brainrc.cli
-        ok = (any(issubclass(w.category, DeprecationWarning) and "aicfg" in str(w.message) for w in caught)
-              and aicfg.cli.main is brainrc.cli.main
-              and not Path(aicfg.__file__).resolve().is_relative_to(REPO))
-    report("AC7 import aicfg warns and aliases brainrc.cli", ok,
-           f"warnings {[str(w.message) for w in caught]}, aicfg at {aicfg.__file__}")
+    gone = importlib.util.find_spec("aicfg") is None
+    report("AC1 no aicfg package installed", gone)
 
 
 def main() -> int:

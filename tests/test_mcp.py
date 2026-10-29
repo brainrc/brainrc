@@ -311,6 +311,53 @@ class McpSyncTest(McpCase):
         self.apply()
         self.assertEqual(self.codex.read_text(), original)
 
+    OLD_START = "# >>> ai-config mcp servers (written by aicfg apply; edits here are replaced)"
+    OLD_END = "# <<< ai-config mcp servers"
+
+    def test_codex_block_is_written_with_brainrc_markers(self):
+        self.registry(GH)
+        self.apply()
+        text = self.codex.read_text()
+        self.assertIn("# >>> brainrc mcp servers (written by brainrc apply; edits here are replaced)", text)
+        self.assertIn("# <<< brainrc mcp servers", text)
+
+    def test_an_old_marker_block_is_replaced_once_and_user_content_kept(self):
+        before, after = 'model = "o3"\n', '\n[mcp_servers.mine]\ncommand = "mine"\n'
+        self.codex.write_text(f'{before}\n{self.OLD_START}\n[mcp_servers.gh]\ncommand = "old"\n{self.OLD_END}\n{after}')
+        self.registry(GH)
+        self.apply()
+        text = self.codex.read_text()
+        self.assertNotIn("ai-config", text)
+        self.assertEqual(text.count("# >>> brainrc mcp servers"), 1)
+        self.assertEqual(tomllib.loads(text)["mcp_servers"]["gh"]["command"], "npx")
+        start, end = "# >>> brainrc mcp servers (written by brainrc apply; edits here are replaced)\n", \
+            "# <<< brainrc mcp servers\n"
+        body = text.split(start)[1].split(end)[0]
+        self.assertEqual(text, f"{before}\n{start}{body}{end}{after}")  # in place, user bytes kept
+        self.apply()
+        self.assertEqual(self.codex.read_text(), text)
+
+    def test_an_unterminated_old_block_is_left_alone(self):
+        self.codex.write_text(f'{self.OLD_START}\n[mcp_servers.gh]\ncommand = "old"\n')
+        was = self.codex.read_text()
+        self.registry(GH)
+        code, out = quiet(brainrc.cmd_sync, True)  # no end marker: brainrc can't tell where it stops
+        self.assertIn("CONFLICT  codex", out)
+        self.assertEqual(self.codex.read_text(), was)
+
+    def test_old_and_new_blocks_together_leave_one_brainrc_block(self):
+        new_start = "# >>> brainrc mcp servers (written by brainrc apply; edits here are replaced)"
+        self.codex.write_text(f'model = "o3"\n\n{self.OLD_START}\n[mcp_servers.a]\ncommand = "a"\n{self.OLD_END}\n\n'
+                              f'{new_start}\n[mcp_servers.b]\ncommand = "b"\n# <<< brainrc mcp servers\n')
+        self.registry(GH)
+        self.apply()
+        text = self.codex.read_text()
+        self.assertEqual(text.count("mcp servers (written by"), 1)
+        self.assertEqual(set(tomllib.loads(text)["mcp_servers"]), {"gh"})
+        self.assertEqual(tomllib.loads(text)["model"], "o3")
+        self.apply()
+        self.assertEqual(self.codex.read_text(), text)
+
     def test_harnesses_filter(self):
         self.registry(GH + 'harnesses = ["codex"]\n')
         self.apply()

@@ -312,3 +312,9 @@ def former_hooks_dirs(hooks_dir: str) -> list[str]:
     """The pre-rename sibling of a hooks dir named brainrc; a dir the user named is used as given."""
     d = hooks_dir.rstrip("/")
     return [d[:-len("brainrc")] + "ai-config"] if d.endswith("/brainrc") else []
+
+
+def former_plugin_paths(plugin: str) -> list[str]:
+    """The pre-rename link for a plugin named brainrc-guard.js; a plugin the user named is used as given."""
+    head, _, name = plugin.rpartition("/")
+    return [f"{head}/ai-config-guard.js"] if name == "brainrc-guard.js" else []

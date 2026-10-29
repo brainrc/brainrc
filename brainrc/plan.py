@@ -219,6 +219,7 @@ def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
             candidates.add(expand(h["instructions"]))
         if "plugin" in h:
             candidates.add(expand(h["plugin"]))
+            candidates.update(expand(old) for old in config.former_plugin_paths(h["plugin"]))
         if "hooks_dir" in h:
             candidates.add(expand(h["hooks_dir"]))
             candidates.update(expand(pack_hooks_dir(h["hooks_dir"], s.name)) for s in every_src)

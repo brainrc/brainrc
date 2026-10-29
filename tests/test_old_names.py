@@ -55,6 +55,8 @@ ALLOW = [
     ("tests/test_hooks.py", r"hooks/ai-config", "A: old hook dirs"),
     ("tests/test_hooks.py", r'"ai-config"', "A: the old hook dir name"),
     ("tests/test_mcp.py", r'"ai-config"', "A: the legacy settings home"),
+    ("tests/test_mcp.py", r'OLD_(START|END) = "# [<>]{3} ai-config mcp servers( \(written by aicfg apply; edits here are replaced\))?"|assertNotIn\("ai-config", text\)',
+     "D: the old Codex markers, seeded and checked gone"),
     # B. Packaging.
     ("pyproject.toml", r'^aicfg = "brainrc\.cli:deprecated_entry"', "B: the aicfg console script"),
     ("pyproject.toml", r'"aicfg"', "B: the aicfg shim package"),
@@ -90,7 +92,7 @@ ALLOW = [
     ("brainrc/mcp.py", r"# >>> ai-config mcp servers \(written by aicfg apply; edits here are replaced\)",
      "D: Codex block start marker"),
     ("brainrc/mcp.py", r"# <<< ai-config mcp servers", "D: Codex block end marker"),
-    ("harnesses.toml", r"ai-config-guard\.js", "D: OpenCode plugin link"),
+    ("brainrc/config.py", r"ai-config-guard\.js", "D: the old OpenCode link, pruned on apply"),
     ("brainrc/packs.py", r"\.git/aicfg-fetched\.json", "D: the fetch record"),
     # E. Docs sentences about old names: exact tokens, or lines that say old/former/deprecated/legacy.
     ("docs/install.md", OLD_LINE, "E: upgrade and old-name notes"),

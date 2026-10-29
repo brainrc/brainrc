@@ -16,7 +16,7 @@
   "delivery": "normal",
   "auto": true,
   "stop_at_deliver": true,
-  "stage": "implement",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -40,7 +40,7 @@
       "id": "T1",
       "title": "Remove the deprecated names and refuse an unmigrated old home",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "aicfg/",
@@ -85,7 +85,10 @@
       "intake": "2026-10-29T03:15:00Z",
       "spec": "2026-10-29T03:15:00Z",
       "plan": "2026-10-29T03:15:00Z",
-      "implement": "2026-10-29T03:15:00Z"
+      "implement": "2026-10-29T03:15:00Z",
+      "verify": "2026-10-29T04:10:00Z",
+      "document": "2026-10-29T04:10:00Z",
+      "deliver": "2026-10-29T04:10:00Z"
     },
     "gates": {
       "spec": {
@@ -95,6 +98,9 @@
       "plan": {
         "presented_at": "2026-10-29T03:15:00Z",
         "approved_at": "2026-10-29T03:15:00Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-29T04:10:00Z"
       }
     },
     "gate_rework": {
@@ -103,8 +109,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
-      "first_pass": 0
+      "total": 1,
+      "first_pass": 1
     },
     "retries": 0,
     "interventions": 0

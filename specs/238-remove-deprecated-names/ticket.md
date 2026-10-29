@@ -1,8 +1,8 @@
 ---
 id: 238
 title: Remove the deprecated aicfg names in 0.5.0
-status: in-progress
-pr:
+status: in-review
+pr: https://github.com/brainrc/brainrc/pull/239
 ---
 Follow-up from #199: the deprecation warnings promise that the `aicfg` command, `scripts/aicfg.py`,
 `python -m aicfg`, `import aicfg`, `AICFG_HOME` and the legacy `~/.config/ai-config` home are removed

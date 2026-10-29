@@ -19,3 +19,7 @@ Suite OK with and without XDG; validate OK, including the example pack. Wheel in
 ## owner · deliver gate · approved
 2026-10-29T04:20:00Z
 The owner approved: push, then a ready PR.
+
+## engine · deliver · done
+2026-10-29T04:30:00Z
+Pushed; ready PR #239 opened.

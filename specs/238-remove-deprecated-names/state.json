@@ -6,7 +6,7 @@
     "id": "238",
     "title": "Remove the deprecated aicfg names in 0.5.0",
     "url": null,
-    "pr": null
+    "pr": "https://github.com/brainrc/brainrc/pull/239"
   },
   "slug": "238-remove-deprecated-names",
   "branch": "238-remove-deprecated-names",
@@ -16,7 +16,7 @@
   "delivery": "normal",
   "auto": true,
   "stop_at_deliver": true,
-  "stage": "deliver",
+  "stage": "watch",
   "gates": {
     "spec": "approved",
     "plan": "approved",

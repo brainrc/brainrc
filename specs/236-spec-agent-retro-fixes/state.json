@@ -6,7 +6,7 @@
     "id": "236",
     "title": "spec-agent fixes from the rename campaign's retros",
     "url": null,
-    "pr": null
+    "pr": "https://github.com/brainrc/brainrc/pull/236"
   },
   "slug": "236-spec-agent-retro-fixes",
   "branch": "236-spec-agent-retro-fixes",
@@ -16,7 +16,7 @@
   "delivery": "normal",
   "auto": true,
   "stop_at_deliver": true,
-  "stage": "deliver",
+  "stage": "watch",
   "gates": {
     "spec": "approved",
     "plan": "skipped",

@@ -36,9 +36,9 @@ hooks SHALL stay linked into the checkout. (AC1, AC7)
 _Last changed by 206-brainrc-settings-home._
 
 ### Doctor reports an unmigrated home
-`brainrc doctor` SHALL warn, with the fix, when the legacy dir or `AICFG_HOME` is in use or an
-unused old dir remains. (AC14)
-_Last changed by 206-brainrc-settings-home._
+`brainrc doctor` SHALL report a FAIL, with the migrate fix, when the legacy dir or `AICFG_HOME` holds an
+unmigrated home, and SHALL warn when an unused old dir remains. (AC5)
+_Last changed by 238-remove-deprecated-names._
 
 ### Owned hook dirs are renamed without duplicates
 `brainrc apply` SHALL link hooks at `hooks/brainrc` and `hooks/brainrc-<pack>`, treat hook entries

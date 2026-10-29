@@ -156,8 +156,11 @@ class TestLegacyHome(HomeCase):
                 proc = self.run_cli(*args)
                 self.assertNotIn("no longer read", proc.stdout + proc.stderr)
         proc = self.run_cli("doctor")
-        self.assertNotIn("no longer read: run", proc.stdout.split("FAIL")[0])
-        self.assertIn("no longer read", proc.stdout)
+        fail = [line for line in proc.stdout.splitlines() if line.startswith("FAIL") and "no longer read" in line]
+        self.assertEqual(len(fail), 1, proc.stdout)
+        fix = proc.stdout.split(fail[0], 1)[1].lstrip("\n").splitlines()[0]
+        self.assertIn("fix:", fix)
+        self.assertIn("migrate", fix)
 
 
 class TestAicfgHomeEnv(HomeCase):

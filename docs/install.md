@@ -36,10 +36,9 @@ brainrc apply
 
 Pin a release with `git+https://github.com/brainrc/brainrc@v<X.Y.Z>` (0.4.0 or later installs as `brainrc`).
 
-Already have the old `ai-config` package installed? Uninstall it before installing `brainrc`. Both
-once shipped an `aicfg` command, and uninstalling old `ai-config` after `brainrc` is installed
-removes the new one. Run `uv tool uninstall ai-config` (or `pipx uninstall ai-config`), then install
-`brainrc`. The `aicfg` command was removed in 0.5.0: use `brainrc`.
+Already have the old `ai-config` package installed? Run `uv tool uninstall ai-config`
+(or `pipx uninstall ai-config`): its `aicfg` command is outdated and works on the old settings home.
+The `aicfg` command was removed in 0.5.0: use `brainrc`.
 
 Links then point into the installed package, so `uv tool upgrade brainrc` (or `pipx upgrade
 brainrc`) updates every harness. Guard hooks are the exception: `apply` copies them to

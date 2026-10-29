@@ -8,7 +8,6 @@ from . import cli, config, doctor, mcp, opencode, plan, plugin, settings, tokens
 from .config import (
     BACKUPS_KEPT,
     HOOKS_DIR_PLACEHOLDER,
-    aicfg_home,
     extensions_file,
     rendered_instructions,
     settings_home,

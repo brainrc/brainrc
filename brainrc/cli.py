@@ -2,17 +2,17 @@
 
 Usage:
   brainrc.py status                show what would change (default, no writes)
-  brainrc.py apply                 render rules and pack extensions to $AICFG_HOME (default
-                                   ~/.config/ai-config), create/refresh symlinks, merge settings
+  brainrc.py apply                 render rules and pack extensions to the settings home
+                                   ($BRAINRC_HOME, default ~/.config/brainrc), create/refresh symlinks, merge settings
                                    and MCP servers (mcp/servers.toml)
   brainrc.py validate [--pack DIR] check frontmatter, cross-references, packs, and tripwires
                                    (used in CI); --pack checks core plus that pack only
   brainrc.py doctor                diagnose this machine's install (read-only): stale renders,
                                    missing/broken links, broken packs, unmerged hooks; exits 1
                                    on any problem, each with its fix
-  brainrc.py migrate [--dry-run]   move the settings home (AICFG_HOME or ~/.config/ai-config) to
-                                   BRAINRC_HOME (default ~/.config/brainrc), then apply; refuses a
-                                   non-empty target; --dry-run only prints the move
+  brainrc.py migrate [--dry-run]   move an old settings home (AICFG_HOME or ~/.config/ai-config)
+                                   to BRAINRC_HOME (default ~/.config/brainrc), then apply; refuses
+                                   a non-empty target; --dry-run only prints the move
   brainrc.py plugin                write the plugin manifests (.claude-plugin/, plugin.json);
                                    validate fails when they're stale
   brainrc.py release [--dry-run]   fold changelog.d/ fragments into CHANGELOG.md, bump VERSION,
@@ -23,7 +23,7 @@ Usage:
   brainrc.py --version             print `brainrc <VERSION>`
 
 Sources: this repo ("core", versioned by VERSION) plus any packs listed in packs.toml /
-packs.local.toml, by `path` or by `git` URL (fetched into $AICFG_HOME/packs). A pack is a
+packs.local.toml, by `path` or by `git` URL (fetched into the settings home's packs/). A pack is a
 repo with the same layout and a pack.toml (see docs/packs.md);
 its `requires_core` must match VERSION, or validate fails and apply writes nothing.
 
@@ -41,7 +41,6 @@ from pathlib import Path
 from . import config
 from .config import (
     ConfigError,
-    aicfg_home,  # noqa: F401  deprecated alias, kept so aicfg.cli.aicfg_home resolves until 0.5.0
     check_config,
     extensions_file,
     home_extensions_file,
@@ -71,7 +70,7 @@ CHANGED_HINT = "(changed during apply; close Claude Code and re-run)"
 
 
 def cmd_sync(apply: bool) -> int:
-    """status (apply=False) or apply; apply holds $AICFG_HOME/apply.lock while it runs."""
+    """status (apply=False) or apply; apply holds the settings home's apply.lock while it runs."""
     if not apply:
         return _sync(False)
     lock = settings_home() / "apply.lock"
@@ -295,34 +294,24 @@ def cmd_update() -> int:
     return cmd_sync(apply=True)
 
 
-SHIM_REMOVED_IN = "0.5.0"
-
-
-def warn_deprecated(old: str, new: str = "brainrc") -> None:
-    """One line on stderr (never stdout, which scripts parse) naming the replacement."""
-    print(f"{old} is deprecated: use {new} (removed in {SHIM_REMOVED_IN})", file=sys.stderr)
-
-
-def warn_home() -> None:
-    """The one stderr line for a deprecated settings home (AICFG_HOME or ~/.config/ai-config)."""
-    origin = config.home_origin()
-    if origin == "legacy_env":
-        warn_deprecated("AICFG_HOME", "BRAINRC_HOME")
-    elif origin == "legacy":
-        print(f"settings home {config.tilde(config.settings_home())} is deprecated: "
-              f"run `brainrc migrate` to move it to {config.tilde(config.new_home())} "
-              f"(removed in {SHIM_REMOVED_IN})", file=sys.stderr)
+def refuse_unmigrated() -> int | None:
+    """status, apply and update stop here, writing nothing, while an old home is unmigrated."""
+    old = config.unmigrated_home()
+    if not old:
+        return None
+    kind, path = old
+    if kind == "env":
+        print(f"ERROR AICFG_HOME is no longer read: set BRAINRC_HOME={config.tilde(config.new_home())} "
+              "and run brainrc migrate")
+    else:
+        print(f"ERROR {config.tilde(path)} is no longer read: run brainrc migrate "
+              f"to move it to {config.tilde(config.new_home())}")
+    return 1
 
 
 def entry() -> None:
     """The `brainrc` console script of an installed package."""
     sys.exit(main(sys.argv))
-
-
-def deprecated_entry() -> None:
-    """The deprecated `aicfg` console script: warn, then behave exactly like `brainrc`."""
-    warn_deprecated("aicfg")
-    entry()
 
 
 def main(argv: list[str]) -> int:
@@ -341,10 +330,10 @@ def _dispatch(argv: list[str]) -> int:
     if cmd == "--version" and len(argv) == 2:
         print(f"brainrc {'.'.join(map(str, core_version()))}")
         return 0
-    if cmd != "migrate":
-        warn_home()
     if cmd == "migrate" and (len(argv) == 2 or argv[2:] == ["--dry-run"]):
         return cmd_migrate(dry_run=len(argv) == 3)
+    if cmd in ("status", "apply", "update") and len(argv) <= 2 and (code := refuse_unmigrated()):
+        return code
     if cmd in ("status", "apply") and len(argv) <= 2:
         return cmd_sync(apply=cmd == "apply")
     if cmd == "validate":

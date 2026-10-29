@@ -36,9 +36,9 @@ _Last changed by 209-brainrc-docs-wording._
 
 ### Settings home
 The system SHALL resolve its settings home by the order above, defaulting to `~/.config/brainrc`,
-use a legacy `~/.config/ai-config` or `AICFG_HOME` only as a fallback with a once-per-run stderr
-warning, and never prefer the old dir when the new one exists. (AC1 to AC6)
-_Last changed by 206-brainrc-settings-home._
+and SHALL NOT read the legacy `~/.config/ai-config` or `AICFG_HOME`; while either holds an unmigrated
+home, `status`, `apply` and `update` SHALL write nothing and exit 1 with an error naming `brainrc migrate`. (AC3, AC4, AC5)
+_Last changed by 238-remove-deprecated-names._
 
 ### Migrate
 `brainrc migrate` SHALL move the old home to the new one, re-run apply so no link points into the

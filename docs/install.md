@@ -36,10 +36,9 @@ brainrc apply
 
 Pin a release with `git+https://github.com/brainrc/brainrc@v<X.Y.Z>` (0.4.0 or later installs as `brainrc`).
 
-Already have the old `ai-config` package installed? Uninstall it before installing `brainrc`. Both
-ship the deprecated `aicfg` command, and uninstalling old `ai-config` after `brainrc` is installed
-removes the new one. Run `uv tool uninstall ai-config` (or `pipx uninstall ai-config`), then install
-`brainrc`. The old `aicfg` command keeps working with a deprecation warning until 0.5.0.
+Already have the old `ai-config` package installed? Run `uv tool uninstall ai-config`
+(or `pipx uninstall ai-config`): its `aicfg` command is outdated and works on the old settings home.
+The `aicfg` command was removed in 0.5.0: use `brainrc`.
 
 Links then point into the installed package, so `uv tool upgrade brainrc` (or `pipx upgrade
 brainrc`) updates every harness. Guard hooks are the exception: `apply` copies them to
@@ -51,9 +50,10 @@ then re-run `apply`. Local files go in `~/.config/brainrc/` (`$BRAINRC_HOME`):
 `harnesses.local.toml`, `packs.local.toml`, and `rules/*.local.md`. Packs are local
 directories or git URLs that `brainrc` fetches ([packs](packs.md#enable-a-pack)).
 
-Upgrading from the legacy `~/.config/ai-config/` (or deprecated `$AICFG_HOME`)? It keeps working,
-with a warning, until 0.5.0. Run `brainrc migrate --dry-run` to see the move, then `brainrc migrate`: it moves the
-directory and re-runs `apply`. With the old `AICFG_HOME` set, set `BRAINRC_HOME` to the new location first.
+Upgrading from the legacy `~/.config/ai-config/` (or `$AICFG_HOME`)? 0.5.0 no longer reads them, and
+`status`, `apply` and `update` refuse (writing nothing) until you migrate. Run `brainrc migrate --dry-run` to see
+the move, then `brainrc migrate`: it moves the directory and re-runs `apply`. With the old `AICFG_HOME` set, set
+`BRAINRC_HOME` to the new location first.
 
 `plugin` needs a checkout. Contributors use the clone above.
 

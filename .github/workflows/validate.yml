@@ -22,8 +22,6 @@ jobs:
       - run: python3 scripts/brainrc.py validate
       - name: Validate example pack
         run: python3 scripts/brainrc.py validate --pack examples/pack-acme
-      - name: Validate example pack via the deprecated aicfg script
-        run: python3 scripts/aicfg.py validate --pack examples/pack-acme
       - run: python3 -m unittest discover -s tests -v
       - name: Install brainrc as a package and smoke-test the installed wheel
         run: |

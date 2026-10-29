@@ -16,14 +16,13 @@ Issues = "https://github.com/brainrc/brainrc/issues"
 
 [project.scripts]
 brainrc = "brainrc.cli:entry"
-aicfg = "brainrc.cli:deprecated_entry"
 
 [tool.hatch.version]
 path = "VERSION"
 pattern = "(?P<version>\\S+)"
 
 [tool.hatch.build.targets.wheel]
-packages = ["brainrc", "aicfg"]
+packages = ["brainrc"]
 
 [tool.hatch.build.targets.wheel.force-include]
 "skills" = "brainrc/_core/skills"

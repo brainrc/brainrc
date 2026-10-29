@@ -133,16 +133,19 @@ def _link_finding(link: Link, roots: list[Path]) -> Finding | None:
 
 
 def _home_findings() -> list[Finding]:
-    """WARN when the settings home is a legacy dir or AICFG_HOME, or an unused old dir remains."""
-    found, origin, home = [], config.home_origin(), config.settings_home()
-    if origin == "legacy":
-        found.append(("WARN", f"settings home is the legacy {tilde(home)}", command("migrate")))
-    elif origin == "legacy_env":
-        found.append(("WARN", f"settings home comes from the deprecated AICFG_HOME ({tilde(home)})",
-                      f"set BRAINRC_HOME={tilde(config.new_home())} and run `{command('migrate')}`"))
+    """FAIL while AICFG_HOME or the legacy dir holds an unmigrated home; WARN for an unused old dir."""
+    found, home, new = [], config.settings_home(), tilde(config.new_home())
+    unmigrated = config.unmigrated_home()
+    if unmigrated and unmigrated[0] == "env":
+        found.append(("FAIL", f"AICFG_HOME ({tilde(unmigrated[1])}) is no longer read",
+                      f"set BRAINRC_HOME={new} and run `{command('migrate')}`"))
+    elif unmigrated:
+        found.append(("FAIL", f"{tilde(unmigrated[1])} holds settings but is no longer read",
+                      f"`{command('migrate')}` moves it to {new}"))
+    skip = unmigrated[1] if unmigrated else None
     home_has_content = home.is_dir() and any(home.iterdir())
     for old in config.former_homes():
-        if not old.exists():
+        if not old.exists() or old == skip:
             continue
         if home_has_content:
             found.append(("WARN", f"{tilde(old)} is unused (settings home is {tilde(home)})",

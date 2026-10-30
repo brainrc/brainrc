@@ -24,3 +24,6 @@ Campaign gh:241, child 2 of 6. The first run in its own worktree (#255): /home/u
 ## owner · Plan gate · approved
 2026-10-30T13:38:20Z
 Owner: "Go", with the engine defaults: `bump: patch` (not minor, since --oneshot is additive) and no split. The plan.md bump was changed after approval as a wording-only fix.
+
+## implementer · T1 · done
+6 of 7 new tests red first; tests/test_evals 87 OK; suite 625 OK. Committed. docs/evals.md is left to T6.

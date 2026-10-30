@@ -38,7 +38,7 @@
       "id": "T1",
       "title": "campaign check: ticket-ref fallback, optional order, ready",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "scripts/evals.py",
@@ -50,14 +50,17 @@
       ],
       "review": "batch",
       "after": [],
-      "started_at": "2026-10-30T13:38:20Z"
+      "started_at": "2026-10-30T13:38:20Z",
+      "sha": "e0386ea",
+      "red": "assertion",
+      "finished_at": "2026-10-30T13:43:18Z"
     },
     {
       "id": "T2",
       "title": "Oneshot instructions and docs",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "skills/spec-agent/SKILL.md",
         "skills/spec-agent/references/guardrails.md",
@@ -80,7 +83,8 @@
         "AC11"
       ],
       "review": "each",
-      "after": []
+      "after": [],
+      "started_at": "2026-10-30T13:43:18Z"
     },
     {
       "id": "T3",

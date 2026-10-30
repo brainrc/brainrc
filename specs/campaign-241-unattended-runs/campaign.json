@@ -15,10 +15,11 @@
       "ref": "gh:255",
       "order": 1,
       "depends_on": [],
-      "status": "verified",
+      "status": "delivered",
       "slug": "255-run-worktrees",
       "branch": "255-run-worktrees",
-      "pr": null
+      "pr": "https://github.com/brainrc/brainrc/pull/257",
+      "merged": true
     },
     {
       "ref": "gh:242",
@@ -26,7 +27,7 @@
       "depends_on": [
         "gh:255"
       ],
-      "status": "todo",
+      "status": "waiting",
       "slug": null,
       "branch": null,
       "pr": null
@@ -35,7 +36,7 @@
       "ref": "gh:243",
       "order": 3,
       "depends_on": [],
-      "status": "todo",
+      "status": "waiting",
       "slug": null,
       "branch": null,
       "pr": null
@@ -44,7 +45,7 @@
       "ref": "gh:244",
       "order": 4,
       "depends_on": [],
-      "status": "todo",
+      "status": "waiting",
       "slug": null,
       "branch": null,
       "pr": null
@@ -53,7 +54,7 @@
       "ref": "gh:245",
       "order": 5,
       "depends_on": [],
-      "status": "todo",
+      "status": "waiting",
       "slug": null,
       "branch": null,
       "pr": null
@@ -64,7 +65,7 @@
       "depends_on": [
         "gh:255"
       ],
-      "status": "todo",
+      "status": "waiting",
       "slug": null,
       "branch": null,
       "pr": null

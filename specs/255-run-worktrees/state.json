@@ -6,7 +6,7 @@
     "id": "255",
     "title": "spec-agent: each run in its own git worktree",
     "url": "https://github.com/brainrc/brainrc/issues/255",
-    "pr": null
+    "pr": "https://github.com/brainrc/brainrc/pull/257"
   },
   "slug": "255-run-worktrees",
   "branch": "255-run-worktrees",
@@ -16,7 +16,7 @@
   "delivery": "normal",
   "auto": false,
   "campaign": "specs/campaign-241-unattended-runs",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -261,10 +261,18 @@
       "max_width": 2,
       "task_minutes": 13.7,
       "wall_minutes": 10.0
-    }
+    },
+    "pr_opened_at": "2026-10-30T04:18:17Z",
+    "finished_at": "2026-10-30T04:27:34Z"
   },
   "living": [
     "run-pointer",
     "run-lifecycle"
-  ]
+  ],
+  "watch": {
+    "outcome": "merged",
+    "merged_at": "2026-10-30T04:18:22Z",
+    "post_merge": "pass",
+    "checked_at": "2026-10-30T04:27:34Z"
+  }
 }

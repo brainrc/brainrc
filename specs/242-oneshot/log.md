@@ -58,3 +58,6 @@ Wave in nested task worktrees (`git -C <run worktree> worktree add`, the #255 ru
 
 ## engine · T6 · done (inline)
 README rows, docs/evals.md and the changelog fragment (`bump: patch`), done inline because of the container restarts. Validate OK; suite OK. Committed 4e8b9da. Next: batch review.
+
+## code-reviewer · batch · changes-requested
+2 HIGH: no AC8 benign-child case; AC10 resume untested. 6 MEDIUM: blocked-body regex too weak and ref ungraded; for-each-ref check cannot fail; `ready` passes when `pr_draft` is missing; stacked base allows main for every child; large-split campaign ref undocumented; 021 Callout coverage. 3 LOW. Fix tasks: F4 (campaign ref doc, inline), F3 (evals.py strictness), F2 (cases).

@@ -60,7 +60,7 @@
       "title": "Oneshot instructions and docs",
       "agent": "implementer",
       "status": "in_progress",
-      "attempts": 1,
+      "attempts": 2,
       "files": [
         "skills/spec-agent/SKILL.md",
         "skills/spec-agent/references/guardrails.md",
@@ -103,7 +103,11 @@
         "evals/cases/sandbox-018.toml",
         "evals/cases/sandbox-019.toml",
         "evals/cases/sandbox-020.toml",
-        "tests/test_oneshot_cases.py"
+        "tests/test_oneshot_cases.py",
+        "examples/sandbox/tickets/032-oneshot-spec-gap.md",
+        "examples/sandbox/tickets/033-oneshot-no-safe-default.md",
+        "evals/cases/sandbox-028.toml",
+        "evals/cases/sandbox-029.toml"
       ],
       "criteria": [
         "AC3",
@@ -213,7 +217,7 @@
       }
     },
     "gate_rework": {
-      "spec": 0,
+      "spec": 1,
       "plan": 0,
       "deliver": 0
     },
@@ -221,7 +225,7 @@
       "total": 0,
       "first_pass": 0
     },
-    "retries": 0,
-    "interventions": 0
+    "retries": 1,
+    "interventions": 1
   }
 }

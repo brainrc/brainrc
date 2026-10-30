@@ -27,3 +27,13 @@ Owner: "Go", with the engine defaults: `bump: patch` (not minor, since --oneshot
 
 ## implementer · T1 · done
 6 of 7 new tests red first; tests/test_evals 87 OK; suite 625 OK. Committed. docs/evals.md is left to T6.
+
+## security-reviewer · T2 · changes-requested
+1 HIGH: a blocked draft PR pushes the branch on CRITICAL/HIGH, injection and secret stops. 2 MEDIUM (untrusted text in the blocked PR body and title; Callout defaults not checked after the fact; the additive contract default), 2 LOW.
+
+## code-reviewer · T2 · done
+No CRITICAL or HIGH. 4 MEDIUM (Auto vs oneshot precedence; --oneshot governs --auto missing; local-only on the blocked PR; campaign.md override), 5 LOW.
+
+## owner · spec change · approved
+2026-10-30T13:54:30Z
+Owner: "Split the stops". Tainted stops (security finding, injection, secret) push nothing and open no PR, like --auto. Benign stops (retry budget, scope breach, spec gap, no safe Callout default) open a draft [blocked] PR with a fixed title phrase, never quoting untrusted text. Owner kept the additive contract default. The analyst revised AC3, AC4, AC8, the Constraints table and the 3 requirement blocks; living check exit 0. Plan T3 now has 3 tainted and 4 benign cases (added tickets 032 and 033, cases 028 and 029). T5's blocked child (secret) now opens no PR.

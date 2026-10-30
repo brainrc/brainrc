@@ -16,7 +16,7 @@
   "delivery": "normal",
   "auto": false,
   "campaign": "specs/campaign-241-unattended-runs",
-  "stage": "document",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -228,7 +228,8 @@
       "plan": "2026-10-30T02:49:22Z",
       "implement": "2026-10-30T03:02:31Z",
       "verify": "2026-10-30T03:38:47Z",
-      "document": "2026-10-30T03:43:00Z"
+      "document": "2026-10-30T03:43:00Z",
+      "deliver": "2026-10-30T03:45:17Z"
     },
     "gates": {
       "spec": {
@@ -257,5 +258,9 @@
       "task_minutes": 13.7,
       "wall_minutes": 10.0
     }
-  }
+  },
+  "living": [
+    "run-pointer",
+    "run-lifecycle"
+  ]
 }

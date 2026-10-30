@@ -19,3 +19,6 @@ Artifacts: specs/campaign-241-unattended-runs/campaign.json
 Owner: approve, with #255 first. #255 moved to the top of the epic's sub-issues. #242 and #256 got `Depends on #255` lines, and the "N of 6" labels were renumbered. Source `body`. Order: 255, 242, 243, 244, 245, 256.
 
 - Child 1 gh:255 started: specs/255-run-worktrees/ on branch 255-run-worktrees.
+
+## 2026-10-30T03:45:17Z · child 1 gh:255 verified
+- Drafts ready (specs/255-run-worktrees/pr-body.md). Waits for the stack Deliver gate, unless the owner ships it on its own.

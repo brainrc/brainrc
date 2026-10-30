@@ -15,7 +15,7 @@
       "ref": "gh:255",
       "order": 1,
       "depends_on": [],
-      "status": "in_progress",
+      "status": "verified",
       "slug": "255-run-worktrees",
       "branch": "255-run-worktrees",
       "pr": null

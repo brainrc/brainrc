@@ -48,3 +48,21 @@ _Last changed by 216-work-auto-mode._
 An auto run SHALL stop, push nothing, and open no PR on any guardrails stop condition, size `large`,
 a plan Callout, or a CRITICAL/HIGH security finding. (AC4, AC8)
 _Last changed by 216-work-auto-mode._
+
+### Run worktree
+A run SHALL do every stage in its own git worktree on the run's branch, record its absolute path as
+`state.json` `worktree`, and SHALL NOT change the main checkout's branch, index, or files. It SHALL
+stop without changes if the main checkout has the run's branch checked out. (AC1, AC2, AC3, AC4, AC11)
+_Last changed by 255-run-worktrees._
+
+### Resume through the worktree
+`/spec-resume` and `/spec-status` SHALL locate runs through `state.worktree`, continue in that
+worktree, and recreate it from `state.branch` when missing, never falling back to the main
+checkout. (AC7, AC8, AC9)
+_Last changed by 255-run-worktrees._
+
+### Nested wave worktrees
+Parallel task worktrees SHALL be created from the run worktree and landed into it, with
+`worktree_fence.py` unchanged. Harnesses whose subagents take no working directory SHALL keep the
+`Project root` plus `Worktree:` dispatch. (AC10, AC12)
+_Last changed by 255-run-worktrees._

@@ -81,7 +81,7 @@
       "id": "T3",
       "title": "Intake, Run, state and Resume use the run worktree",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "skills/spec-agent/SKILL.md",
@@ -99,8 +99,9 @@
       ],
       "review": "batch",
       "wave": 2,
-      "worktree": "/tmp/spec-agent/255-run-worktrees/T3",
-      "started_at": "2026-10-30T03:18:28Z"
+      "started_at": "2026-10-30T03:18:28Z",
+      "sha": "53c57e5",
+      "finished_at": "2026-10-30T03:20:30Z"
     },
     {
       "id": "T4",
@@ -128,7 +129,7 @@
       "id": "T5",
       "title": "/spec-resume, /spec-status, user docs, changelog fragment",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "skills/spec-resume/SKILL.md",
@@ -144,8 +145,9 @@
       ],
       "review": "batch",
       "wave": 2,
-      "worktree": "/tmp/spec-agent/255-run-worktrees/T5",
-      "started_at": "2026-10-30T03:18:28Z"
+      "started_at": "2026-10-30T03:18:28Z",
+      "sha": "d217e84",
+      "finished_at": "2026-10-30T03:24:00Z"
     }
   ],
   "blocked": null,
@@ -179,10 +181,10 @@
     "retries": 1,
     "interventions": 0,
     "waves": {
-      "count": 1,
+      "count": 2,
       "max_width": 2,
-      "task_minutes": 6.2,
-      "wall_minutes": 4.5
+      "task_minutes": 13.7,
+      "wall_minutes": 10.0
     }
   }
 }

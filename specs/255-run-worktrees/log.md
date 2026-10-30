@@ -47,3 +47,12 @@ Edited existing sentences only (11 insertions, 11 deletions). Fence OK; landed 4
 
 ## engine · implement · wave 2 {T3, T5}
 2026-10-30T03:18:28Z
+
+## implementer · T3 · done
+Fence OK; landed 53c57e5.
+
+## implementer · T5 · done
+Fence OK; landed d217e84. T5 saw one suite failure it could not explain. It did not recur in 3 engine runs; the likely cause is a `.runs/` log with old names (T2 hit the same).
+
+## engine · plan change after approval
+Wording only, in commit F0: the state.md example `worktree` path now uses the approved default layout, and the docs pointer-fallback sentence mentions worktrees. No criterion or task meaning changed.

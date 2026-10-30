@@ -1,6 +1,6 @@
 # Spec: spec-agent `--oneshot`: no manual intervention, ready PRs as output
 
-Ticket: gh:242 · Size: standard · Status: draft
+Ticket: gh:242 · Size: standard · Status: approved
 
 ## Problem
 `--auto` still hard-stops on size `large` and on any plan Callout, and opens only draft PRs. Users read "auto" as "start it, walk away, come back to PRs". They need a mode where defaults decide everything that is safe to decide, and where every run ends in a PR, even a blocked one.

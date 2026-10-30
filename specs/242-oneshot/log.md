@@ -10,3 +10,13 @@ Campaign gh:241, child 2 of 6. The first run in its own worktree (#255): /home/u
 
 ## engine · Spec gate · presented
 2026-10-30T04:29:56Z
+
+## owner · Spec gate · approved
+2026-10-30T04:34:52Z
+
+## architect · plan · done
+2026-10-30T04:38:16Z
+6 tasks in 5 waves (T1; T2 alone, review each; T3+T4; T5; T6). Evals grade a new `pr_draft` field. Callouts: additive internal fields and evals.py campaign options.
+
+## engine · Plan gate · presented
+2026-10-30T04:38:16Z

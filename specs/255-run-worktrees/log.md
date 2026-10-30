@@ -87,3 +87,7 @@ Waits for the campaign Deliver gate.
 ## owner · Deliver gate · approved
 2026-10-30T04:12:21Z
 Owner: ship #255 on its own, ready PR, accepting the spec change (fallback scans branch worktrees only). Child 2 (#242) starts from main after #255 merges.
+
+## engine · deliver · done
+2026-10-30T04:18:17Z
+Pushed; ready PR #257 (base main); ticket comment posted on #255. Watching the PR.

@@ -35,7 +35,7 @@ class ActiveRunTest(unittest.TestCase):
 
     def env(self, aicfg_home: Path | str | None = "default", **extra: str) -> dict:
         drop = {"BRAINRC_HOME", "AICFG_HOME", "XDG_CONFIG_HOME"}
-        env = {k: v for k, v in os.environ.items() if k not in drop}
+        env = {k: v for k, v in os.environ.items() if k not in drop and not k.startswith("GIT_")}
         env["HOME"] = str(self.home)
         if aicfg_home == "default":
             aicfg_home = self.aicfg
@@ -224,6 +224,65 @@ class ActiveRunTest(unittest.TestCase):
         result = self.cli("read", cwd=self.cwd_b)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(Path(result.stdout.strip()).resolve(), newest)
+
+    def git(self, *args, cwd: Path) -> None:
+        subprocess.run(
+            ["git", "-c", "user.name=t", "-c", "user.email=t@example.com", *args],
+            cwd=cwd, env=self.env(None), check=True, capture_output=True,
+        )
+
+    def make_worktree(self, name: str = "wt") -> Path:
+        """Temp repo at repo_a with one commit and a linked worktree; returns the worktree."""
+        self.repo_a.mkdir()
+        self.git("init", "-q", cwd=self.repo_a)
+        self.git("commit", "-q", "--allow-empty", "-m", "init", cwd=self.repo_a)
+        wt = self.root / name
+        self.git("worktree", "add", "-q", "-b", name, str(wt), cwd=self.repo_a)
+        return wt
+
+    # AC5
+    def test_write_worktree_run_dir_records_it(self):
+        wt = self.make_worktree()
+        run = self.run_dir("255-x", base=wt)
+        result = self.cli("write", str(run), cwd=self.repo_a)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(self.pointer.read_text(), f"{run}\n")
+        self.assertEqual(self.cli("read", cwd=self.cwd_b).stdout.strip(), str(run))
+
+    # AC6
+    def test_read_fallback_finds_newest_run_across_worktrees(self):
+        wt = self.make_worktree()
+        self.run_dir("070-main", base=self.repo_a, mtime=1_000_000)
+        newest = self.run_dir("071-wt", base=wt, mtime=2_000_000)
+        for cwd in (self.repo_a, wt):
+            result = self.cli("read", cwd=cwd)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(Path(result.stdout.strip()).resolve(), newest)
+
+    def test_read_fallback_prefers_newer_cwd_run_over_worktree_run(self):
+        wt = self.make_worktree()
+        newest = self.run_dir("071-main", base=self.repo_a, mtime=2_000_000)
+        self.run_dir("070-wt", base=wt, mtime=1_000_000)
+        result = self.cli("read", cwd=self.repo_a)
+        self.assertEqual(Path(result.stdout.strip()).resolve(), newest)
+
+    def test_read_fallback_without_git_scans_cwd_only(self):
+        wt = self.make_worktree()
+        mine = self.run_dir("070-main", base=self.repo_a, mtime=1_000_000)
+        self.run_dir("071-wt", base=wt, mtime=2_000_000)
+        nogit = self.root / "nogit"
+        nogit.mkdir()
+        result = self.cli("read", cwd=self.repo_a, PATH=str(nogit))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(Path(result.stdout.strip()).resolve(), mine)
+
+    def test_read_pointer_wins_over_newer_worktree_run(self):
+        wt = self.make_worktree()
+        pointed = self.run_dir("070-pointed", base=self.repo_a, mtime=1_000_000)
+        self.run_dir("071-wt", base=wt, mtime=2_000_000)
+        self.cli("write", str(pointed), cwd=self.repo_a)
+        result = self.cli("read", cwd=self.repo_a)
+        self.assertEqual(result.stdout.strip(), str(pointed))
 
     # AC11
     def test_write_warns_and_exits_zero_when_aicfg_home_is_a_file(self):

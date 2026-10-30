@@ -20,3 +20,7 @@ Campaign gh:241, child 2 of 6. The first run in its own worktree (#255): /home/u
 
 ## engine · Plan gate · presented
 2026-10-30T04:38:16Z
+
+## owner · Plan gate · approved
+2026-10-30T13:38:20Z
+Owner: "Go", with the engine defaults: `bump: patch` (not minor, since --oneshot is additive) and no split. The plan.md bump was changed after approval as a wording-only fix.

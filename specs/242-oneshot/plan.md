@@ -1,6 +1,6 @@
 # Plan: spec-agent `--oneshot`: no manual intervention, ready PRs as output
 
-Spec: [spec.md](spec.md) · Status: draft
+Spec: [spec.md](spec.md) · Status: approved
 
 ## Callouts
 Must be empty or explicitly approved at the Plan gate:
@@ -56,7 +56,7 @@ Waves: W1 T1; W2 T2 (alone, review: each); W3 T3+T4; W4 T5; W5 T6.
   - files: `examples/sandbox/tickets/028-oneshot-large.md` … `031-oneshot-child-secret.md`, `evals/cases/sandbox-025.toml` … `sandbox-027.toml`, `tests/test_oneshot_campaign_cases.py`
   - criteria: AC1, AC7, AC8
   - after: T1, T2
-- [ ] **T6** [agent: implementer] List tickets 019–031 and cases 016–027 in the sandbox README and docs/evals.md (with the new `campaign` options); changelog fragment (`bump: minor`)
+- [ ] **T6** [agent: implementer] List tickets 019–031 and cases 016–027 in the sandbox README and docs/evals.md (with the new `campaign` options); changelog fragment (`bump: patch`)
   - files: `examples/sandbox/README.md`, `docs/evals.md`, `changelog.d/242-oneshot.md`
   - criteria: AC11
   - after: T1, T3, T4, T5

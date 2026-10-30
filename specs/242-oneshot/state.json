@@ -17,10 +17,10 @@
   "delivery": "normal",
   "auto": false,
   "campaign": "specs/campaign-241-unattended-runs",
-  "stage": "plan",
+  "stage": "implement",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [],
@@ -38,8 +38,8 @@
       "id": "T1",
       "title": "campaign check: ticket-ref fallback, optional order, ready",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "scripts/evals.py",
         "tests/test_evals.py"
@@ -49,7 +49,8 @@
         "AC7"
       ],
       "review": "batch",
-      "after": []
+      "after": [],
+      "started_at": "2026-10-30T13:38:20Z"
     },
     {
       "id": "T2",
@@ -194,7 +195,8 @@
     "stage_started_at": {
       "intake": "2026-10-30T04:28:30Z",
       "spec": "2026-10-30T04:28:30Z",
-      "plan": "2026-10-30T04:34:52Z"
+      "plan": "2026-10-30T04:34:52Z",
+      "implement": "2026-10-30T13:38:20Z"
     },
     "gates": {
       "spec": {
@@ -202,7 +204,8 @@
         "approved_at": "2026-10-30T04:34:52Z"
       },
       "plan": {
-        "presented_at": "2026-10-30T04:38:16Z"
+        "presented_at": "2026-10-30T04:38:16Z",
+        "approved_at": "2026-10-30T13:38:20Z"
       }
     },
     "gate_rework": {

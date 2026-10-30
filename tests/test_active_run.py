@@ -259,6 +259,26 @@ class ActiveRunTest(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual(Path(result.stdout.strip()).resolve(), newest)
 
+    def test_read_fallback_skips_detached_worktrees(self):
+        wt = self.make_worktree()
+        detached = self.root / "task-wt"
+        self.git("worktree", "add", "-q", "--detach", str(detached), cwd=self.repo_a)
+        self.run_dir("070-main", base=self.repo_a, mtime=1_000_000)
+        branch_run = self.run_dir("071-wt", base=wt, mtime=2_000_000)
+        self.run_dir("070-main", base=detached, mtime=3_000_000)  # committed copy, fresh checkout
+        for cwd in (self.repo_a, wt):
+            result = self.cli("read", cwd=cwd)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(Path(result.stdout.strip()).resolve(), branch_run)
+
+    def test_read_fallback_keeps_cwd_even_when_detached(self):
+        self.make_worktree()
+        detached = self.root / "task-wt"
+        self.git("worktree", "add", "-q", "--detach", str(detached), cwd=self.repo_a)
+        mine = self.run_dir("070-main", base=detached, mtime=1_000_000)
+        result = self.cli("read", cwd=detached)
+        self.assertEqual(Path(result.stdout.strip()).resolve(), mine)
+
     def test_read_fallback_prefers_newer_cwd_run_over_worktree_run(self):
         wt = self.make_worktree()
         newest = self.run_dir("071-main", base=self.repo_a, mtime=2_000_000)

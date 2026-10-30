@@ -116,7 +116,7 @@ run's absolute path to `$BRAINRC_HOME/active-run` (default `~/.config/brainrc/ac
 intake, on resume, and at every checkpoint commit. The file is one line. It is not cleared when
 a run finishes, and the last write wins across sessions. A tool reads it through
 `skills/spec-agent/scripts/active_run.py read`, or falls back to the newest run in `<cwd>/specs/`
-and every worktree's `specs/` when the file is absent. The contract is in [state.md](../skills/spec-agent/references/state.md#active-run-pointer).
+and every branch worktree's `specs/` when the file is absent (detached task and verify worktrees are skipped). The contract is in [state.md](../skills/spec-agent/references/state.md#active-run-pointer).
 
 ## Run worktrees
 

@@ -27,9 +27,9 @@
       "depends_on": [
         "gh:255"
       ],
-      "status": "waiting",
-      "slug": null,
-      "branch": null,
+      "status": "in_progress",
+      "slug": "242-oneshot",
+      "branch": "242-oneshot",
       "pr": null
     },
     {

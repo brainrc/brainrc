@@ -91,3 +91,7 @@ Owner: ship #255 on its own, ready PR, accepting the spec change (fallback scans
 ## engine · deliver · done
 2026-10-30T04:18:17Z
 Pushed; ready PR #257 (base main); ticket comment posted on #255. Watching the PR.
+
+## engine · watch · done
+2026-10-30T04:27:34Z
+#257 merged (v0.5.2). Post-merge verify passed. The PR record and retro commits (772ce41, 46c94f5) landed after the merge; they ride along on child 2's branch (the #245 gap).

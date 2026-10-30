@@ -24,3 +24,13 @@ Ticket: gh:255 · Size: standard · PR: https://github.com/brainrc/brainrc/pull/
 - The plan grouped a `review: each` task into a wave, which the wave rules forbid. The architect role should apply efficiency.md § Parallel waves (review-each and test-writer tasks run alone) when writing the waves line.
 - Task worktrees inherit `.runs/` logs, which `tests/test_old_names.py` scans. Twice this produced a confusing suite failure. Either have the old-names test skip `specs/*/.runs/`, or tell implementers in wave dispatches to keep logs outside the worktree.
 - The batch review caught cross-file drift (campaign base, resume recovery) that per-file tasks missed. When a plan changes a concept used across references, add a final "consistency sweep" task that greps the references for the old concept.
+
+## After delivery
+- Outcome: merged
+- Merged at: 2026-10-30T04:18:22Z · Time to merge: about 3 min
+- Post-merge verify: pass (see `verify-merged.md`)
+- CI failures: 0 own / 0 external
+- Review rounds: 0
+- Caught by reviewers, missed by the run's own: none
+- Follow-up title: none
+- Follow-up body: none

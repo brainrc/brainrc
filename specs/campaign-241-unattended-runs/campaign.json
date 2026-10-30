@@ -18,7 +18,8 @@
       "status": "delivered",
       "slug": "255-run-worktrees",
       "branch": "255-run-worktrees",
-      "pr": "https://github.com/brainrc/brainrc/pull/257"
+      "pr": "https://github.com/brainrc/brainrc/pull/257",
+      "merged": true
     },
     {
       "ref": "gh:242",

@@ -39,8 +39,8 @@
       "id": "T1",
       "title": "run_worktree.py open: path, create, recreate, refuse",
       "agent": "implementer",
-      "status": "in_progress",
-      "attempts": 1,
+      "status": "done",
+      "attempts": 2,
       "files": [
         "skills/spec-agent/scripts/run_worktree.py",
         "tests/test_run_worktree.py"
@@ -52,9 +52,9 @@
         "AC11"
       ],
       "review": "each",
-      "wave": 1,
-      "worktree": "/tmp/spec-agent/255-run-worktrees/T1",
-      "started_at": "2026-10-30T03:02:31Z"
+      "started_at": "2026-10-30T03:02:31Z",
+      "sha": "714fd4c",
+      "red": "assertion"
     },
     {
       "id": "T2",
@@ -73,7 +73,7 @@
       "review": "batch",
       "wave": 1,
       "worktree": "/tmp/spec-agent/255-run-worktrees/T2",
-      "started_at": "2026-10-30T03:02:31Z"
+      "started_at": "2026-10-30T03:11:00Z"
     },
     {
       "id": "T3",
@@ -101,8 +101,8 @@
       "id": "T4",
       "title": "Waves and dispatch nested in the run worktree",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "skills/spec-agent/references/efficiency.md",
         "skills/spec-agent/references/handoff.md",
@@ -113,7 +113,10 @@
         "AC12",
         "AC1"
       ],
-      "review": "batch"
+      "review": "batch",
+      "wave": 1,
+      "worktree": "/tmp/spec-agent/255-run-worktrees/T4",
+      "started_at": "2026-10-30T03:11:00Z"
     },
     {
       "id": "T5",
@@ -161,10 +164,10 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
-      "first_pass": 0
+      "total": 1,
+      "first_pass": 1
     },
-    "retries": 0,
+    "retries": 1,
     "interventions": 0
   }
 }

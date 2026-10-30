@@ -16,10 +16,10 @@
   "delivery": "normal",
   "auto": false,
   "campaign": "specs/campaign-241-unattended-runs",
-  "stage": "plan",
+  "stage": "implement",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [
@@ -39,8 +39,8 @@
       "id": "T1",
       "title": "run_worktree.py open: path, create, recreate, refuse",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "skills/spec-agent/scripts/run_worktree.py",
         "tests/test_run_worktree.py"
@@ -51,14 +51,17 @@
         "AC8",
         "AC11"
       ],
-      "review": "each"
+      "review": "each",
+      "wave": 1,
+      "worktree": "/tmp/spec-agent/255-run-worktrees/T1",
+      "started_at": "2026-10-30T03:02:31Z"
     },
     {
       "id": "T2",
       "title": "active_run.py read scans git worktree list",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "skills/spec-agent/scripts/active_run.py",
         "tests/test_active_run.py"
@@ -67,7 +70,10 @@
         "AC5",
         "AC6"
       ],
-      "review": "batch"
+      "review": "batch",
+      "wave": 1,
+      "worktree": "/tmp/spec-agent/255-run-worktrees/T2",
+      "started_at": "2026-10-30T03:02:31Z"
     },
     {
       "id": "T3",
@@ -136,7 +142,8 @@
     "stage_started_at": {
       "intake": "2026-10-30T02:47:06Z",
       "spec": "2026-10-30T02:47:06Z",
-      "plan": "2026-10-30T02:49:22Z"
+      "plan": "2026-10-30T02:49:22Z",
+      "implement": "2026-10-30T03:02:31Z"
     },
     "gates": {
       "spec": {
@@ -144,7 +151,8 @@
         "approved_at": "2026-10-30T02:49:22Z"
       },
       "plan": {
-        "presented_at": "2026-10-30T02:51:47Z"
+        "presented_at": "2026-10-30T02:51:47Z",
+        "approved_at": "2026-10-30T03:02:31Z"
       }
     },
     "gate_rework": {

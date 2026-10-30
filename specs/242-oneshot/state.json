@@ -161,7 +161,7 @@
       "id": "T5",
       "title": "Campaign cases 025-027",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "examples/sandbox/tickets/028-oneshot-large.md",
@@ -183,14 +183,16 @@
         "T1",
         "T2"
       ],
-      "started_at": "2026-10-30T18:25:32Z"
+      "started_at": "2026-10-30T18:25:32Z",
+      "sha": "f8229d0",
+      "finished_at": "2026-10-30T18:30:20Z"
     },
     {
       "id": "T6",
       "title": "Sandbox README, docs/evals.md, changelog fragment",
-      "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "agent": "engine",
+      "status": "done",
+      "attempts": 1,
       "files": [
         "examples/sandbox/README.md",
         "docs/evals.md",
@@ -205,7 +207,9 @@
         "T3",
         "T4",
         "T5"
-      ]
+      ],
+      "sha": "4e8b9da",
+      "finished_at": "2026-10-30T18:30:20Z"
     },
     {
       "id": "F1",

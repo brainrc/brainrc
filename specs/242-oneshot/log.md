@@ -52,3 +52,9 @@ AC4 and the "Oneshot blocked PR" requirement: the title is now `[blocked] <ticke
 
 ## implementer · T3, T4 · done
 Wave in nested task worktrees (`git -C <run worktree> worktree add`, the #255 rule). Both fences OK. Landed T3 85f4967 (7 stop cases), T4 c21be9d (4 flag cases). Suite OK; validate OK.
+
+## implementer · T5 · done
+3 campaign cases; suite 647 OK. Committed f8229d0.
+
+## engine · T6 · done (inline)
+README rows, docs/evals.md and the changelog fragment (`bump: patch`), done inline because of the container restarts. Validate OK; suite OK. Committed 4e8b9da. Next: batch review.

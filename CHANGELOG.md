@@ -12,6 +12,11 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.5.2 (2026-10-30)
+
+- spec-agent runs now work in their own git worktree at `<repo parent>/.brainrc-worktrees/<repo-name>/<slug>`, so your checkout is never touched. A run refuses to start when your checkout is on the run's branch.
+- `/spec-resume` and `/spec-status` locate runs through `state.worktree`; resume recreates a missing worktree from `state.branch`. With no usable active-run pointer, `active_run.py read` also scans every branch worktree.
+
 ## 0.5.1 (2026-10-30)
 
 - Record the rename follow-ups (#236, #237, #239) as done, with their post-merge verifies.

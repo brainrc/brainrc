@@ -92,7 +92,7 @@
       "id": "T3",
       "title": "Blocked-stop cases 016-020",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "examples/sandbox/tickets/019-oneshot-injection.md",
@@ -120,14 +120,15 @@
         "T2"
       ],
       "wave": 1,
-      "worktree": "/tmp/spec-agent/242-oneshot/T3",
-      "started_at": "2026-10-30T18:20:14Z"
+      "started_at": "2026-10-30T18:20:14Z",
+      "sha": "85f4967",
+      "finished_at": "2026-10-30T18:05:00Z"
     },
     {
       "id": "T4",
       "title": "Flag cases 021-024",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "examples/sandbox/tickets/024-oneshot-callouts.md",
@@ -152,15 +153,16 @@
         "T2"
       ],
       "wave": 1,
-      "worktree": "/tmp/spec-agent/242-oneshot/T4",
-      "started_at": "2026-10-30T18:20:14Z"
+      "started_at": "2026-10-30T18:20:14Z",
+      "sha": "c21be9d",
+      "finished_at": "2026-10-30T18:25:32Z"
     },
     {
       "id": "T5",
       "title": "Campaign cases 025-027",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "examples/sandbox/tickets/028-oneshot-large.md",
         "examples/sandbox/tickets/029-*.md",
@@ -180,7 +182,8 @@
       "after": [
         "T1",
         "T2"
-      ]
+      ],
+      "started_at": "2026-10-30T18:25:32Z"
     },
     {
       "id": "T6",
@@ -255,6 +258,12 @@
       "first_pass": 1
     },
     "retries": 1,
-    "interventions": 1
+    "interventions": 1,
+    "waves": {
+      "count": 1,
+      "max_width": 2,
+      "task_minutes": 6.1,
+      "wall_minutes": 3.5
+    }
   }
 }

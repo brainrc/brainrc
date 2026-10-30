@@ -49,3 +49,6 @@ AC4 and the "Oneshot blocked PR" requirement: the title is now `[blocked] <ticke
 
 ## engine · implement · wave {T3, T4}
 2026-10-30T18:20:14Z
+
+## implementer · T3, T4 · done
+Wave in nested task worktrees (`git -C <run worktree> worktree add`, the #255 rule). Both fences OK. Landed T3 85f4967 (7 stop cases), T4 c21be9d (4 flag cases). Suite OK; validate OK.

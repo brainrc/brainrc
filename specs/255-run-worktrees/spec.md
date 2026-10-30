@@ -1,6 +1,6 @@
 # Spec: spec-agent: each run in its own git worktree
 
-Ticket: gh:255 · Size: standard · Status: draft
+Ticket: gh:255 · Size: standard · Status: approved
 
 ## Problem
 A `/work` run edits the user's own checkout. A second ticket cannot start while an implementer is editing the tree, the engine switches branches under the user's open files, and a stop hook flags another agent's uncommitted work. Worktrees exist today only inside a run (parallel waves, post-merge verify), so the run itself gives the user no isolation.

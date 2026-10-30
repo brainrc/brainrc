@@ -10,3 +10,13 @@ Wrote spec.md: 12 ACs and 6 open questions, each with a default. The analyst had
 
 ## engine · Spec gate · presented
 2026-10-30T02:48:07Z
+
+## owner · Spec gate · approved
+2026-10-30T02:49:22Z
+
+## architect · plan · done
+2026-10-30T02:51:47Z
+Five tasks in waves {T1,T2} → {T3,T4} → {T5}, with a new `run_worktree.py` helper. Callouts: contract changes (pointer path, read fallback, new `worktree` field); no new dependencies.
+
+## engine · Plan gate · presented
+2026-10-30T02:51:47Z

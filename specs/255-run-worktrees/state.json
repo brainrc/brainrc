@@ -16,9 +16,9 @@
   "delivery": "normal",
   "auto": false,
   "campaign": "specs/campaign-241-unattended-runs",
-  "stage": "spec",
+  "stage": "plan",
   "gates": {
-    "spec": "pending",
+    "spec": "approved",
     "plan": "pending",
     "deliver": "pending"
   },
@@ -34,17 +34,117 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "run_worktree.py open: path, create, recreate, refuse",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "skills/spec-agent/scripts/run_worktree.py",
+        "tests/test_run_worktree.py"
+      ],
+      "criteria": [
+        "AC2",
+        "AC4",
+        "AC8",
+        "AC11"
+      ],
+      "review": "each"
+    },
+    {
+      "id": "T2",
+      "title": "active_run.py read scans git worktree list",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "skills/spec-agent/scripts/active_run.py",
+        "tests/test_active_run.py"
+      ],
+      "criteria": [
+        "AC5",
+        "AC6"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T3",
+      "title": "Intake, Run, state and Resume use the run worktree",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "skills/spec-agent/SKILL.md",
+        "skills/spec-agent/references/lifecycle.md",
+        "skills/spec-agent/references/state.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC5",
+        "AC7",
+        "AC8",
+        "AC11"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T4",
+      "title": "Waves and dispatch nested in the run worktree",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "skills/spec-agent/references/efficiency.md",
+        "skills/spec-agent/references/handoff.md",
+        "skills/spec-agent/references/watch.md"
+      ],
+      "criteria": [
+        "AC10",
+        "AC12",
+        "AC1"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T5",
+      "title": "/spec-resume, /spec-status, user docs, changelog fragment",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "skills/spec-resume/SKILL.md",
+        "skills/spec-status/SKILL.md",
+        "docs/spec-agent.md",
+        "docs/e2e-runs.md",
+        "changelog.d/255-run-worktrees.md"
+      ],
+      "criteria": [
+        "AC7",
+        "AC8",
+        "AC9"
+      ],
+      "review": "batch"
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-10-30T02:47:06Z",
     "stage_started_at": {
       "intake": "2026-10-30T02:47:06Z",
-      "spec": "2026-10-30T02:47:06Z"
+      "spec": "2026-10-30T02:47:06Z",
+      "plan": "2026-10-30T02:49:22Z"
     },
     "gates": {
       "spec": {
-        "presented_at": "2026-10-30T02:48:07Z"
+        "presented_at": "2026-10-30T02:48:07Z",
+        "approved_at": "2026-10-30T02:49:22Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-30T02:51:47Z"
       }
     },
     "gate_rework": {

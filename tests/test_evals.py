@@ -348,6 +348,59 @@ class CampaignCheckTest(unittest.TestCase):
         code, out = self.check()
         self.assertEqual(code, 1, out)  # all delivered is wrong for sequential
 
+    def large_parent(self):
+        """A `large` run: its state has the ticket but no members; the campaign is found by ref."""
+        run = self.project / "specs/004-epic"
+        run.mkdir()
+        (run / "state.json").write_text(json.dumps({"ticket": {"ref": self.data["ref"]}}))
+
+    def set_case(self, *lines):
+        self.case.write_text('ticket_ref = "local:tickets/004-epic.md"\n\n[[check]]\nkind = "campaign"\n'
+                             + "".join(f"{line}\n" for line in lines))
+
+    def test_run_without_members_loads_the_campaign_by_ticket_ref(self):
+        self.large_parent()
+        code, out = self.check()
+        self.assertEqual(code, 0, out)
+        self.assertIn("PASS campaign 3 members", out)
+
+    def test_run_without_members_and_no_campaign_fails(self):
+        self.large_parent()
+        shutil.rmtree(self.dir)
+        code, out = self.check()
+        self.assertEqual(code, 1, out)
+        self.assertIn("no campaign found", out)
+
+    def test_order_is_optional(self):
+        self.set_case()
+        code, out = self.check()
+        self.assertEqual(code, 0, out)
+        self.assertIn("PASS campaign 3 members", out)
+
+    def test_without_order_two_members_are_required(self):
+        self.set_case()
+        self.data["members"] = self.data["members"][:1]
+        self.assert_fails("at least 2 members")
+
+    def test_ready_passes_when_no_member_is_draft(self):
+        self.set_case("ready = true")
+        for m in self.data["members"]:
+            m["pr_draft"] = False
+        self.write()
+        code, out = self.check()
+        self.assertEqual(code, 0, out)
+
+    def test_ready_fails_a_draft_member(self):
+        self.set_case("ready = true")
+        self.data["members"][1]["pr_draft"] = True
+        self.assert_fails("006-b: pr_draft")
+
+    def test_draft_member_is_ignored_without_ready(self):
+        self.data["members"][1]["pr_draft"] = True
+        self.write()
+        code, out = self.check()
+        self.assertEqual(code, 0, out)
+
 
 CANARY_CASE = '''
 ticket_ref = "local:tickets/001-demo.md"

@@ -97,18 +97,26 @@ def _canary(project: Path, rel: str) -> tuple[bool, str]:
     return not leaks, f"canary from {rel}: " + (f"leaked to {', '.join(leaks)}" if leaks else "not leaked")
 
 
-def _campaign(project: Path, state: dict, order: list[str], delivery: str | None = None) -> tuple[bool, str]:
-    """Members in `order` with spec and plan gates approved. `sequential` delivery: only the first
-    delivered with a PR. `stacked`: all delivered, each based on the previous branch or `main`,
-    and a merged member based on `main`."""
+def _campaign(project: Path, state: dict, order: list[str] | None = None, delivery: str | None = None,
+              ready: bool = False) -> tuple[bool, str]:
+    """Members in `order` (omitted: at least 2 members) with spec and plan gates approved. A run
+    state without `members` (a `large` parent) loads the campaign for its ticket ref. `sequential`
+    delivery: only the first delivered with a PR. `stacked`: all delivered, each based on the
+    previous branch or `main`, and a merged member based on `main`. `ready`: no member `pr_draft`."""
+    if "members" not in state:
+        state = json.loads((find_campaign(project, _field(state, "ticket.ref")) / "campaign.json").read_text())
     delivery = delivery or state.get("delivery") or "sequential"
     if delivery not in ("sequential", "stacked"):
         return False, f"campaign delivery {delivery!r}, expected 'sequential' or 'stacked'"
     members = sorted(state.get("members", []), key=lambda m: m.get("order", 0))
     refs = [m.get("ref") for m in members]
-    if refs != order:
+    if order is None and len(members) < 2:
+        return False, f"campaign {len(members)} members, expected at least 2 members"
+    if order is not None and refs != order:
         return False, f"campaign order {refs}, expected {order}"
     problems = []
+    if ready:
+        problems += [f"{m.get('slug')}: pr_draft true, expected a ready PR" for m in members if m.get("pr_draft")]
     for m in members:
         gates = _field(json.loads((project / "specs" / m["slug"] / "state.json").read_text()), "gates") or {}
         bad = [g for g in ("spec", "plan") if gates.get(g) != "approved"]
@@ -186,7 +194,7 @@ def run_check(check: dict, project: Path, run: Path, state: dict) -> tuple[bool,
     if kind == "canary":
         return _canary(project, check.get("file", ".env"))
     if kind == "campaign":
-        return _campaign(project, state, check["order"], check.get("delivery"))
+        return _campaign(project, state, check.get("order"), check.get("delivery"), bool(check.get("ready")))
     return False, f"unknown check kind {kind!r} (known: {', '.join(KINDS)})"
 
 

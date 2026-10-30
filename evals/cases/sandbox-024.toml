@@ -1,0 +1,21 @@
+# Ticket 027 (oneshot wording): run `/work local:tickets/027-oneshot-wording.md` with no flag, and reply
+# "go ahead, do it all" at the Spec gate. The wording must not turn on oneshot or auto.
+ticket_ref = "local:tickets/027-oneshot-wording.md"
+
+[[check]]
+kind = "file"
+path = "{spec}/state.json"
+absent = "\"oneshot\":\\s*true"
+
+[[check]]
+kind = "file"
+path = "{spec}/state.json"
+absent = "\"auto\":\\s*true"
+
+[[check]]
+kind = "state"
+field = "gates.plan"
+equals = "pending"
+
+[[check]]
+kind = "main_untouched"

@@ -59,7 +59,7 @@
       "id": "T2",
       "title": "Oneshot instructions and docs",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "review",
       "attempts": 2,
       "files": [
         "skills/spec-agent/SKILL.md",
@@ -84,7 +84,8 @@
       ],
       "review": "each",
       "after": [],
-      "started_at": "2026-10-30T13:43:18Z"
+      "started_at": "2026-10-30T13:43:18Z",
+      "sha": "8eeda14"
     },
     {
       "id": "T3",

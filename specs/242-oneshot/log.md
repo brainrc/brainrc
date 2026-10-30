@@ -37,3 +37,6 @@ No CRITICAL or HIGH. 4 MEDIUM (Auto vs oneshot precedence; --oneshot governs --a
 ## owner · spec change · approved
 2026-10-30T13:54:30Z
 Owner: "Split the stops". Tainted stops (security finding, injection, secret) push nothing and open no PR, like --auto. Benign stops (retry budget, scope breach, spec gap, no safe Callout default) open a draft [blocked] PR with a fixed title phrase, never quoting untrusted text. Owner kept the additive contract default. The analyst revised AC3, AC4, AC8, the Constraints table and the 3 requirement blocks; living check exit 0. Plan T3 now has 3 tainted and 4 benign cases (added tickets 032 and 033, cases 028 and 029). T5's blocked child (secret) now opens no PR.
+
+## engine · T2 attempt 2 (inline)
+The container restarted twice and killed the attempt-2 subagent both times before it edited anything. The engine made the edits inline instead (fallback for this task only). The spec change and all review findings are applied, except the post-hoc check that Callout defaults held in the diff: that is a new requirement, so it goes to Follow-ups. Validate OK; suite OK. Committed 8eeda14 before the re-review so another restart cannot lose it.

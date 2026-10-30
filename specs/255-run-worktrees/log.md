@@ -83,3 +83,7 @@ pr-body.md and ticket-comment.md written. The doc-writer named 4 wording gaps (f
 ## engine · child 1 verified
 2026-10-30T03:45:17Z
 Waits for the campaign Deliver gate.
+
+## owner · Deliver gate · approved
+2026-10-30T04:12:21Z
+Owner: ship #255 on its own, ready PR, accepting the spec change (fallback scans branch worktrees only). Child 2 (#242) starts from main after #255 merges.

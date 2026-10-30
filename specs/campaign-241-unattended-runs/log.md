@@ -22,3 +22,6 @@ Owner: approve, with #255 first. #255 moved to the top of the epic's sub-issues.
 
 ## 2026-10-30T03:45:17Z · child 1 gh:255 verified
 - Drafts ready (specs/255-run-worktrees/pr-body.md). Waits for the stack Deliver gate, unless the owner ships it on its own.
+
+## 2026-10-30T04:12:21Z · gh:255 delivered on its own
+- Owner: "Ship #255 now". Ready PR, base main. Spec change accepted. Child 2 gh:242 waits for the merge, then branches from main.

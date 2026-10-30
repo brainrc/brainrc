@@ -115,8 +115,21 @@ For tools outside the run's repo (a pack repo, a workspace root), spec-agent wri
 run's absolute path to `$BRAINRC_HOME/active-run` (default `~/.config/brainrc/active-run`) at
 intake, on resume, and at every checkpoint commit. The file is one line. It is not cleared when
 a run finishes, and the last write wins across sessions. A tool reads it through
-`skills/spec-agent/scripts/active_run.py read`, or falls back to `<cwd>/specs/` when the file
-is absent. The contract is in [state.md](../skills/spec-agent/references/state.md#active-run-pointer).
+`skills/spec-agent/scripts/active_run.py read`, or falls back to the newest run in `<cwd>/specs/`
+and every branch worktree's `specs/` when the file is absent or names a missing directory (detached task and verify worktrees are skipped). The contract is in [state.md](../skills/spec-agent/references/state.md#active-run-pointer).
+
+## Run worktrees
+
+Each run works in its own git worktree at `<repo parent>/.brainrc-worktrees/<repo-name>/<slug>`,
+outside the repo and not under `$TMPDIR`. Your checkout is never touched, so you can keep
+working in it. A run refuses to start or resume when your checkout is on the run's branch; switch away
+first. The path is `state.worktree`, and `/spec-status` lists it for every run. `/spec-resume`
+continues there and recreates a missing worktree from `state.branch`; if the branch is gone it
+stops and says so.
+
+Remove a worktree by hand with `git worktree remove <path>`. Cleanup on merge is planned
+(#256). If your harness sandbox denies writes outside the repo, allow the directory (Claude Code:
+`--add-dir <repo parent>/.brainrc-worktrees`).
 
 ## Roles (`agents/`)
 

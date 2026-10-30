@@ -4,6 +4,11 @@ Real spec-agent runs on the [sandbox](../examples/sandbox/README.md), graded wit
 `python3 scripts/evals.py check` ([evals](evals.md)). Add a section per session, newest first.
 CONTRIBUTING.md § Releases says when a run is required.
 
+**Worktrees.** Runs now work in `<repo parent>/.brainrc-worktrees/<repo-name>/<slug>`. A
+sandbox that denies writes outside the repo needs `--add-dir <repo parent>/.brainrc-worktrees`.
+The `Worktree:` dispatch line (`cd` in every command) remains as the fallback for harnesses
+whose subagents take no working directory, not the norm.
+
 ## 2026-10-18 · Claude Code · ticket 003, role skills and `.runs/`
 
 **Result: 11/11**, same setup as the re-runs below. The doc-writer's dispatch carried the new

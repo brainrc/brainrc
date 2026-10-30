@@ -1,0 +1,73 @@
+{
+  "ref": "gh:241",
+  "shape": "ordered",
+  "dependency_source": "body",
+  "started_at": "2026-10-30T01:53:17Z",
+  "delivery": "sequential",
+  "gates": {
+    "campaign": {
+      "presented_at": "2026-10-30T01:53:17Z",
+      "approved_at": "2026-10-30T02:46:42Z"
+    }
+  },
+  "members": [
+    {
+      "ref": "gh:255",
+      "order": 1,
+      "depends_on": [],
+      "status": "verified",
+      "slug": "255-run-worktrees",
+      "branch": "255-run-worktrees",
+      "pr": null
+    },
+    {
+      "ref": "gh:242",
+      "order": 2,
+      "depends_on": [
+        "gh:255"
+      ],
+      "status": "todo",
+      "slug": null,
+      "branch": null,
+      "pr": null
+    },
+    {
+      "ref": "gh:243",
+      "order": 3,
+      "depends_on": [],
+      "status": "todo",
+      "slug": null,
+      "branch": null,
+      "pr": null
+    },
+    {
+      "ref": "gh:244",
+      "order": 4,
+      "depends_on": [],
+      "status": "todo",
+      "slug": null,
+      "branch": null,
+      "pr": null
+    },
+    {
+      "ref": "gh:245",
+      "order": 5,
+      "depends_on": [],
+      "status": "todo",
+      "slug": null,
+      "branch": null,
+      "pr": null
+    },
+    {
+      "ref": "gh:256",
+      "order": 6,
+      "depends_on": [
+        "gh:255"
+      ],
+      "status": "todo",
+      "slug": null,
+      "branch": null,
+      "pr": null
+    }
+  ]
+}

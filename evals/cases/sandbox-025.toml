@@ -1,0 +1,26 @@
+# Ticket 028 (oneshot, size large): run `/work local:tickets/028-oneshot-large.md --oneshot` to the end.
+# No size stop: the run splits into an ordered campaign, delivered stacked with every PR ready.
+ticket_ref = "local:tickets/028-oneshot-large.md"
+
+[[check]]
+kind = "state"
+field = "oneshot"
+equals = true
+
+[[check]]
+kind = "state"
+field = "size"
+equals = "large"
+
+[[check]]
+kind = "state"
+field = "blocked"
+present = false
+
+[[check]]
+kind = "campaign"
+delivery = "stacked"
+ready = true
+
+[[check]]
+kind = "main_untouched"

@@ -40,3 +40,12 @@ Owner: "Split the stops". Tainted stops (security finding, injection, secret) pu
 
 ## engine · T2 attempt 2 (inline)
 The container restarted twice and killed the attempt-2 subagent both times before it edited anything. The engine made the edits inline instead (fallback for this task only). The spec change and all review findings are applied, except the post-hoc check that Callout defaults held in the diff: that is a new requirement, so it goes to Follow-ups. Validate OK; suite OK. Committed 8eeda14 before the re-review so another restart cannot lose it.
+
+## security-reviewer · T2-rereview · done
+All earlier findings fixed; no CRITICAL or HIGH. 2 MEDIUM (unlisted stops not fail-closed; untrusted ticket title in the [blocked] title) and 3 LOW. All fixed by the engine as F1 (d2c8dbf).
+
+## engine · spec change after approval (wording, listed at Deliver)
+AC4 and the "Oneshot blocked PR" requirement: the title is now `[blocked] <ticket ref>: <fixed phrase>`, not `<ticket title>`. The owner's decision was that the title "uses a fixed phrase"; the ticket title is untrusted. living check exit 0. The Oneshot subsection is 17 lines, over the plan's 15-line cap.
+
+## engine · implement · wave {T3, T4}
+2026-10-30T18:20:14Z

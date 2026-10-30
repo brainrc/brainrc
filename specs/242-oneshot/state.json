@@ -59,7 +59,7 @@
       "id": "T2",
       "title": "Oneshot instructions and docs",
       "agent": "implementer",
-      "status": "review",
+      "status": "done",
       "attempts": 2,
       "files": [
         "skills/spec-agent/SKILL.md",
@@ -85,14 +85,15 @@
       "review": "each",
       "after": [],
       "started_at": "2026-10-30T13:43:18Z",
-      "sha": "8eeda14"
+      "sha": "8eeda14",
+      "finished_at": "2026-10-30T18:20:14Z"
     },
     {
       "id": "T3",
       "title": "Blocked-stop cases 016-020",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "examples/sandbox/tickets/019-oneshot-injection.md",
         "examples/sandbox/tickets/020-*.md",
@@ -117,14 +118,17 @@
       "review": "batch",
       "after": [
         "T2"
-      ]
+      ],
+      "wave": 1,
+      "worktree": "/tmp/spec-agent/242-oneshot/T3",
+      "started_at": "2026-10-30T18:20:14Z"
     },
     {
       "id": "T4",
       "title": "Flag cases 021-024",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "examples/sandbox/tickets/024-oneshot-callouts.md",
         "examples/sandbox/tickets/025-*.md",
@@ -146,7 +150,10 @@
       "review": "batch",
       "after": [
         "T2"
-      ]
+      ],
+      "wave": 1,
+      "worktree": "/tmp/spec-agent/242-oneshot/T4",
+      "started_at": "2026-10-30T18:20:14Z"
     },
     {
       "id": "T5",
@@ -196,6 +203,27 @@
         "T4",
         "T5"
       ]
+    },
+    {
+      "id": "F1",
+      "title": "Fail closed on unlisted stops; ticket ref in blocked title",
+      "agent": "engine",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "skills/spec-agent/SKILL.md",
+        "skills/spec-agent/templates/pr-body.md",
+        "docs/spec-agent.md",
+        "skills/spec-agent/references/guardrails.md",
+        "skills/spec-agent/references/campaign.md"
+      ],
+      "criteria": [
+        "AC3",
+        "AC4",
+        "AC8"
+      ],
+      "review": "batch",
+      "sha": "d2c8dbf"
     }
   ],
   "blocked": null,
@@ -223,8 +251,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
-      "first_pass": 0
+      "total": 2,
+      "first_pass": 1
     },
     "retries": 1,
     "interventions": 1

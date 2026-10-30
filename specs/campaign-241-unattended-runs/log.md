@@ -10,3 +10,12 @@
 ## engine · Campaign gate · presented
 2026-10-30T01:53:17Z
 ⛔ Campaign gate: campaign-241-unattended-runs (dry run)
+Summary: ordered shape, 6 children in epic order (source none). Each child gets its own Spec and Plan gates; child N branches from child N-1.
+Decide: shape and order.
+Artifacts: specs/campaign-241-unattended-runs/campaign.json
+
+## owner · Campaign gate · approved
+2026-10-30T02:46:42Z
+Owner: approve, with #255 first. #255 moved to the top of the epic's sub-issues. #242 and #256 got `Depends on #255` lines, and the "N of 6" labels were renumbered. Source `body`. Order: 255, 242, 243, 244, 245, 256.
+
+- Child 1 gh:255 started: specs/255-run-worktrees/ on branch 255-run-worktrees.

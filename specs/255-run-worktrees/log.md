@@ -60,3 +60,15 @@ Wording only, in commit F0: the state.md example `worktree` path now uses the ap
 ## code-reviewer · batch · changes-requested
 2026-10-30T03:31:21Z
 2 HIGH: campaign child N must use `--base <child N-1 branch>`; resume has no recovery path when the worktree dir is deleted. 5 MEDIUM: guardrails dirty-at-intake row; "main tree" in efficiency; watch post-merge paths; handoff Worktree line; `_roots()` picks detached task and post-merge worktrees. Fix tasks F1 (docs) and F2 (code) run as wave 3.
+
+## implementer · F1, F2 · done
+F1 (docs) and F2 (`_roots()` skips detached worktrees, red first) ran as wave 3. Both passed the fence check; landed ca2b6de and b03330f.
+
+## engine · spec change after approval (needs owner sign-off at Deliver)
+F2 narrows a requirement. AC6 and run-pointer "Pointer read" now say "every branch worktree ..., skipping detached worktrees" instead of "every worktree". Detached task and verify worktrees carry a committed state.json with a fresh mtime and could beat the real run. living_specs check: exit 0.
+
+## code-reviewer · fix-review · done
+All 7 batch findings fixed; no CRITICAL or HIGH. 2 MEDIUM and 2 LOW follow-ups, fixed in F3 (a144257). Suite 618 OK; validate OK.
+
+## engine · verify
+2026-10-30T03:38:47Z

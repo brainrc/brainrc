@@ -21,7 +21,7 @@ A `/work` run edits the user's own checkout. A second ticket cannot start while 
 - **AC3**: Given a run with `worktree` set, when any stage writes `specs/<slug>/` or commits, then those files and commits are in the run worktree on the run's branch, and the branch and PR content match a run without worktrees.
 - **AC4**: Given the run worktree's parent directory, when the project's test command runs in the main checkout, then it finds no test files from any run worktree.
 - **AC5**: Given a run with `worktree` set, when `active_run.py write` is called, then the pointer holds the absolute path of `<worktree>/specs/<slug>`.
-- **AC6**: Given the pointer is absent or names a missing directory and cwd is the main checkout, when `active_run.py read` runs, then it returns the newest run found in `<cwd>/specs/` or in any worktree listed by `git worktree list`, by `state.json` mtime.
+- **AC6**: Given the pointer is absent or names a missing directory and cwd is the main checkout, when `active_run.py read` runs, then it returns the newest run found in `<cwd>/specs/` or in any branch worktree listed by `git worktree list` (detached worktrees skipped), by `state.json` mtime.
 - **AC7**: Given an interrupted run whose worktree exists, when `/spec-resume` runs from the main checkout, then it finds the run through `state.worktree`, continues in the worktree, and leaves the main checkout unchanged.
 - **AC8**: Given `state.worktree` names a path that no longer exists, when `/spec-resume` runs, then it recreates the worktree from `state.branch` if the branch exists, else stops and says so; it never falls back to the main checkout.
 - **AC9**: Given runs in two worktrees, when `/spec-status` runs, then it lists both with their stage and worktree path.
@@ -47,7 +47,7 @@ ordered campaign the pointer SHALL name the child currently in progress. (AC5)
 #### MODIFIED: Pointer read
 `active_run.py read` SHALL return the pointer's run if the file exists and names an existing
 directory, else the newest run by `state.json` mtime among `<cwd>/specs/` and the `specs/` of every
-worktree listed by `git worktree list`. (AC6)
+branch worktree listed by `git worktree list`, skipping detached worktrees. (AC6)
 
 ### Area: run-lifecycle
 #### ADDED: Run worktree

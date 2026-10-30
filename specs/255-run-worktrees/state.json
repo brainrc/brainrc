@@ -16,7 +16,7 @@
   "delivery": "normal",
   "auto": false,
   "campaign": "specs/campaign-241-unattended-runs",
-  "stage": "implement",
+  "stage": "verify",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -153,7 +153,7 @@
       "id": "F1",
       "title": "Batch review fixes: campaign base, resume recovery, worktree wording",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "skills/spec-agent/references/campaign.md",
@@ -173,14 +173,15 @@
       ],
       "review": "batch",
       "wave": 3,
-      "worktree": "/tmp/spec-agent/255-run-worktrees/F1",
-      "started_at": "2026-10-30T03:31:21Z"
+      "started_at": "2026-10-30T03:31:21Z",
+      "sha": "ca2b6de",
+      "finished_at": "2026-10-30T03:36:00Z"
     },
     {
       "id": "F2",
       "title": "active_run.py read skips detached worktrees",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "skills/spec-agent/scripts/active_run.py",
@@ -192,8 +193,30 @@
       ],
       "review": "batch",
       "wave": 3,
-      "worktree": "/tmp/spec-agent/255-run-worktrees/F2",
-      "started_at": "2026-10-30T03:31:21Z"
+      "started_at": "2026-10-30T03:31:21Z",
+      "sha": "b03330f",
+      "finished_at": "2026-10-30T03:36:00Z",
+      "red": "assertion"
+    },
+    {
+      "id": "F3",
+      "title": "Re-review follow-ups: resume branch lookup, porcelain test, wording",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "skills/spec-agent/references/state.md",
+        "skills/spec-resume/SKILL.md",
+        "skills/spec-agent/references/campaign.md",
+        "skills/spec-agent/references/handoff.md",
+        "tests/test_active_run.py"
+      ],
+      "criteria": [
+        "AC6",
+        "AC8"
+      ],
+      "review": "batch",
+      "sha": "a144257"
     }
   ],
   "blocked": null,
@@ -203,7 +226,8 @@
       "intake": "2026-10-30T02:47:06Z",
       "spec": "2026-10-30T02:47:06Z",
       "plan": "2026-10-30T02:49:22Z",
-      "implement": "2026-10-30T03:02:31Z"
+      "implement": "2026-10-30T03:02:31Z",
+      "verify": "2026-10-30T03:38:47Z"
     },
     "gates": {
       "spec": {
@@ -221,13 +245,13 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 2,
-      "first_pass": 1
+      "total": 3,
+      "first_pass": 2
     },
     "retries": 1,
     "interventions": 0,
     "waves": {
-      "count": 2,
+      "count": 3,
       "max_width": 2,
       "task_minutes": 13.7,
       "wall_minutes": 10.0

@@ -72,3 +72,7 @@ All 7 batch findings fixed; no CRITICAL or HIGH. 2 MEDIUM and 2 LOW follow-ups, 
 
 ## engine · verify
 2026-10-30T03:38:47Z
+
+## verifier · verify · done (end-to-end not run)
+2026-10-30T03:43:00Z
+Suite 618 OK plain and with XDG; validate OK. AC2, AC4, AC5, AC6, AC8 and AC11 pass by tests. AC9, AC10 and AC12 pass by instruction citation. For AC1, AC3 and AC7, the git-level parts passed in a scripted sandbox; the model-driven /work and /spec-resume run is not run. The verifier marked itself blocked only for that; the plan accepts not run, so the engine continues. The "Moved ~/.config/ai-config" line in both logs comes from a migrate test in a temp HOME; the real dir is untouched.

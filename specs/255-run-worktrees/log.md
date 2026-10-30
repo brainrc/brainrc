@@ -38,3 +38,12 @@ All 6 findings fixed. 17 tests OK; suite 610 OK; validate OK. Committed 714fd4c.
 
 ## engine · implement · wave 1 {T2, T4}
 2026-10-30T03:11:00Z
+
+## implementer · T2 · done
+The worktree scan in `read` was red first. Fence OK; landed 6ef8ba7.
+
+## implementer · T4 · done
+Edited existing sentences only (11 insertions, 11 deletions). Fence OK; landed 4bf5222. The suite is OK after both landed.
+
+## engine · implement · wave 2 {T3, T5}
+2026-10-30T03:18:28Z

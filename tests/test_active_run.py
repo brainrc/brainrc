@@ -323,6 +323,35 @@ class ActiveRunTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0)
         self.assertIn("WARN", result.stderr)
 
+    def test_roots_parses_porcelain_skipping_detached(self):
+        import importlib.util
+        from unittest import mock
+        spec = importlib.util.spec_from_file_location("active_run_under_test", SCRIPT)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        cwd = Path.cwd().resolve()
+        main, bare, branch, detached, prunable = (
+            self.root / n for n in ("main", "bare", "branch", "detached", "prunable"))
+        porcelain = (
+            f"worktree {main}\nHEAD abc\nbranch refs/heads/main\n\n"
+            f"worktree {bare}\nbare\n\n"
+            f"worktree {detached}\nHEAD def\ndetached\n\n"
+            f"worktree {prunable}\nHEAD 123\ndetached\nprunable gitdir file points to non-existent location\n\n"
+            f"worktree {branch}\nHEAD 456\nbranch refs/heads/feat\n\n"
+        )
+
+        def fake(out):
+            return mock.Mock(stdout=out)
+
+        with mock.patch.object(mod.subprocess, "run", return_value=fake(porcelain)):
+            roots = mod._roots()
+        self.assertEqual(roots[0], cwd)
+        self.assertEqual(set(roots[1:]), {main, bare, branch})
+        self.assertNotIn(detached, roots)
+        self.assertNotIn(prunable, roots)
+        with mock.patch.object(mod.subprocess, "run", return_value=fake("")):
+            self.assertEqual(mod._roots(), [cwd])
+
 
 if __name__ == "__main__":
     unittest.main()

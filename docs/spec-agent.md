@@ -115,8 +115,8 @@ For tools outside the run's repo (a pack repo, a workspace root), spec-agent wri
 run's absolute path to `$BRAINRC_HOME/active-run` (default `~/.config/brainrc/active-run`) at
 intake, on resume, and at every checkpoint commit. The file is one line. It is not cleared when
 a run finishes, and the last write wins across sessions. A tool reads it through
-`skills/spec-agent/scripts/active_run.py read`, or falls back to `<cwd>/specs/` when the file
-is absent. The contract is in [state.md](../skills/spec-agent/references/state.md#active-run-pointer).
+`skills/spec-agent/scripts/active_run.py read`, or falls back to the newest run in `<cwd>/specs/`
+and every worktree's `specs/` when the file is absent. The contract is in [state.md](../skills/spec-agent/references/state.md#active-run-pointer).
 
 ## Run worktrees
 

@@ -56,3 +56,7 @@ Fence OK; landed d217e84. T5 saw one suite failure it could not explain. It did 
 
 ## engine · plan change after approval
 Wording only, in commit F0: the state.md example `worktree` path now uses the approved default layout, and the docs pointer-fallback sentence mentions worktrees. No criterion or task meaning changed.
+
+## code-reviewer · batch · changes-requested
+2026-10-30T03:31:21Z
+2 HIGH: campaign child N must use `--base <child N-1 branch>`; resume has no recovery path when the worktree dir is deleted. 5 MEDIUM: guardrails dirty-at-intake row; "main tree" in efficiency; watch post-merge paths; handoff Worktree line; `_roots()` picks detached task and post-merge worktrees. Fix tasks F1 (docs) and F2 (code) run as wave 3.

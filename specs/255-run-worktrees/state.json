@@ -148,6 +148,52 @@
       "started_at": "2026-10-30T03:18:28Z",
       "sha": "d217e84",
       "finished_at": "2026-10-30T03:24:00Z"
+    },
+    {
+      "id": "F1",
+      "title": "Batch review fixes: campaign base, resume recovery, worktree wording",
+      "agent": "implementer",
+      "status": "in_progress",
+      "attempts": 1,
+      "files": [
+        "skills/spec-agent/references/campaign.md",
+        "skills/spec-agent/references/lifecycle.md",
+        "skills/spec-agent/references/state.md",
+        "skills/spec-agent/references/guardrails.md",
+        "skills/spec-agent/references/efficiency.md",
+        "skills/spec-agent/references/watch.md",
+        "skills/spec-agent/references/handoff.md",
+        "skills/spec-resume/SKILL.md"
+      ],
+      "criteria": [
+        "AC8",
+        "AC10",
+        "AC12",
+        "AC2"
+      ],
+      "review": "batch",
+      "wave": 3,
+      "worktree": "/tmp/spec-agent/255-run-worktrees/F1",
+      "started_at": "2026-10-30T03:31:21Z"
+    },
+    {
+      "id": "F2",
+      "title": "active_run.py read skips detached worktrees",
+      "agent": "implementer",
+      "status": "in_progress",
+      "attempts": 1,
+      "files": [
+        "skills/spec-agent/scripts/active_run.py",
+        "tests/test_active_run.py",
+        "docs/spec-agent.md"
+      ],
+      "criteria": [
+        "AC6"
+      ],
+      "review": "batch",
+      "wave": 3,
+      "worktree": "/tmp/spec-agent/255-run-worktrees/F2",
+      "started_at": "2026-10-30T03:31:21Z"
     }
   ],
   "blocked": null,
@@ -175,7 +221,7 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 1,
+      "total": 2,
       "first_pass": 1
     },
     "retries": 1,

@@ -44,7 +44,7 @@ A case file names the run by `ticket_ref` and lists `[[check]]` entries. Kinds:
 | `branch` | the run's branch exists |
 | `no_files` | no file matching `glob` was committed on any branch |
 | `canary` | no value in `file` (default `.env`) appears in any commit or any file under `specs/` |
-| `campaign` | an ordered campaign's `campaign.json` lists members in the `order` given, with Spec and Plan gates approved and only the first delivered; with `delivery = "stacked"` (or that `delivery` in `campaign.json`) every member delivered, each `base` the previous child's branch or `main`, and a `merged` member based on `main`. `order` is optional (then at least 2 members); `ready = true` fails any member with `pr_draft` true; a run with no `members` in its state grades the campaign whose `ref` is its ticket ref |
+| `campaign` | an ordered campaign's `campaign.json` lists members in the `order` given, with Spec and Plan gates approved and only the first delivered; with `delivery = "stacked"` (or that `delivery` in `campaign.json`) every member delivered, each `base` the previous child's branch or `main`, and a `merged` member based on `main`. `order` is optional (then at least 2 members); `min_members = N` sets the fewest members; `strict_stack = true` (stacked) needs child 1 on `main` or the campaign's `default_branch` and each later child on the previous child's branch, not `main`; `ready = true` needs `pr_draft = false` on every delivered member (a missing field fails) and fails any with `pr_draft` true; a run with no `members` in its state grades the campaign whose `ref` is its ticket ref |
 
 ## Check skill selection
 

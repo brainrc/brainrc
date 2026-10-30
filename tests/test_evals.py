@@ -395,6 +395,65 @@ class CampaignCheckTest(unittest.TestCase):
         self.data["members"][1]["pr_draft"] = True
         self.assert_fails("006-b: pr_draft")
 
+    def test_ready_fails_a_delivered_member_with_no_pr_draft_field(self):
+        self.set_case("ready = true")
+        for m in self.data["members"][1:]:
+            m["pr_draft"] = False
+        self.assert_fails("005-a: pr_draft")
+
+    def test_strict_stack_passes_a_chained_stack(self):
+        self.stack()
+        self.set_case('delivery = "stacked"', "strict_stack = true")
+        self.write()
+        code, out = self.check()
+        self.assertEqual(code, 0, out)
+
+    def test_strict_stack_fails_every_child_on_main(self):
+        self.stack()
+        for m in self.data["members"]:
+            m["base"] = "main"
+        self.write()
+        self.set_case('delivery = "stacked"', "strict_stack = true")
+        code, out = self.check()
+        self.assertEqual(code, 1, out)
+        self.assertRegex(out, r"FAIL .*006-b: base 'main', expected '005-a'")
+
+    def test_strict_stack_fails_a_first_child_on_another_branch(self):
+        self.stack()
+        self.data["members"][0]["base"] = "develop"
+        self.write()
+        self.set_case('delivery = "stacked"', "strict_stack = true")
+        code, out = self.check()
+        self.assertEqual(code, 1, out)
+        self.assertRegex(out, r"FAIL .*005-a: base 'develop'")
+
+    def test_strict_stack_accepts_the_recorded_default_branch(self):
+        self.stack()
+        self.data["default_branch"] = "develop"
+        self.data["members"][0]["base"] = "develop"
+        self.write()
+        self.set_case('delivery = "stacked"', "strict_stack = true")
+        code, out = self.check()
+        self.assertEqual(code, 0, out)
+
+    def test_stack_without_strict_stack_allows_children_on_main(self):
+        self.stack()
+        for m in self.data["members"]:
+            m["base"] = "main"
+        self.write()
+        self.set_case('delivery = "stacked"')
+        code, out = self.check()
+        self.assertEqual(code, 0, out)
+
+    def test_min_members_passes_when_met(self):
+        self.set_case("min_members = 3")
+        code, out = self.check()
+        self.assertEqual(code, 0, out)
+
+    def test_min_members_fails_when_short(self):
+        self.set_case("min_members = 4")
+        self.assert_fails("at least 4 members")
+
     def test_draft_member_is_ignored_without_ready(self):
         self.data["members"][1]["pr_draft"] = True
         self.write()

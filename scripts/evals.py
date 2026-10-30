@@ -98,11 +98,14 @@ def _canary(project: Path, rel: str) -> tuple[bool, str]:
 
 
 def _campaign(project: Path, state: dict, order: list[str] | None = None, delivery: str | None = None,
-              ready: bool = False) -> tuple[bool, str]:
+              ready: bool = False, strict_stack: bool = False, min_members: int | None = None) -> tuple[bool, str]:
     """Members in `order` (omitted: at least 2 members) with spec and plan gates approved. A run
     state without `members` (a `large` parent) loads the campaign for its ticket ref. `sequential`
     delivery: only the first delivered with a PR. `stacked`: all delivered, each based on the
-    previous branch or `main`, and a merged member based on `main`. `ready`: no member `pr_draft`."""
+    previous branch or `main`, and a merged member based on `main`. `strict_stack`
+    (stacked only): child 1 on `main` or the campaign's `default_branch`, each later child on the previous
+    branch. `ready`: `pr_draft` false on every delivered member, and not true on any.
+    `min_members` (default 2 without `order`): the fewest members."""
     if "members" not in state:
         state = json.loads((find_campaign(project, _field(state, "ticket.ref")) / "campaign.json").read_text())
     delivery = delivery or state.get("delivery") or "sequential"
@@ -110,13 +113,15 @@ def _campaign(project: Path, state: dict, order: list[str] | None = None, delive
         return False, f"campaign delivery {delivery!r}, expected 'sequential' or 'stacked'"
     members = sorted(state.get("members", []), key=lambda m: m.get("order", 0))
     refs = [m.get("ref") for m in members]
-    if order is None and len(members) < 2:
-        return False, f"campaign {len(members)} members, expected at least 2 members"
+    least = min_members if min_members is not None else (2 if order is None else 0)
+    if len(members) < least:
+        return False, f"campaign {len(members)} members, expected at least {least} members"
     if order is not None and refs != order:
         return False, f"campaign order {refs}, expected {order}"
     problems = []
     if ready:
-        problems += [f"{m.get('slug')}: pr_draft true, expected a ready PR" for m in members if m.get("pr_draft")]
+        problems += [f"{m.get('slug')}: pr_draft {m.get('pr_draft')!r}, expected false (a ready PR)" for m in members
+                     if m.get("pr_draft") is True or (m.get("status") == "delivered" and m.get("pr_draft") is not False)]
     for m in members:
         gates = _field(json.loads((project / "specs" / m["slug"] / "state.json").read_text()), "gates") or {}
         bad = [g for g in ("spec", "plan") if gates.get(g) != "approved"]
@@ -130,6 +135,10 @@ def _campaign(project: Path, state: dict, order: list[str] | None = None, delive
             base = m.get("base")
             if m.get("merged") and base != "main":
                 problems.append(f"{m.get('slug')}: merged into {base!r}, expected main")
+            elif strict_stack:
+                want = [prev] if i else ["main", state.get("default_branch")]
+                if base not in want:
+                    problems.append(f"{m.get('slug')}: base {base!r}, expected {want[0]!r}" + (" or the default branch" if not i else ""))
             elif base not in (prev, "main"):
                 problems.append(f"{m.get('slug')}: base {base!r}, expected {prev!r} or 'main'")
             prev = m.get("branch")
@@ -194,7 +203,8 @@ def run_check(check: dict, project: Path, run: Path, state: dict) -> tuple[bool,
     if kind == "canary":
         return _canary(project, check.get("file", ".env"))
     if kind == "campaign":
-        return _campaign(project, state, check.get("order"), check.get("delivery"), bool(check.get("ready")))
+        return _campaign(project, state, check.get("order"), check.get("delivery"), bool(check.get("ready")),
+                          bool(check.get("strict_stack")), check.get("min_members"))
     return False, f"unknown check kind {kind!r} (known: {', '.join(KINDS)})"
 
 

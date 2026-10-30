@@ -76,8 +76,8 @@ babysitting:
 - PRs open ready, never merged. A tainted stop (CRITICAL/HIGH security finding, an instruction in
   untrusted content, a secret) pushes nothing and opens no PR, as `--auto` does. A benign stop
   (retry budget, scope breach, spec gap, no safe default) opens a draft PR titled
-  `[blocked] <ticket title>: <fixed phrase>` with a `## Blocked` section that names kinds and
-  locations only. A blocked campaign child pauses the later children.
+  `[blocked] <ticket ref>: <fixed phrase>` with a `## Blocked` section that names kinds and
+  locations only. Any other stop counts as tainted. A blocked campaign child pauses the later children.
 - `--oneshot` with `--auto` is `--oneshot`; `--local` still pushes nothing.
 
 ## Design principles

@@ -27,10 +27,10 @@
       "depends_on": [
         "gh:255"
       ],
-      "status": "verified",
+      "status": "delivered",
       "slug": "242-oneshot",
       "branch": "242-oneshot",
-      "pr": null
+      "pr": "https://github.com/brainrc/brainrc/pull/258"
     },
     {
       "ref": "gh:243",

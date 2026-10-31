@@ -6,7 +6,8 @@
     "id": "242",
     "title": "spec-agent: `--oneshot`, no manual intervention, ready PRs as output",
     "url": "https://github.com/brainrc/brainrc/issues/242",
-    "pr": null
+    "pr": "https://github.com/brainrc/brainrc/pull/258",
+    "pr_draft": false
   },
   "slug": "242-oneshot",
   "branch": "242-oneshot",
@@ -17,7 +18,7 @@
   "delivery": "normal",
   "auto": false,
   "campaign": "specs/campaign-241-unattended-runs",
-  "stage": "deliver",
+  "stage": "watch",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -352,7 +353,8 @@
       "max_width": 2,
       "task_minutes": 6.1,
       "wall_minutes": 3.5
-    }
+    },
+    "pr_opened_at": "2026-10-31T15:52:32Z"
   },
   "living": [
     "run-lifecycle",

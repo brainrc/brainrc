@@ -1,6 +1,6 @@
 # Retro: 242-oneshot
 
-Ticket: gh:242 · Size: standard · PR: see state.json `ticket.pr`
+Ticket: gh:242 · Size: standard · PR: https://github.com/brainrc/brainrc/pull/258
 
 ## Metrics
 | Metric | Value |

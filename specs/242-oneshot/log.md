@@ -84,3 +84,7 @@ pr-body.md and ticket-comment.md written. The engine fixed the fragment range (0
 ## owner · Deliver gate · approved
 2026-10-31T15:42:25Z
 Owner: approve, ready PR. The ticket-ref blocked title is confirmed. Retro written before the PR opened.
+
+## engine · deliver · done
+2026-10-31T15:52:32Z
+Pushed; ready PR #258 (base main); ticket comment posted on #242. PR body: two stale lines fixed (ticket comment now posted; fragment range already fixed). Records pushed right away, before any merge. Watching #258.

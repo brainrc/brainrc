@@ -53,7 +53,7 @@ Results: `specs/242-oneshot/verify.md`. The real check, not yet run: a sandbox r
   - `min_members = 2` for the eval `campaign` check on a split. Ticket 028 does not fix the split size.
   - T2 attempt 2 was done inline by the engine after two container restarts killed the subagent.
   - The Oneshot subsection in SKILL.md is 17 lines, over the plan's 15-line cap.
-- Ticket comment not posted: `specs/242-oneshot/ticket-comment.md`.
+- This is the first run in its own git worktree (#255). The owner's checkout was untouched throughout.
 
 ## Spec changes after approval
 Accepted by the owner at the Deliver gate:
@@ -64,7 +64,6 @@ Accepted by the owner at the Deliver gate:
 ## Follow-ups
 - Post-hoc check that the Callout defaults held in the diff (security review). Not done.
 - Real `--oneshot` sandbox runs, graded by `evals.py check`. Not done.
-- `changelog.d/242-oneshot.md` names cases `sandbox-016` to `029`. The set runs to `031`. Fix the range before merge.
 - Next children: #243, #244, #245, #256.
 - The #255 records are carried on this branch: 255-run-worktrees was merged in so this run carries #255's post-merge records.
 

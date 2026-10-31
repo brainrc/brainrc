@@ -2033,6 +2033,9 @@ class ConnectorCheckTest(TempRepoCase):
         for name in ("ticket-local", "ticket-github"):
             text = (Path(__file__).resolve().parent.parent / "skills" / name / "SKILL.md").read_text()
             self.assertRegex(text, r"(?m)^## create\b", name)
+            self.assertRegex(text, r"Implements the ticket connector interface:.*`create`", name)
+        contract = (Path(__file__).resolve().parent.parent / "skills/spec-agent/references/connectors.md").read_text()
+        self.assertRegex(contract, r"\| `create` \| no \| outward \| after an approved Ticket gate \|")
 
     def test_a_connector_without_create_still_validates(self):
         write_skill(self.repo, "ticket-w", "## fetch\n\n## comment / transition / link_pr\n")

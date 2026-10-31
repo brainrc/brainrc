@@ -31,7 +31,7 @@
       "depends_on": [
         "local:specs/tickets/243-1-connector-create.md"
       ],
-      "status": "blocked",
+      "status": "verified",
       "slug": "243-2-researcher-proof",
       "branch": "243-2-researcher-proof",
       "pr": null,

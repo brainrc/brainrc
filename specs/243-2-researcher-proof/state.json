@@ -18,7 +18,7 @@
   "auto": true,
   "oneshot": true,
   "campaign": "specs/campaign-243-planning-mode",
-  "stage": "implement",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -41,8 +41,8 @@
       "id": "T1",
       "title": "researcher role, /plan, planning reference, proof_guard",
       "agent": "engine",
-      "status": "blocked",
-      "attempts": 3,
+      "status": "done",
+      "attempts": 4,
       "files": [
         "agents/researcher.md",
         "skills/plan/SKILL.md",
@@ -65,18 +65,10 @@
         "AC12"
       ],
       "review": "batch",
-      "sha": "df13959"
+      "sha": "ca6caaa"
     }
   ],
-  "blocked": {
-    "reason": "tainted stop: a HIGH security finding is open after the owner-approved third attempt",
-    "kind": "tainted",
-    "at": "2026-10-31T23:39:32Z",
-    "findings": [
-      "HIGH proof_guard.py: bare `git show <rev>` prints the full patch, so a committed .env leaks into proof output",
-      "MEDIUM proof_guard.py: secret-file list misses id_rsa, .ssh/, *.pem, *.key, .git-credentials, .git/config"
-    ]
-  },
+  "blocked": null,
   "metrics": {
     "started_at": "2026-10-31T20:34:12Z",
     "stage_started_at": {
@@ -91,8 +83,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 3,
-      "first_pass": 0
+      "total": 4,
+      "first_pass": 1
     },
     "retries": 1,
     "interventions": 1

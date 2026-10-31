@@ -22,3 +22,13 @@ Every earlier bypass is closed. New: 1 HIGH (bare `git show <rev>` prints the pa
 ## engine · blocked again (tainted stop)
 2026-10-31T23:39:32Z
 The engine stops, as promised to the owner: a HIGH is open after the extra attempt. Nothing pushed.
+
+## owner · retry budget lifted again
+Owner: "Drop git show, widen list" (stop for good on another HIGH). Attempt 4: 8fb8c80.
+
+## security-reviewer · final · done
+No CRITICAL or HIGH. 2 MEDIUM (case-sensitive names; missing key names) and 1 LOW (hard links), fixed in ca6caaa.
+
+## engine · verified
+2026-10-31T23:45:28Z
+Waits for the stack Deliver.

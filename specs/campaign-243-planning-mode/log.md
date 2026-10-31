@@ -4,3 +4,6 @@
 - Split from specs/243-planning-mode (size large). 4 ordered children, local tickets only. --oneshot: the Campaign gate is auto-approved, and delivery is stacked with ready PRs.
 
 ## 2026-10-31T20:23:46Z · child 1 243.1 verified
+
+## 2026-10-31T20:34:12Z · child 2 243.2 blocked (tainted)
+- HIGH security findings in proof_guard.py are open after the retry budget. Nothing pushed. Children 3 and 4 wait. Child 1 verified, unpushed.

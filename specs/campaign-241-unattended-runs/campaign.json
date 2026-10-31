@@ -37,9 +37,9 @@
       "ref": "gh:243",
       "order": 3,
       "depends_on": [],
-      "status": "waiting",
-      "slug": null,
-      "branch": null,
+      "status": "in_progress",
+      "slug": "243-planning-mode",
+      "branch": "243-planning-mode",
       "pr": null
     },
     {

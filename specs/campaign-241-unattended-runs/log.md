@@ -37,3 +37,6 @@ Owner: approve, with #255 first. #255 moved to the top of the epic's sub-issues.
 
 ## 2026-10-31T15:57:02Z · gh:242 merged (#258, v0.5.3)
 - Post-merge verify passed. Child 3 gh:243 waits for the owner's go.
+
+## 2026-10-31T16:08:20Z · child 3 gh:243 started (--oneshot)
+- Owner asked to oneshot it. Worktree ~/.brainrc-worktrees/brainrc/243-planning-mode.

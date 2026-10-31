@@ -45,7 +45,7 @@
       "depends_on": [
         "local:specs/tickets/243-2-researcher-proof.md"
       ],
-      "status": "waiting",
+      "status": "verified",
       "slug": "243-3-ticket-gate",
       "branch": "243-3-ticket-gate",
       "pr": null,

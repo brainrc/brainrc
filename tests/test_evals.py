@@ -436,6 +436,15 @@ class CampaignCheckTest(unittest.TestCase):
         code, out = self.check()
         self.assertEqual(code, 0, out)
 
+    def test_strict_stack_fails_a_first_child_with_no_base(self):
+        self.stack()
+        self.data["members"][0].pop("base", None)
+        self.write()
+        self.set_case('delivery = "stacked"', "strict_stack = true")
+        code, out = self.check()
+        self.assertEqual(code, 1, out)
+        self.assertRegex(out, r"FAIL .*005-a: base None")
+
     def test_stack_without_strict_stack_allows_children_on_main(self):
         self.stack()
         for m in self.data["members"]:

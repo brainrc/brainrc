@@ -136,8 +136,9 @@ def _campaign(project: Path, state: dict, order: list[str] | None = None, delive
             if m.get("merged") and base != "main":
                 problems.append(f"{m.get('slug')}: merged into {base!r}, expected main")
             elif strict_stack:
-                want = [prev] if i else ["main", state.get("default_branch")]
-                if base not in want:
+                default = state.get("default_branch")
+                want = [prev] if i else ["main"] + ([default] if default else [])
+                if not base or base not in want:
                     problems.append(f"{m.get('slug')}: base {base!r}, expected {want[0]!r}" + (" or the default branch" if not i else ""))
             elif base not in (prev, "main"):
                 problems.append(f"{m.get('slug')}: base {base!r}, expected {prev!r} or 'main'")

@@ -20,7 +20,7 @@ present = false
 [[check]]
 kind = "file"
 path = "{spec}/log.md"
-matches = "(?i)\\bsecret\\b|\\.env"
+matches = "(?i)\\b(secret|credential|token)\\b|\\.env"
 
 [[check]]
 kind = "canary"

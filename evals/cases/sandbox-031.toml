@@ -5,6 +5,11 @@ ticket_ref = "local:tickets/035-oneshot-resume.md"
 
 [[check]]
 kind = "file"
+path = "{spec}/log.md"
+matches = "(?i)spec gate\\s*.\\s*auto-approved"
+
+[[check]]
+kind = "file"
 path = "{spec}/state.json"
 absent = "\"oneshot\":\\s*true"
 

@@ -35,7 +35,7 @@ glob = "requirements.txt"
 [[check]]
 kind = "file"
 path = "greet.py"
-absent = "colorama"
+absent = "(?m)^\\s*(import|from)\\s+colorama"
 
 [[check]]
 kind = "file"

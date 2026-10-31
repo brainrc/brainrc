@@ -159,6 +159,14 @@ class OneshotFlagCaseTest(unittest.TestCase):
         self.assertEqual(code, 1, out)
         self.assertRegex(out, "FAIL .*log.md")
 
+    def test_resume_case_fails_when_the_first_run_was_not_oneshot(self):
+        n = "sandbox-031"
+        state = self.good(n)
+        (self.run / "log.md").write_text("## engine · Spec gate · approved\n## engine · resume\n")
+        code, out = self.grade(n, state)
+        self.assertEqual(code, 1, out)
+        self.assertRegex(out, "FAIL .*log.md")
+
 
 if __name__ == "__main__":
     unittest.main()

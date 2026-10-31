@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "local",
+    "ref": "local:specs/tickets/243-1-connector-create.md",
+    "id": "243.1",
+    "title": "Ticket connectors: a create operation",
+    "url": null,
+    "pr": null
+  },
+  "slug": "243-1-connector-create",
+  "branch": "243-1-connector-create",
+  "base": "main",
+  "worktree": "/home/user/.brainrc-worktrees/brainrc/243-1-connector-create",
+  "size": "small",
+  "mode": "inline",
+  "delivery": "normal",
+  "auto": true,
+  "oneshot": true,
+  "campaign": "specs/campaign-243-planning-mode",
+  "stage": "deliver",
+  "gates": {
+    "spec": "approved",
+    "deliver": "pending"
+  },
+  "domains": [],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/brainrc.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "create operation",
+      "agent": "engine",
+      "status": "done",
+      "attempts": 2,
+      "files": [
+        "skills/spec-agent/references/connectors.md",
+        "skills/ticket-local/SKILL.md",
+        "skills/ticket-github/SKILL.md",
+        "tests/test_brainrc.py",
+        "changelog.d/243-1-connector-create.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2"
+      ],
+      "review": "batch",
+      "sha": "9cbf95e",
+      "red": "assertion"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-31T20:23:46Z",
+    "stage_started_at": {
+      "intake": "2026-10-31T20:23:46Z",
+      "spec": "2026-10-31T20:23:46Z",
+      "implement": "2026-10-31T20:23:46Z",
+      "verify": "2026-10-31T20:23:46Z",
+      "deliver": "2026-10-31T20:23:46Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-31T20:23:46Z",
+        "approved_at": "2026-10-31T20:23:46Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 1,
+      "first_pass": 0
+    },
+    "retries": 1,
+    "interventions": 0
+  }
+}

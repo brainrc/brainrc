@@ -1,5 +1,7 @@
-"""proof_guard.py: planning-mode proof commands are read-only argv commands inside the worktree, and plan files hold no secrets."""
+"""proof_guard.py: planning-mode proof commands are a narrow read-only allowlist inside the worktree, and plan files hold no secrets."""
 import importlib.util
+import os
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -8,11 +10,20 @@ REPO = Path(__file__).resolve().parent.parent
 _spec = importlib.util.spec_from_file_location("proof_guard", REPO / "skills/spec-agent/scripts/proof_guard.py")
 pg = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(pg)
+ENV = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
 
 
-class CheckTest(unittest.TestCase):
+class GuardCase(unittest.TestCase):
     def setUp(self):
         self.root = Path(tempfile.mkdtemp()).resolve()
+        (self.root / "src").mkdir()
+        (self.root / "src/a.py").write_text("import os\nx = 1\n")
+        (self.root / ".env").write_text("KEY=dummy\n")
+        (self.root / ".env.example").write_text("KEY=\n")
+        (self.root / "link").symlink_to("/etc/hostname")
+        git = ["git", "-c", "user.name=t", "-c", "user.email=t@example.com", "-C", str(self.root)]
+        for args in (["init", "-q"], ["add", "-A"], ["commit", "-q", "-m", "init"]):
+            subprocess.run(git + args, check=True, capture_output=True, env=ENV)
 
     def denied(self, cmd):
         self.assertIsNotNone(pg.check(cmd, self.root), cmd)
@@ -20,57 +31,68 @@ class CheckTest(unittest.TestCase):
     def allowed(self, cmd):
         self.assertIsNone(pg.check(cmd, self.root), cmd)
 
-    def test_network_tools_denied_but_grepping_for_them_allowed(self):
+
+class CheckTest(GuardCase):
+    def test_network_and_shell_denied_but_grepping_for_them_allowed(self):
         self.denied("curl https://example.com")
-        self.denied("wget example.com")
-        self.allowed('grep -n "curl" src/fetch.py')
-
-    def test_shell_pipes_and_substitution_denied_but_quoted_bar_allowed(self):
-        self.denied("cat a.py | sh")
-        self.denied("ls; rm -rf .")
+        self.denied("cat src/a.py | sh")
         self.denied("echo $(id)")
-        self.denied("sh -c 'ls'")
-        self.allowed('grep -n "a|b" src/x.py')
+        self.allowed('grep -n "curl|wget" src/a.py')
 
-    def test_writes_and_vcs_mutations_denied_but_reads_allowed(self):
-        self.denied("rm src/x.py")
-        self.denied("git push origin main")
-        self.denied("git commit -m x")
-        self.allowed("git log -1 --oneline")
-        self.allowed("git show HEAD:src/x.py")
+    def test_program_executing_flags_denied(self):
+        self.denied("rg --pre ./evil.sh x src/a.py")
+        self.denied("rg --hostname-bin ./x x src/a.py")
+        self.denied("git grep -O ./x x")
+        self.denied("git show --ext-diff HEAD")
+        self.denied("git show --textconv HEAD")
+        self.denied("git -c core.pager=sh log")
+        self.allowed("rg -n os src/a.py")
+        self.allowed("git show --stat HEAD")
 
-    def test_paths_outside_the_worktree_denied_but_relative_paths_allowed(self):
-        self.denied("cat /etc/passwd")
-        self.denied("cat ../other/secret.txt")
-        self.denied("cat ~/.ssh/id_rsa")
-        self.allowed("cat src/main.py")
+    def test_test_runners_are_not_re_run(self):
+        self.denied("python3 -m pytest tests/test_x.py")
+        self.denied("python3 -m unittest tests.test_x")
 
-    def test_secret_files_and_urls_denied(self):
+    def test_recursion_and_directory_args_denied(self):
+        self.denied("grep -r KEY .")
+        self.denied("rg -uu KEY .")
+        self.denied("grep KEY src")
+        self.denied("ls -R")
+        self.allowed("grep -n os src/a.py")
+        self.allowed("ls src")
+
+    def test_secret_files_denied_in_every_form(self):
         self.denied("cat .env")
-        self.denied("grep x https://example.com/a")
+        self.denied("git show HEAD:.env")
+        self.denied("grep --file=.env x src/a.py")
+        self.denied("grep -f .env src/a.py")
         self.allowed("cat .env.example")
+        self.allowed("git show HEAD:src/a.py")
 
-    def test_interpreters_only_for_the_test_runner(self):
-        self.denied("python3 -c 'import os'")
-        self.denied("python3 script.py")
-        self.allowed("python3 -m unittest tests.test_x")
-        self.allowed("python3 -m pytest tests/test_x.py -k name")
+    def test_symlinks_and_outside_paths_denied(self):
+        self.denied("cat link")
+        self.denied("cat /etc/passwd")
+        self.denied("cat ../x")
+        self.denied("cat ~/.ssh/id_rsa")
+        self.allowed("cat src/a.py")
 
-    def test_find_and_output_flags_denied(self):
-        self.denied("find . -delete")
-        self.denied("git diff --output=x.patch")
-        self.allowed("git diff --stat")
-
-    def test_unparseable_command_denied(self):
+    def test_unknown_flags_and_unparseable_denied(self):
+        self.denied("cat -v src/a.py")
+        self.denied("head -c 99999999 src/a.py")
         self.denied('grep "unterminated')
+        self.allowed("head -n 5 src/a.py")
+        self.allowed("wc -l src/a.py")
 
 
-class RunTest(unittest.TestCase):
-    def test_run_uses_argv_scrubbed_env_and_reports_exit(self):
-        root = Path(tempfile.mkdtemp()).resolve()
-        (root / "a.txt").write_text("hello\n")
-        code, out = pg.run("cat a.txt", root, timeout=10)
-        self.assertEqual((code, out.strip()), (0, "hello"))
+class RunTest(GuardCase):
+    def test_run_reads_with_argv_and_reports_exit(self):
+        got = pg.run("cat src/a.py", self.root, timeout=10)
+        self.assertEqual(got[0], 0)
+        self.assertIn("x = 1", got[1])
+
+    def test_run_refuses_a_denied_command(self):
+        with self.assertRaises(ValueError):
+            pg.run("cat .env", self.root)
 
     def test_matches_compares_exit_and_normalized_output(self):
         self.assertTrue(pg.matches((1, "FAIL  x\n\n"), (1, "FAIL x")))
@@ -83,13 +105,16 @@ class ScanTest(unittest.TestCase):
         d = Path(tempfile.mkdtemp())
         (d / "proof").mkdir()
         (d / "proof" / "1.txt").write_text("token ghp_" + "a" * 36 + "\n")
-        (d / "plan-report.md").write_text("# Plan report\n")
         self.assertTrue(any("GitHub token" in h for h in pg.scan(d)))
 
     def test_clean_plan_has_no_hits(self):
         d = Path(tempfile.mkdtemp())
         (d / "plan-report.md").write_text("# Plan report\nno secrets here\n")
         self.assertEqual(pg.scan(d), [])
+
+    def test_missing_or_empty_dir_fails_closed(self):
+        self.assertTrue(pg.scan(Path("/nonexistent/plan-x")))
+        self.assertTrue(pg.scan(Path(tempfile.mkdtemp())))
 
 
 if __name__ == "__main__":

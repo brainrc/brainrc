@@ -34,3 +34,6 @@ Owner: approve, with #255 first. #255 moved to the top of the epic's sub-issues.
 
 ## 2026-10-31T15:42:25Z · child 2 gh:242 delivered
 - Ready PR, base main, from the first run in its own worktree. Carries #255's records.
+
+## 2026-10-31T15:57:02Z · gh:242 merged (#258, v0.5.3)
+- Post-merge verify passed. Child 3 gh:243 waits for the owner's go.

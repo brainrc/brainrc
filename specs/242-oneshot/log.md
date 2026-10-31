@@ -88,3 +88,7 @@ Owner: approve, ready PR. The ticket-ref blocked title is confirmed. Retro writt
 ## engine · deliver · done
 2026-10-31T15:52:32Z
 Pushed; ready PR #258 (base main); ticket comment posted on #242. PR body: two stale lines fixed (ticket comment now posted; fragment range already fixed). Records pushed right away, before any merge. Watching #258.
+
+## engine · watch · done
+2026-10-31T15:57:02Z
+#258 merged (v0.5.3). Post-merge verify passed. Every pre-merge record reached main. Only this post-merge record is local; it rides along with child 3.

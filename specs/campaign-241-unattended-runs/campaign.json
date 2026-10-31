@@ -30,7 +30,8 @@
       "status": "delivered",
       "slug": "242-oneshot",
       "branch": "242-oneshot",
-      "pr": "https://github.com/brainrc/brainrc/pull/258"
+      "pr": "https://github.com/brainrc/brainrc/pull/258",
+      "merged": true
     },
     {
       "ref": "gh:243",

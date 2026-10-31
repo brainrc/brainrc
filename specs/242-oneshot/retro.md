@@ -25,3 +25,13 @@ Ticket: gh:242 · Size: standard · PR: https://github.com/brainrc/brainrc/pull/
 - Eval cases written by the same agent as the fake runs that grade them were too lenient: the batch review found eight ways a broken run could pass. A case task should include "write one fake run that should fail each check" as a requirement, not as a review finding.
 - Subagents lost to container restarts: two attempts died before editing. For short doc tasks, the engine doing the work inline was faster than re-dispatching.
 - Records written after the PR opened missed main again (#255). This run wrote its retro before the PR opened. #245 should make that the rule.
+
+## After delivery
+- Outcome: merged
+- Merged at: 2026-10-31T15:53:45Z · Time to merge: about 10 min
+- Post-merge verify: pass (see `verify-merged.md`)
+- CI failures: 0 own / 0 external
+- Review rounds: 0
+- Caught by reviewers, missed by the run's own: none
+- Follow-up title: none
+- Follow-up body: none

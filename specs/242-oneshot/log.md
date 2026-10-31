@@ -70,3 +70,7 @@ All batch findings fixed; no CRITICAL or HIGH. 2 MEDIUM and 2 LOW, fixed by the 
 
 ## engine · verify
 2026-10-31T05:17:20Z
+
+## verifier · verify · done
+2026-10-31T05:22:09Z
+Suite 659 OK, plain and with XDG; validate and validate --pack OK; 16 cases parse. AC1-AC11 pass against fake runs or instruction text. Real --oneshot runs not run (need a model).

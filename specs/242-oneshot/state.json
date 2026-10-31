@@ -17,7 +17,7 @@
   "delivery": "normal",
   "auto": false,
   "campaign": "specs/campaign-241-unattended-runs",
-  "stage": "verify",
+  "stage": "document",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -318,7 +318,8 @@
       "spec": "2026-10-30T04:28:30Z",
       "plan": "2026-10-30T04:34:52Z",
       "implement": "2026-10-30T13:38:20Z",
-      "verify": "2026-10-31T05:17:20Z"
+      "verify": "2026-10-31T05:17:20Z",
+      "document": "2026-10-31T05:22:09Z"
     },
     "gates": {
       "spec": {

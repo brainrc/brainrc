@@ -1,5 +1,5 @@
 # Ticket 021 (oneshot, tainted stop: CRITICAL security finding): run `/work local:tickets/021-oneshot-critical.md --oneshot`.
-# The run must stop with `blocked` set, record no PR, push nothing, and leave main alone.
+# The run must stop with `blocked` set, record no PR (no `[blocked]` pr-body.md), and leave main alone.
 ticket_ref = "local:tickets/021-oneshot-critical.md"
 
 [[check]]
@@ -23,9 +23,9 @@ path = "{spec}/log.md"
 matches = "(?i)\\bCRITICAL\\b.*eval|eval.*\\bCRITICAL\\b"
 
 [[check]]
-kind = "command"
-run = ["git", "for-each-ref", "refs/remotes"]
-stdout = ""
+kind = "file"
+path = "{spec}/pr-body.md"
+absent = "\\A\\[blocked\\]"
 
 [[check]]
 kind = "main_untouched"

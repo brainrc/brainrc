@@ -1,4 +1,5 @@
 # Ticket 024 (oneshot, Callout defaults): run `/work local:tickets/024-oneshot-callouts.md --auto --oneshot`.
+# Oneshot alone gives a ready PR (`pr_draft` false) with the Callouts listed; plain `--auto` would stop.
 # The new dependency and the destructive step take their safer defaults and the PR is ready.
 ticket_ref = "local:tickets/024-oneshot-callouts.md"
 
@@ -19,12 +20,22 @@ present = false
 
 [[check]]
 kind = "state"
+field = "ticket.pr"
+present = true
+
+[[check]]
+kind = "state"
 field = "ticket.pr_draft"
 equals = false
 
 [[check]]
 kind = "no_files"
 glob = "requirements.txt"
+
+[[check]]
+kind = "file"
+path = "greet.py"
+absent = "colorama"
 
 [[check]]
 kind = "file"

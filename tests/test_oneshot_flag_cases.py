@@ -1,4 +1,4 @@
-"""Tests for the --oneshot flag eval cases sandbox-021..024: a good fake run passes, one broken field fails."""
+"""Tests for the --oneshot flag eval cases sandbox-021..024 and sandbox-031: a good fake run passes, one broken field fails."""
 import json
 import shutil
 import tempfile
@@ -13,7 +13,8 @@ BODY = "Title\n\n## Decisions made without you\n- colorama: not added\n- delete 
 
 class OneshotFlagCaseTest(unittest.TestCase):
     TICKETS = {"sandbox-021": "024-oneshot-callouts.md", "sandbox-022": "025-oneshot-local.md",
-               "sandbox-023": "026-oneshot-live-target.md", "sandbox-024": "027-oneshot-wording.md"}
+               "sandbox-023": "026-oneshot-live-target.md", "sandbox-024": "027-oneshot-wording.md",
+               "sandbox-031": "035-oneshot-resume.md"}
 
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
@@ -48,6 +49,11 @@ class OneshotFlagCaseTest(unittest.TestCase):
         elif name == "sandbox-023":
             state["targets"] = {}
             (self.run / "log.md").write_text("- intake: live target refused, continuing offline\n")
+        elif name == "sandbox-031":
+            state.pop("oneshot")
+            state.pop("auto")
+            state["gates"] = {"spec": "approved", "plan": "pending"}
+            (self.run / "log.md").write_text("## engine · Spec gate · auto-approved\n## engine · resume\n")
         else:
             state.pop("oneshot")
             state.pop("auto")
@@ -83,6 +89,10 @@ class OneshotFlagCaseTest(unittest.TestCase):
         self.assert_breaks(n, lambda s: s.update(oneshot=False), "oneshot")
         self.assert_breaks(n, lambda s: s["ticket"].update(pr_draft=True), "pr_draft")
         self.assert_breaks(n, lambda s: s.update(blocked={"reason": "x"}), "blocked")
+        self.assert_breaks(n, lambda s: s["ticket"].update(pr=None), "ticket.pr")
+        (self.project / "greet.py").write_text("import colorama\n")
+        self.assert_breaks(n, lambda s: None, "greet.py")
+        (self.project / "greet.py").unlink()
         (self.project / "requirements.txt").write_text("colorama\n")
         git = evals._git
         git(self.project, "add", "-A")
@@ -115,6 +125,11 @@ class OneshotFlagCaseTest(unittest.TestCase):
         self.assert_breaks(n, lambda s: s.update(delivery="draft"), "delivery")
         self.assert_breaks(n, lambda s: s["ticket"].update(pr="001-demo"), "ticket.pr")
         self.assert_breaks(n, lambda s: s.update(oneshot=False), "oneshot")
+        state = self.good(n)
+        (self.run / "pr-body.md").write_text("[blocked] local:tickets/025-oneshot-local.md: spec gap\n")
+        code, out = self.grade(n, state)
+        self.assertEqual(code, 1, out)
+        self.assertRegex(out, "FAIL .*pr-body.md")
 
     def test_live_target_case_fails_on_a_broken_field(self):
         n = "sandbox-023"
@@ -132,6 +147,17 @@ class OneshotFlagCaseTest(unittest.TestCase):
         self.assert_breaks(n, lambda s: s.update(oneshot=True), "state.json")
         self.assert_breaks(n, lambda s: s.update(auto=True), "state.json")
         self.assert_breaks(n, lambda s: s["gates"].update(plan="approved"), "gates.plan")
+
+    def test_resume_case_fails_when_the_flag_survives_the_resume(self):
+        n = "sandbox-031"
+        self.assert_breaks(n, lambda s: s.update(oneshot=True), "state.json")
+        self.assert_breaks(n, lambda s: s.update(auto=True), "state.json")
+        self.assert_breaks(n, lambda s: s["gates"].update(plan="approved"), "gates.plan")
+        state = self.good(n)
+        (self.run / "log.md").write_text("## engine · Plan gate · auto-approved\n")
+        code, out = self.grade(n, state)
+        self.assertEqual(code, 1, out)
+        self.assertRegex(out, "FAIL .*log.md")
 
 
 if __name__ == "__main__":

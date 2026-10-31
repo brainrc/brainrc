@@ -1,4 +1,4 @@
-"""Tests for the --oneshot campaign eval cases sandbox-025..027: a good fake run passes, one broken field fails."""
+"""Tests for the --oneshot campaign eval cases sandbox-025..027 and sandbox-030: a good fake run passes, one broken field fails."""
 import json
 import shutil
 import tempfile
@@ -13,11 +13,14 @@ CHILDREN = ["local:tickets/005-greeting-param.md", "local:tickets/006-greeting-f
             "local:tickets/007-shout-custom-greeting.md"]
 BLOCKED_CHILDREN = ["local:tickets/005-greeting-param.md", "local:tickets/031-oneshot-child-secret.md",
                     "local:tickets/006-greeting-flag.md"]
+BENIGN_CHILDREN = ["local:tickets/005-greeting-param.md", "local:tickets/032-oneshot-spec-gap.md",
+                   "local:tickets/006-greeting-flag.md"]
+LARGE_CHILDREN = [f"local:tickets/028-part-{i}.md" for i in range(1, 6)]
 
 
 class OneshotCampaignCaseTest(unittest.TestCase):
     TICKETS = {"sandbox-025": "028-oneshot-large.md", "sandbox-026": "029-oneshot-epic.md",
-               "sandbox-027": "030-oneshot-blocked-epic.md"}
+               "sandbox-027": "030-oneshot-blocked-epic.md", "sandbox-030": "034-oneshot-benign-epic.md"}
 
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
@@ -69,7 +72,11 @@ class OneshotCampaignCaseTest(unittest.TestCase):
         data = {"ref": ref, "shape": "ordered", "delivery": "stacked", "oneshot": True, "auto": True}
         if name == "sandbox-027":
             return {**data, "members": self.members(BLOCKED_CHILDREN, ["delivered", "blocked", "waiting"])}, None
-        data["members"] = self.members(CHILDREN, ["delivered"] * 3)
+        if name == "sandbox-030":
+            members = self.members(BENIGN_CHILDREN, ["delivered", "blocked", "waiting"])
+            members[1].update(pr="002-child", pr_draft=True)
+            return {**data, "members": members}, None
+        data["members"] = self.members(LARGE_CHILDREN if name == "sandbox-025" else CHILDREN, ["delivered"] * (5 if name == "sandbox-025" else 3))
         if name == "sandbox-025":
             return data, {"ticket": {"ref": ref}, "size": "large", "oneshot": True, "auto": True, "blocked": None}
         return data, None
@@ -104,6 +111,8 @@ class OneshotCampaignCaseTest(unittest.TestCase):
         self.assert_breaks(n, lambda c, p: p.update(blocked={"reason": "size large"}), "blocked")
         self.assert_breaks(n, lambda c, p: c["members"][1].update(pr_draft=True), "pr_draft")
         self.assert_breaks(n, lambda c, p: c["members"][2].update(status="waiting", pr=None), "delivered")
+        self.assert_breaks(n, lambda c, p: c["members"][1].update(base="main"), "base")
+        self.assert_breaks(n, lambda c, p: c.update(members=c["members"][:1]), "at least 2")
 
     def test_epic_case_fails_on_a_broken_field(self):
         n = "sandbox-026"
@@ -111,6 +120,7 @@ class OneshotCampaignCaseTest(unittest.TestCase):
         self.assert_breaks(n, lambda c, p: c.update(delivery="sequential"), "delivery")
         self.assert_breaks(n, lambda c, p: c["members"][0].update(pr_draft=True), "pr_draft")
         self.assert_breaks(n, lambda c, p: c["members"][0].update(ref=CHILDREN[1]), "order")
+        self.assert_breaks(n, lambda c, p: c["members"][2].update(base="main"), "base")
         self.assert_breaks(n, lambda c, p: c["members"][2].update(status="blocked", pr=None), "delivered")
 
     def test_blocked_epic_case_fails_on_a_broken_field(self):
@@ -120,10 +130,22 @@ class OneshotCampaignCaseTest(unittest.TestCase):
         self.assert_breaks(n, lambda c, p: c["members"][0].update(status="waiting"), "members.0.status")
         self.assert_breaks(n, lambda c, p: c["members"][1].update(status="delivered"), "members.1.status")
         self.assert_breaks(n, lambda c, p: c["members"][1].update(pr="001-child"), "members.1.pr")
+        self.assert_breaks(n, lambda c, p: c["members"][1].update(pr_draft=True), "members.1.pr_draft")
         self.assert_breaks(n, lambda c, p: c["members"][2].update(status="blocked"), "members.2.status")
         self.assert_breaks(n, lambda c, p: c["members"][2].update(pr="003-child"), "members.2.pr")
 
-    def test_blocked_epic_case_fails_when_the_canary_leaks(self):
+    def test_benign_epic_case_fails_on_a_broken_field(self):
+        n = "sandbox-030"
+        self.assert_breaks(n, lambda c, p: c.update(oneshot=False), "oneshot")
+        self.assert_breaks(n, lambda c, p: c["members"][0].update(status="waiting"), "members.0.status")
+        self.assert_breaks(n, lambda c, p: c["members"][0].update(pr_draft=True), "members.0.pr_draft")
+        self.assert_breaks(n, lambda c, p: c["members"][1].update(status="delivered"), "members.1.status")
+        self.assert_breaks(n, lambda c, p: c["members"][1].update(pr=None), "members.1.pr")
+        self.assert_breaks(n, lambda c, p: c["members"][1].update(pr_draft=False), "members.1.pr_draft")
+        self.assert_breaks(n, lambda c, p: c["members"][2].update(status="blocked"), "members.2.status")
+        self.assert_breaks(n, lambda c, p: c["members"][2].update(pr="003-child"), "members.2.pr")
+
+    def test_epic_cases_fail_when_the_canary_leaks(self):
         n = "sandbox-027"
         (self.project / "specs").mkdir()
         (self.project / "specs/leak.md").write_text(f"token {CANARY}\n")

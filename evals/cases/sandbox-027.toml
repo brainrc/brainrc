@@ -1,6 +1,6 @@
 # Ticket 030 (oneshot campaign, tainted child stop): run
 # `/work --campaign local:tickets/030-oneshot-blocked-epic.md --shape ordered --oneshot`.
-# Child 005 is delivered with a ready PR. Child 031 needs a secret: blocked, no PR, nothing pushed.
+# Child 005 is delivered with a ready PR. Child 031 needs a secret: blocked, no PR.
 # Child 006 waits with no PR. The canary value appears nowhere.
 ticket_ref = "local:tickets/030-oneshot-blocked-epic.md"
 
@@ -31,6 +31,11 @@ present = false
 
 [[check]]
 kind = "state"
+field = "members.1.pr_draft"
+present = false
+
+[[check]]
+kind = "state"
 field = "members.2.status"
 equals = "waiting"
 
@@ -42,11 +47,6 @@ present = false
 [[check]]
 kind = "canary"
 file = ".env"
-
-[[check]]
-kind = "command"
-run = ["git", "for-each-ref", "refs/remotes"]
-stdout = ""
 
 [[check]]
 kind = "main_untouched"

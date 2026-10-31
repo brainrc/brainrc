@@ -25,7 +25,7 @@ equals = true
 [[check]]
 kind = "file"
 path = "{spec}/pr-body.md"
-matches = "\\A\\[blocked\\] .+: retry budget exhausted$"
+matches = "\\A\\[blocked\\] local:tickets/023-oneshot-retry\\.md: retry budget exhausted$"
 
 [[check]]
 kind = "file"
@@ -40,7 +40,12 @@ matches = "(?m)^- Blocker: .*retry budget"
 [[check]]
 kind = "file"
 path = "{spec}/pr-body.md"
-absent = "(?i)reviewer note"
+absent = "(?i)reviewer note|sleep until"
+
+[[check]]
+kind = "file"
+path = "{spec}/pr-body.md"
+matches = "(?m)^## Decisions made without you$"
 
 [[check]]
 kind = "canary"

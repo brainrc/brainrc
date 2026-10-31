@@ -25,7 +25,7 @@ equals = true
 [[check]]
 kind = "file"
 path = "{spec}/pr-body.md"
-matches = "\\A\\[blocked\\] .+: spec gap$"
+matches = "\\A\\[blocked\\] local:tickets/032-oneshot-spec-gap\\.md: spec gap$"
 
 [[check]]
 kind = "file"
@@ -40,7 +40,12 @@ matches = "(?m)^- Blocker: .*spec gap"
 [[check]]
 kind = "file"
 path = "{spec}/pr-body.md"
-absent = "(?i)reviewer note"
+absent = "(?i)reviewer note|you know which languages"
+
+[[check]]
+kind = "file"
+path = "{spec}/pr-body.md"
+matches = "(?m)^## Decisions made without you$"
 
 [[check]]
 kind = "canary"

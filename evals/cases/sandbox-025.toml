@@ -21,6 +21,8 @@ present = false
 kind = "campaign"
 delivery = "stacked"
 ready = true
+strict_stack = true
+min_members = 2
 
 [[check]]
 kind = "main_untouched"

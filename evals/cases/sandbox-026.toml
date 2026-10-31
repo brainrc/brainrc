@@ -17,6 +17,7 @@ equals = "stacked"
 kind = "campaign"
 delivery = "stacked"
 ready = true
+strict_stack = true
 order = [
   "local:tickets/005-greeting-param.md",
   "local:tickets/006-greeting-flag.md",

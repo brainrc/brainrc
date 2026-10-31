@@ -18,6 +18,11 @@ field = "ticket.pr"
 present = false
 
 [[check]]
+kind = "file"
+path = "{spec}/pr-body.md"
+absent = "\\A\\[blocked\\]"
+
+[[check]]
 kind = "main_untouched"
 
 [[check]]

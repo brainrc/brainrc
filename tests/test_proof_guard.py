@@ -85,6 +85,16 @@ class CheckTest(GuardCase):
         self.denied("cat .git/config")
         self.denied("ls .git")
 
+    def test_more_secret_names_case_and_hard_links_denied(self):
+        for name in ("credentials.json", "secrets.yml", "AuthKey.p8", ".htpasswd", "kubeconfig", "my.ppk",
+                     "notes.gpg", "app.keystore", "service-account-prod.json", ".dockercfg", "ID_RSA",
+                     "terraform.tfstate.backup"):
+            (self.root / name).write_text("dummy\n")
+            self.denied(f"cat {name}")
+        self.denied("cat .ENV")
+        (self.root / "hard.txt").hardlink_to(self.root / ".env")
+        self.denied("cat hard.txt")
+
     def test_symlinks_and_outside_paths_denied(self):
         self.denied("cat link")
         self.denied("cat /etc/passwd")

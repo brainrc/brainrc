@@ -17,7 +17,7 @@
   "delivery": "normal",
   "auto": false,
   "campaign": "specs/campaign-241-unattended-runs",
-  "stage": "implement",
+  "stage": "verify",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -287,6 +287,27 @@
       ],
       "review": "batch",
       "sha": "31b929d"
+    },
+    {
+      "id": "F5",
+      "title": "Resume case needs a oneshot first run; strict_stack fails missing base",
+      "agent": "engine",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "scripts/evals.py",
+        "tests/test_evals.py",
+        "tests/test_oneshot_flag_cases.py",
+        "evals/cases/sandbox-017.toml",
+        "evals/cases/sandbox-021.toml",
+        "evals/cases/sandbox-031.toml"
+      ],
+      "criteria": [
+        "AC7",
+        "AC10"
+      ],
+      "review": "batch",
+      "sha": "478fdb3"
     }
   ],
   "blocked": null,
@@ -296,7 +317,8 @@
       "intake": "2026-10-30T04:28:30Z",
       "spec": "2026-10-30T04:28:30Z",
       "plan": "2026-10-30T04:34:52Z",
-      "implement": "2026-10-30T13:38:20Z"
+      "implement": "2026-10-30T13:38:20Z",
+      "verify": "2026-10-31T05:17:20Z"
     },
     "gates": {
       "spec": {
@@ -314,8 +336,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 3,
-      "first_pass": 1
+      "total": 4,
+      "first_pass": 2
     },
     "retries": 1,
     "interventions": 1,

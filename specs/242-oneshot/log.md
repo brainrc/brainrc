@@ -64,3 +64,9 @@ README rows, docs/evals.md and the changelog fragment (`bump: patch`), done inli
 
 ## implementer · F3, F2 · done
 F3 58035a4: strict ready, strict_stack and min_members. F2 43a58b8: cases hardened, 030 and 031 added. The engine changed F2's min_members guess of 5 to 2, because ticket 028 does not fix the split size (noted for the PR body). Suite OK; validate OK.
+
+## code-reviewer · fix-review · done
+All batch findings fixed; no CRITICAL or HIGH. 2 MEDIUM and 2 LOW, fixed by the engine as F5 (478fdb3); the base test was red without the fix. Suite OK; validate OK.
+
+## engine · verify
+2026-10-31T05:17:20Z

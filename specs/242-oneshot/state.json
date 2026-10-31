@@ -231,6 +231,62 @@
       ],
       "review": "batch",
       "sha": "d2c8dbf"
+    },
+    {
+      "id": "F2",
+      "title": "Tighten oneshot eval cases; add 030, 031",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "evals/cases/",
+        "examples/sandbox/",
+        "tests/test_oneshot_*.py",
+        "docs/evals.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC3",
+        "AC4",
+        "AC7",
+        "AC8",
+        "AC10"
+      ],
+      "review": "batch",
+      "sha": "43a58b8"
+    },
+    {
+      "id": "F3",
+      "title": "evals.py campaign: strict ready, strict_stack, min_members",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "scripts/evals.py",
+        "tests/test_evals.py",
+        "docs/evals.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC7"
+      ],
+      "review": "batch",
+      "sha": "58035a4"
+    },
+    {
+      "id": "F4",
+      "title": "Document the large-split campaign ref",
+      "agent": "engine",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "skills/spec-agent/references/campaign.md"
+      ],
+      "criteria": [
+        "AC1"
+      ],
+      "review": "batch",
+      "sha": "31b929d"
     }
   ],
   "blocked": null,
@@ -258,7 +314,7 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 2,
+      "total": 3,
       "first_pass": 1
     },
     "retries": 1,

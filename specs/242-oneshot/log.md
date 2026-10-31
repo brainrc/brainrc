@@ -61,3 +61,6 @@ README rows, docs/evals.md and the changelog fragment (`bump: patch`), done inli
 
 ## code-reviewer · batch · changes-requested
 2 HIGH: no AC8 benign-child case; AC10 resume untested. 6 MEDIUM: blocked-body regex too weak and ref ungraded; for-each-ref check cannot fail; `ready` passes when `pr_draft` is missing; stacked base allows main for every child; large-split campaign ref undocumented; 021 Callout coverage. 3 LOW. Fix tasks: F4 (campaign ref doc, inline), F3 (evals.py strictness), F2 (cases).
+
+## implementer · F3, F2 · done
+F3 58035a4: strict ready, strict_stack and min_members. F2 43a58b8: cases hardened, 030 and 031 added. The engine changed F2's min_members guess of 5 to 2, because ticket 028 does not fix the split size (noted for the PR body). Suite OK; validate OK.

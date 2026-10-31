@@ -42,7 +42,7 @@
       "title": "researcher role, /plan, planning reference, proof_guard",
       "agent": "engine",
       "status": "blocked",
-      "attempts": 2,
+      "attempts": 3,
       "files": [
         "agents/researcher.md",
         "skills/plan/SKILL.md",
@@ -65,16 +65,16 @@
         "AC12"
       ],
       "review": "batch",
-      "sha": "76a1fd4"
+      "sha": "df13959"
     }
   ],
   "blocked": {
-    "reason": "tainted stop: HIGH security findings open after the retry budget (2 attempts)",
+    "reason": "tainted stop: a HIGH security finding is open after the owner-approved third attempt",
     "kind": "tainted",
-    "at": "2026-10-31T20:34:12Z",
+    "at": "2026-10-31T23:39:32Z",
     "findings": [
-      "HIGH proof_guard.py: allowed programs can run code (rg --pre, git grep -O, git show --ext-diff/--textconv, pytest plugins/conftest)",
-      "HIGH proof_guard.py: secret-path check misses grep -r/rg -uu over .env, git show HEAD:.env, --file=.env; symlinks escape the worktree"
+      "HIGH proof_guard.py: bare `git show <rev>` prints the full patch, so a committed .env leaks into proof output",
+      "MEDIUM proof_guard.py: secret-file list misses id_rsa, .ssh/, *.pem, *.key, .git-credentials, .git/config"
     ]
   },
   "metrics": {
@@ -91,10 +91,10 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 2,
+      "total": 3,
       "first_pass": 0
     },
     "retries": 1,
-    "interventions": 0
+    "interventions": 1
   }
 }

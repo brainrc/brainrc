@@ -47,7 +47,14 @@ class CheckTest(GuardCase):
         self.denied("git show --textconv HEAD")
         self.denied("git -c core.pager=sh log")
         self.allowed("rg -n os src/a.py")
-        self.allowed("git show --stat HEAD")
+        self.allowed("git log --oneline -3")
+
+    def test_git_show_and_log_paths_denied(self):
+        self.denied("git show HEAD")
+        self.denied("git show --stat HEAD")
+        self.denied("git show HEAD:src/a.py")
+        self.denied("git log .env")
+        self.denied("git log --stat")
 
     def test_test_runners_are_not_re_run(self):
         self.denied("python3 -m pytest tests/test_x.py")
@@ -67,7 +74,16 @@ class CheckTest(GuardCase):
         self.denied("grep --file=.env x src/a.py")
         self.denied("grep -f .env src/a.py")
         self.allowed("cat .env.example")
-        self.allowed("git show HEAD:src/a.py")
+
+    def test_keys_and_git_internals_denied(self):
+        for name in ("id_rsa", "c.pem", "server.key", "cert.p12", "terraform.tfstate", ".git-credentials"):
+            (self.root / name).write_text("dummy\n")
+            self.denied(f"cat {name}")
+        (self.root / ".ssh").mkdir()
+        (self.root / ".ssh/config").write_text("dummy\n")
+        self.denied("cat .ssh/config")
+        self.denied("cat .git/config")
+        self.denied("ls .git")
 
     def test_symlinks_and_outside_paths_denied(self):
         self.denied("cat link")
@@ -80,6 +96,7 @@ class CheckTest(GuardCase):
         self.denied("cat -v src/a.py")
         self.denied("head -c 99999999 src/a.py")
         self.denied('grep "unterminated')
+        self.denied("head -n ² src/a.py")
         self.allowed("head -n 5 src/a.py")
         self.allowed("wc -l src/a.py")
 
@@ -89,6 +106,11 @@ class RunTest(GuardCase):
         got = pg.run("cat src/a.py", self.root, timeout=10)
         self.assertEqual(got[0], 0)
         self.assertIn("x = 1", got[1])
+
+    def test_run_git_log(self):
+        got = pg.run("git log --oneline -1", self.root, timeout=10)
+        self.assertEqual(got[0], 0)
+        self.assertIn("init", got[1])
 
     def test_run_refuses_a_denied_command(self):
         with self.assertRaises(ValueError):

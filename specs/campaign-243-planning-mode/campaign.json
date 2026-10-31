@@ -1,0 +1,71 @@
+{
+  "ref": "gh:243",
+  "shape": "ordered",
+  "dependency_source": "none",
+  "started_at": "2026-10-31T16:09:57Z",
+  "delivery": "stacked",
+  "auto": true,
+  "oneshot": true,
+  "gates": {
+    "campaign": {
+      "presented_at": "2026-10-31T16:09:57Z",
+      "approved_at": "2026-10-31T16:09:57Z"
+    }
+  },
+  "members": [
+    {
+      "ref": "local:specs/tickets/243-1-connector-create.md",
+      "order": 1,
+      "depends_on": [],
+      "status": "todo",
+      "slug": "243-1-connector-create",
+      "branch": "243-1-connector-create",
+      "pr": null,
+      "pr_draft": null,
+      "base": null,
+      "merged": false
+    },
+    {
+      "ref": "local:specs/tickets/243-2-researcher-proof.md",
+      "order": 2,
+      "depends_on": [
+        "local:specs/tickets/243-1-connector-create.md"
+      ],
+      "status": "todo",
+      "slug": "243-2-researcher-proof",
+      "branch": "243-2-researcher-proof",
+      "pr": null,
+      "pr_draft": null,
+      "base": null,
+      "merged": false
+    },
+    {
+      "ref": "local:specs/tickets/243-3-ticket-gate.md",
+      "order": 3,
+      "depends_on": [
+        "local:specs/tickets/243-2-researcher-proof.md"
+      ],
+      "status": "todo",
+      "slug": "243-3-ticket-gate",
+      "branch": "243-3-ticket-gate",
+      "pr": null,
+      "pr_draft": null,
+      "base": null,
+      "merged": false
+    },
+    {
+      "ref": "local:specs/tickets/243-4-plan-evals-docs.md",
+      "order": 4,
+      "depends_on": [
+        "local:specs/tickets/243-3-ticket-gate.md"
+      ],
+      "status": "todo",
+      "slug": "243-4-plan-evals-docs",
+      "branch": "243-4-plan-evals-docs",
+      "pr": null,
+      "pr_draft": null,
+      "base": null,
+      "merged": false
+    }
+  ]
+}

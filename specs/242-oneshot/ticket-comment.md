@@ -1,0 +1,3 @@
+`--oneshot` is in spec-agent: no manual gates, `large` tickets split into a stacked campaign, plan Callouts take the safer default, and runs end in ready PRs (never merged). Tainted stops push nothing. Benign stops open a draft `[blocked]` PR.
+Verify: `python3 -m unittest discover -s tests` and `python3 scripts/brainrc.py validate`. Eval cases `sandbox-016` to `031` grade fake runs only. No real `--oneshot` run yet.
+PR: <PR_URL>

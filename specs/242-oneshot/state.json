@@ -17,7 +17,7 @@
   "delivery": "normal",
   "auto": false,
   "campaign": "specs/campaign-241-unattended-runs",
-  "stage": "document",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -319,7 +319,8 @@
       "plan": "2026-10-30T04:34:52Z",
       "implement": "2026-10-30T13:38:20Z",
       "verify": "2026-10-31T05:17:20Z",
-      "document": "2026-10-31T05:22:09Z"
+      "document": "2026-10-31T05:22:09Z",
+      "deliver": "2026-10-31T05:23:54Z"
     },
     "gates": {
       "spec": {
@@ -329,6 +330,9 @@
       "plan": {
         "presented_at": "2026-10-30T04:38:16Z",
         "approved_at": "2026-10-30T13:38:20Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-31T05:23:54Z"
       }
     },
     "gate_rework": {
@@ -348,5 +352,9 @@
       "task_minutes": 6.1,
       "wall_minutes": 3.5
     }
-  }
+  },
+  "living": [
+    "run-lifecycle",
+    "campaign-mode"
+  ]
 }

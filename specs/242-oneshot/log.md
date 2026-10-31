@@ -74,3 +74,9 @@ All batch findings fixed; no CRITICAL or HIGH. 2 MEDIUM and 2 LOW, fixed by the 
 ## verifier · verify · done
 2026-10-31T05:22:09Z
 Suite 659 OK, plain and with XDG; validate and validate --pack OK; 16 cases parse. AC1-AC11 pass against fake runs or instruction text. Real --oneshot runs not run (need a model).
+
+## doc-writer · document · done
+pr-body.md and ticket-comment.md written. The engine fixed the fragment range (016–031) as wording. Living specs applied.
+
+## engine · Deliver gate · presented
+2026-10-31T05:23:54Z

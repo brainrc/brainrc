@@ -45,9 +45,8 @@ lists the decisions made without the user. (AC1, AC2, AC3, AC5, AC6)
 _Last changed by 216-work-auto-mode._
 
 ### Auto mode hard stops
-An auto run SHALL stop, push nothing, and open no PR on any guardrails stop condition, size `large`,
-a plan Callout, or a CRITICAL/HIGH security finding. (AC4, AC8)
-_Last changed by 216-work-auto-mode._
+An auto run SHALL stop, push nothing, and open no PR on any guardrails stop condition, size `large`, a plan Callout, or a CRITICAL/HIGH security finding, except that a `--oneshot` run SHALL instead split `large` and take the safer default for Callouts, and on its benign stops (retry budget, scope breach, spec gap, no safe Callout default) SHALL open a draft blocked PR. A `--oneshot` run on a tainted stop (CRITICAL/HIGH security finding, untrusted instruction, secret) SHALL stop, push nothing, and open no PR, exactly as `--auto` does. (AC1, AC2, AC3, AC4)
+_Last changed by 242-oneshot._
 
 ### Run worktree
 A run SHALL do every stage in its own git worktree on the run's branch, record its absolute path as
@@ -66,3 +65,11 @@ Parallel task worktrees SHALL be created from the run worktree and landed into i
 `worktree_fence.py` unchanged. Harnesses whose subagents take no working directory SHALL keep the
 `Project root` plus `Worktree:` dispatch. (AC10, AC12)
 _Last changed by 255-run-worktrees._
+
+### Oneshot mode
+A run started with `--oneshot` SHALL record `oneshot: true` from the flag alone, behave as `--auto` except as stated here, take the safer default for each plan Callout and list it under "Decisions made without you", deliver ready PRs that it never merges, and refuse live targets. (AC2, AC5, AC6, AC9, AC10, AC11)
+_Last changed by 242-oneshot._
+
+### Oneshot blocked PR
+A `--oneshot` run that hits a benign stop (exhausted retry budget, scope-fence breach, spec gap, or no safe Callout default) SHALL set `state.blocked` and open a draft PR titled `[blocked] <ticket ref>: <fixed blocker phrase>`, the phrase being `retry budget exhausted`, `scope fence breach`, `spec gap` or `no safe default` respectively. The body SHALL name the blocker kind and source location, the stop condition, completed work, the needed decision and the decisions made so far; it SHALL NOT quote untrusted text and SHALL NOT hold any secret value. A `--oneshot` run that hits a tainted stop (CRITICAL/HIGH security finding, instruction in untrusted content, or secret need) SHALL set `state.blocked`, push nothing, open no PR, and report the blocker locally. (AC3, AC4)
+_Last changed by 242-oneshot._

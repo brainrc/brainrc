@@ -25,3 +25,12 @@ Owner: approve, with #255 first. #255 moved to the top of the epic's sub-issues.
 
 ## 2026-10-30T04:12:21Z · gh:255 delivered on its own
 - Owner: "Ship #255 now". Ready PR, base main. Spec change accepted. Child 2 gh:242 waits for the merge, then branches from main.
+
+## 2026-10-30T04:27:34Z · gh:255 merged (#257, v0.5.2)
+- Post-merge verify passed. Child 2 gh:242 is released; it waits for the owner's go and will branch from main, carrying the 255 records.
+
+## 2026-10-30T04:28:30Z · child 2 gh:242 started
+- First run in its own worktree (#255): ~/.brainrc-worktrees/brainrc/242-oneshot, branch 242-oneshot from main (after #257 merged). Carries the 255 records.
+
+## 2026-10-31T15:42:25Z · child 2 gh:242 delivered
+- Ready PR, base main, from the first run in its own worktree. Carries #255's records.

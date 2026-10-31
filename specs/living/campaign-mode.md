@@ -39,3 +39,7 @@ An ordered campaign started with `--auto` SHALL auto-approve its Campaign gate a
 and Plan gates, and deliver stacked draft PRs in dependency order. A child's hard stop SHALL pause
 the later children. (AC7)
 _Last changed by 216-work-auto-mode._
+
+### Oneshot campaigns
+A `large` ticket or a `--campaign --oneshot` run SHALL run its ordered children as `--oneshot` and deliver them `stacked` with every PR ready. When a child hits a tainted stop, it SHALL push nothing and open no PR; when it hits a benign stop, it SHALL open its draft blocked PR. In both cases later children SHALL pause and earlier children's ready PRs SHALL stay open. (AC1, AC7, AC8)
+_Last changed by 242-oneshot._

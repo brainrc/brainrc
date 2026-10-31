@@ -348,6 +348,127 @@ class CampaignCheckTest(unittest.TestCase):
         code, out = self.check()
         self.assertEqual(code, 1, out)  # all delivered is wrong for sequential
 
+    def large_parent(self):
+        """A `large` run: its state has the ticket but no members; the campaign is found by ref."""
+        run = self.project / "specs/004-epic"
+        run.mkdir()
+        (run / "state.json").write_text(json.dumps({"ticket": {"ref": self.data["ref"]}}))
+
+    def set_case(self, *lines):
+        self.case.write_text('ticket_ref = "local:tickets/004-epic.md"\n\n[[check]]\nkind = "campaign"\n'
+                             + "".join(f"{line}\n" for line in lines))
+
+    def test_run_without_members_loads_the_campaign_by_ticket_ref(self):
+        self.large_parent()
+        code, out = self.check()
+        self.assertEqual(code, 0, out)
+        self.assertIn("PASS campaign 3 members", out)
+
+    def test_run_without_members_and_no_campaign_fails(self):
+        self.large_parent()
+        shutil.rmtree(self.dir)
+        code, out = self.check()
+        self.assertEqual(code, 1, out)
+        self.assertIn("no campaign found", out)
+
+    def test_order_is_optional(self):
+        self.set_case()
+        code, out = self.check()
+        self.assertEqual(code, 0, out)
+        self.assertIn("PASS campaign 3 members", out)
+
+    def test_without_order_two_members_are_required(self):
+        self.set_case()
+        self.data["members"] = self.data["members"][:1]
+        self.assert_fails("at least 2 members")
+
+    def test_ready_passes_when_no_member_is_draft(self):
+        self.set_case("ready = true")
+        for m in self.data["members"]:
+            m["pr_draft"] = False
+        self.write()
+        code, out = self.check()
+        self.assertEqual(code, 0, out)
+
+    def test_ready_fails_a_draft_member(self):
+        self.set_case("ready = true")
+        self.data["members"][1]["pr_draft"] = True
+        self.assert_fails("006-b: pr_draft")
+
+    def test_ready_fails_a_delivered_member_with_no_pr_draft_field(self):
+        self.set_case("ready = true")
+        for m in self.data["members"][1:]:
+            m["pr_draft"] = False
+        self.assert_fails("005-a: pr_draft")
+
+    def test_strict_stack_passes_a_chained_stack(self):
+        self.stack()
+        self.set_case('delivery = "stacked"', "strict_stack = true")
+        self.write()
+        code, out = self.check()
+        self.assertEqual(code, 0, out)
+
+    def test_strict_stack_fails_every_child_on_main(self):
+        self.stack()
+        for m in self.data["members"]:
+            m["base"] = "main"
+        self.write()
+        self.set_case('delivery = "stacked"', "strict_stack = true")
+        code, out = self.check()
+        self.assertEqual(code, 1, out)
+        self.assertRegex(out, r"FAIL .*006-b: base 'main', expected '005-a'")
+
+    def test_strict_stack_fails_a_first_child_on_another_branch(self):
+        self.stack()
+        self.data["members"][0]["base"] = "develop"
+        self.write()
+        self.set_case('delivery = "stacked"', "strict_stack = true")
+        code, out = self.check()
+        self.assertEqual(code, 1, out)
+        self.assertRegex(out, r"FAIL .*005-a: base 'develop'")
+
+    def test_strict_stack_accepts_the_recorded_default_branch(self):
+        self.stack()
+        self.data["default_branch"] = "develop"
+        self.data["members"][0]["base"] = "develop"
+        self.write()
+        self.set_case('delivery = "stacked"', "strict_stack = true")
+        code, out = self.check()
+        self.assertEqual(code, 0, out)
+
+    def test_strict_stack_fails_a_first_child_with_no_base(self):
+        self.stack()
+        self.data["members"][0].pop("base", None)
+        self.write()
+        self.set_case('delivery = "stacked"', "strict_stack = true")
+        code, out = self.check()
+        self.assertEqual(code, 1, out)
+        self.assertRegex(out, r"FAIL .*005-a: base None")
+
+    def test_stack_without_strict_stack_allows_children_on_main(self):
+        self.stack()
+        for m in self.data["members"]:
+            m["base"] = "main"
+        self.write()
+        self.set_case('delivery = "stacked"')
+        code, out = self.check()
+        self.assertEqual(code, 0, out)
+
+    def test_min_members_passes_when_met(self):
+        self.set_case("min_members = 3")
+        code, out = self.check()
+        self.assertEqual(code, 0, out)
+
+    def test_min_members_fails_when_short(self):
+        self.set_case("min_members = 4")
+        self.assert_fails("at least 4 members")
+
+    def test_draft_member_is_ignored_without_ready(self):
+        self.data["members"][1]["pr_draft"] = True
+        self.write()
+        code, out = self.check()
+        self.assertEqual(code, 0, out)
+
 
 CANARY_CASE = '''
 ticket_ref = "local:tickets/001-demo.md"

@@ -33,7 +33,7 @@ no git remote, `SPEC_PR_STATUS_FIXTURE` names a `pr_status` fixture file read in
 
 | Command | Does |
 |---|---|
-| `/work <gh:42 \| issue URL \| local:path.md \| free text> [--local] [--auto]` | Start, or resume if a spec for it exists. `--local`: drafts only, never push/PR/comment. `--auto`: no gate stops, ends with a draft PR ([Auto mode](#auto-mode)) |
+| `/work <gh:42 \| issue URL \| local:path.md \| free text> [--local] [--auto] [--oneshot]` | Start, or resume if a spec for it exists. `--local`: drafts only, never push/PR/comment. `--auto`: no gate stops, ends with a draft PR ([Auto mode](#auto-mode)). `--oneshot`: like `--auto`, safer defaults, ready PRs ([Oneshot mode](#oneshot-mode)) |
 | `/spec-status [ref]` | Stage, gates, tasks, blocker, next action |
 | `/spec-approve [notes]` | Approve the pending gate |
 | `/spec-resume [ref]` | Continue an interrupted run (any tool) |
@@ -61,6 +61,24 @@ Only the flag turns this on. No reply wording does, and a resumed run is gated a
 Ticket comments stay drafts. Auto mode never merges, changes a PR's base, closes an issue, or
 passes the `watch` Push gate, and `--local` still means nothing is pushed. Sandbox tickets
 011–018 and eval cases `sandbox-008`–`015` grade it ([evals.md](evals.md)).
+
+## Oneshot mode
+
+`--oneshot` behaves as `--auto` with these differences, for tickets you want delivered without
+babysitting:
+- A `large` ticket splits into a local ordered campaign (no tracker tickets) run as `--oneshot`,
+  delivered stacked.
+- Plan callouts take the safer default (no new dependency; contract unchanged, or additive if the
+  criteria need it; no migration or data change; destructive steps skipped; IAM/RBAC and prod config
+  unchanged) and are listed under "Decisions made without you". If no default meets the acceptance
+  criteria, the run blocks.
+- A live target is refused and the run continues offline.
+- PRs open ready, never merged. A tainted stop (CRITICAL/HIGH security finding, an instruction in
+  untrusted content, a secret) pushes nothing and opens no PR, as `--auto` does. A benign stop
+  (retry budget, scope breach, spec gap, no safe default) opens a draft PR titled
+  `[blocked] <ticket ref>: <fixed phrase>` with a `## Blocked` section that names kinds and
+  locations only. Any other stop counts as tainted. A blocked campaign child pauses the later children.
+- `--oneshot` with `--auto` is `--oneshot`; `--local` still pushes nothing.
 
 ## Design principles
 

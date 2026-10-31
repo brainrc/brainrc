@@ -45,5 +45,34 @@ class PlanCommandTest(unittest.TestCase):
             self.assertIn(heading, text)
 
 
+class TicketGateTest(unittest.TestCase):
+    def setUp(self):
+        text = (REPO / "skills/spec-agent/references/planning.md").read_text()
+        self.gate = text.split("## Ticket gate", 1)[1]
+
+    def test_gate_lists_each_ticket_as_an_outward_action(self):
+        self.assertRegex(self.gate, r"(?i)outward action")
+        self.assertRegex(self.gate, r"(?i)nothing\s+is\s+created\s+until")
+
+    def test_gate_is_recorded_like_other_gates(self):
+        self.assertIn("gates.ticket", self.gate)
+        self.assertIn("metrics.gates.ticket", self.gate)
+
+    def test_dry_run_creates_nothing(self):
+        self.assertRegex(self.gate, r"(?i)`--dry-run`[^.]*never call[s]? `create`")
+
+    def test_cap_and_deferred(self):
+        self.assertRegex(self.gate, r"(?i)at most 10")
+        self.assertRegex(self.gate, r"(?i)deferred")
+
+    def test_oneshot_creates_local_tickets_only(self):
+        self.assertRegex(self.gate, r"`--oneshot`")
+        self.assertIn("github create refused", self.gate)
+
+    def test_guardrails_names_the_ticket_gate(self):
+        text = (REPO / "skills/spec-agent/references/guardrails.md").read_text()
+        self.assertRegex(text, r"Gate reached \(Spec, Plan, Deliver, Ticket\)")
+
+
 if __name__ == "__main__":
     unittest.main()

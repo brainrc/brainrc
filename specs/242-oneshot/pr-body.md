@@ -56,10 +56,10 @@ Results: `specs/242-oneshot/verify.md`. The real check, not yet run: a sandbox r
 - Ticket comment not posted: `specs/242-oneshot/ticket-comment.md`.
 
 ## Spec changes after approval
-For the owner to confirm:
+Accepted by the owner at the Deliver gate:
 1. Owner decision (2026-10-30, "Split the stops"): tainted stops push nothing and open no PR. Benign stops open a draft `[blocked]` PR whose body never quotes untrusted text. AC3, AC4 and AC8 were revised.
 2. Owner kept the additive-contract default: the public contract stays unchanged unless the criteria need an additive change.
-3. Engine change: the blocked PR title uses the ticket ref, not the ticket title, which is untrusted. Format: `[blocked] <ticket ref>: <fixed phrase>`. The owner must confirm this wording.
+3. Engine change: the blocked PR title uses the ticket ref, not the ticket title, which is untrusted. Format: `[blocked] <ticket ref>: <fixed phrase>`. Confirmed by the owner at the Deliver gate.
 
 ## Follow-ups
 - Post-hoc check that the Callout defaults held in the diff (security review). Not done.

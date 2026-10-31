@@ -80,3 +80,7 @@ pr-body.md and ticket-comment.md written. The engine fixed the fragment range (0
 
 ## engine · Deliver gate · presented
 2026-10-31T05:23:54Z
+
+## owner · Deliver gate · approved
+2026-10-31T15:42:25Z
+Owner: approve, ready PR. The ticket-ref blocked title is confirmed. Retro written before the PR opened.

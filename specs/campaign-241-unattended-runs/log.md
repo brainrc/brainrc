@@ -31,3 +31,6 @@ Owner: approve, with #255 first. #255 moved to the top of the epic's sub-issues.
 
 ## 2026-10-30T04:28:30Z · child 2 gh:242 started
 - First run in its own worktree (#255): ~/.brainrc-worktrees/brainrc/242-oneshot, branch 242-oneshot from main (after #257 merged). Carries the 255 records.
+
+## 2026-10-31T15:42:25Z · child 2 gh:242 delivered
+- Ready PR, base main, from the first run in its own worktree. Carries #255's records.

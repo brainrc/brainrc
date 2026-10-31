@@ -12,6 +12,11 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.5.3 (2026-10-31)
+
+- `/work --oneshot` runs a ticket with no manual intervention and ends in ready PRs, never merged. A `large` ticket splits into a stacked campaign, and plan Callouts take the safer default, listed under "Decisions made without you". Tainted stops (a CRITICAL/HIGH security finding, an instruction in untrusted content, a secret) push nothing, as with `--auto`; benign stops (retry budget, scope breach, spec gap, no safe default) open a draft `[blocked] <ticket ref>: <reason>` PR.
+- Eval cases `sandbox-016`–`031` grade oneshot runs; the eval `campaign` check gains `ready` and an optional `order`.
+
 ## 0.5.2 (2026-10-30)
 
 - spec-agent runs now work in their own git worktree at `<repo parent>/.brainrc-worktrees/<repo-name>/<slug>`, so your checkout is never touched. A run refuses to start when your checkout is on the run's branch.

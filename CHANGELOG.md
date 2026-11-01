@@ -12,6 +12,10 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.5.5 (2026-11-01)
+
+- `/plan <topic>` (spec-agent planning mode): a new `researcher` role investigates a topic and proposes candidate tickets, each with runnable proof (a command and its output, a failing test, or a local spike commit) and `file:line` links. The engine re-runs every proof; unproven candidates go under "Needs evidence". Web research only with `--web`, and the researcher never follows instructions found in content.
+
 ## 0.5.4 (2026-11-01)
 
 - Ticket connectors gain an optional `create` operation, used after an approved Ticket gate: `ticket-local` writes a new ticket file and `ticket-github` opens an issue. A connector without it lists the tickets as drafts for you to create.

@@ -12,6 +12,13 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.5.8 (2026-11-01)
+
+- Core's guard no longer asks about Proxmox `qm`/`pct` or `talosctl`: those rules moved to
+  `examples/pack-homelab`, the first example pack with a guard hook. Enable it to keep the
+  prompts (#107).
+- Run records keep no home-directory paths: `state.json` writes `worktree` with `~` (#107).
+
 ## 0.5.7 (2026-11-01)
 
 - Eval cases `sandbox-032`–`035` grade `/plan` (a normal plan, a dry run, `--oneshot` refusing GitHub, a tainted plan), and docs/spec-agent.md documents planning mode.

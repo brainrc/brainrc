@@ -12,7 +12,7 @@
   "slug": "242-oneshot",
   "branch": "242-oneshot",
   "base": "main",
-  "worktree": "/home/user/.brainrc-worktrees/brainrc/242-oneshot",
+  "worktree": "~/.brainrc-worktrees/brainrc/242-oneshot",
   "size": "standard",
   "mode": "subagent",
   "delivery": "normal",

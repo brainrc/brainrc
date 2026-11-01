@@ -26,7 +26,7 @@ Layered, so no single layer has to be perfect.
 - AWS CLI writes (create/delete/put/update/terminate/invoke/…, `s3 cp|mv|rm|sync`) and secret reads
   (`secretsmanager get-secret-value`, `ssm get-parameter --with-decryption`)
 - migration tools and `psql` writes against **non-local** databases
-- Proxmox `qm`/`pct` destroy/stop/…, `talosctl` upgrade/reset/…, host reboot/poweroff
+- host reboot/poweroff. Proxmox `qm`/`pct` and `talosctl` are in the [homelab example pack](../examples/pack-homelab/README.md).
 - `rm -rf` in any flag spelling
 
 Commands inside `sh -c '…'`, `eval`, `$(…)`, and backticks are unwrapped and checked, and shell

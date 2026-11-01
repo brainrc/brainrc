@@ -11,7 +11,7 @@
   "slug": "243-1-connector-create",
   "branch": "243-1-connector-create",
   "base": "main",
-  "worktree": "/home/user/.brainrc-worktrees/brainrc/243-1-connector-create",
+  "worktree": "~/.brainrc-worktrees/brainrc/243-1-connector-create",
   "size": "small",
   "mode": "inline",
   "delivery": "normal",

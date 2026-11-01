@@ -32,6 +32,6 @@ Run at 2026-10-30T03:42:17Z on commit `b155205`.
 ## Notes
 - Full suite run twice, both `OK (skipped=1)`, no failures, no flakes observed. The skipped test was not identified (not in scope); baseline_failures is empty.
 - The XDG run's log (`.runs/test-xdg.log`) contains a line `Moved ~/.config/ai-config -> ~/.config/brainrc.` from existing code; not investigated.
-- Sandbox: `.runs/e2e255.sh` run once in a temp dir under the scratchpad; main checkout at `/home/user/brainrc` was not modified by the scripted checks (only `.runs/` and this file were written there).
+- Sandbox: `.runs/e2e255.sh` run once in a temp dir under the scratchpad; main checkout at `~/brainrc` was not modified by the scripted checks (only `.runs/` and this file were written there).
 - Not run: model-driven `/work` intake to Deliver, interrupt, and `/spec-resume` from main (AC1, AC3, AC7). These need a model and are reported as `not run`, not passing. AC9, AC10, AC12 are checked by instruction citation only, per plan.
 - Pass results for AC2, AC4, AC5, AC6, AC8, AC11 rest on unit tests; the sandbox adds corroboration.

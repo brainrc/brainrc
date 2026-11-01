@@ -2080,6 +2080,12 @@ class ExamplePackTest(unittest.TestCase):
         self.assertNotIn("WARN", out)
         self.assertIn("(packs: acme)", out)
 
+    def test_homelab_pack_is_valid_without_warnings(self):
+        code, out = quiet(brainrc.cmd_validate, str(REPO / "examples/pack-homelab"))
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("WARN", out)
+        self.assertIn("(packs: homelab)", out)
+
 
 class ValidateTest(unittest.TestCase):
     def test_repo_is_valid(self):

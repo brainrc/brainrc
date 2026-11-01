@@ -11,7 +11,7 @@
   "slug": "243-3-ticket-gate",
   "branch": "243-3-ticket-gate",
   "base": "243-2-researcher-proof",
-  "worktree": "/home/user/.brainrc-worktrees/brainrc/243-3-ticket-gate",
+  "worktree": "~/.brainrc-worktrees/brainrc/243-3-ticket-gate",
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",

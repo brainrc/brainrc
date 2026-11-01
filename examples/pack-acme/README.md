@@ -30,4 +30,5 @@ and a tripwire. Format reference: [docs/packs.md](../../docs/packs.md).
    ```
 
 Hooks are left out on purpose: an enabled pack's hooks run on every tool call. To add them,
-see `overrides/` in [docs/packs.md](../../docs/packs.md#layout).
+see `overrides/` in [docs/packs.md](../../docs/packs.md#layout) and the
+[homelab example](../pack-homelab/README.md).

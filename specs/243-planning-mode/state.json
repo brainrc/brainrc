@@ -11,7 +11,7 @@
   "slug": "243-planning-mode",
   "branch": "243-planning-mode",
   "base": "main",
-  "worktree": "/home/user/.brainrc-worktrees/brainrc/243-planning-mode",
+  "worktree": "~/.brainrc-worktrees/brainrc/243-planning-mode",
   "size": "large",
   "mode": "subagent",
   "delivery": "normal",

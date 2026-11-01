@@ -1,0 +1,124 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:107",
+    "id": "107",
+    "title": "Make the repo public",
+    "url": "https://github.com/brainrc/brainrc/issues/107",
+    "pr": null,
+    "pr_draft": false
+  },
+  "slug": "107-make-repo-public",
+  "branch": "107-make-repo-public",
+  "base": "main",
+  "worktree": "~/.brainrc-worktrees/brainrc/107-make-repo-public",
+  "size": "standard",
+  "mode": "inline",
+  "delivery": "normal",
+  "auto": true,
+  "oneshot": true,
+  "stage": "deliver",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/brainrc.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Move the homelab guards into examples/pack-homelab",
+      "agent": "engine",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "overrides/claude/hooks/guard_outward.py",
+        "examples/pack-homelab/",
+        "tests/test_hooks.py",
+        "tests/test_brainrc.py",
+        "docs/guardrails.md",
+        "docs/packs.md",
+        "examples/pack-acme/README.md",
+        "changelog.d/107-make-repo-public.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4"
+      ],
+      "review": "each",
+      "sha": "ab5bba2"
+    },
+    {
+      "id": "T2",
+      "title": "Remove home paths from run records",
+      "agent": "engine",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "skills/spec-agent/references/state.md",
+        "specs/"
+      ],
+      "criteria": [
+        "AC5",
+        "AC6"
+      ],
+      "review": "batch",
+      "sha": "a558097"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-11-01T04:50:24Z",
+    "stage_started_at": {
+      "intake": "2026-11-01T04:50:24Z",
+      "spec": "2026-11-01T04:50:24Z",
+      "plan": "2026-11-01T04:54:34Z",
+      "implement": "2026-11-01T04:54:34Z",
+      "verify": "2026-11-01T05:08:00Z",
+      "document": "2026-11-01T06:38:51Z",
+      "deliver": "2026-11-01T06:38:51Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-11-01T04:54:34Z",
+        "approved_at": "2026-11-01T04:54:34Z"
+      },
+      "plan": {
+        "presented_at": "2026-11-01T04:54:34Z",
+        "approved_at": "2026-11-01T04:54:34Z"
+      },
+      "deliver": {
+        "presented_at": "2026-11-01T06:38:51Z",
+        "approved_at": "2026-11-01T06:38:51Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 2,
+      "first_pass": 2
+    },
+    "retries": 0
+  },
+  "living": [
+    "guard-hooks",
+    "run-lifecycle"
+  ]
+}

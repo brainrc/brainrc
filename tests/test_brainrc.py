@@ -2029,6 +2029,19 @@ class ConnectorCheckTest(TempRepoCase):
         self.assertEqual(code, 1)
         self.assertIn("skills/ticket-x/SKILL.md: connector missing `##` sections for link_pr", out)
 
+    def test_core_local_and_github_connectors_document_create(self):
+        for name in ("ticket-local", "ticket-github"):
+            text = (Path(__file__).resolve().parent.parent / "skills" / name / "SKILL.md").read_text()
+            self.assertRegex(text, r"(?m)^## create\b", name)
+            self.assertRegex(text, r"Implements the ticket connector interface:.*`create`", name)
+        contract = (Path(__file__).resolve().parent.parent / "skills/spec-agent/references/connectors.md").read_text()
+        self.assertRegex(contract, r"\| `create` \| no \| outward \| after an approved Ticket gate \|")
+
+    def test_a_connector_without_create_still_validates(self):
+        write_skill(self.repo, "ticket-w", "## fetch\n\n## comment / transition / link_pr\n")
+        code, out = quiet(brainrc.cmd_validate)
+        self.assertEqual(code, 0, out)
+
     def test_one_heading_may_name_several_operations(self):
         write_skill(self.repo, "ticket-y", "## fetch (read-only)\n\n## comment / transition / link_pr\n")
         code, out = quiet(brainrc.cmd_validate)

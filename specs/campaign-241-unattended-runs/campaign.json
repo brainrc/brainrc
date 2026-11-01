@@ -30,15 +30,16 @@
       "status": "delivered",
       "slug": "242-oneshot",
       "branch": "242-oneshot",
-      "pr": "https://github.com/brainrc/brainrc/pull/258"
+      "pr": "https://github.com/brainrc/brainrc/pull/258",
+      "merged": true
     },
     {
       "ref": "gh:243",
       "order": 3,
       "depends_on": [],
-      "status": "waiting",
-      "slug": null,
-      "branch": null,
+      "status": "in_progress",
+      "slug": "243-planning-mode",
+      "branch": "243-planning-mode",
       "pr": null
     },
     {

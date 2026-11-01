@@ -18,7 +18,7 @@
   "delivery": "normal",
   "auto": false,
   "campaign": "specs/campaign-241-unattended-runs",
-  "stage": "watch",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -354,10 +354,17 @@
       "task_minutes": 6.1,
       "wall_minutes": 3.5
     },
-    "pr_opened_at": "2026-10-31T15:52:32Z"
+    "pr_opened_at": "2026-10-31T15:52:32Z",
+    "finished_at": "2026-10-31T15:57:02Z"
   },
   "living": [
     "run-lifecycle",
     "campaign-mode"
-  ]
+  ],
+  "watch": {
+    "outcome": "merged",
+    "merged_at": "2026-10-31T15:53:45Z",
+    "post_merge": "pass",
+    "checked_at": "2026-10-31T15:57:02Z"
+  }
 }

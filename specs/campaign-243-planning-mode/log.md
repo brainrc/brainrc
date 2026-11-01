@@ -15,3 +15,7 @@
 - Final security review clean of HIGH. Child 3 starts.
 
 ## 2026-10-31T23:57:59Z · child 3 243.3 verified
+
+## engine · stack Deliver gate · auto-approved (oneshot)
+2026-11-01T00:26:37Z
+Stacked ready PRs: #259 (243.1, base main), #260 (243.2 on 243.1), #261 (243.3 on 243.2), #262 (243.4 on 243.3, closes #243). Ticket comment stays a draft. Never merged or retargeted by the engine.

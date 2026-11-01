@@ -6,7 +6,7 @@
     "id": "243",
     "title": "spec-agent: planning mode, research to proven tickets",
     "url": "https://github.com/brainrc/brainrc/issues/243",
-    "pr": null
+    "pr": "https://github.com/brainrc/brainrc/pull/262"
   },
   "slug": "243-planning-mode",
   "branch": "243-planning-mode",
@@ -18,7 +18,7 @@
   "auto": true,
   "oneshot": true,
   "campaign": "specs/campaign-241-unattended-runs",
-  "stage": "split",
+  "stage": "watch",
   "gates": {
     "spec": "approved",
     "plan": "pending",

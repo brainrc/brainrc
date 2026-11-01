@@ -37,10 +37,11 @@
       "ref": "gh:243",
       "order": 3,
       "depends_on": [],
-      "status": "in_progress",
+      "status": "delivered",
       "slug": "243-planning-mode",
       "branch": "243-planning-mode",
-      "pr": null
+      "pr": "https://github.com/brainrc/brainrc/pull/262",
+      "pr_draft": false
     },
     {
       "ref": "gh:244",

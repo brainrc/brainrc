@@ -10,6 +10,10 @@
     "campaign": {
       "presented_at": "2026-10-31T16:09:57Z",
       "approved_at": "2026-10-31T16:09:57Z"
+    },
+    "deliver": {
+      "presented_at": "2026-11-01T00:26:37Z",
+      "approved_at": "2026-11-01T00:26:37Z"
     }
   },
   "members": [
@@ -17,12 +21,12 @@
       "ref": "local:specs/tickets/243-1-connector-create.md",
       "order": 1,
       "depends_on": [],
-      "status": "verified",
+      "status": "delivered",
       "slug": "243-1-connector-create",
       "branch": "243-1-connector-create",
-      "pr": null,
-      "pr_draft": null,
-      "base": null,
+      "pr": "https://github.com/brainrc/brainrc/pull/259",
+      "pr_draft": false,
+      "base": "main",
       "merged": false
     },
     {
@@ -31,12 +35,12 @@
       "depends_on": [
         "local:specs/tickets/243-1-connector-create.md"
       ],
-      "status": "verified",
+      "status": "delivered",
       "slug": "243-2-researcher-proof",
       "branch": "243-2-researcher-proof",
-      "pr": null,
-      "pr_draft": null,
-      "base": null,
+      "pr": "https://github.com/brainrc/brainrc/pull/260",
+      "pr_draft": false,
+      "base": "243-1-connector-create",
       "merged": false
     },
     {
@@ -45,12 +49,12 @@
       "depends_on": [
         "local:specs/tickets/243-2-researcher-proof.md"
       ],
-      "status": "verified",
+      "status": "delivered",
       "slug": "243-3-ticket-gate",
       "branch": "243-3-ticket-gate",
-      "pr": null,
-      "pr_draft": null,
-      "base": null,
+      "pr": "https://github.com/brainrc/brainrc/pull/261",
+      "pr_draft": false,
+      "base": "243-2-researcher-proof",
       "merged": false
     },
     {
@@ -59,12 +63,12 @@
       "depends_on": [
         "local:specs/tickets/243-3-ticket-gate.md"
       ],
-      "status": "waiting",
+      "status": "delivered",
       "slug": "243-4-plan-evals-docs",
       "branch": "243-4-plan-evals-docs",
-      "pr": null,
-      "pr_draft": null,
-      "base": null,
+      "pr": "https://github.com/brainrc/brainrc/pull/262",
+      "pr_draft": false,
+      "base": "243-3-ticket-gate",
       "merged": false
     }
   ]

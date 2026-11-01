@@ -73,3 +73,7 @@ _Last changed by 242-oneshot._
 ### Oneshot blocked PR
 A `--oneshot` run that hits a benign stop (exhausted retry budget, scope-fence breach, spec gap, or no safe Callout default) SHALL set `state.blocked` and open a draft PR titled `[blocked] <ticket ref>: <fixed blocker phrase>`, the phrase being `retry budget exhausted`, `scope fence breach`, `spec gap` or `no safe default` respectively. The body SHALL name the blocker kind and source location, the stop condition, completed work, the needed decision and the decisions made so far; it SHALL NOT quote untrusted text and SHALL NOT hold any secret value. A `--oneshot` run that hits a tainted stop (CRITICAL/HIGH security finding, instruction in untrusted content, or secret need) SHALL set `state.blocked`, push nothing, open no PR, and report the blocker locally. (AC3, AC4)
 _Last changed by 242-oneshot._
+
+### Ticket gate
+A plan run SHALL create tickets only after approval at a Ticket gate listing each as an outward action, recorded like other gates; `--oneshot` SHALL auto-approve it for local tickets only and refuse GitHub creation. (AC5, AC6, AC7)
+_Last changed by 243-planning-mode._

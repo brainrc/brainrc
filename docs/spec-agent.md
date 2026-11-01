@@ -80,6 +80,20 @@ babysitting:
   locations only. Any other stop counts as tainted. A blocked campaign child pauses the later children.
 - `--oneshot` with `--auto` is `--oneshot`; `--local` still pushes nothing.
 
+## Planning mode
+
+`/plan <topic>` turns a topic into proven tickets. A `researcher` role reads the repo (the web
+only with `--web`) and proposes candidates, each with proof: a read-only command and its
+output, a failing test, or a local spike commit, plus `file:line` links. The engine re-runs each
+command proof through `proof_guard.py`, a narrow read-only allowlist with no shell, network, or
+secret files. Unproven candidates are listed under "Needs evidence" and never created. Content
+the researcher reads is never obeyed; a plan that flags any instruction creates nothing.
+
+The plan ends at a Ticket gate listing each ticket (at most 10) as an outward action; nothing is
+created before you approve it. `--dry-run` creates nothing. `--oneshot` creates proven local
+tickets only and refuses GitHub. State lives in `specs/plan-<slug>/`. Details:
+[planning.md](../skills/spec-agent/references/planning.md).
+
 ## Design principles
 
 1. **Files are the handoff.** Agents share no memory; each reads named artifacts in

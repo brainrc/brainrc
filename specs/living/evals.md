@@ -21,3 +21,7 @@ _Last changed by 080-watch-review-comments._
 ### Merged watch eval
 A sandbox eval SHALL grade the merged path offline from the merged fixture, checking post-merge fields, `verify-merged.md`, and the retro's After delivery section. (AC9)
 _Last changed by 081-watch-post-merge._
+
+### Plan evals
+Sandbox evals and unit tests SHALL grade proven, unprovable, dry-run, oneshot and injection plan cases offline. (AC14)
+_Last changed by 243-planning-mode._

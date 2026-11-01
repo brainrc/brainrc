@@ -40,3 +40,6 @@ Owner: approve, with #255 first. #255 moved to the top of the epic's sub-issues.
 
 ## 2026-10-31T16:08:20Z · child 3 gh:243 started (--oneshot)
 - Owner asked to oneshot it. Worktree ~/.brainrc-worktrees/brainrc/243-planning-mode.
+
+## 2026-11-01T00:26:37Z · child 3 gh:243 delivered
+- Split into 4 stacked ready PRs #259-#262.

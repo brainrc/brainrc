@@ -8,7 +8,7 @@ Everything else produces no output, leaving the normal permission flow unchanged
 
 Covers git/GitHub, package and image publishing, Terraform/OpenTofu/Terragrunt, Kubernetes,
 Helm, Argo CD, Flux, AWS CLI writes and secret reads, database migrations and SQL against
-non-local databases, and homelab hypervisor/OS power operations. Commands wrapped in
+non-local databases, and host reboot/poweroff. Commands wrapped in
 `sh -c '...'`, `eval`, `$(...)`, or backticks are checked too. MCP tools whose name contains a
 write verb (create, update, send, merge, ...) are asked about, except on local-only servers.
 Dry runs and clearly local-only operations pass through without a prompt.
@@ -55,10 +55,7 @@ RULES: list[tuple[str, str]] = [
     # AWS: reading secret values into context
     (r"\baws\b" + SAME_CMD + r"\bsecretsmanager\s+get-secret-value\b", "reveals secret values"),
     (r"\baws\b" + SAME_CMD + r"\bssm\s+get-parameters?\b" + SAME_CMD + r"--with-decryption", "reveals secret values"),
-    # homelab / hosts
-    (r"\b(qm|pct)\s+(destroy|stop|shutdown|reboot|reset|rollback|migrate)\b", "changes Proxmox guests"),
-    (r"\btalosctl\b" + SAME_CMD + r"\b(apply-config|upgrade|upgrade-k8s|reset|reboot|shutdown|bootstrap)\b",
-     "changes Talos nodes"),
+    # hosts (Proxmox and Talos rules: examples/pack-homelab)
     (r"(^|[;&|]\s*|\bsudo\s+)(reboot|shutdown|poweroff|halt)\b", "reboots or powers off a host"),
 ]
 

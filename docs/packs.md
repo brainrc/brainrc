@@ -5,6 +5,7 @@ here: an employer's facts, internal skills, private review rules. This repo stay
 and each machine picks the packs it needs.
 
 To start one, copy the working example in [examples/pack-acme](../examples/pack-acme/README.md).
+For a pack with a guard hook, see [examples/pack-homelab](../examples/pack-homelab/README.md).
 
 ## Enable a pack
 

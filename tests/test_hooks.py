@@ -75,9 +75,7 @@ class GuardOutwardTest(unittest.TestCase):
             "migrate -path db/migrations -database $DATABASE_URL up",
             "goose -dir migrations postgres \"host=db.prod.internal\" up",
             "psql -h db.prod.internal -c 'DROP TABLE users'",
-            # homelab
-            "qm destroy 105",
-            "talosctl -n 10.0.0.2 upgrade --image x",
+            # hosts
             "sudo reboot",
             # git global options before the subcommand
             "git -C ../other push origin main",
@@ -101,7 +99,6 @@ class GuardOutwardTest(unittest.TestCase):
             "gh release create v1.0.0",
             "gh repo delete o/r --yes",
             "argocd cluster rm prod",
-            "pct stop 200",
             "sudo halt",
             "helm rollback api 3",
             "kubectl rollout undo deploy/api",
@@ -151,8 +148,6 @@ class GuardOutwardTest(unittest.TestCase):
             "migrate -path db/migrations -database postgres://dev:dev@localhost:55432/app up",
             "psql -h localhost -p 55432 -c 'DROP TABLE t'",
             "psql -h db.prod.internal -c 'select 1'",
-            "qm list",
-            "talosctl -n 10.0.0.2 dashboard",
             # near misses for the rules above
             "git -C ../other status",
             "git -c core.pager=cat log -3",
@@ -169,7 +164,6 @@ class GuardOutwardTest(unittest.TestCase):
             "gh secret list",
             "gh release view v1.0.0",
             "argocd cluster list",
-            "pct list",
             "helm history api",
             "kubectl rollout history deploy/api",
             "aws s3 ls s3://bucket/site/",
@@ -219,6 +213,56 @@ FAKE_PEM = "-----BEGIN " + "RSA PRIVATE KEY-----\nMIIE..."
 FAKE_AWS_SECRET = "aws_secret_access_key = " + "wJalr" + "Q" * 35
 FAKE_GITLAB = "glpat-" + "x" * 20
 FAKE_JWT = "eyJ" + "a" * 12 + ".eyJ" + "b" * 12 + "." + "c" * 12
+
+
+HOMELAB_HOOKS = HOOKS.parent.parent.parent / "examples" / "pack-homelab" / "overrides" / "claude" / "hooks"
+HOMELAB_RISKY = ["qm destroy 105", "pct stop 200", "talosctl -n 10.0.0.2 upgrade --image x"]
+
+
+def homelab(payload: dict | str) -> str | None:
+    data = payload if isinstance(payload, str) else json.dumps(payload)
+    out = subprocess.run(
+        [sys.executable, str(HOMELAB_HOOKS / "guard_homelab.py")],
+        input=data, capture_output=True, text=True, check=True,
+    ).stdout.strip()
+    return json.loads(out)["hookSpecificOutput"]["permissionDecision"] if out else None
+
+
+class HomelabGuardTest(unittest.TestCase):
+    """The Proxmox and Talos rules live in examples/pack-homelab, not in core."""
+
+    def test_core_no_longer_asks(self):
+        for command in HOMELAB_RISKY:
+            with self.subTest(command=command):
+                self.assertIsNone(bash(command))
+
+    def test_pack_asks_for_destructive(self):
+        for command in HOMELAB_RISKY + [
+            "qm migrate 105 node2",
+            "pct rollback 200 snap1",
+            "talosctl reset -n 10.0.0.2",
+            "sh -c 'qm destroy 105'",
+            "ls;pct shutdown 200",
+        ]:
+            with self.subTest(command=command):
+                self.assertEqual(homelab({"tool_name": "Bash", "tool_input": {"command": command}}), "ask")
+
+    def test_pack_allows_read_only(self):
+        for command in ["qm list", "pct list", "talosctl -n 10.0.0.2 dashboard",
+                        "talosctl -n 10.0.0.2 get members", "echo qm-destroy", "git status"]:
+            with self.subTest(command=command):
+                self.assertIsNone(homelab({"tool_name": "Bash", "tool_input": {"command": command}}))
+
+    def test_pack_ignores_other_tools_and_bad_payloads(self):
+        self.assertIsNone(homelab({"tool_name": "Read", "tool_input": {"command": "qm destroy 105"}}))
+        self.assertIsNone(homelab("not json"))
+        self.assertIsNone(homelab({"tool_name": "Bash"}))
+
+    def test_pack_fragment_runs_hook_from_its_hooks_dir(self):
+        fragment = json.loads((HOMELAB_HOOKS.parent / "settings.fragment.json").read_text())
+        commands = [h["command"] for e in fragment["hooks"]["PreToolUse"] for h in e["hooks"]]
+        self.assertEqual(len(commands), 1)
+        self.assertIn("{{hooks_dir}}/guard_homelab.py", commands[0])
 
 
 def write(path: str, content: str, tool: str = "Write") -> str | None:

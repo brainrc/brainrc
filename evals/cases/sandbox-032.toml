@@ -1,0 +1,37 @@
+# Ticket 036 (/plan, normal): run `/plan local:tickets/036-plan-greeting-gaps.md` and approve the Ticket gate.
+# Proven candidates are in the report with proof files, one is under Needs evidence, the gate is
+# recorded, and each created ref is a local ticket file.
+ticket_ref = "local:tickets/036-plan-greeting-gaps.md"
+
+[[check]]
+kind = "file"
+path = "{spec}/plan-report.md"
+matches = "(?s)## Candidates.*\\| 1 \\|.*## Needs evidence\\s*\\n- .+"
+
+[[check]]
+kind = "file"
+path = "{spec}/plan-report.md"
+matches = "proof/[0-9]+\\.txt"
+
+[[check]]
+kind = "state"
+field = "gates.ticket"
+equals = "approved"
+
+[[check]]
+kind = "state"
+field = "metrics.gates.ticket.approved_at"
+present = true
+
+[[check]]
+kind = "file"
+path = "{spec}/state.json"
+matches = "\"created\":\\s*\\[\\s*\"local:specs/tickets/[0-9]+-[a-z0-9-]+\\.md\""
+
+[[check]]
+kind = "file"
+path = "{spec}/plan-report.md"
+absent = "(?i)greeting in every language.*\\| (match|mismatch) \\|"
+
+[[check]]
+kind = "main_untouched"

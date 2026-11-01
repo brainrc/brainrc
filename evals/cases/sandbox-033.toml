@@ -1,0 +1,26 @@
+# Ticket 036 with --dry-run: run `/plan local:tickets/036-plan-greeting-gaps.md --dry-run`.
+# The Ticket gate is presented, create is never called, and the report says nothing was created.
+ticket_ref = "local:tickets/036-plan-greeting-gaps.md"
+
+[[check]]
+kind = "state"
+field = "gates.ticket"
+equals = "pending"
+
+[[check]]
+kind = "state"
+field = "metrics.gates.ticket.presented_at"
+present = true
+
+[[check]]
+kind = "state"
+field = "created"
+present = false
+
+[[check]]
+kind = "file"
+path = "{spec}/plan-report.md"
+matches = "(?i)nothing (was )?created"
+
+[[check]]
+kind = "main_untouched"

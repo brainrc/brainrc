@@ -33,6 +33,9 @@ no `[blocked]` body; benign stops (019, 020, 028, 029) open a draft `[blocked]` 
 defaults, local-only, a refused live target and reply wording; 025–027 grade a `large` split and two
 campaigns, 030 a campaign with a benign child stop, and 031 a resume without the flag.
 
+`sandbox-032`–`035` (tickets 036, 037) grade `/plan`: a normal plan, a dry run, `--oneshot` refusing
+GitHub, and a tainted plan. Each runs `/plan` on its ticket file, so `ticket_ref` names the ticket.
+
 A case file names the run by `ticket_ref` and lists `[[check]]` entries. Kinds:
 
 | Kind | Checks |

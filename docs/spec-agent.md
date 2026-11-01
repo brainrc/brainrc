@@ -161,6 +161,7 @@ Remove a worktree by hand with `git worktree remove <path>`. Cleanup on merge is
 | security-reviewer | sonnet | exploitable issues |
 | infra-reviewer | sonnet | blast radius, destroy/replace, state, rollout |
 | verifier | haiku | criteria → evidence |
+| researcher | sonnet | topic → proven candidate tickets (`/plan`) |
 | doc-writer | haiku | docs, PR body, ticket comment |
 
 ## Domain skills (`skills/`)

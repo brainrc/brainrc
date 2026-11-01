@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "local",
+    "ref": "local:specs/tickets/243-2-researcher-proof.md",
+    "id": "243.2",
+    "title": "Researcher role and proof report",
+    "url": null,
+    "pr": null
+  },
+  "slug": "243-2-researcher-proof",
+  "branch": "243-2-researcher-proof",
+  "base": "243-1-connector-create",
+  "worktree": "/home/user/.brainrc-worktrees/brainrc/243-2-researcher-proof",
+  "size": "standard",
+  "mode": "inline",
+  "delivery": "normal",
+  "auto": true,
+  "oneshot": true,
+  "campaign": "specs/campaign-243-planning-mode",
+  "stage": "deliver",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "pending"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/brainrc.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "researcher role, /plan, planning reference, proof_guard",
+      "agent": "engine",
+      "status": "done",
+      "attempts": 4,
+      "files": [
+        "agents/researcher.md",
+        "skills/plan/SKILL.md",
+        "skills/spec-agent/references/planning.md",
+        "skills/spec-agent/templates/plan-report.md",
+        "skills/spec-agent/scripts/proof_guard.py",
+        "skills/spec-agent/SKILL.md",
+        "docs/spec-agent.md",
+        "tests/test_planning.py",
+        "tests/test_proof_guard.py",
+        "changelog.d/243-2-researcher-proof.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC8",
+        "AC9",
+        "AC11",
+        "AC12"
+      ],
+      "review": "batch",
+      "sha": "ca6caaa"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-31T20:34:12Z",
+    "stage_started_at": {
+      "intake": "2026-10-31T20:34:12Z",
+      "spec": "2026-10-31T20:34:12Z",
+      "implement": "2026-10-31T20:34:12Z"
+    },
+    "gates": {},
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 4,
+      "first_pass": 1
+    },
+    "retries": 1,
+    "interventions": 1
+  }
+}

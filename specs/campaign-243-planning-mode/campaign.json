@@ -31,7 +31,7 @@
       "depends_on": [
         "local:specs/tickets/243-1-connector-create.md"
       ],
-      "status": "todo",
+      "status": "verified",
       "slug": "243-2-researcher-proof",
       "branch": "243-2-researcher-proof",
       "pr": null,
@@ -45,7 +45,7 @@
       "depends_on": [
         "local:specs/tickets/243-2-researcher-proof.md"
       ],
-      "status": "todo",
+      "status": "waiting",
       "slug": "243-3-ticket-gate",
       "branch": "243-3-ticket-gate",
       "pr": null,
@@ -59,7 +59,7 @@
       "depends_on": [
         "local:specs/tickets/243-3-ticket-gate.md"
       ],
-      "status": "todo",
+      "status": "waiting",
       "slug": "243-4-plan-evals-docs",
       "branch": "243-4-plan-evals-docs",
       "pr": null,

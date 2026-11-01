@@ -11,7 +11,7 @@
   "slug": "243-2-researcher-proof",
   "branch": "243-2-researcher-proof",
   "base": "243-1-connector-create",
-  "worktree": "/home/user/.brainrc-worktrees/brainrc/243-2-researcher-proof",
+  "worktree": "~/.brainrc-worktrees/brainrc/243-2-researcher-proof",
   "size": "standard",
   "mode": "inline",
   "delivery": "normal",

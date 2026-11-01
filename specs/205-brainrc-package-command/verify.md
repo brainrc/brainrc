@@ -7,7 +7,7 @@ Run at 2026-10-28T02:38:17Z on commit `c2c9e56`.
 |---|---|---|
 | Tests | `python3 -m unittest discover -s tests` | pass: 456 tests, OK |
 | Lint | not configured (actionlint, zizmor not installed) | not configured |
-| Build | `pip install /home/user/brainrc` into a fresh venv outside the repo | pass: brainrc 0.3.50 installed |
+| Build | `pip install ~/brainrc` into a fresh venv outside the repo | pass: brainrc 0.3.50 installed |
 | Validate (infra) | `python3 scripts/brainrc.py validate`; `... --pack examples/pack-acme`; sandbox `python3 -m unittest -q`; `scripts/brainrc.py plugin` | pass: OK (26 skills, 9 agents); pack OK; sandbox 2 OK; manifests unchanged |
 | Plan / diff | none | offline only |
 

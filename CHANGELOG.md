@@ -12,6 +12,10 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.5.7 (2026-11-01)
+
+- Eval cases `sandbox-032`–`035` grade `/plan` (a normal plan, a dry run, `--oneshot` refusing GitHub, a tainted plan), and docs/spec-agent.md documents planning mode.
+
 ## 0.5.6 (2026-11-01)
 
 - `/plan` ends at a Ticket gate that lists each proven ticket (at most 10, the rest deferred) as an outward action; nothing is created before approval. `--dry-run` creates nothing, and `--oneshot` creates proven local tickets only and refuses GitHub.

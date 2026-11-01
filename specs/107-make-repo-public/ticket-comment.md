@@ -1,0 +1,1 @@
+PR: <PR_URL>. Core's guard no longer asks about Proxmox and Talos commands; those rules moved to `examples/pack-homelab`. Run records no longer hold home paths. Gitleaks 8.24.3 scanned every commit on every branch and found no leaks. What's left for #107: make the repo public, then check the install lines from a fresh VM.

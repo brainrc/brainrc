@@ -77,3 +77,7 @@ _Last changed by 242-oneshot._
 ### Ticket gate
 A plan run SHALL create tickets only after approval at a Ticket gate listing each as an outward action, recorded like other gates; `--oneshot` SHALL auto-approve it for local tickets only and refuse GitHub creation. (AC5, AC6, AC7)
 _Last changed by 243-planning-mode._
+
+### Worktree path without the home directory
+`state.json` `worktree` SHALL be written with the home directory as `~`. (AC6)
+_Last changed by 107-make-repo-public._

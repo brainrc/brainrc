@@ -19,7 +19,7 @@ those two rules plus the same PreToolUse output: a small stdlib script, no impor
 (a pack hook dir is a sibling of core's and may be a copy). The pack follows `examples/pack-acme`'s
 layout, with `overrides/claude/hooks/` and a `settings.fragment.json` that uses `{{hooks_dir}}`.
 
-The run records get `/home/user` replaced with `~`, and `state.md` says the engine writes
+The run records get the home directory replaced with `~`, and `state.md` says the engine writes
 `worktree` that way, so new runs don't add home paths.
 
 ## Files
@@ -31,7 +31,7 @@ The run records get `/home/user` replaced with `~`, and `state.md` says the engi
 | `tests/test_brainrc.py` | modify: the homelab pack validates against the real VERSION |
 | `docs/guardrails.md`, `docs/packs.md`, `examples/pack-acme/README.md` | modify: point to the homelab pack |
 | `skills/spec-agent/references/state.md` | modify: `worktree` uses `~` |
-| `specs/**` | modify: `/home/user` → `~` |
+| `specs/**` | modify: home directory → `~` |
 | `changelog.d/107-make-repo-public.md` | new |
 
 ## Risks

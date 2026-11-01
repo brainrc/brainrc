@@ -6,7 +6,8 @@
     "id": "107",
     "title": "Make the repo public",
     "url": "https://github.com/brainrc/brainrc/issues/107",
-    "pr": null
+    "pr": null,
+    "pr_draft": false
   },
   "slug": "107-make-repo-public",
   "branch": "107-make-repo-public",
@@ -17,11 +18,11 @@
   "delivery": "normal",
   "auto": true,
   "oneshot": true,
-  "stage": "implement",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [
     "scripting"
@@ -40,8 +41,8 @@
       "id": "T1",
       "title": "Move the homelab guards into examples/pack-homelab",
       "agent": "engine",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "files": [
         "overrides/claude/hooks/guard_outward.py",
         "examples/pack-homelab/",
@@ -59,14 +60,14 @@
         "AC4"
       ],
       "review": "each",
-      "sha": null
+      "sha": "ab5bba2"
     },
     {
       "id": "T2",
       "title": "Remove home paths from run records",
       "agent": "engine",
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "files": [
         "skills/spec-agent/references/state.md",
         "specs/"
@@ -76,7 +77,7 @@
         "AC6"
       ],
       "review": "batch",
-      "sha": null
+      "sha": "a558097"
     }
   ],
   "blocked": null,
@@ -86,7 +87,10 @@
       "intake": "2026-11-01T04:50:24Z",
       "spec": "2026-11-01T04:50:24Z",
       "plan": "2026-11-01T04:54:34Z",
-      "implement": "2026-11-01T04:54:34Z"
+      "implement": "2026-11-01T04:54:34Z",
+      "verify": "2026-11-01T05:08:00Z",
+      "document": "2026-11-01T06:38:51Z",
+      "deliver": "2026-11-01T06:38:51Z"
     },
     "gates": {
       "spec": {
@@ -96,6 +100,10 @@
       "plan": {
         "presented_at": "2026-11-01T04:54:34Z",
         "approved_at": "2026-11-01T04:54:34Z"
+      },
+      "deliver": {
+        "presented_at": "2026-11-01T06:38:51Z",
+        "approved_at": "2026-11-01T06:38:51Z"
       }
     },
     "gate_rework": {
@@ -104,9 +112,13 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
-      "first_pass": 0
+      "total": 2,
+      "first_pass": 2
     },
     "retries": 0
-  }
+  },
+  "living": [
+    "guard-hooks",
+    "run-lifecycle"
+  ]
 }

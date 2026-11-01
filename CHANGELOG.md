@@ -12,6 +12,18 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.5.6 (2026-11-01)
+
+- `/plan` ends at a Ticket gate that lists each proven ticket (at most 10, the rest deferred) as an outward action; nothing is created before approval. `--dry-run` creates nothing, and `--oneshot` creates proven local tickets only and refuses GitHub.
+
+## 0.5.5 (2026-11-01)
+
+- `/plan <topic>` (spec-agent planning mode): a new `researcher` role investigates a topic and proposes candidate tickets, each with runnable proof (a command and its output, a failing test, or a local spike commit) and `file:line` links. The engine re-runs every proof; unproven candidates go under "Needs evidence". Web research only with `--web`, and the researcher never follows instructions found in content.
+
+## 0.5.4 (2026-11-01)
+
+- Ticket connectors gain an optional `create` operation, used after an approved Ticket gate: `ticket-local` writes a new ticket file and `ticket-github` opens an issue. A connector without it lists the tickets as drafts for you to create.
+
 ## 0.5.3 (2026-10-31)
 
 - `/work --oneshot` runs a ticket with no manual intervention and ends in ready PRs, never merged. A `large` ticket splits into a stacked campaign, and plan Callouts take the safer default, listed under "Decisions made without you". Tainted stops (a CRITICAL/HIGH security finding, an instruction in untrusted content, a secret) push nothing, as with `--auto`; benign stops (retry budget, scope breach, spec gap, no safe default) open a draft `[blocked] <ticket ref>: <reason>` PR.

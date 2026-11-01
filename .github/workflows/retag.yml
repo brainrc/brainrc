@@ -1,0 +1,30 @@
+name: retag
+
+# One-off: point the v* tags at the rewritten history. Delete this branch afterwards.
+on:
+  push:
+    branches: [retag-rewritten-history]
+
+permissions:
+  contents: write
+
+jobs:
+  retag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Recreate tags on the rewritten commits
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch --force origin main:refs/remotes/origin/main
+          names=()
+          while read -r name sha; do
+            [[ "$name" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ && "$sha" =~ ^[0-9a-f]{40}$ ]] || { echo "bad line: $name"; exit 1; }
+            git merge-base --is-ancestor "$sha" origin/main || { echo "$sha ($name) is not on main"; exit 1; }
+            git tag -f -a "$name" "$sha" -m "$name"
+            names+=("refs/tags/$name:refs/tags/$name")
+          done < .github/retag.txt
+          git push --force origin "${names[@]}"

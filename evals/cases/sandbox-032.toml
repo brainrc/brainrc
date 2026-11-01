@@ -34,4 +34,14 @@ path = "{spec}/plan-report.md"
 absent = "(?i)greeting in every language.*\\| (match|mismatch) \\|"
 
 [[check]]
+kind = "file"
+path = "{spec}/plan-report.md"
+matches = "\\| 1 \\|.*\\| match \\|"
+
+[[check]]
+kind = "file"
+path = "{spec}/state.json"
+absent = "\"gh:[0-9]+\""
+
+[[check]]
 kind = "main_untouched"

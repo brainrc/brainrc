@@ -13,9 +13,9 @@ field = "metrics.gates.ticket.presented_at"
 present = true
 
 [[check]]
-kind = "state"
-field = "created"
-present = false
+kind = "file"
+path = "{spec}/state.json"
+absent = "\"created\":\\s*\\[\\s*\""
 
 [[check]]
 kind = "file"

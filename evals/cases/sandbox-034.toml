@@ -19,4 +19,14 @@ path = "{spec}/state.json"
 absent = "\"gh:[0-9]+\""
 
 [[check]]
+kind = "state"
+field = "gates.ticket"
+equals = "approved"
+
+[[check]]
+kind = "file"
+path = "{spec}/state.json"
+matches = "\"created\":\\s*\\[\\s*\"local:specs/tickets/[0-9]+-[a-z0-9-]+\\.md\""
+
+[[check]]
 kind = "main_untouched"

@@ -35,3 +35,11 @@ Campaign gh:113 child 3 of 4, base 147-ci-matrix. Size: standard (README rewrite
 **Evidence:** red: 8 behavior failures against a stub; full suite 740 OK (1 skipped); validate OK; check_tutorial.py OK. Engine re-ran tests.test_check_tutorial: OK.
 **Open issues:** `--readme` fails until T2 adds `## Quickstart` (CI step red mid-branch only). Quickstart runs with cwd = checkout copy at ~/brainrc.
 **Next:** T2.
+
+## implementer · T2 · done
+2026-11-03T13:03:30Z
+
+**Did:** README lead (five tools, partial support linked), Quickstart run by `--readme`, Install, transcript from a real temp-HOME run, spec-agent below, More absorbs "Try it"; RealReadmeTest + e2e; fragment.
+**Evidence:** red: 3 failures, 1 error. Engine re-ran full suite: 746 OK (1 skipped); --readme PASS. Engine fix: the transcript's apply part said "(the same list, now written)", which apply never prints; replaced with real abbreviated apply lines (checked against a temp-HOME run: apply prints the list without the dry-run line).
+**Open issues:** README 95 lines; T3 has 5 lines unless More is trimmed.
+**Next:** T3.

@@ -67,7 +67,7 @@
       "id": "T2",
       "title": "README lead, quickstart, install, transcript, spec-agent second, tests, fragment",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "README.md",
@@ -88,14 +88,17 @@
       "after": [
         "T1"
       ],
-      "started_at": "2026-11-03T06:31:33Z"
+      "started_at": "2026-11-03T06:31:33Z",
+      "finished_at": "2026-11-03T13:03:30Z",
+      "commit": "4a5c532",
+      "red": "assertion"
     },
     {
       "id": "T3",
       "title": "Why not table",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "README.md"
       ],
@@ -107,7 +110,8 @@
       "review": "batch",
       "after": [
         "T2"
-      ]
+      ],
+      "started_at": "2026-11-03T13:03:30Z"
     }
   ],
   "blocked": null,

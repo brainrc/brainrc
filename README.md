@@ -1,9 +1,57 @@
 # brainrc
 
+Write your AI-tool config once and sync it into **Claude Code, Codex CLI, OpenCode, Antigravity
+CLI, and Cursor**. Skills reach all five tools. Rules, commands, agents, hooks, and MCP servers
+reach only some, because the tools differ ([harness support](docs/formats.md#harness-support)).
+
+## Quickstart
+
+Needs Python 3.11+ and git.
+
+```bash
+git clone https://github.com/brainrc/brainrc ~/brainrc
+cd ~/brainrc
+python3 scripts/brainrc.py status
+python3 scripts/brainrc.py apply
+python3 scripts/brainrc.py status
+```
+
+The first `status` previews what `apply` would write and writes nothing. It worked when the last
+`status` prints `Everything in sync.`
+
+```text
+$ python3 scripts/brainrc.py status
+CREATE    claude    ~/.claude/skills/aws
+...                 (about 160 lines, one per file)
+MERGE     cursor    ~/.cursor/hooks.json  (hooks)
+
+Dry run. Run `apply` to write.
+$ python3 scripts/brainrc.py apply
+CREATE    claude    ~/.claude/skills/aws
+...
+MERGE     cursor    ~/.cursor/hooks.json  (hooks)
+$ python3 scripts/brainrc.py status
+Everything in sync.
+```
+
+## Install
+
+In Claude Code, the quickest path:
+
+```text
+/plugin marketplace add brainrc/brainrc
+/plugin install brainrc@brainrc
+```
+
+The plugin covers Claude Code only. For the other tools, or to also get the shared rules and
+private packs, use the syncer above. All install paths, platform notes, and pinning:
+[docs/install.md](docs/install.md).
+
+## spec-agent
+
 **spec-agent** takes a ticket to a reviewed pull request: spec → plan → implement → verify →
 document → deliver, run by a team of small agents, with your approval at three gates. It covers
-application code *and* infrastructure: Go, Terraform/Terragrunt, AWS, Kubernetes/Helm, GitOps,
-CI pipelines, containers, migrations, and observability.
+application code *and* infrastructure.
 
 ```
 /work gh:42                 # or: /work local:tickets/7.md · /work add a --dry-run flag to the sync CLI
@@ -19,55 +67,20 @@ between runs on its own, with evidence at every step. Details: [docs/spec-agent.
 > independent of the implementer. Treat those three as best effort
 > ([details](docs/spec-agent.md#harness-support)).
 
-## Try it
-
-1. Install (below), then copy the [sandbox](examples/sandbox/README.md) somewhere safe and run
-   `/work local:tickets/001-add-shout-flag.md` in it.
-2. Grade the run: `python3 scripts/evals.py check /tmp/spec-sandbox evals/cases/sandbox-001.toml`
-   ([evals](docs/evals.md)). Recorded runs: [docs/e2e-runs.md](docs/e2e-runs.md).
-
-New here? The [architecture overview](docs/architecture.md) has one diagram and a glossary.
-
-## Install
-
-Quickest, in Claude Code:
-
-```text
-/plugin marketplace add brainrc/brainrc
-/plugin install brainrc@brainrc
-```
-
-For other tools, or to also get the shared rules and private packs, use **brainrc**, the syncer
-in this repo. It writes skills, agents, commands, rules, hooks, and MCP servers once and links
-them into Claude Code, Codex CLI, OpenCode, Antigravity CLI, and Cursor:
-
-```bash
-git clone https://github.com/brainrc/brainrc ~/brainrc && cd ~/brainrc
-python3 scripts/brainrc.py apply
-```
-
-Every install path, each harness plugin, platform notes, release pinning, and per-machine
-overrides: [docs/install.md](docs/install.md).
-
 ## More
 
 | Doc | For |
 |---|---|
-| [spec-agent](docs/spec-agent.md) | stages, roles, domain skills, living specs, harness support |
-| [guardrails](docs/guardrails.md) | what the hooks catch, their gaps, and the recommended setup for runs that touch real infrastructure |
-| [post-deliver](docs/post-deliver.md) | design: following a PR through CI, review, and merge |
+| [guardrails](docs/guardrails.md) · [post-deliver](docs/post-deliver.md) | what the hooks catch and their gaps; following a PR through CI and merge |
 | [packs](docs/packs.md) · [tutorial](docs/tutorial.md) | private skills and rules in a separate repo |
-| [formats](docs/formats.md) · [troubleshooting](docs/troubleshooting.md) · [roadmap](docs/roadmap.md) | reference |
+| [formats](docs/formats.md) · [troubleshooting](docs/troubleshooting.md) · [roadmap](docs/roadmap.md) · [architecture](docs/architecture.md) | reference |
+| [sandbox](examples/sandbox/README.md) · [evals](docs/evals.md) · [e2e runs](docs/e2e-runs.md) | try spec-agent on a toy repo and grade the run |
 
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md), [GOVERNANCE.md](GOVERNANCE.md), the
-[code of conduct](CODE_OF_CONDUCT.md), and the rules in [AGENTS.md](AGENTS.md). Before committing:
-
-```bash
-python3 scripts/brainrc.py validate
-python3 -m unittest discover -s tests
-```
+[code of conduct](CODE_OF_CONDUCT.md), and [AGENTS.md](AGENTS.md). Before committing, run
+`python3 scripts/brainrc.py validate` and `python3 -m unittest discover -s tests`.
 
 ## Security
 

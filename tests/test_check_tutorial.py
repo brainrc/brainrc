@@ -181,6 +181,41 @@ class ReadmeCheckTest(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn("FAIL", out)
 
+    def test_real_readme_passes_and_stays_sandboxed(self):
+        code, out = self.run_readme((REPO / "README.md").read_text(encoding="utf-8"))
+        self.assertEqual(code, 0, out)
+        self.assertIn("PASS step 1 quickstart", out)
+
+
+class RealReadmeTest(unittest.TestCase):
+    """AC4/AC5/AC9: the checked patterns appear in the README transcript, which leaks nothing."""
+    text = (REPO / "README.md").read_text(encoding="utf-8")
+
+    def test_expected_output_is_shown_in_the_readme(self):
+        for pattern in check_tutorial.EXPECTED_README[1]:
+            self.assertRegex(self.text, pattern)
+
+    def test_quickstart_commands_are_status_apply_status(self):
+        block = check_tutorial.parse_readme(self.text)[1][1]
+        cmds = [l for l in block.splitlines() if "scripts/brainrc.py" in l]
+        self.assertEqual([c.split()[-1] for c in cmds], ["status", "apply", "status"])
+
+    def test_no_absolute_home_paths_or_emails(self):
+        for bad in ("/home/", "/Users/", "/root/"):
+            self.assertNotIn(bad, self.text)
+        self.assertIsNone(re.search(r"[\w.+-]+@[\w-]+\.[\w.]+", self.text))
+
+    def test_at_most_100_lines(self):
+        self.assertLessEqual(len(self.text.splitlines()), 100)
+
+    def test_lead_precedes_spec_agent_and_names_five_tools(self):
+        lead = " ".join(self.text.split("\n## ", 1)[0].split())
+        for name in ("Claude Code", "Codex CLI", "OpenCode", "Antigravity CLI", "Cursor"):
+            self.assertIn(name, lead)
+        self.assertIn("docs/formats.md#harness-support", lead)
+        self.assertLess(self.text.index("Quickstart"), self.text.index("## spec-agent"))
+        self.assertLess(self.text.index("## Install"), self.text.index("## spec-agent"))
+
 
 if __name__ == "__main__":
     unittest.main()

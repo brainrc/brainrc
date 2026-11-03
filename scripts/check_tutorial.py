@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Run the commands of docs/tutorial.md (steps 1-5) in a temporary HOME and checkout copy.
 
-Usage: python3 scripts/check_tutorial.py [--doc PATH]
+Usage: python3 scripts/check_tutorial.py [--doc PATH | --readme [PATH]]
+With --readme, runs the bash block under "## Quickstart" of the README the same way.
 The commands are read from the doc, so a changed command is run as changed. Step 1's `git clone`
 line is replaced by a copy of this checkout at <tmp>/home/brainrc (the tutorial's ~/brainrc), so
 the real checkout and HOME are never written. Prints one PASS/FAIL line per step; exits 1 on any FAIL.
@@ -23,6 +24,8 @@ EXPECTED = {
     4: [r"(?m)^OK:", re.escape("(packs: myteam)")],
     5: [re.escape("Everything in sync.")],
 }
+# Stable lines only (the sample transcript in the README drifts): see brainrc/cli.py `status`.
+EXPECTED_README = {1: [re.escape("Dry run. Run `apply` to write."), re.escape("Everything in sync.")]}
 COPY_IGNORE = shutil.ignore_patterns(".git", "dist", "__pycache__", "*.local.*", ".env*")
 HEADING = re.compile(r"^## (\d+)\. (.+?)\s*$")
 FENCE = re.compile(r"^```bash\s*$")
@@ -67,14 +70,27 @@ def tail(text: str, n: int = 800) -> str:
     return text[-n:]
 
 
-def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--doc", default=str(REPO / "docs" / "tutorial.md"), help="tutorial to run")
-    args = ap.parse_args(argv)
+def parse_readme(text: str) -> dict[int, tuple[str, str]]:
+    """{1: ("quickstart", first bash block under `## Quickstart`, minus git clone lines)}; ValueError if absent."""
+    in_section = False
+    block: list[str] | None = None
+    for line in text.splitlines():
+        if block is not None:
+            if line.startswith("```"):
+                return {1: ("quickstart", "".join(l + "\n" for l in block if not l.startswith("git clone")))}
+            block.append(line)
+        elif line.startswith("## "):
+            in_section = line[3:].strip() == "Quickstart"
+        elif in_section and FENCE.match(line):
+            block = []
+    raise ValueError("README has no bash block under '## Quickstart'")
+
+
+def run(parsed: dict[int, tuple[str, str]], expected: dict[int, list[str]]) -> bool:
+    """Run each block in a temp HOME and checkout copy; print PASS/FAIL per block. True if all pass."""
     failed = False
     work = tempfile.mkdtemp(prefix="check-tutorial-")
     try:
-        parsed = parse(Path(args.doc).read_text(encoding="utf-8"))
         home = Path(work, "home")
         checkout = home / "brainrc"
         shutil.copytree(REPO, checkout, symlinks=True, ignore=COPY_IGNORE)
@@ -91,7 +107,7 @@ def main(argv: list[str] | None = None) -> int:
                 report(name, False, "timed out after 120 s")
                 failed = True
                 break
-            absent = [p for p in EXPECTED.get(n, []) if not re.search(p, r.stdout)]
+            absent = [p for p in expected.get(n, []) if not re.search(p, r.stdout)]
             ok = r.returncode == 0 and not absent
             detail = (f"exit {r.returncode}" if r.returncode else f"output missing {absent}")
             report(name, ok, f"{detail}\n--- stdout\n{tail(r.stdout)}\n--- stderr\n{tail(r.stderr)}")
@@ -103,7 +119,24 @@ def main(argv: list[str] | None = None) -> int:
         failed = True
     finally:
         shutil.rmtree(work, ignore_errors=True)
-    return 1 if failed else 0
+    return not failed
+
+
+def main(argv: list[str] | None = None) -> int:
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("--doc", default=str(REPO / "docs" / "tutorial.md"), help="tutorial to run")
+    ap.add_argument("--readme", nargs="?", const=str(REPO / "README.md"), default=None, metavar="PATH",
+                    help="run the README quickstart instead of the tutorial")
+    args = ap.parse_args(argv)
+    try:
+        if args.readme is not None:
+            parsed, expected = parse_readme(Path(args.readme).read_text(encoding="utf-8")), EXPECTED_README
+        else:
+            parsed, expected = parse(Path(args.doc).read_text(encoding="utf-8")), EXPECTED
+    except Exception as e:  # a crash is a FAIL line, never a traceback
+        report("check_tutorial", False, f"{type(e).__name__}: {e}")
+        return 1
+    return 0 if run(parsed, expected) else 1
 
 
 if __name__ == "__main__":

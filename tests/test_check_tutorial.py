@@ -3,6 +3,7 @@ import contextlib
 import importlib.util
 import io
 import os
+import re
 import sys
 import tempfile
 import unittest
@@ -93,6 +94,92 @@ class EndToEndTest(unittest.TestCase):
                 self.assertIn(f"PASS step {n}", out)
             self.assertEqual(os.listdir(fake_home), [], "script wrote into the caller's HOME")
         self.assertEqual(local.exists(), existed, "script wrote packs.local.toml into the real checkout")
+
+
+README_FIXTURE = """# brainrc
+
+## Quickstart
+
+```bash
+git clone https://example.invalid/brainrc.git ~/brainrc
+python3 scripts/brainrc.py status
+python3 scripts/brainrc.py apply
+python3 scripts/brainrc.py status
+```
+
+## Install
+
+```bash
+echo not-the-quickstart
+```
+"""
+
+
+class ReadmeParseTest(unittest.TestCase):
+    def test_first_bash_block_under_quickstart_without_clone(self):
+        found = check_tutorial.parse_readme(README_FIXTURE)
+        self.assertEqual(list(found), [1])
+        title, block = found[1]
+        self.assertEqual(title, "quickstart")
+        self.assertNotIn("git clone", block)
+        self.assertEqual(block.count("scripts/brainrc.py"), 3)
+        self.assertNotIn("not-the-quickstart", block)
+
+    def test_missing_section_raises(self):
+        with self.assertRaises(ValueError):
+            check_tutorial.parse_readme(README_FIXTURE.replace("## Quickstart", "## Start"))
+
+    def test_section_without_bash_block_raises(self):
+        with self.assertRaises(ValueError):
+            check_tutorial.parse_readme(README_FIXTURE.replace("```bash", "```text", 1))
+
+    def test_expected_patterns_are_stable_lines(self):
+        self.assertEqual(check_tutorial.EXPECTED_README[1],
+                         [re.escape("Dry run. Run `apply` to write."), re.escape("Everything in sync.")])
+
+
+class ReadmeCheckTest(unittest.TestCase):
+    def readme(self, text: str) -> str:
+        d = tempfile.mkdtemp(prefix="readme-test-")
+        self.addCleanup(__import__("shutil").rmtree, d, True)
+        p = Path(d, "README.md")
+        p.write_text(text, encoding="utf-8")
+        return str(p)
+
+    def run_readme(self, text: str) -> tuple[int, str]:
+        with tempfile.TemporaryDirectory(prefix="readme-home-") as fake_home:
+            old = {k: os.environ.get(k) for k in ("HOME", "USERPROFILE")}
+            os.environ["HOME"] = os.environ["USERPROFILE"] = fake_home
+            try:
+                code, out = run_main(["--readme", self.readme(text)])
+            finally:
+                for k, v in old.items():
+                    if v is None:
+                        os.environ.pop(k, None)
+                    else:
+                        os.environ[k] = v
+            self.assertEqual(os.listdir(fake_home), [], "script wrote into the caller's HOME")
+        return code, out
+
+    def test_fixture_passes(self):
+        code, out = self.run_readme(README_FIXTURE)
+        self.assertEqual(code, 0, out)
+        self.assertIn("PASS step 1 quickstart", out)
+
+    def test_broken_command_fails(self):
+        code, out = self.run_readme(README_FIXTURE.replace("apply", "aply"))
+        self.assertEqual(code, 1)
+        self.assertIn("FAIL step 1 quickstart", out)
+
+    def test_missing_documented_output_fails(self):
+        code, out = self.run_readme(README_FIXTURE.replace("python3 scripts/brainrc.py status\n```", "echo done\n```"))
+        self.assertEqual(code, 1)
+        self.assertIn("output missing", out)
+
+    def test_missing_section_is_a_fail_line(self):
+        code, out = self.run_readme("# brainrc\n")
+        self.assertEqual(code, 1)
+        self.assertIn("FAIL", out)
 
 
 if __name__ == "__main__":

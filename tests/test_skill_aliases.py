@@ -227,5 +227,19 @@ class AliasNearMissTest(TempRepoCase):
                         shutil.move(backup, target)
 
 
+    def test_deleted_alias_fails(self):
+        import shutil
+        for n in NAMES:
+            with self.subTest(skill=n):
+                alias_dir = self.repo / "skills" / n
+                backup = self.repo / f"alias-backup-{n}"
+                shutil.move(alias_dir, backup)
+                try:
+                    code, out = self.validate()
+                    self.assertEqual(code, 1, out)
+                    self.assertIn(f"skills/{n}", out)
+                finally:
+                    shutil.move(backup, alias_dir)
+
 if __name__ == "__main__":
     unittest.main()

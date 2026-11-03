@@ -20,10 +20,10 @@
   "auto": true,
   "oneshot": true,
   "campaign": "specs/campaign-113-oss-readiness",
-  "stage": "plan",
+  "stage": "implement",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [
@@ -42,19 +42,80 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Contract tests for the namespaced skills and aliases",
+      "agent": "test-writer",
+      "status": "in_progress",
+      "attempts": 1,
+      "files": [
+        "tests/test_skill_aliases.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC7",
+        "AC8"
+      ],
+      "review": "each",
+      "started_at": "2026-11-03T13:24:15Z"
+    },
+    {
+      "id": "T2",
+      "title": "git mv the five skills, alias stubs, _check_aliases",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "skills/work/",
+        "skills/review/",
+        "skills/plan/",
+        "skills/aws/",
+        "skills/terraform/",
+        "skills/brainrc-work/",
+        "skills/brainrc-review/",
+        "skills/brainrc-plan/",
+        "skills/brainrc-aws/",
+        "skills/brainrc-terraform/",
+        "brainrc/validate.py",
+        "changelog.d/149-1-namespaced-skills.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC6",
+        "AC7",
+        "AC9"
+      ],
+      "review": "each",
+      "after": [
+        "T1"
+      ]
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-11-03T13:21:14Z",
     "stage_started_at": {
       "intake": "2026-11-03T13:21:14Z",
       "spec": "2026-11-03T13:21:14Z",
-      "plan": "2026-11-03T13:22:27Z"
+      "plan": "2026-11-03T13:22:27Z",
+      "implement": "2026-11-03T13:24:15Z"
     },
     "gates": {
       "spec": {
         "presented_at": "2026-11-03T13:22:27Z",
         "approved_at": "2026-11-03T13:22:27Z"
+      },
+      "plan": {
+        "presented_at": "2026-11-03T13:24:15Z",
+        "approved_at": "2026-11-03T13:24:15Z"
       }
     },
     "gate_rework": {

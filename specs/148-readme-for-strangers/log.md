@@ -68,3 +68,10 @@ No injection finding; runtime far below the timeout.
 - LOW README.md:57: rulesync row could read as "no hooks" → fixed by engine ("ships spec-agent and its guard hooks").
 - LOW 100-line cap test trips on any addition → accepted (spec cap).
 - LOW quickstart doesn't mention CONFLICT for pre-existing unmanaged files → follow-up (no line budget).
+
+## verifier · verify · done
+2026-11-03T13:17:43Z
+
+**Did:** Full suite 746 OK; validate OK; check_tutorial steps and --readme exit 0; gitleaks 10 commits no leaks; README 100 lines, no paths/emails/hosts. AC1-AC10 pass. Wrote verify.md.
+**Open issues:** CI cells verify after push; transcript abbreviated with "...".
+**Next:** document.

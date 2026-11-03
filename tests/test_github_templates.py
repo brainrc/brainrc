@@ -37,7 +37,9 @@ class GithubTemplatesTest(unittest.TestCase):
             self.assertRegex(body, r"(?m)^description: \S")
             self.assertRegex(body, r"(?m)^body:$")
             self.assertRegex(body, r"(?m)^\s+- type: (textarea|input|markdown|dropdown|checkboxes)$")
-            self.assertRegex(body, r"(?m)^\s+id: \w+$")
+            ids = re.findall(r"(?m)^\s+id: ([\w-]+)$", body)
+            self.assertTrue(ids, f)
+            self.assertEqual(len(ids), len(set(ids)), f"{f}: duplicate ids")
             self.assertNotIn("\t", body)
 
     def test_pr_template_sections(self):

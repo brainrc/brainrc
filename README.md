@@ -79,4 +79,4 @@ vulnerability, see [SECURITY.md](SECURITY.md).
 
 brainrc sends no usage data and has no telemetry. Its own code makes no network calls. The only
 external commands it runs are `git`, to fetch packs you name by URL, and `ccusage`, only if you
-pass `--ccusage`.
+pass `--ccusage` to the retro script. The eval scripts run only the model command you configure.

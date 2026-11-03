@@ -43,3 +43,11 @@ Campaign gh:113 child 3 of 4, base 147-ci-matrix. Size: standard (README rewrite
 **Evidence:** red: 3 failures, 1 error. Engine re-ran full suite: 746 OK (1 skipped); --readme PASS. Engine fix: the transcript's apply part said "(the same list, now written)", which apply never prints; replaced with real abbreviated apply lines (checked against a temp-HOME run: apply prints the list without the dry-run line).
 **Open issues:** README 95 lines; T3 has 5 lines unless More is trimmed.
 **Next:** T3.
+
+## implementer · T3 · done
+2026-11-03T13:11:18Z
+
+**Did:** `## Why not …` table (chezmoi, GNU Stow, harness plugins, rulesync, brainrc's limits) and an "Also see ruler, dotagents" line; README reflowed to 100 lines, no link dropped.
+**Evidence:** 746 OK; validate OK; --readme PASS. Sources: chezmoi and Stow from their GitHub READMEs (homepages 403 via proxy); plugins from code.claude.com/docs/en/plugins; rulesync, ruler, dotagents (getsentry) READMEs.
+**Open issues:** dotagents link is getsentry/dotagents (its README: wires skills, MCP, hooks into every agent tool); the research notes cited a different Go package of the same name. Kept getsentry as the closer match; listed in PR decisions.
+**Next:** batched review.

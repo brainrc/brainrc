@@ -75,6 +75,8 @@ def _check_references(src: Source, path: Path, agent_names: set[str], skill_name
 
 DEPRECATED_ALIASES = {n: f"brainrc-{n}" for n in ("work", "review", "plan", "aws", "terraform")}
 ALIAS_REMOVED_IN = "0.6.0"
+# Harness built-in names a core skill must not take (a deprecated alias may, until removal).
+RESERVED_SKILL_NAMES = frozenset({"review", "plan", "init", "help", "status", "compact"})
 
 
 def _check_aliases(src: Source) -> list[str]:
@@ -129,6 +131,8 @@ def _validate_source(src: Source, agent_names: set[str], skill_names: set[str]) 
 
     if src.is_core:
         errors += _check_aliases(src)
+        errors += [f"{src.rel(s)}: skill name `{s.name}` is reserved (a harness built-in); use a `brainrc-` name"
+                   for s in skills(src) if s.name in RESERVED_SKILL_NAMES and s.name not in DEPRECATED_ALIASES]
         errors += [f"{src.rel(r)}: missing `trigger` frontmatter (Antigravity drops the rule without it)"
                    for r in markdown_files("rules", src) if not frontmatter(r).get("trigger")]
         errors += [f"{src.rel(r)}: missing `alwaysApply: true` frontmatter (Cursor loads the rule only on request without it)"

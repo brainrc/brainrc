@@ -20,7 +20,7 @@
   "auto": true,
   "oneshot": true,
   "campaign": "specs/campaign-113-oss-readiness",
-  "stage": "implement",
+  "stage": "verify",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -70,7 +70,7 @@
       "id": "T2",
       "title": "git mv the five skills, alias stubs, _check_aliases",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "skills/work/",
@@ -100,7 +100,9 @@
       "after": [
         "T1"
       ],
-      "started_at": "2026-11-03T13:25:59Z"
+      "started_at": "2026-11-03T13:25:59Z",
+      "finished_at": "2026-11-03T13:34:16Z",
+      "commit": "1c55840"
     }
   ],
   "blocked": null,
@@ -110,7 +112,8 @@
       "intake": "2026-11-03T13:21:14Z",
       "spec": "2026-11-03T13:21:14Z",
       "plan": "2026-11-03T13:22:27Z",
-      "implement": "2026-11-03T13:24:15Z"
+      "implement": "2026-11-03T13:24:15Z",
+      "verify": "2026-11-03T13:34:16Z"
     },
     "gates": {
       "spec": {
@@ -128,8 +131,8 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
-      "first_pass": 0
+      "total": 1,
+      "first_pass": 1
     },
     "retries": 0,
     "interventions": 0

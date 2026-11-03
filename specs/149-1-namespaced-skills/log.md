@@ -33,3 +33,23 @@ Split child 149.1 of gh:149 (campaign gh:113 member 5), base 149-namespace-core-
 **Did:** tests/test_skill_aliases.py: 19 tests covering AC1, AC3-AC5, AC7, with AC8 near-misses on temp copies (alias missing disable-model-invocation, old trigger description, no replacement named, no 0.6.0, missing target).
 **Evidence:** 19 run, 56 subtest failures on assertions (missing brainrc-* dirs, stub content, validate returning 0 where 1 expected); 3 controls pass. Engine re-ran: FAILED (failures=56).
 **Next:** T2. Engine: T1's per-task review folds into T2's review (the tests are reviewed with the code that satisfies them).
+
+## implementer · T2 · done
+2026-11-03T13:34:16Z
+
+**Did:** git mv of the five skills to skills/brainrc-* (only `name:` changed); five alias stubs (description "Deprecated, use brainrc-<n> (removed in 0.6.0)", disable-model-invocation, old argument-hint); DEPRECATED_ALIASES and _check_aliases in validate.py; patch fragment.
+**Evidence:** 765 OK; validate OK (32 skills); check_tutorial and --readme exit 0; no generated files changed.
+
+## code-reviewer · T1+T2 · done
+2026-11-03T13:34:16Z
+
+**Findings:**
+- MEDIUM validate.py:81: a deleted alias passed _check_aliases → fixed by engine (error when missing) with a failing-first near-miss test (5 subtests red, then green).
+- LOW docs/harness-packages.md:72: Antigravity may ignore disable-model-invocation, so aliases could still auto-trigger there (harmless stub) → note in 149.3 docs.
+- LOW test_work_body_is_unchanged checks one substring → accepted; rename diff shows only `name:` changed.
+- LOW CRLF split → ignored. LOW plugin form `brainrc:brainrc-work` redundant → accepted (Q2 default).
+
+## engine · T2 · done
+2026-11-03T13:34:16Z
+
+Full suite after the fix: 766 OK (1 skipped); validate OK. Committed 1c55840 and the fix.

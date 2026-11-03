@@ -26,3 +26,10 @@ Split child 149.1 of gh:149 (campaign gh:113 member 5), base 149-namespace-core-
 2026-11-03T13:24:15Z
 
 ⛔ Plan gate: 149-1-namespaced-skills. Engine edit before approval: T2 also adds `changelog.d/149-1-namespaced-skills.md` (patch), since AGENTS.md requires a fragment in every PR (the architect had left it to 149.3). Callout handled by the spec's safe default (additive).
+
+## test-writer · T1 · done
+2026-11-03T13:25:59Z
+
+**Did:** tests/test_skill_aliases.py: 19 tests covering AC1, AC3-AC5, AC7, with AC8 near-misses on temp copies (alias missing disable-model-invocation, old trigger description, no replacement named, no 0.6.0, missing target).
+**Evidence:** 19 run, 56 subtest failures on assertions (missing brainrc-* dirs, stub content, validate returning 0 where 1 expected); 3 controls pass. Engine re-ran: FAILED (failures=56).
+**Next:** T2. Engine: T1's per-task review folds into T2's review (the tests are reviewed with the code that satisfies them).

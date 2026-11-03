@@ -47,7 +47,7 @@
       "id": "T1",
       "title": "Contract tests for the namespaced skills and aliases",
       "agent": "test-writer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "tests/test_skill_aliases.py"
@@ -61,14 +61,17 @@
         "AC8"
       ],
       "review": "each",
-      "started_at": "2026-11-03T13:24:15Z"
+      "started_at": "2026-11-03T13:24:15Z",
+      "finished_at": "2026-11-03T13:25:59Z",
+      "commit": "2f21274",
+      "red": "assertion"
     },
     {
       "id": "T2",
       "title": "git mv the five skills, alias stubs, _check_aliases",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "skills/work/",
         "skills/review/",
@@ -96,7 +99,8 @@
       "review": "each",
       "after": [
         "T1"
-      ]
+      ],
+      "started_at": "2026-11-03T13:25:59Z"
     }
   ],
   "blocked": null,

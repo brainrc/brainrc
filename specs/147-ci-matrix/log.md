@@ -62,3 +62,53 @@ Plan step set updated to 1-5 to match the spec (4 lines in plan.md; tasks and fi
 **Evidence:** red: 6 assertion failures, 1 error against a stub. tests.test_check_tutorial 7 OK; full suite 732 OK (1 skipped); validate OK; check_tutorial.py PASS steps 1-5 (engine re-ran the module and script: OK, 5 PASS).
 **Changed files:** scripts/check_tutorial.py, tests/test_check_tutorial.py
 **Next:** T2.
+
+## implementer · T2 · done
+2026-11-03T06:12:24Z
+
+**Did:** validate.yml: 9-cell matrix, fail-fast off, job name `validate (<os>, <python>)`, bash default, Windows continue-on-error with comment, gitleaks `if:` ubuntu/3.12, tutorial step; changelog fragment (patch).
+**Evidence:** YAML parses (ad hoc PyYAML); validate OK; 732 OK.
+**Changed files:** .github/workflows/validate.yml, changelog.d/147-ci-matrix.md
+
+## infra-reviewer · T2 · changes-requested
+2026-11-03T06:12:24Z
+
+**Findings:**
+- HIGH validate.yml:13: required-check name `validate` disappears → gate job named `validate`. (Branch protection unreadable: API 403 on a private free-plan repo, so none can be set today.)
+- MEDIUM validate.yml:17: Windows failure shows green; only logs show it → say so in PR body.
+- MEDIUM validate.yml:49: gitleaks `if:` implies success() → `!cancelled() && ...`.
+- LOW timeout on Windows; Windows python3 may be missing; no concurrency group; `-latest` labels float.
+
+## code-reviewer · T2+batch · done
+2026-11-03T06:12:24Z
+
+**Evidence:** check_tutorial PASS 1-5; 732 OK; validate OK.
+**Findings:**
+- MEDIUM validate.yml:13: check rename (same as infra HIGH).
+- LOW tests/test_check_tutorial.py:87: HOME-empty assertion can't fail → follow-up (T1 file).
+- LOW tutorial runs twice per cell → accepted.
+- LOW Windows copytree/backslash HOME → non-blocking.
+
+## engine · T2 · retry 1
+2026-11-03T06:12:24Z
+
+HIGH from infra-reviewer: T2 back to the implementer with the gate job, gitleaks `!cancelled()`, concurrency group.
+
+## implementer · T2 · done (attempt 2)
+2026-11-03T06:15:08Z
+
+**Did:** gate job `validate-gate` (name `validate`, needs the matrix, always(), fails unless result is success via env); gitleaks `!cancelled() && ubuntu && 3.12`; workflow concurrency.
+**Evidence:** YAML parses; validate OK; 732 OK.
+
+## infra-reviewer · T2 re-review · done
+2026-11-03T06:15:08Z
+
+**Findings:**
+- MEDIUM validate.yml:12: one pending run per group on main can drop a middle commit's scan → fixed by engine: group uses `github.sha` for pushes.
+- LOW validate.yml:62: `needs.validate.result` with only a continue-on-error Windows failure expected `success` (~75%); verify after push.
+Prior HIGH and MEDIUM fixed.
+
+## engine · T2 · done
+2026-11-03T06:15:08Z
+
+Engine fix for the MEDIUM (concurrency group per sha on push). YAML parses; validate OK; full suite 732 OK. Committed 29cbb10.

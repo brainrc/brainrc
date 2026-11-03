@@ -64,3 +64,15 @@ Campaign gh:113 child 1 of 4, base main. Size: standard (6-9 new doc files, a re
 **Evidence:** full suite 725 OK (1 skipped); validate OK. Engine: reworded Privacy, since `git` fetches packs over the network ("both locally" was wrong); tests.test_project_files OK after.
 **Changed files:** README.md, tests/test_project_files.py, changelog.d/146-oss-project-files.md
 **Next:** batched review.
+
+## code-reviewer · batch · done
+2026-11-03T05:52:58Z
+
+**Did:** Reviewed the diff against AC1-AC12, SECURITY.md against docs/guardrails.md, issue-form YAML, CODEOWNERS.
+**Evidence:** validate OK; 725 tests OK.
+**Findings:**
+- MEDIUM README.md:80: Privacy claim omits evals' user-configured model command → scope it. Fixed by engine.
+- LOW tests/test_project_files.py:21: network-import regex is line-start only → accepted as a smoke test (follow-up).
+- LOW tests/test_github_templates.py:41: id check not unique, rejects hyphens → fixed (collect ids, assert unique).
+**Open issues:** owner must enable private vulnerability reporting; issue-form labels must exist.
+**Next:** verify.

@@ -19,10 +19,10 @@
   "auto": true,
   "oneshot": true,
   "campaign": "specs/campaign-113-oss-readiness",
-  "stage": "plan",
+  "stage": "implement",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [
@@ -40,19 +40,67 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Tutorial check script that reads its commands from the doc",
+      "agent": "implementer",
+      "status": "in_progress",
+      "attempts": 1,
+      "files": [
+        "scripts/check_tutorial.py",
+        "tests/test_check_tutorial.py"
+      ],
+      "criteria": [
+        "AC5",
+        "AC6",
+        "AC8"
+      ],
+      "review": "batch",
+      "started_at": "2026-11-03T06:02:17Z"
+    },
+    {
+      "id": "T2",
+      "title": "Validate matrix, non-blocking Windows, single gitleaks, tutorial step, changelog",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        ".github/workflows/validate.yml",
+        "changelog.d/147-ci-matrix.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC7",
+        "AC8"
+      ],
+      "review": "each",
+      "after": [
+        "T1"
+      ]
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-11-03T05:59:09Z",
     "stage_started_at": {
       "intake": "2026-11-03T05:59:09Z",
       "spec": "2026-11-03T05:59:09Z",
-      "plan": "2026-11-03T06:00:11Z"
+      "plan": "2026-11-03T06:00:11Z",
+      "implement": "2026-11-03T06:02:17Z"
     },
     "gates": {
       "spec": {
         "presented_at": "2026-11-03T06:00:11Z",
         "approved_at": "2026-11-03T06:00:11Z"
+      },
+      "plan": {
+        "presented_at": "2026-11-03T06:02:17Z",
+        "approved_at": "2026-11-03T06:02:17Z"
       }
     },
     "gate_rework": {

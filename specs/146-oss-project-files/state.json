@@ -42,7 +42,7 @@
       "id": "T1",
       "title": "SECURITY and GOVERNANCE",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "SECURITY.md",
@@ -58,8 +58,10 @@
       ],
       "review": "batch",
       "wave": 1,
-      "worktree": "/tmp/spec-agent/146-oss-project-files/T1",
-      "started_at": "2026-11-03T05:43:52Z"
+      "started_at": "2026-11-03T05:43:52Z",
+      "finished_at": "2026-11-03T05:46:19Z",
+      "commit": "df0d610",
+      "red": "assertion"
     },
     {
       "id": "T2",

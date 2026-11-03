@@ -30,3 +30,12 @@ Campaign gh:113 child 1 of 4, base main. Size: standard (6-9 new doc files, a re
 2026-11-03T05:43:52Z
 
 ⛔ Plan gate: 146-oss-project-files. 4 tasks, Callouts all none. Wave 1: T1, T2, T3 (no shared files); then T4.
+
+## implementer · T1 · done
+2026-11-03T05:46:19Z
+
+**Did:** Tests first (6, red: files missing), then SECURITY.md (guard model, link to docs/guardrails.md, report vs known gaps, private reporting URL, no public issues, latest-release policy, no time promise) and GOVERNANCE.md (maintainer, PR/CI/squash flow, path to maintainer).
+**Evidence:** `python3 -m unittest tests.test_security_docs` → 6 OK; full suite 709 OK (1 skipped); validate OK. Engine: fence OK, landed.
+**Changed files:** SECURITY.md, GOVERNANCE.md, tests/test_security_docs.py
+**Open issues:** GOVERNANCE links CODE_OF_CONDUCT.md (T3).
+**Next:** land T2, T3.

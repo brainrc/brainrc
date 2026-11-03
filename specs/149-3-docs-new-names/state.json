@@ -20,7 +20,7 @@
   "auto": true,
   "oneshot": true,
   "campaign": "specs/campaign-113-oss-readiness",
-  "stage": "implement",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -82,7 +82,10 @@
       "intake": "2026-11-03T13:46:04Z",
       "spec": "2026-11-03T13:46:04Z",
       "plan": "2026-11-03T13:46:04Z",
-      "implement": "2026-11-03T13:46:04Z"
+      "implement": "2026-11-03T13:46:04Z",
+      "verify": "2026-11-03T13:56:45Z",
+      "document": "2026-11-03T13:56:45Z",
+      "deliver": "2026-11-03T13:56:45Z"
     },
     "gates": {
       "spec": {
@@ -100,10 +103,13 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
-      "first_pass": 0
+      "total": 1,
+      "first_pass": 1
     },
     "retries": 1,
     "interventions": 0
-  }
+  },
+  "living": [
+    "core-skill-names"
+  ]
 }

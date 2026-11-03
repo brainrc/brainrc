@@ -103,7 +103,7 @@
       "depends_on": [
         "local:specs/tickets/149-2-reserved-names.md"
       ],
-      "status": "in_progress",
+      "status": "verified",
       "slug": "149-3-docs-new-names",
       "branch": "149-3-docs-new-names",
       "pr": null,

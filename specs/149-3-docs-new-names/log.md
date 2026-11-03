@@ -34,3 +34,19 @@ T1 files += evals/triggers.toml, tests/test_planning.py, tests/test_plugin_docs.
 2026-11-03T13:55:37Z
 
 **Evidence:** tests.test_planning, test_evals, test_plugin_docs OK; full suite 771 OK (1 skipped); validate OK; check_tutorial both modes PASS.
+
+## code-reviewer · batch · done
+2026-11-03T13:56:45Z
+
+**Evidence:** no over-replacement; all 70 sandbox README changes are slash commands; links resolve; evals renamed with no case dropped; tests only re-pinned; changelog complete.
+**Findings:** LOW eval case header comments say /work, /plan → follow-up. LOW proof_guard.py docstring /plan → out of scope, follow-up.
+
+## engine · verify and document · done
+2026-11-03T13:56:45Z
+
+771 OK; validate OK; tutorial both modes; gitleaks: mno leaks found[0m. Living spec core-skill-names applied. verify.md, pr-body.md, ticket-comment.md written by the engine.
+
+## engine · child verified
+2026-11-03T13:56:45Z
+
+Campaign member 7 (149.3) verified. All members verified: stack Deliver gate next.

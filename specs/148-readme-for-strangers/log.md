@@ -51,3 +51,20 @@ Campaign gh:113 child 3 of 4, base 147-ci-matrix. Size: standard (README rewrite
 **Evidence:** 746 OK; validate OK; --readme PASS. Sources: chezmoi and Stow from their GitHub READMEs (homepages 403 via proxy); plugins from code.claude.com/docs/en/plugins; rulesync, ruler, dotagents (getsentry) READMEs.
 **Open issues:** dotagents link is getsentry/dotagents (its README: wires skills, MCP, hooks into every agent tool); the research notes cited a different Go package of the same name. Kept getsentry as the closer match; listed in PR decisions.
 **Next:** batched review.
+
+## infra-reviewer · batch · done
+2026-11-03T13:14:44Z
+
+**Findings:**
+- LOW validate.yml:49: a failing README step skips the later sandbox step in that cell (same as the tutorial step) → accepted.
+- LOW check_tutorial.py:97: temp HOME isolates HOME-relative writes only; README bash is not sandboxed → follow-up (docstring wording).
+No injection finding; runtime far below the timeout.
+
+## code-reviewer · batch · done
+2026-11-03T13:14:44Z
+
+**Evidence:** --readme PASS; 746 OK; transcript matches a real temp-HOME run; harness list and anchors match; "Why not" cells match their saved sources.
+**Findings:**
+- LOW README.md:57: rulesync row could read as "no hooks" → fixed by engine ("ships spec-agent and its guard hooks").
+- LOW 100-line cap test trips on any addition → accepted (spec cap).
+- LOW quickstart doesn't mention CONFLICT for pre-existing unmanaged files → follow-up (no line budget).

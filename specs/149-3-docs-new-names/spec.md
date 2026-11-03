@@ -12,7 +12,7 @@ the old names and link the alias stubs, so new users learn names that go away in
 - The release notes say what was renamed, the alias window and the removal release.
 
 ## Non-goals
-- Code behavior. Tests, evals, sandbox tickets, `specs/` run records and `CHANGELOG.md` keep old names (aliases still work; records are history).
+- Code behavior. Sandbox tickets, `specs/` run records and `CHANGELOG.md` keep old names (aliases still work; records are history). Tests and evals change only where they pin shipped text or expect a skill to auto-trigger (rework 1).
 - Removing aliases (0.6.0).
 
 ## Acceptance criteria
@@ -21,6 +21,7 @@ the old names and link the alias stubs, so new users learn names that go away in
 - **AC3**: Given docs/harness-packages.md (or the install docs), when read, then a short note says the old names are deprecated aliases until 0.6.0, and that a harness which ignores `disable-model-invocation` (Antigravity) may still list them.
 - **AC4**: Given README.md, then it stays ≤ 100 lines and `check_tutorial.py --readme` passes.
 - **AC5**: Given the changelog fragment, then it lists the five renames, the alias window and the removal release 0.6.0.
+- **AC7**: Given `evals/triggers.toml`, when read, then cases that expect or forbid the `aws` and `terraform` skills name `brainrc-aws` and `brainrc-terraform` (the aliases no longer auto-trigger), and tests that pin shipped text (`/plan`, `/brainrc:work`) pin the new names; no assertion is dropped.
 - **AC6**: Given `validate`, the unit tests, and both `check_tutorial.py` modes, when run, then all pass. Rule token budgets still hold.
 
 ## Constraints

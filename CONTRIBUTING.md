@@ -61,7 +61,7 @@ show that the syncer works, and only evals show that the agent still behaves.
 ## Using spec-agent
 
 You can let spec-agent do the work: in an AI tool with this repo installed, run
-`/work gh:<issue>`. It stops for your approval at the spec, the plan, and delivery. It writes
+`/brainrc-work gh:<issue>`. It stops for your approval at the spec, the plan, and delivery. It writes
 its record (spec, plan, verification, retro) to `specs/<slug>/`, and that folder ships with
 the PR so reviewers can see why each change was made. See [docs/spec-agent.md](docs/spec-agent.md).
 

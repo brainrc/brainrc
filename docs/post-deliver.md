@@ -28,7 +28,7 @@ babysitting PRs the run didn't open.
 `stage` gains `watch` between `deliver` and `done`. The run enters it after the PR opens
 (`delivery: normal` only; `local-only` runs go straight to `done`).
 
-**How it wakes up.** Pull-based, so it works in every harness: `/spec-resume` (or `/work` on the
+**How it wakes up.** Pull-based, so it works in every harness: `/spec-resume` (or `/brainrc-work` on the
 same ref) at `stage: watch` fetches the PR's state through the ticket connector and handles
 whatever changed since `watch.checked_at`. A harness with PR event subscriptions (Claude Code
 on the web) can call the same step on each event; that's an optional trigger, not a

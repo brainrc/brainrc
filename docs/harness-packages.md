@@ -70,6 +70,9 @@ Nothing here was run against a real `agy`.
   `allow` is documented as auto-approve, so a guard has no safe reply for "no objection". **Not
   shipped** until a live test settles it.
 - Skills: `disable-slash-command` hides a skill from `/`; `disable-model-invocation` is likely ignored.
+- Renamed skills: `work`, `review`, `plan`, `aws`, and `terraform` are deprecated aliases of the
+  `brainrc-` names, kept until 0.6.0. A harness that ignores `disable-model-invocation`, like
+  Antigravity, may still list them next to the new names.
 
 ## OpenCode
 

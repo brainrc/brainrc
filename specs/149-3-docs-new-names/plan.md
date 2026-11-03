@@ -22,6 +22,7 @@ code: leave it, and note any old-name string it holds.
 |---|---|
 | README.md, CONTRIBUTING.md, docs/*.md, rules/*.md, agents/*.md, skills/**/*.md (not the five alias stubs), examples/sandbox/README.md | modify: old → new names |
 | changelog.d/149-3-docs-new-names.md | new, patch |
+| evals/triggers.toml, tests/test_planning.py, tests/test_plugin_docs.py | modify: pinned names → new names (rework 1) |
 
 ## Risks
 - Over-replacing ordinary words. Mitigation: review the diff for every `plan`/`review` change.
@@ -34,4 +35,5 @@ modes, and an `rg` for leftovers in scope.
 ## Tasks
 - [ ] **T1** [agent: implementer] Rename references in shipped docs, add the deprecation note, fragment
   - files: README.md, CONTRIBUTING.md, docs/, rules/, agents/, skills/ (excluding skills/{work,review,plan,aws,terraform}/), examples/sandbox/README.md, changelog.d/149-3-docs-new-names.md
-  - criteria: AC1, AC2, AC3, AC4, AC5, AC6
+  - criteria: AC1, AC2, AC3, AC4, AC5, AC6, AC7
+  - files (rework 1): evals/triggers.toml, tests/test_planning.py, tests/test_plugin_docs.py

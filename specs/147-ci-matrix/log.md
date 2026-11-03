@@ -112,3 +112,10 @@ Prior HIGH and MEDIUM fixed.
 2026-11-03T06:15:08Z
 
 Engine fix for the MEDIUM (concurrency group per sha on push). YAML parses; validate OK; full suite 732 OK. Committed 29cbb10.
+
+## verifier · verify · done
+2026-11-03T06:20:22Z
+
+**Did:** Full suite 732 OK; validate and pack-acme validate OK; check_tutorial PASS 1-5 (also on py3.11 and 3.12); sandbox 2 OK; YAML 3x3 matrix fail-fast off; gitleaks 7 commits no leaks. Wrote verify.md.
+**Open issues:** verify after push: 9 cells, macOS tutorial, gate result with a failing Windows cell, pip-install smoke (needs network). AC4/AC7 PR-body parts at document stage.
+**Next:** document.

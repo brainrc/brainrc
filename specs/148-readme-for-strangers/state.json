@@ -19,13 +19,16 @@
   "auto": true,
   "oneshot": true,
   "campaign": "specs/campaign-113-oss-readiness",
-  "stage": "plan",
+  "stage": "implement",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
-  "domains": [],
+  "domains": [
+    "scripting",
+    "ci-pipelines"
+  ],
   "targets": {},
   "commands": {
     "test": "python3 -m unittest discover -s tests",
@@ -38,19 +41,88 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "README quickstart check: --readme, parse_readme, shared run(), tests, CI step",
+      "agent": "implementer",
+      "status": "in_progress",
+      "attempts": 1,
+      "files": [
+        "scripts/check_tutorial.py",
+        "tests/test_check_tutorial.py",
+        ".github/workflows/validate.yml"
+      ],
+      "criteria": [
+        "AC4",
+        "AC10"
+      ],
+      "review": "batch",
+      "started_at": "2026-11-03T06:26:38Z"
+    },
+    {
+      "id": "T2",
+      "title": "README lead, quickstart, install, transcript, spec-agent second, tests, fragment",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "README.md",
+        "tests/test_check_tutorial.py",
+        "changelog.d/148-readme-for-strangers.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC8",
+        "AC9",
+        "AC10"
+      ],
+      "review": "batch",
+      "after": [
+        "T1"
+      ]
+    },
+    {
+      "id": "T3",
+      "title": "Why not table",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "README.md"
+      ],
+      "criteria": [
+        "AC6",
+        "AC7",
+        "AC9"
+      ],
+      "review": "batch",
+      "after": [
+        "T2"
+      ]
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-11-03T06:24:22Z",
     "stage_started_at": {
       "intake": "2026-11-03T06:24:22Z",
       "spec": "2026-11-03T06:24:22Z",
-      "plan": "2026-11-03T06:25:20Z"
+      "plan": "2026-11-03T06:25:20Z",
+      "implement": "2026-11-03T06:26:38Z"
     },
     "gates": {
       "spec": {
         "presented_at": "2026-11-03T06:25:20Z",
         "approved_at": "2026-11-03T06:25:20Z"
+      },
+      "plan": {
+        "presented_at": "2026-11-03T06:26:38Z",
+        "approved_at": "2026-11-03T06:26:38Z"
       }
     },
     "gate_rework": {

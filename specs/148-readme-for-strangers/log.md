@@ -16,3 +16,14 @@ Campaign gh:113 child 3 of 4, base 147-ci-matrix. Size: standard (README rewrite
 2026-11-03T06:25:20Z
 
 ⛔ Spec gate: 148-readme-for-strangers. README leads with one config → five tools, a quickstart executed by a check, a text transcript, a fair "Why not" table, spec-agent second, ≤100 lines. Engine fix: header Size medium → standard (engine-owned field). living_specs check exit 0.
+
+## architect · plan · done
+2026-11-03T06:26:38Z
+
+**Did:** plan.md with 3 sequential tasks: T1 `--readme` mode in scripts/check_tutorial.py (shared run(), parse_readme) + CI step; T2 README lead, quickstart, transcript, spec-agent second, fragment; T3 "Why not" table. Stable lines only: `Dry run. Run \`apply\` to write.` and `Everything in sync.`.
+**Open issues:** Callouts none. 100-line cap is tight. Comparison cells need a reviewer check.
+
+## engine · Plan gate · auto-approved
+2026-11-03T06:26:38Z
+
+⛔ Plan gate: 148-readme-for-strangers. T1 → T2 → T3 sequential (T2/T3 share README.md). Domains add ci-pipelines (T1 touches validate.yml), so infra-reviewer joins the batch review.

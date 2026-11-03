@@ -75,3 +75,13 @@ No injection finding; runtime far below the timeout.
 **Did:** Full suite 746 OK; validate OK; check_tutorial steps and --readme exit 0; gitleaks 10 commits no leaks; README 100 lines, no paths/emails/hosts. AC1-AC10 pass. Wrote verify.md.
 **Open issues:** CI cells verify after push; transcript abbreviated with "...".
 **Next:** document.
+
+## doc-writer · document · done
+2026-11-03T13:18:58Z
+
+**Did:** README links all resolve; no docs/ edit needed. Drafted pr-body.md and ticket-comment.md (written to the scratchpad; engine copied them into the run folder).
+
+## engine · child verified
+2026-11-03T13:18:58Z
+
+Campaign gh:113 child 3 verified; waits for the stack Deliver gate. Child 4 (gh:149) starts from this branch.

@@ -117,7 +117,7 @@
       "id": "T4",
       "title": "README links, Privacy statement, hygiene test, changelog",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "README.md",
@@ -136,7 +136,10 @@
         "T2",
         "T3"
       ],
-      "started_at": "2026-11-03T05:47:07Z"
+      "started_at": "2026-11-03T05:47:07Z",
+      "finished_at": "2026-11-03T05:49:27Z",
+      "commit": "f273df1",
+      "red": "assertion"
     }
   ],
   "blocked": null,

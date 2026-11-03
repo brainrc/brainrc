@@ -56,3 +56,11 @@ Campaign gh:113 child 1 of 4, base main. Size: standard (6-9 new doc files, a re
 **Evidence:** tests.test_code_of_conduct 4 OK. Engine: word-diffed against upstream 2.1 (raw.githubusercontent.com EthicalSource/contributor_covenant): one drift ("email" vs upstream "e-mail") restored; only remaining difference is the contact placeholder. Fence OK, landed.
 **Changed files:** CODE_OF_CONDUCT.md, tests/test_code_of_conduct.py
 **Next:** T4.
+
+## implementer · T4 · done
+2026-11-03T05:49:27Z
+
+**Did:** Tests first (red: 3 failures, 2 errors on missing links, Privacy, fragment), then README links (SECURITY in Security; GOVERNANCE and CODE_OF_CONDUCT in Contributing), a Privacy section, and the patch fragment. Hygiene test over new files plus no network imports.
+**Evidence:** full suite 725 OK (1 skipped); validate OK. Engine: reworded Privacy, since `git` fetches packs over the network ("both locally" was wrong); tests.test_project_files OK after.
+**Changed files:** README.md, tests/test_project_files.py, changelog.d/146-oss-project-files.md
+**Next:** batched review.

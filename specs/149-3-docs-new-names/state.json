@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "local",
+    "ref": "local:specs/tickets/149-3-docs-new-names.md",
+    "id": "149.3",
+    "title": "Move docs and references to the new skill names",
+    "url": null,
+    "pr": null,
+    "pr_draft": false,
+    "parent": "gh:149"
+  },
+  "slug": "149-3-docs-new-names",
+  "branch": "149-3-docs-new-names",
+  "base": "149-2-reserved-names",
+  "worktree": "~/.brainrc-worktrees/brainrc/149-3-docs-new-names",
+  "size": "standard",
+  "mode": "subagent",
+  "delivery": "normal",
+  "auto": true,
+  "oneshot": true,
+  "campaign": "specs/campaign-113-oss-readiness",
+  "stage": "implement",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "pending"
+  },
+  "domains": [],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/brainrc.py validate",
+      "python3 scripts/check_tutorial.py",
+      "python3 scripts/check_tutorial.py --readme"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Rename references in shipped docs, deprecation note, fragment",
+      "agent": "implementer",
+      "status": "in_progress",
+      "attempts": 1,
+      "files": [
+        "README.md",
+        "CONTRIBUTING.md",
+        "docs/",
+        "rules/",
+        "agents/",
+        "skills/",
+        "examples/sandbox/README.md",
+        "changelog.d/149-3-docs-new-names.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC6"
+      ],
+      "review": "batch",
+      "started_at": "2026-11-03T13:46:04Z"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-11-03T13:46:04Z",
+    "stage_started_at": {
+      "intake": "2026-11-03T13:46:04Z",
+      "spec": "2026-11-03T13:46:04Z",
+      "plan": "2026-11-03T13:46:04Z",
+      "implement": "2026-11-03T13:46:04Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-11-03T13:46:04Z",
+        "approved_at": "2026-11-03T13:46:04Z"
+      },
+      "plan": {
+        "presented_at": "2026-11-03T13:46:04Z",
+        "approved_at": "2026-11-03T13:46:04Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  }
+}

@@ -32,9 +32,10 @@ ruff, pyright, coverage on PRs, and the tutorial run in CI.
   workflow (`continue-on-error`), a comment in the workflow says why, and a follow-up issue is named
   in the PR description. No step is skipped or weakened on Windows.
 - **AC5**: Given `docs/tutorial.md`, when a stdlib-only check script runs in CI (ubuntu and macOS
-  cells), then it executes the tutorial's `brainrc` commands (validate, pack validate, `status`,
-  `apply`, in-sync check) against a temporary HOME and pack directory, and fails with the step name
-  when one exits non-zero or its documented output (`OK:`, `Everything in sync.`) is missing.
+  cells), then it executes the tutorial's steps 1-5 (validate, create pack, write the domain skill,
+  pack validate, `status`, `apply`, in-sync check) against a temporary HOME and pack directory, and
+  fails with the step name when one exits non-zero or its documented output (`OK:`,
+  `Everything in sync.`) is missing.
 - **AC6**: Given the check script, when the tutorial's commands change without the script changing,
   then a test in `tests/` fails (the script reads its commands from the doc, not a copy).
 - **AC7**: Given the PR, when it is opened, then ruff, pyright and coverage are not added, and the PR
@@ -55,7 +56,7 @@ Purpose: What the validate workflow must prove on every push and PR.
 #### ADDED: Cross-platform validate matrix
 The validate workflow SHALL run the repo's checks on ubuntu and macOS for Python 3.11, 3.12 and 3.13 with fail-fast off, run gitleaks once, and report Windows cells without letting them fail the workflow. (AC1, AC2, AC3, AC4)
 #### ADDED: Tutorial is executed in CI
-CI SHALL run an executable check derived from `docs/tutorial.md` and fail when a documented command fails or its documented output is missing. (AC5, AC6)
+CI SHALL run an executable check derived from steps 1-5 of `docs/tutorial.md` and fail when a documented command fails or its documented output is missing. (AC5, AC6)
 
 ## Open questions
 1. Ticket says "green on all 9 cells", but Windows is documented unsupported (symlinks, `python3` in
@@ -65,7 +66,7 @@ CI SHALL run an executable check derived from `docs/tutorial.md` and fail when a
    reported on PRs" depends on it.* Safe default: no (AC7); follow-up issue. A stdlib `trace` report
    is not offered as a substitute.
 3. Should tutorial check cover steps 6-7 (reads `~/.claude`, `tokens`)? *Matters: scope and
-   fragility.* Safe default: only steps 1, 2, 4, 5.
+   fragility.* Safe default: only steps 1-5 (step 4 needs the step 3 skill file, so 3 is included).
 
 ## Proposed split
 None.

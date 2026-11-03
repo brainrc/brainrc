@@ -30,3 +30,27 @@ Campaign gh:113 child 2 of 4, base 146-oss-project-files. Size: standard (workfl
 2026-11-03T06:02:17Z
 
 ⛔ Plan gate: 147-ci-matrix. 2 sequential tasks; T2 reviewed on its own (CI config) by code-reviewer and infra-reviewer.
+
+## implementer · T1 · blocked
+2026-11-03T06:04:24Z
+
+**Did:** Tests (7) and scripts/check_tutorial.py; red on behavior against a stub.
+**Evidence:** real run of steps 1, 2, 4, 5: step 4 fails `domains names unknown skill myteam-protobuf` (step 3 creates that skill); with steps 1-5 all pass.
+**Open issues:** spec gap in Q3's default.
+**Next:** spec revision.
+
+## analyst · spec revision · done
+2026-11-03T06:04:24Z
+
+**Did:** AC5, Q3 and the `ci` ADDED requirement now cover tutorial steps 1-5 (6-7 still excluded).
+**Changed files:** specs/147-ci-matrix/spec.md
+
+## engine · Spec gate · auto-approved (rework 1)
+2026-11-03T06:04:24Z
+
+⛔ Spec gate: 147-ci-matrix, revision 1: tutorial check covers steps 1-5. living_specs check exit 0.
+
+## engine · Plan gate · auto-approved (rework 1)
+2026-11-03T06:04:24Z
+
+Plan step set updated to 1-5 to match the spec (4 lines in plan.md; tasks and files unchanged).

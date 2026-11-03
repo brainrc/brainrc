@@ -96,16 +96,16 @@
     "gates": {
       "spec": {
         "presented_at": "2026-11-03T06:00:11Z",
-        "approved_at": "2026-11-03T06:00:11Z"
+        "approved_at": "2026-11-03T06:04:24Z"
       },
       "plan": {
         "presented_at": "2026-11-03T06:02:17Z",
-        "approved_at": "2026-11-03T06:02:17Z"
+        "approved_at": "2026-11-03T06:04:24Z"
       }
     },
     "gate_rework": {
-      "spec": 0,
-      "plan": 0,
+      "spec": 1,
+      "plan": 1,
       "deliver": 0
     },
     "reviews": {

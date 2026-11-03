@@ -47,6 +47,18 @@ The plugin covers Claude Code only. For the other tools, or to also get the shar
 private packs, use the syncer above. All install paths, platform notes, and pinning:
 [docs/install.md](docs/install.md).
 
+## Why not …
+
+| | Its own docs say | brainrc |
+|---|---|---|
+| [chezmoi](https://www.chezmoi.io/) | manages your dotfiles across multiple machines, securely | not a dotfile manager; it targets AI-tool config and their formats |
+| [GNU Stow](https://www.gnu.org/software/stow/) | a dotfile organizer that symlinks separate directories into your home directory | links skills and similar files the same way, but also renders rules and merges hooks and MCP servers per tool |
+| [Harness plugins](https://code.claude.com/docs/en/plugins) | a Claude Code plugin is a directory of skills, agents, hooks, and MCP servers installed as one unit | ships as one too; the syncer covers the other four tools |
+| [rulesync](https://github.com/dyoshikawa/rulesync) | a Node.js CLI that generates config files for many AI tools from unified rule files | adds spec-agent and guard hooks; rulesync is a Node tool, brainrc needs Python |
+| brainrc's limits | | best on Claude Code; Codex, Antigravity, Cursor are best effort; needs Python 3.11+ and a clone outside Claude Code |
+
+Also see [ruler](https://github.com/intellectronica/ruler) and [dotagents](https://github.com/getsentry/dotagents).
+
 ## spec-agent
 
 **spec-agent** takes a ticket to a reviewed pull request: spec → plan → implement → verify →
@@ -63,9 +75,8 @@ between runs on its own, with evidence at every step. Details: [docs/spec-agent.
 > **Harness support is not equal.** Each role gets a fresh context, and the guard hooks are
 > enforced, only in **Claude Code**. **OpenCode** also runs roles as real subagents, but every
 > role uses the same model and its hooks block instead of asking. In **Codex, Antigravity CLI,
-> and Cursor**, spec-agent switches roles inside one session, so its reviewers are not
-> independent of the implementer. Treat those three as best effort
-> ([details](docs/spec-agent.md#harness-support)).
+> and Cursor**, spec-agent switches roles inside one session, so its reviewers are not independent
+> of the implementer. Treat those three as best effort ([details](docs/spec-agent.md#harness-support)).
 
 ## More
 
@@ -78,18 +89,12 @@ between runs on its own, with evidence at every step. Details: [docs/spec-agent.
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md), [GOVERNANCE.md](GOVERNANCE.md), the
-[code of conduct](CODE_OF_CONDUCT.md), and [AGENTS.md](AGENTS.md). Before committing, run
-`python3 scripts/brainrc.py validate` and `python3 -m unittest discover -s tests`.
+See [CONTRIBUTING.md](CONTRIBUTING.md), [GOVERNANCE.md](GOVERNANCE.md), the [code of conduct](CODE_OF_CONDUCT.md), and [AGENTS.md](AGENTS.md). Before committing, run `python3 scripts/brainrc.py validate` and `python3 -m unittest discover -s tests`.
 
 ## Security
 
-This repo is public. Don't commit secrets, tokens, internal hostnames, or
-absolute home-directory paths. Gitleaks runs in pre-commit and CI. To report a
-vulnerability, see [SECURITY.md](SECURITY.md).
+This repo is public. Don't commit secrets, tokens, internal hostnames, or absolute home-directory paths. Gitleaks runs in pre-commit and CI. To report a vulnerability, see [SECURITY.md](SECURITY.md).
 
 ## Privacy
 
-brainrc sends no usage data and has no telemetry. Its own code makes no network calls. The only
-external commands it runs are `git`, to fetch packs you name by URL, and `ccusage`, only if you
-pass `--ccusage` to the retro script. The eval scripts run only the model command you configure.
+brainrc sends no usage data and has no telemetry. Its own code makes no network calls. The only external commands it runs are `git`, to fetch packs you name by URL, and `ccusage`, only if you pass `--ccusage` to the retro script. The eval scripts run only the model command you configure.

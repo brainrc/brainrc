@@ -53,3 +53,18 @@ Split child 149.1 of gh:149 (campaign gh:113 member 5), base 149-namespace-core-
 2026-11-03T13:34:16Z
 
 Full suite after the fix: 766 OK (1 skipped); validate OK. Committed 1c55840 and the fix.
+
+## verifier · verify · done
+2026-11-03T13:39:15Z
+
+**Did:** Full suite 766 OK; test_skill_aliases 20 OK; validate OK (32 skills); check_tutorial both modes exit 0; gitleaks no leaks; apply under a scratch HOME links all five brainrc-<n> and <n> for claude. AC1-AC9 pass. Wrote verify.md.
+
+## engine · document · done
+2026-11-03T13:39:15Z
+
+No living delta (parent's applied by 149.3); no doc edits (docs move in 149.3). Engine wrote pr-body.md and ticket-comment.md inline (small, mechanical).
+
+## engine · child verified
+2026-11-03T13:39:15Z
+
+Campaign gh:113 member 5 (149.1) verified. 149.2 starts from this branch.

@@ -20,7 +20,7 @@
   "auto": true,
   "oneshot": true,
   "campaign": "specs/campaign-113-oss-readiness",
-  "stage": "verify",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -113,7 +113,8 @@
       "spec": "2026-11-03T13:21:14Z",
       "plan": "2026-11-03T13:22:27Z",
       "implement": "2026-11-03T13:24:15Z",
-      "verify": "2026-11-03T13:34:16Z"
+      "verify": "2026-11-03T13:34:16Z",
+      "deliver": "2026-11-03T13:39:15Z"
     },
     "gates": {
       "spec": {
@@ -136,5 +137,6 @@
     },
     "retries": 0,
     "interventions": 0
-  }
+  },
+  "living": []
 }

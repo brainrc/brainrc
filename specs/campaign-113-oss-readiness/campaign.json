@@ -73,7 +73,7 @@
       "depends_on": [
         "gh:148"
       ],
-      "status": "in_progress",
+      "status": "verified",
       "slug": "149-1-namespaced-skills",
       "branch": "149-1-namespaced-skills",
       "pr": null,

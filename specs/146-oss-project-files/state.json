@@ -42,8 +42,8 @@
       "id": "T1",
       "title": "SECURITY and GOVERNANCE",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "SECURITY.md",
         "GOVERNANCE.md",
@@ -56,14 +56,17 @@
         "AC8",
         "AC11"
       ],
-      "review": "batch"
+      "review": "batch",
+      "wave": 1,
+      "worktree": "/tmp/spec-agent/146-oss-project-files/T1",
+      "started_at": "2026-11-03T05:43:52Z"
     },
     {
       "id": "T2",
       "title": "CODEOWNERS, PR template, issue forms",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         ".github/CODEOWNERS",
         ".github/pull_request_template.md",
@@ -79,14 +82,17 @@
         "AC7",
         "AC11"
       ],
-      "review": "batch"
+      "review": "batch",
+      "wave": 1,
+      "worktree": "/tmp/spec-agent/146-oss-project-files/T2",
+      "started_at": "2026-11-03T05:43:52Z"
     },
     {
       "id": "T3",
       "title": "Contributor Covenant 2.1",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "CODE_OF_CONDUCT.md",
         "tests/test_code_of_conduct.py"
@@ -96,7 +102,10 @@
         "AC4",
         "AC11"
       ],
-      "review": "batch"
+      "review": "batch",
+      "wave": 1,
+      "worktree": "/tmp/spec-agent/146-oss-project-files/T3",
+      "started_at": "2026-11-03T05:43:52Z"
     },
     {
       "id": "T4",

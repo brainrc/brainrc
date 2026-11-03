@@ -31,9 +31,9 @@
       "depends_on": [
         "gh:146"
       ],
-      "status": "todo",
-      "slug": null,
-      "branch": null,
+      "status": "in_progress",
+      "slug": "147-ci-matrix",
+      "branch": "147-ci-matrix",
       "pr": null,
       "pr_draft": false,
       "base": null,

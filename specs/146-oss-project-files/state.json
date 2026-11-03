@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:146",
+    "id": "146",
+    "title": "Open-source project files",
+    "url": "https://github.com/brainrc/brainrc/issues/146",
+    "pr": null,
+    "pr_draft": false
+  },
+  "slug": "146-oss-project-files",
+  "branch": "146-oss-project-files",
+  "base": "main",
+  "worktree": "~/.brainrc-worktrees/brainrc/146-oss-project-files",
+  "size": "standard",
+  "mode": "subagent",
+  "delivery": "normal",
+  "auto": true,
+  "oneshot": true,
+  "campaign": "specs/campaign-113-oss-readiness",
+  "stage": "plan",
+  "gates": {
+    "spec": "approved",
+    "plan": "pending",
+    "deliver": "pending"
+  },
+  "domains": [],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/brainrc.py validate"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-11-03T05:39:54Z",
+    "stage_started_at": {
+      "intake": "2026-11-03T05:39:54Z",
+      "spec": "2026-11-03T05:41:36Z",
+      "plan": "2026-11-03T05:42:31Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-11-03T05:42:31Z",
+        "approved_at": "2026-11-03T05:42:31Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  }
+}

@@ -9,3 +9,10 @@ Split child 149.2 of gh:149 (campaign member 6), base 149-1-namespaced-skills. S
 2026-11-03T13:39:44Z
 
 ⛔ Spec gate: 149-2-reserved-names. 3 criteria; reserved list per parent Q1 default. Plan: skipped (small); one-task plan written by the engine.
+
+## engine · T1 · done (inline)
+2026-11-03T13:42:04Z
+
+**Did:** RESERVED_SKILL_NAMES and a core-only check in _validate_source; tests/test_reserved_names.py; patch fragment.
+**Evidence:** red: 4 assertion failures (validate exited 0 on a core `init` etc.), 2 AttributeError (constant missing); then tests.test_reserved_names OK; validate OK (32 skills); full suite OK (1 skipped). AC3 is pinned by the existing test_name_collision_writes_nothing.
+**Changed files:** brainrc/validate.py, tests/test_reserved_names.py, changelog.d/149-2-reserved-names.md

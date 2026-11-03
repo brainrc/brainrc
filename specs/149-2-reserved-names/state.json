@@ -45,7 +45,7 @@
       "id": "T1",
       "title": "Reserved-name check",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "brainrc/validate.py",
@@ -58,7 +58,10 @@
         "AC3"
       ],
       "review": "batch",
-      "started_at": "2026-11-03T13:39:44Z"
+      "started_at": "2026-11-03T13:39:44Z",
+      "finished_at": "2026-11-03T13:42:04Z",
+      "commit": "17bfcf7",
+      "red": "assertion"
     }
   ],
   "blocked": null,

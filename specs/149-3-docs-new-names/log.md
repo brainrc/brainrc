@@ -44,7 +44,7 @@ T1 files += evals/triggers.toml, tests/test_planning.py, tests/test_plugin_docs.
 ## engine · verify and document · done
 2026-11-03T13:56:45Z
 
-771 OK; validate OK; tutorial both modes; gitleaks: mno leaks found[0m. Living spec core-skill-names applied. verify.md, pr-body.md, ticket-comment.md written by the engine.
+771 OK; validate OK; tutorial both modes; gitleaks: no leaks.
 
 ## engine · child verified
 2026-11-03T13:56:45Z

@@ -119,3 +119,15 @@ Engine fix for the MEDIUM (concurrency group per sha on push). YAML parses; vali
 **Did:** Full suite 732 OK; validate and pack-acme validate OK; check_tutorial PASS 1-5 (also on py3.11 and 3.12); sandbox 2 OK; YAML 3x3 matrix fail-fast off; gitleaks 7 commits no leaks. Wrote verify.md.
 **Open issues:** verify after push: 9 cells, macOS tutorial, gate result with a failing Windows cell, pip-install smoke (needs network). AC4/AC7 PR-body parts at document stage.
 **Next:** document.
+
+## doc-writer · document · done
+2026-11-03T06:24:09Z
+
+**Did:** CONTRIBUTING check block adds check_tutorial.py; docs/tutorial.md notes CI runs steps 1-5. Drafted pr-body.md and ticket-comment.md.
+**Evidence:** validate OK; 732 OK after the doc edits.
+**Open issues:** placeholders <PREV_PR>, <PR_URL> filled at delivery; post-push checks listed in pr-body.
+
+## engine · child verified
+2026-11-03T06:24:09Z
+
+Campaign gh:113 child 2 verified; waits for the stack Deliver gate. Child 3 (gh:148) starts from this branch.

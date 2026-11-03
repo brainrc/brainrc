@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:148",
+    "id": "148",
+    "title": "Rewrite the README for strangers",
+    "url": "https://github.com/brainrc/brainrc/issues/148",
+    "pr": null,
+    "pr_draft": false
+  },
+  "slug": "148-readme-for-strangers",
+  "branch": "148-readme-for-strangers",
+  "base": "147-ci-matrix",
+  "worktree": "~/.brainrc-worktrees/brainrc/148-readme-for-strangers",
+  "size": "standard",
+  "mode": "subagent",
+  "delivery": "normal",
+  "auto": true,
+  "oneshot": true,
+  "campaign": "specs/campaign-113-oss-readiness",
+  "stage": "plan",
+  "gates": {
+    "spec": "approved",
+    "plan": "pending",
+    "deliver": "pending"
+  },
+  "domains": [],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/brainrc.py validate",
+      "python3 scripts/check_tutorial.py"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-11-03T06:24:22Z",
+    "stage_started_at": {
+      "intake": "2026-11-03T06:24:22Z",
+      "spec": "2026-11-03T06:24:22Z",
+      "plan": "2026-11-03T06:25:20Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-11-03T06:25:20Z",
+        "approved_at": "2026-11-03T06:25:20Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  }
+}

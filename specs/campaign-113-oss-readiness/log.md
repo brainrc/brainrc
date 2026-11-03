@@ -18,3 +18,5 @@ Delivery: stacked, ready PRs (`--oneshot`). Each child runs its own Spec and Pla
 - 3 local children appended as members 5-7: 149.1 namespaced skills + aliases, 149.2 reserved-name check, 149.3 docs and changelog. Stacked after gh:148. The gh:149 issue closes with the last child.
 
 ## 2026-11-03T13:39:15Z · member 5 (149.1) verified
+
+## 2026-11-03T13:45:22Z · member 6 (149.2) verified

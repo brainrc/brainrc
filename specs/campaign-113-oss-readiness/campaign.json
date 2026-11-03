@@ -88,7 +88,7 @@
       "depends_on": [
         "local:specs/tickets/149-1-namespaced-skills.md"
       ],
-      "status": "in_progress",
+      "status": "verified",
       "slug": "149-2-reserved-names",
       "branch": "149-2-reserved-names",
       "pr": null,

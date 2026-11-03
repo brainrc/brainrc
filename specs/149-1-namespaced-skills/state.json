@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "local",
+    "ref": "local:specs/tickets/149-1-namespaced-skills.md",
+    "id": "149.1",
+    "title": "Namespaced core skills with deprecated aliases",
+    "url": null,
+    "pr": null,
+    "pr_draft": false,
+    "parent": "gh:149"
+  },
+  "slug": "149-1-namespaced-skills",
+  "branch": "149-1-namespaced-skills",
+  "base": "149-namespace-core-skills",
+  "worktree": "~/.brainrc-worktrees/brainrc/149-1-namespaced-skills",
+  "size": "standard",
+  "mode": "subagent",
+  "delivery": "normal",
+  "auto": true,
+  "oneshot": true,
+  "campaign": "specs/campaign-113-oss-readiness",
+  "stage": "plan",
+  "gates": {
+    "spec": "approved",
+    "plan": "pending",
+    "deliver": "pending"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/brainrc.py validate",
+      "python3 scripts/check_tutorial.py",
+      "python3 scripts/check_tutorial.py --readme"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-11-03T13:21:14Z",
+    "stage_started_at": {
+      "intake": "2026-11-03T13:21:14Z",
+      "spec": "2026-11-03T13:21:14Z",
+      "plan": "2026-11-03T13:22:27Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-11-03T13:22:27Z",
+        "approved_at": "2026-11-03T13:22:27Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  }
+}

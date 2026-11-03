@@ -27,3 +27,11 @@ Campaign gh:113 child 3 of 4, base 147-ci-matrix. Size: standard (README rewrite
 2026-11-03T06:26:38Z
 
 ⛔ Plan gate: 148-readme-for-strangers. T1 → T2 → T3 sequential (T2/T3 share README.md). Domains add ci-pipelines (T1 touches validate.yml), so infra-reviewer joins the batch review.
+
+## implementer · T1 · done
+2026-11-03T06:31:33Z
+
+**Did:** `--readme`, parse_readme (first bash block under `## Quickstart`, git clone lines dropped), shared run(), fixture tests, one CI step.
+**Evidence:** red: 8 behavior failures against a stub; full suite 740 OK (1 skipped); validate OK; check_tutorial.py OK. Engine re-ran tests.test_check_tutorial: OK.
+**Open issues:** `--readme` fails until T2 adds `## Quickstart` (CI step red mid-branch only). Quickstart runs with cwd = checkout copy at ~/brainrc.
+**Next:** T2.

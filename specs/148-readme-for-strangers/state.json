@@ -46,7 +46,7 @@
       "id": "T1",
       "title": "README quickstart check: --readme, parse_readme, shared run(), tests, CI step",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "scripts/check_tutorial.py",
@@ -58,14 +58,17 @@
         "AC10"
       ],
       "review": "batch",
-      "started_at": "2026-11-03T06:26:38Z"
+      "started_at": "2026-11-03T06:26:38Z",
+      "finished_at": "2026-11-03T06:31:33Z",
+      "commit": "33cc15e",
+      "red": "assertion"
     },
     {
       "id": "T2",
       "title": "README lead, quickstart, install, transcript, spec-agent second, tests, fragment",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "README.md",
         "tests/test_check_tutorial.py",
@@ -84,7 +87,8 @@
       "review": "batch",
       "after": [
         "T1"
-      ]
+      ],
+      "started_at": "2026-11-03T06:31:33Z"
     },
     {
       "id": "T3",

@@ -18,3 +18,15 @@ Campaign gh:113 child 1 of 4, base main. Size: standard (6-9 new doc files, a re
 2026-11-03T05:42:31Z
 
 ⛔ Spec gate: 146-oss-project-files. 12 criteria for CODE_OF_CONDUCT, SECURITY, GOVERNANCE, CODEOWNERS, issue forms, PR template, no-telemetry statement, README links. Open questions take the analyst's defaults. Engine fix before approval: `## Requirement changes` reduced to `None.` so living_specs check passes (exit 0).
+
+## architect · plan · done
+2026-11-03T05:43:52Z
+
+**Did:** plan.md with 4 tasks: T1 SECURITY+GOVERNANCE, T2 .github templates+CODEOWNERS, T3 Code of Conduct (parallel wave), T4 README links, Privacy section, hygiene test, changelog (after T1-T3). Callouts: none.
+**Open issues:** README privacy wording names `git` (packs) as well as `ccusage`. Owner follow-ups: enable private vulnerability reporting, set the repo description.
+**Next:** wave T1-T3, then T4.
+
+## engine · Plan gate · auto-approved
+2026-11-03T05:43:52Z
+
+⛔ Plan gate: 146-oss-project-files. 4 tasks, Callouts all none. Wave 1: T1, T2, T3 (no shared files); then T4.

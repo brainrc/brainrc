@@ -19,10 +19,10 @@
   "auto": true,
   "oneshot": true,
   "campaign": "specs/campaign-113-oss-readiness",
-  "stage": "plan",
+  "stage": "implement",
   "gates": {
     "spec": "approved",
-    "plan": "pending",
+    "plan": "approved",
     "deliver": "pending"
   },
   "domains": [],
@@ -37,19 +37,109 @@
     "plan": null,
     "baseline_failures": []
   },
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "SECURITY and GOVERNANCE",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "SECURITY.md",
+        "GOVERNANCE.md",
+        "tests/test_security_docs.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC8",
+        "AC11"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T2",
+      "title": "CODEOWNERS, PR template, issue forms",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        ".github/CODEOWNERS",
+        ".github/pull_request_template.md",
+        ".github/ISSUE_TEMPLATE/bug_report.yml",
+        ".github/ISSUE_TEMPLATE/feature_request.yml",
+        ".github/ISSUE_TEMPLATE/config.yml",
+        "tests/test_github_templates.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC5",
+        "AC6",
+        "AC7",
+        "AC11"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T3",
+      "title": "Contributor Covenant 2.1",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "CODE_OF_CONDUCT.md",
+        "tests/test_code_of_conduct.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC4",
+        "AC11"
+      ],
+      "review": "batch"
+    },
+    {
+      "id": "T4",
+      "title": "README links, Privacy statement, hygiene test, changelog",
+      "agent": "implementer",
+      "status": "todo",
+      "attempts": 0,
+      "files": [
+        "README.md",
+        "tests/test_project_files.py",
+        "changelog.d/146-oss-project-files.md"
+      ],
+      "criteria": [
+        "AC9",
+        "AC10",
+        "AC11",
+        "AC12"
+      ],
+      "review": "batch",
+      "after": [
+        "T1",
+        "T2",
+        "T3"
+      ]
+    }
+  ],
   "blocked": null,
   "metrics": {
     "started_at": "2026-11-03T05:39:54Z",
     "stage_started_at": {
       "intake": "2026-11-03T05:39:54Z",
       "spec": "2026-11-03T05:41:36Z",
-      "plan": "2026-11-03T05:42:31Z"
+      "plan": "2026-11-03T05:42:31Z",
+      "implement": "2026-11-03T05:43:52Z"
     },
     "gates": {
       "spec": {
         "presented_at": "2026-11-03T05:42:31Z",
         "approved_at": "2026-11-03T05:42:31Z"
+      },
+      "plan": {
+        "presented_at": "2026-11-03T05:43:52Z",
+        "approved_at": "2026-11-03T05:43:52Z"
       }
     },
     "gate_rework": {

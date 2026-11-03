@@ -54,3 +54,11 @@ Campaign gh:113 child 2 of 4, base 146-oss-project-files. Size: standard (workfl
 2026-11-03T06:04:24Z
 
 Plan step set updated to 1-5 to match the spec (4 lines in plan.md; tasks and files unchanged).
+
+## implementer · T1 · done
+2026-11-03T06:06:55Z
+
+**Did:** scripts/check_tutorial.py reads steps 1-5 from docs/tutorial.md and runs them in a temp HOME and a symlink-preserving checkout copy; 7 tests.
+**Evidence:** red: 6 assertion failures, 1 error against a stub. tests.test_check_tutorial 7 OK; full suite 732 OK (1 skipped); validate OK; check_tutorial.py PASS steps 1-5 (engine re-ran the module and script: OK, 5 PASS).
+**Changed files:** scripts/check_tutorial.py, tests/test_check_tutorial.py
+**Next:** T2.

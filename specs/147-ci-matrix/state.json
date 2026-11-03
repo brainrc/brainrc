@@ -45,7 +45,7 @@
       "id": "T1",
       "title": "Tutorial check script that reads its commands from the doc",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "scripts/check_tutorial.py",
@@ -57,14 +57,17 @@
         "AC8"
       ],
       "review": "batch",
-      "started_at": "2026-11-03T06:02:17Z"
+      "started_at": "2026-11-03T06:02:17Z",
+      "finished_at": "2026-11-03T06:06:55Z",
+      "commit": "f72ccf9",
+      "red": "assertion"
     },
     {
       "id": "T2",
       "title": "Validate matrix, non-blocking Windows, single gitleaks, tutorial step, changelog",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         ".github/workflows/validate.yml",
         "changelog.d/147-ci-matrix.md"
@@ -81,7 +84,8 @@
       "review": "each",
       "after": [
         "T1"
-      ]
+      ],
+      "started_at": "2026-11-03T06:06:55Z"
     }
   ],
   "blocked": null,

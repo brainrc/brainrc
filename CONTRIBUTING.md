@@ -30,6 +30,7 @@ check for home-directory paths on every commit.
    ```bash
    python3 scripts/brainrc.py validate
    python3 -m unittest discover -s tests
+   python3 scripts/check_tutorial.py
    ```
 
    If you changed `docs/tutorial.md` or how `brainrc` installs packs, also run

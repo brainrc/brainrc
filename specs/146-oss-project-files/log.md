@@ -84,3 +84,15 @@ Campaign gh:113 child 1 of 4, base main. Size: standard (6-9 new doc files, a re
 **Evidence:** logs in scratchpad verify146/. Engine ran gitleaks 8.24.3 over main..HEAD: 12 commits, no leaks (verify.md updated).
 **Open issues:** AC9 wording: README names `git` and the eval command as well as `ccusage`; accurate and broader, pass with note.
 **Next:** document.
+
+## doc-writer · document · done
+2026-11-03T05:58:40Z
+
+**Did:** Drafted pr-body.md (1 of 4 in epic #113, Closes #146) and ticket-comment.md; unslop pass. No living specs to apply.
+**Changed files:** specs/146-oss-project-files/pr-body.md, ticket-comment.md
+**Next:** stack Deliver gate after all children are verified. Engine: dropped the labels follow-up (`bug` and `enhancement` exist in the repo).
+
+## engine · child verified
+2026-11-03T05:58:40Z
+
+Campaign gh:113 child 1 verified; waits for the stack Deliver gate. Child 2 (gh:147) starts from this branch.

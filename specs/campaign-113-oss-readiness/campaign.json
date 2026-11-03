@@ -17,7 +17,7 @@
       "ref": "gh:146",
       "order": 1,
       "depends_on": [],
-      "status": "in_progress",
+      "status": "verified",
       "slug": "146-oss-project-files",
       "branch": "146-oss-project-files",
       "pr": null,

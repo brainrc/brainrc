@@ -19,7 +19,7 @@
   "auto": true,
   "oneshot": true,
   "campaign": "specs/campaign-113-oss-readiness",
-  "stage": "document",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -151,7 +151,8 @@
       "plan": "2026-11-03T05:42:31Z",
       "implement": "2026-11-03T05:43:52Z",
       "verify": "2026-11-03T05:52:58Z",
-      "document": "2026-11-03T05:57:31Z"
+      "document": "2026-11-03T05:57:31Z",
+      "deliver": "2026-11-03T05:58:40Z"
     },
     "gates": {
       "spec": {
@@ -180,5 +181,6 @@
       "task_minutes": 6.7,
       "wall_minutes": 2.4
     }
-  }
+  },
+  "living": []
 }

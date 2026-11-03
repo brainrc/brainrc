@@ -67,7 +67,7 @@
       "id": "T2",
       "title": "CODEOWNERS, PR template, issue forms",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         ".github/CODEOWNERS",
@@ -86,14 +86,16 @@
       ],
       "review": "batch",
       "wave": 1,
-      "worktree": "/tmp/spec-agent/146-oss-project-files/T2",
-      "started_at": "2026-11-03T05:43:52Z"
+      "started_at": "2026-11-03T05:43:52Z",
+      "finished_at": "2026-11-03T05:47:01Z",
+      "commit": "b39e7bf",
+      "red": "assertion"
     },
     {
       "id": "T3",
       "title": "Contributor Covenant 2.1",
       "agent": "implementer",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "CODE_OF_CONDUCT.md",
@@ -106,15 +108,17 @@
       ],
       "review": "batch",
       "wave": 1,
-      "worktree": "/tmp/spec-agent/146-oss-project-files/T3",
-      "started_at": "2026-11-03T05:43:52Z"
+      "started_at": "2026-11-03T05:43:52Z",
+      "finished_at": "2026-11-03T05:47:01Z",
+      "commit": "b5ce3f0",
+      "red": "assertion"
     },
     {
       "id": "T4",
       "title": "README links, Privacy statement, hygiene test, changelog",
       "agent": "implementer",
-      "status": "todo",
-      "attempts": 0,
+      "status": "in_progress",
+      "attempts": 1,
       "files": [
         "README.md",
         "tests/test_project_files.py",
@@ -131,7 +135,8 @@
         "T1",
         "T2",
         "T3"
-      ]
+      ],
+      "started_at": "2026-11-03T05:47:07Z"
     }
   ],
   "blocked": null,
@@ -163,6 +168,12 @@
       "first_pass": 0
     },
     "retries": 0,
-    "interventions": 0
+    "interventions": 0,
+    "waves": {
+      "count": 1,
+      "max_width": 3,
+      "task_minutes": 6.7,
+      "wall_minutes": 2.4
+    }
   }
 }

@@ -39,3 +39,20 @@ Campaign gh:113 child 1 of 4, base main. Size: standard (6-9 new doc files, a re
 **Changed files:** SECURITY.md, GOVERNANCE.md, tests/test_security_docs.py
 **Open issues:** GOVERNANCE links CODE_OF_CONDUCT.md (T3).
 **Next:** land T2, T3.
+
+## implementer · T2 · done
+2026-11-03T05:47:01Z
+
+**Did:** Tests first (6, red: files missing), then CODEOWNERS (`* @bxker`), PR template, issue forms (bug, feature) and config.yml (blank issues off, advisories contact link).
+**Evidence:** tests.test_github_templates 6 OK; validate OK; full suite had 1 failure from the agent's own `.runs` output (test_old_names), removed. Engine: fence OK, landed.
+**Changed files:** .github/CODEOWNERS, .github/pull_request_template.md, .github/ISSUE_TEMPLATE/{bug_report,feature_request,config}.yml, tests/test_github_templates.py
+**Open issues:** forms checked by string, no YAML parser.
+**Next:** T3.
+
+## implementer · T3 · done
+2026-11-03T05:47:01Z
+
+**Did:** Tests first (4, red: file missing), then CODE_OF_CONDUCT.md (Covenant 2.1, attribution, advisories URL as contact).
+**Evidence:** tests.test_code_of_conduct 4 OK. Engine: word-diffed against upstream 2.1 (raw.githubusercontent.com EthicalSource/contributor_covenant): one drift ("email" vs upstream "e-mail") restored; only remaining difference is the contact placeholder. Fence OK, landed.
+**Changed files:** CODE_OF_CONDUCT.md, tests/test_code_of_conduct.py
+**Next:** T4.

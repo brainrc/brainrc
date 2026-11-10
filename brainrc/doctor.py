@@ -144,6 +144,16 @@ def _link_finding(link: Link, roots: list[Path]) -> Finding | None:
             f"move that into a pack (or delete the link), then {command('apply')}")
 
 
+def _held_inside(old: Path, home: Path) -> str | None:
+    """What `rm -r old` would take with it: the home directory, the settings home or this checkout."""
+    o = old.resolve()
+    for name, path in (("your home directory", Path.home()), ("the settings home", home),
+                       ("the brainrc checkout", config.REPO)):
+        if path.resolve().is_relative_to(o):
+            return name
+    return None
+
+
 def _home_findings() -> list[Finding]:
     """FAIL while AICFG_HOME or the legacy dir holds an unmigrated home; WARN for an unused old dir."""
     found, home, new = [], config.settings_home(), tilde(config.new_home())
@@ -160,8 +170,11 @@ def _home_findings() -> list[Finding]:
         if not old.exists() or old == skip:
             continue
         if home_has_content:
-            found.append(("WARN", f"{tilde(old)} is unused (settings home is {tilde(home)})",
-                          f"move anything you still need from it into {tilde(home)}, then remove it: rm -r {shell_path(old)}"))
+            keep = f"move anything you still need from it into {tilde(home)}"
+            held = _held_inside(old, home)
+            fix = (f"{keep}, but don't remove {tilde(old)}: it holds {held}" if held
+                   else f"{keep}, then remove it: rm -r {shell_path(old)}")
+            found.append(("WARN", f"{tilde(old)} is unused (settings home is {tilde(home)})", fix))
         else:  # the old dir may hold the only settings: move them, don't delete them
             found.append(("WARN", f"{tilde(old)} holds settings, but the settings home is {tilde(home)}",
                           f"`{command('migrate')}` moves it there"))
@@ -242,15 +255,7 @@ def doctor_findings() -> list[Finding]:
     found += [("FAIL", f"{tilde(p)} is a stale link brainrc no longer makes", f"{command('apply')} (prunes it)")
               for p in stale]
 
-    # Broken links brainrc doesn't manage, in the directories it links into.
-    known = {link.dest for link in links} | set(stale)
-    for name, h in load_harnesses().items():
-        for kind in KINDS:
-            d = expand(h[kind]) if kind in h and name not in skipped else None
-            for p in sorted(d.iterdir()) if d and d.is_dir() else []:
-                if p.is_symlink() and not p.exists() and p not in known:
-                    found.append(("WARN", f"{name}: {tilde(p)} is a broken link not made by brainrc",
-                                  f"rm {shell_path(p)}"))
+    found += _stray_link_findings({link.dest for link in links} | set(stale), skipped)
 
     found += [("FAIL", e, f"fix the JSON, then {command('apply')}") for e in invalid_fragments(srcs)]
     for m in merges:
@@ -276,6 +281,19 @@ def doctor_findings() -> list[Finding]:
 
 
 HOOK_SCRIPT = re.compile(r'"([^"]+\.py)"')  # the script in a `python3 "<dir>/<guard>.py"` command
+
+
+def _stray_link_findings(known: set[Path], skipped: set[str]) -> list[Finding]:
+    """WARN for broken links brainrc doesn't manage, in the directories it links into."""
+    found = []
+    for name, h in load_harnesses().items():
+        for kind in KINDS:
+            d = expand(h[kind]) if kind in h and name not in skipped else None
+            for p in sorted(d.iterdir()) if d and d.is_dir() else []:
+                if p.is_symlink() and not p.exists() and p not in known:
+                    found.append(("WARN", f"{name}: {tilde(p)} is a broken link not made by brainrc",
+                                  f"rm {shell_path(p)}"))
+    return found
 
 
 def _hook_findings(merges: list, skipped: set[str]) -> list[Finding]:

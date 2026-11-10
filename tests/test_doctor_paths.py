@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from brainrc.doctor import _link_finding, shell_path
+from brainrc.doctor import _link_finding, _stray_link_findings, shell_path
 from brainrc.plan import Link
 
 
@@ -60,6 +60,17 @@ class DoctorFixQuotingTest(unittest.TestCase):
             level, what, fix = _link_finding(Link("claude", dest, self.home / "repo/skills/review"), [])
         self.assertEqual(level, "FAIL")
         self.assertTrue(fix.startswith("rm ~/'Skills Dir/review' && "), fix)
+
+    def test_stray_broken_link_fix_quotes_the_link(self):
+        skills = self.home / "Skills Dir"
+        skills.mkdir()
+        (skills / "old one").symlink_to(self.home / "gone")
+        harnesses = {"claude": {"skills": "~/Skills Dir"}}
+        with self.env(), mock.patch("brainrc.doctor.load_harnesses", return_value=harnesses):
+            [(level, what, fix)] = _stray_link_findings(set(), set())
+        self.assertEqual(level, "WARN")
+        self.assertEqual(fix, "rm ~/'Skills Dir/old one'")
+
 
 if __name__ == "__main__":
     unittest.main()

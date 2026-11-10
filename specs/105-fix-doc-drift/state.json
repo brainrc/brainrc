@@ -1,0 +1,93 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:105",
+    "id": "105",
+    "title": "Fix doc drift",
+    "url": "https://github.com/brainrc/brainrc/issues/105",
+    "pr": null,
+    "pr_draft": false
+  },
+  "slug": "105-fix-doc-drift",
+  "branch": "105-fix-doc-drift",
+  "base": "104-local-tripwires",
+  "worktree": "~/.brainrc-worktrees/brainrc/105-fix-doc-drift",
+  "size": "small",
+  "mode": "inline",
+  "delivery": "normal",
+  "auto": true,
+  "oneshot": true,
+  "campaign": "campaign-094-neutral-core",
+  "stage": "implement",
+  "gates": {
+    "spec": "approved",
+    "plan": "skipped",
+    "deliver": "pending"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/brainrc.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Quote doctor rm paths, drop the stale pin, fix the docs, add the doc test",
+      "agent": "engine",
+      "status": "in_progress",
+      "attempts": 1,
+      "files": [
+        "brainrc/doctor.py",
+        "tests/test_doctor_paths.py",
+        "tests/test_doc_versions.py",
+        "docs/install.md",
+        "overrides/README.md",
+        "AGENTS.md",
+        "README.md",
+        "changelog.d/105-fix-doc-drift.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5"
+      ],
+      "review": "batch",
+      "red": "compile-only"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-11-10T06:13:25Z",
+    "stage_started_at": {
+      "intake": "2026-11-10T06:13:25Z",
+      "spec": "2026-11-10T06:13:25Z",
+      "implement": "2026-11-10T06:13:39Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-11-10T06:13:39Z",
+        "approved_at": "2026-11-10T06:13:39Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  }
+}

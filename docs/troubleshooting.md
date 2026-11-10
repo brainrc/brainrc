@@ -16,8 +16,11 @@ existing ones show up at once, but new or removed ones need `apply`. Rules are d
 they're rendered into `~/.config/brainrc/instructions.md` (or `$BRAINRC_HOME`), so **every** change to `rules/` (or a pack's
 rules) needs `apply`, edits included. Restart the harness or start a new session afterwards.
 
-If you moved the repo, the old links are broken. `doctor` names each one: delete it, then
-`apply`.
+If you moved the repo, the old links are broken and `apply` reports each as a `CONFLICT`. Run
+`python3 scripts/brainrc.py apply --repair` from the new location: it relinks every broken link
+that points at the same item's old location (`skills/<name>`, `agents/<name>.md`, ...) and prunes
+the ones into the old location whose item is gone. `status --repair` shows the changes first. A
+broken link to anything else stays a `CONFLICT`, and your own working links are never touched.
 
 ## Every skill shows up twice, or a hook runs twice
 

@@ -65,8 +65,8 @@ brainrc`) updates every harness. Guard hooks are the exception: `apply` copies t
 `$BRAINRC_HOME/hooks/core/` and links there, because the package path changes when an upgrade
 moves the tool to a new Python. Run `brainrc apply` after upgrading to refresh the copy. After an
 upgrade to a new Python, the other links (skills, agents) point at the old path and `apply`
-reports them as `CONFLICT`; `brainrc doctor` lists each broken link with the `rm` that clears it,
-then re-run `apply`. Local files go in `~/.config/brainrc/` (`$BRAINRC_HOME`):
+reports them as `CONFLICT`; `brainrc apply --repair` relinks them (it does the same after you
+move a checkout). Local files go in `~/.config/brainrc/` (`$BRAINRC_HOME`):
 `harnesses.local.toml`, `packs.local.toml`, and `rules/*.local.md`. Packs are local
 directories or git URLs that `brainrc` fetches ([packs](packs.md#enable-a-pack)).
 
@@ -83,7 +83,7 @@ the move, then `brainrc migrate`: it moves the directory and re-runs `apply`. Wi
 Something missing in a harness? `python3 scripts/brainrc.py doctor` checks the install without
 changing anything: stale rules, missing or broken links (after moving the repo, say), broken
 packs, and unmerged hooks. Each problem comes with its fix.
-`brainrc uninstall` takes out everything `apply` put in (`--dry-run` first to see it);
+`apply --repair` relinks the links a moved checkout left broken, and `brainrc uninstall` takes out everything `apply` put in (`--dry-run` first to see it);
 [troubleshooting.md](troubleshooting.md#uninstall) has the details and covers the rest.
 
 ## Plugins (no clone)

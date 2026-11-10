@@ -1,0 +1,1 @@
+PR: <PR_URL>. `apply --repair` relinks broken links that point at the same item's old location (and links into roots apply recorded), and prunes ones whose item is gone, so a moved checkout is back in sync in one run. A plain `apply` now says how many conflicts `--repair` would fix, and `doctor` suggests it.

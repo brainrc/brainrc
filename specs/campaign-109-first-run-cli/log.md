@@ -30,3 +30,6 @@ gh:127 `127-brainrc-init` verified at 2026-11-10T17:03Z: 779 tests, validate OK.
 
 ## engine · child 4 · verified
 gh:128 `128-brainrc-uninstall` verified at 2026-11-10T17:20Z: 790 tests, validate OK.
+
+## engine · child 5 · verified
+gh:129 `129-apply-repair` verified at 2026-11-10T17:32Z: 799 tests, validate OK.

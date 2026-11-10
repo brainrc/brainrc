@@ -36,3 +36,6 @@ gh:129 `129-apply-repair` verified at 2026-11-10T17:32Z: 799 tests, validate OK.
 
 ## engine · child 6 · verified
 gh:130 `130-doctor-plugin-overlap` verified at 2026-11-10T17:37Z: 805 tests, validate OK. Every child verified.
+
+## engine · stack Deliver gate · auto-approved
+`delivery: stacked`. Ready PRs opened 2026-11-10T17:39Z: #267 (125) on main, then #268 (126), #269 (127), #270 (128), #271 (129), #272 (130), each on the previous child's branch with "N of 6, stacked on #X. Retarget to `main` before merging." Ticket comments stay drafts; no ticket transitions. Merge order is 267 → 272; after each merge, merge `main` into the next branch, re-run its tests, and retarget its PR to `main` (Retarget rule). Never merged by the run.

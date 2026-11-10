@@ -1,1 +1,1 @@
-PR: <PR_URL>. `docs/roadmap.md` now lists every open epic by wave (the Roadmap ID prefix of its sub-issues), each with its goal and issue link, and points to the CHANGELOG for shipped work. A test keeps the line shape.
+PR: https://github.com/brainrc/brainrc/pull/265. `docs/roadmap.md` now lists every open epic by wave (the Roadmap ID prefix of its sub-issues), each with its goal and issue link, and points to the CHANGELOG for shipped work. A test keeps the line shape.

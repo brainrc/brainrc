@@ -6,7 +6,7 @@
     "id": "203",
     "title": "Replace docs/roadmap.md with the epic list",
     "url": "https://github.com/brainrc/brainrc/issues/203",
-    "pr": null,
+    "pr": "https://github.com/brainrc/brainrc/pull/265",
     "pr_draft": false
   },
   "slug": "203-roadmap-epic-list",
@@ -90,7 +90,8 @@
       "first_pass": 1
     },
     "retries": 0,
-    "interventions": 0
+    "interventions": 0,
+    "pr_opened_at": "2026-11-10T06:22:09Z"
   },
   "living": [],
   "review_context": "shared"

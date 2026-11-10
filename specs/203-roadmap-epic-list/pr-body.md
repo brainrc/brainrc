@@ -1,6 +1,6 @@
 List the open epics by wave in docs/roadmap.md
 
-Part of epic #94 (E3), 3 of 3, stacked on #PR105. Retarget to `main` before merging. Closes #203.
+Part of epic #94 (E3), 3 of 3, stacked on #264. Retarget to `main` before merging. Closes #203.
 
 ## Why
 `docs/roadmap.md` still listed three old items. The plan lives in the GitHub epics now, so someone reading the repo couldn't see what comes next.

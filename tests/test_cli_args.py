@@ -33,7 +33,7 @@ class HelpTest(unittest.TestCase):
             self.assertTrue(out, args)
 
     def test_each_command_has_its_own_help(self):
-        for cmd in ("init", "status", "apply", "update", "validate", "doctor", "migrate", "tokens"):
+        for cmd in ("init", "status", "apply", "update", "uninstall", "validate", "doctor", "migrate", "tokens"):
             code, out, _ = run(cmd, "--help")
             self.assertEqual(code, 0, cmd)
             self.assertIn(f" {cmd} ", out.splitlines()[0] + " ")

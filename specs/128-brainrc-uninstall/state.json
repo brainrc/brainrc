@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:128",
+    "id": "128",
+    "title": "aicfg uninstall",
+    "url": "https://github.com/brainrc/brainrc/issues/128",
+    "pr": null,
+    "pr_draft": false
+  },
+  "slug": "128-brainrc-uninstall",
+  "branch": "128-brainrc-uninstall",
+  "base": "127-brainrc-init",
+  "worktree": "~/.brainrc-worktrees/brainrc/128-brainrc-uninstall",
+  "size": "standard",
+  "mode": "inline",
+  "delivery": "normal",
+  "auto": true,
+  "oneshot": true,
+  "campaign": "campaign-109-first-run-cli",
+  "stage": "deliver",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/brainrc.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "uninstall command, CLI wiring, tests and docs",
+      "agent": "engine",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "brainrc/uninstall.py",
+        "brainrc/cli.py",
+        "brainrc/__init__.py",
+        "docs/troubleshooting.md",
+        "docs/install.md",
+        "tests/test_uninstall.py",
+        "tests/test_cli_args.py",
+        "changelog.d/128-brainrc-uninstall.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC6",
+        "AC7"
+      ],
+      "review": "batch",
+      "sha": "b594ea7",
+      "red": "import"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-11-10T17:03:31Z",
+    "stage_started_at": {
+      "intake": "2026-11-10T17:03:31Z",
+      "spec": "2026-11-10T17:04:30Z",
+      "plan": "2026-11-10T17:05:30Z",
+      "implement": "2026-11-10T17:06:00Z",
+      "verify": "2026-11-10T17:19:51Z",
+      "document": "2026-11-10T17:21:30Z",
+      "deliver": "2026-11-10T17:22:00Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-11-10T17:05:30Z",
+        "approved_at": "2026-11-10T17:05:30Z"
+      },
+      "plan": {
+        "presented_at": "2026-11-10T17:06:00Z",
+        "approved_at": "2026-11-10T17:06:00Z"
+      },
+      "deliver": {
+        "presented_at": "2026-11-10T17:22:00Z",
+        "approved_at": "2026-11-10T17:22:00Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 1,
+      "first_pass": 1
+    },
+    "retries": 0,
+    "interventions": 0,
+    "pr_opened_at": null
+  },
+  "living": [
+    "aicfg-apply"
+  ],
+  "review_context": "shared"
+}

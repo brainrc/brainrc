@@ -91,18 +91,22 @@ Close Claude Code before `apply` changes MCP servers: it rewrites `~/.claude.jso
 
 ## Uninstall
 
-1. Disable every harness in `harnesses.local.toml`, and every pack in `packs.local.toml`:
+```bash
+python3 scripts/brainrc.py uninstall --dry-run   # see what goes
+python3 scripts/brainrc.py uninstall             # or `brainrc uninstall` from the package
+```
 
-   ```toml
-   [claude]
-   enabled = false
-   ```
+`uninstall` removes every link brainrc made (broken ones too), takes its hooks out of each
+settings file and the MCP servers it added out of each MCP file, and removes the files and
+directories that leaves empty. Your own settings, hooks, and servers stay, every file it
+rewrites is backed up first (`*.bak-brainrc-*`), and an instructions file `init` moved aside is
+put back. It reads which harnesses and source roots apply used from `$BRAINRC_HOME/harnesses.json`,
+so it still works after you move or delete the checkout or a pack.
 
-   Repeat for `codex`, `opencode`, `antigravity`, and `cursor`.
-2. Run `python3 scripts/brainrc.py apply`. It removes every link it made, including the hooks
-   directory, takes brainrc's hooks out of `~/.claude/settings.json`, and removes the MCP
-   servers it added (backing each file up first). Your other settings, hooks, and servers stay.
-3. Delete the repo.
+Your local config (`harnesses.local.toml`, `packs.local.toml`, `rules/*.local.md`) and fetched
+git packs stay in `$BRAINRC_HOME`; `uninstall --purge` deletes that directory too, unless it
+holds files brainrc didn't make (then it says which, and leaves them). Then delete
+the repo, or `uv tool uninstall brainrc` (`pipx uninstall brainrc`).
 
 ## Every tool call is blocked, or `doctor` says `hook missing`
 

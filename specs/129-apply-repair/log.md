@@ -17,3 +17,7 @@ Inline (review_context: shared). No CRITICAL/HIGH. Checked that a working link o
 
 ## engine · Deliver gate · auto-approved
 Push 129-apply-repair, open a ready PR from pr-body.md against 128-brainrc-uninstall ("5 of 6, stacked on #X"; Closes #129). Ticket comment stays a draft. No ticket transition.
+
+## code-reviewer · PR #271 review · fixed
+One blocking finding and one hardening, each reproduced, then fixed with a test that fails on the old code:
+- A root inferred from a broken link was trusted for stale pruning, so `apply --repair` unlinked the user's own live links into the same folder. Inferred roots now only add pruning when they no longer exist (a moved or deleted checkout), and never when they are ~ or one of its ancestors; the broken link itself is still repaired as a moved item. Recorded roots come from `checked_manifest`, which ignores ~, / and ~'s ancestors with a WARN.

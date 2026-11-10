@@ -18,3 +18,6 @@ Push 203-roadmap-epic-list, open a ready PR from pr-body.md against 105-fix-doc-
 
 ## engine · watch · review on #265
 Inline finding (bxker): the wave test only checked that a `## Wave 0` heading came first. Now every item must sit under one of the six wave or group headings (fails with an item under `## Notes`). Also reworded `docs/formats.md`'s "Adapters (see roadmap)", which the new page no longer covers.
+
+## engine · watch · second review on #265
+Optional nit (bxker): E2 and E22 were the only lines without a goal. Added a one-line goal to each, from their epic issues.

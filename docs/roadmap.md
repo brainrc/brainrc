@@ -47,5 +47,5 @@ These have no wave yet; their sub-issues carry no `Roadmap ID`.
 
 ## Open, with every sub-issue closed
 Waiting to be closed:
-- **E2** [Config and pack loading](https://github.com/brainrc/brainrc/issues/93)
-- **E22** [Rename to brainrc](https://github.com/brainrc/brainrc/issues/199)
+- **E2** [Config and pack loading](https://github.com/brainrc/brainrc/issues/93): readable config errors first, then the config and pack-loading fixes that build on them.
+- **E22** [Rename to brainrc](https://github.com/brainrc/brainrc/issues/199): rename the project and command to brainrc, reading the old names for one minor release.

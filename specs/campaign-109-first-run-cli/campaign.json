@@ -23,9 +23,10 @@
       "ref": "gh:126",
       "order": 2,
       "depends_on": [],
-      "status": "todo",
-      "slug": null,
-      "pr": null
+      "status": "verified",
+      "slug": "126-installed-harnesses",
+      "pr": null,
+      "branch": "126-installed-harnesses"
     },
     {
       "ref": "gh:127",

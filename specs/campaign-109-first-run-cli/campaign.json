@@ -50,9 +50,10 @@
       "ref": "gh:129",
       "order": 5,
       "depends_on": [],
-      "status": "todo",
-      "slug": null,
-      "pr": null
+      "status": "verified",
+      "slug": "129-apply-repair",
+      "pr": null,
+      "branch": "129-apply-repair"
     },
     {
       "ref": "gh:130",

@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:129",
+    "id": "129",
+    "title": "apply --repair for a moved checkout",
+    "url": "https://github.com/brainrc/brainrc/issues/129",
+    "pr": null,
+    "pr_draft": false
+  },
+  "slug": "129-apply-repair",
+  "branch": "129-apply-repair",
+  "base": "128-brainrc-uninstall",
+  "worktree": "~/.brainrc-worktrees/brainrc/129-apply-repair",
+  "size": "standard",
+  "mode": "inline",
+  "delivery": "normal",
+  "auto": true,
+  "oneshot": true,
+  "campaign": "campaign-109-first-run-cli",
+  "stage": "deliver",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/brainrc.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "repair state, old roots, flag, doctor hint, tests and docs",
+      "agent": "engine",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "brainrc/plan.py",
+        "brainrc/cli.py",
+        "brainrc/doctor.py",
+        "docs/troubleshooting.md",
+        "docs/install.md",
+        "tests/test_repair.py",
+        "tests/test_brainrc.py",
+        "changelog.d/129-apply-repair.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC6"
+      ],
+      "review": "batch",
+      "sha": "3a497ca",
+      "red": "usage"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-11-10T17:22:21Z",
+    "stage_started_at": {
+      "intake": "2026-11-10T17:22:21Z",
+      "spec": "2026-11-10T17:23:00Z",
+      "plan": "2026-11-10T17:23:30Z",
+      "implement": "2026-11-10T17:24:00Z",
+      "verify": "2026-11-10T17:32:11Z",
+      "document": "2026-11-10T17:32:30Z",
+      "deliver": "2026-11-10T17:32:50Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-11-10T17:23:30Z",
+        "approved_at": "2026-11-10T17:23:30Z"
+      },
+      "plan": {
+        "presented_at": "2026-11-10T17:24:00Z",
+        "approved_at": "2026-11-10T17:24:00Z"
+      },
+      "deliver": {
+        "presented_at": "2026-11-10T17:32:50Z",
+        "approved_at": "2026-11-10T17:32:50Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 1,
+      "first_pass": 1
+    },
+    "retries": 0,
+    "interventions": 0,
+    "pr_opened_at": null
+  },
+  "living": [
+    "aicfg-apply",
+    "doctor"
+  ],
+  "review_context": "shared"
+}

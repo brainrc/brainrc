@@ -77,3 +77,7 @@ _Last changed by 126-installed-harnesses._
 ### Uninstall
 `brainrc uninstall` SHALL remove every link whose target is a path brainrc links to under any source root recorded in the manifest or configured now, the hook groups and MCP servers brainrc owns, and the files and directories that leaves empty (never a harness home), SHALL back up every file it rewrites, SHALL restore an instructions file `init` moved aside, SHALL keep local config and packs unless `--purge`, and SHALL change nothing with `--dry-run`. (AC1, AC2, AC3, AC4, AC5, AC6, AC7)
 _Last changed by 128-brainrc-uninstall._
+
+### Repair links after a move
+`brainrc apply --repair` (and `status --repair`, which writes nothing) SHALL relink a link whose target is under a source root recorded in the manifest, or is missing and ends with the planned source's last two path parts, and SHALL prune links into those old roots whose item is gone; every other link it doesn't manage SHALL stay a `CONFLICT`. (AC1, AC2, AC3, AC4, AC5)
+_Last changed by 129-apply-repair._

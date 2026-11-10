@@ -12,6 +12,11 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.5.11 (2026-11-10)
+
+- The CLI is built on argparse: `brainrc --help` and `--version` exit 0, every command has its own `--help`, and the maintainer commands `plugin` and `release` no longer show in the command list (they still run). A usage error goes to stderr with exit 2. `status` and `apply` take `--only <harness>` (repeatable, or comma-separated) to touch only those harnesses; the others keep their links, hooks and MCP servers as they are.
+- `apply` only touches harnesses that are installed: a machine with just Claude Code gets only `~/.claude` changes, and `~/.codex`, `~/.cursor` and the rest are no longer created. A harness counts as installed when its config directory exists (a new optional `home` key in harnesses.toml sets which one). `status` and `apply` name the ones they skip; `enabled = true` in harnesses.local.toml manages one anyway. `apply` records the harnesses it manages, and the source roots it linked from, in `$BRAINRC_HOME/harnesses.json`. `doctor` no longer warns about a harness that isn't installed, since `apply` skips it.
+
 ## 0.5.10 (2026-11-10)
 
 - `brainrc doctor` quotes the paths in the `rm`, `validate --pack` and `python3 <hook>` commands it suggests, keeping `~` outside the quotes so the shell still expands it, so a path with a space or quote can be pasted as is. A directory beside the home directory (a sibling whose name starts with the same letters) is no longer shortened to a wrong `~` path.

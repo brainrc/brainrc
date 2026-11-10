@@ -6,7 +6,7 @@
     "id": "104",
     "title": "Keep core employer-neutral, mechanically",
     "url": "https://github.com/brainrc/brainrc/issues/104",
-    "pr": null,
+    "pr": "https://github.com/brainrc/brainrc/pull/263",
     "pr_draft": false
   },
   "slug": "104-local-tripwires",
@@ -93,7 +93,8 @@
       "first_pass": 1
     },
     "retries": 0,
-    "interventions": 0
+    "interventions": 0,
+    "pr_opened_at": "2026-11-10T06:22:09Z"
   },
   "living": [
     "validate"

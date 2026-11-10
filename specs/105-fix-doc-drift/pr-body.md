@@ -6,7 +6,7 @@ Part of epic #94 (E3), 2 of 3, stacked on #263. Retarget to `main` before mergin
 Docs had drifted from the code. The install guide told people to stay on v0.3.29, from before the rename. `overrides/README.md` said only Claude Code was synced. `brainrc doctor` printed `rm` fixes with unquoted paths, so pasting one with a space in the path would fail or remove the wrong thing.
 
 ## What changed
-- `brainrc doctor` quotes the path in its three `rm` fixes (broken link, unused old home, stray broken link) with a new `shell_path` helper. `~` stays outside the quotes so the shell still expands it. Plain paths print exactly as before.
+- `brainrc doctor` quotes the path in its three `rm` fixes (broken link, unused old home, stray broken link), and in its `validate --pack` and `python3 <hook>` fixes, with a new `shell_path` helper. `~` stays outside the quotes so the shell still expands it, and the helper works from the path's parts, so a sibling of the home directory isn't shortened to a wrong `~` path. Plain paths print exactly as before.
 - `docs/install.md` says `git checkout v<X.Y.Z>` with a link to Releases instead of pinning v0.3.29.
 - New `tests/test_doc_versions.py`: any release pin in the install docs (`git checkout vX.Y.Z`, `@vX.Y.Z`, `brainrc==X.Y.Z`, `--branch vX.Y.Z`) must match `VERSION`'s major.minor. Historical mentions ("removed in 0.5.0") aren't pins.
 - `overrides/README.md` lists what `apply` syncs: Claude Code and Cursor hooks and settings fragments, OpenCode's guard plugin. Codex and Antigravity have none.

@@ -6,7 +6,7 @@
     "id": "105",
     "title": "Fix doc drift",
     "url": "https://github.com/brainrc/brainrc/issues/105",
-    "pr": null,
+    "pr": "https://github.com/brainrc/brainrc/pull/264",
     "pr_draft": false
   },
   "slug": "105-fix-doc-drift",
@@ -97,7 +97,8 @@
       "first_pass": 1
     },
     "retries": 1,
-    "interventions": 0
+    "interventions": 0,
+    "pr_opened_at": "2026-11-10T06:22:09Z"
   },
   "living": [
     "doctor"

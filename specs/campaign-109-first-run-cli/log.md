@@ -27,3 +27,6 @@ Artifacts: specs/campaign-109-first-run-cli/campaign.json
 
 ## engine · child 3 · verified
 gh:127 `127-brainrc-init` verified at 2026-11-10T17:03Z: 779 tests, validate OK. Content profiles left to #173 (owns profiles).
+
+## engine · child 4 · verified
+gh:128 `128-brainrc-uninstall` verified at 2026-11-10T17:20Z: 790 tests, validate OK.

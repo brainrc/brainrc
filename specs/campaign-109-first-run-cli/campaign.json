@@ -41,9 +41,10 @@
       "ref": "gh:128",
       "order": 4,
       "depends_on": [],
-      "status": "todo",
-      "slug": null,
-      "pr": null
+      "status": "verified",
+      "slug": "128-brainrc-uninstall",
+      "pr": null,
+      "branch": "128-brainrc-uninstall"
     },
     {
       "ref": "gh:129",

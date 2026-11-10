@@ -73,3 +73,7 @@ _Last changed by 126-installed-harnesses._
 ### Harness manifest
 `brainrc apply` SHALL write `<settings home>/harnesses.json` listing each managed harness's paths and the source roots it linked from, keeping entries outside `--only` and earlier roots. (AC6)
 _Last changed by 126-installed-harnesses._
+
+### Uninstall
+`brainrc uninstall` SHALL remove every link whose target is a path brainrc links to under any source root recorded in the manifest or configured now, the hook groups and MCP servers brainrc owns, and the files and directories that leaves empty (never a harness home), SHALL back up every file it rewrites, SHALL restore an instructions file `init` moved aside, SHALL keep local config and packs unless `--purge`, and SHALL change nothing with `--dry-run`. (AC1, AC2, AC3, AC4, AC5, AC6, AC7)
+_Last changed by 128-brainrc-uninstall._

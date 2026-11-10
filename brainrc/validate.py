@@ -245,11 +245,16 @@ def _check_local_tripwires(src: Source) -> list[str]:
         return errors + [f"{LOCAL_TRIPWIRES}: `terms` must be a list of non-empty strings"]
     needles = [(t, t.strip().casefold()) for t in terms]
     for p in files if needles else []:
-        if p == path or not p.is_file():
+        if p == path or not (p.is_symlink() or p.is_file()):
             continue
         rel = src.rel(p)
         errors += [f"{rel}: local tripwire: the file name contains \"{t}\" ({LOCAL_TRIPWIRES})"
                    for t, n in needles if n in rel.casefold()]
+        if p.is_symlink():  # git commits the link's target path, not the file it points at
+            target = os.readlink(p).casefold()
+            errors += [f"{rel}: local tripwire: the link target contains \"{t}\" ({LOCAL_TRIPWIRES})"
+                       for t, n in needles if n in target]
+            continue
         data = p.read_bytes()
         if b"\0" in data[:8192]:
             continue  # binary

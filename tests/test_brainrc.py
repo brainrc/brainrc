@@ -2212,6 +2212,24 @@ class LocalTripwireTest(TempRepoCase):
         self.assertEqual(code, 1, out)
         self.assertIn('untracked-initech.md:1: local tripwire: contains "initech"', out)
 
+    def test_binary_files_are_skipped(self):
+        (self.repo / "agents/blob.bin").write_bytes(b"\0\1\2" + b"x" * 100 + b"initech")
+        self.write_terms('terms = ["initech"]\n')
+        code, out = quiet(brainrc.cmd_validate)
+        self.assertEqual(code, 0, out)
+
+    def test_a_link_is_checked_by_its_target_path_not_followed(self):
+        outside = self.repo.parent / "outside.md"
+        outside.write_text("initech\n")  # not committed, so not checked
+        (self.repo / "skills/spec-agent/outside.txt").symlink_to(outside)
+        self.write_terms('terms = ["initech"]\n')
+        code, out = quiet(brainrc.cmd_validate)
+        self.assertEqual(code, 0, out)
+        (self.repo / "skills/spec-agent/ref.txt").symlink_to("../initech/ref.txt")  # broken, but committed as is
+        code, out = quiet(brainrc.cmd_validate)
+        self.assertEqual(code, 1, out)
+        self.assertIn('skills/spec-agent/ref.txt: local tripwire: the link target contains "initech"', out)
+
     def test_the_file_must_never_be_tracked(self):
         self.git("init", "-q")
         self.write_terms('terms = ["initech"]\n')

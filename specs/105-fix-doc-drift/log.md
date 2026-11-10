@@ -22,3 +22,6 @@ Push 105-fix-doc-drift, open a ready PR from pr-body.md against 104-local-tripwi
 
 ## engine · watch · review on #264
 Inline finding (bxker): `shell_path` built on `tilde()`, which isn't anchored, so a sibling of HOME whose name starts the same printed as `~e/...`. Fixed: `shell_path` works from `Path.relative_to(Path.home())`, with a sibling and a nested-path test (fails on the old helper). Also used for the `validate --pack` and `python3 <hook>` fixes the review named as non-blocking.
+
+## engine · watch · second review on #264
+Inline finding (bxker, blocking): the unused-old-home fix suggested `rm -r` even when the old dir contains the settings home or is HOME (`AICFG_HOME=~/.config` gave `rm -r ~/.config`). Fixed: `_held_inside` checks the resolved old dir against HOME, the settings home and the checkout, and the fix then says to keep the dir. Test with `AICFG_HOME` at `~/.config` and at `~`; it fails on the old code. Non-blocking: the stray broken-link scan moved into `_stray_link_findings` and got a quoting test.

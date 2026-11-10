@@ -6,6 +6,7 @@ import io
 import json
 import os
 import re
+import shlex
 import subprocess
 from pathlib import Path
 
@@ -89,7 +90,7 @@ def _doctor_sources() -> tuple[list[Source], list[Source], list[Finding]]:
             failed = cmd_validate(str(root))
         if failed:
             found.append(("FAIL", f"pack {src.name}: validate --pack fails",
-                          command(f"validate --pack {tilde(root)}")))
+                          command(f"validate --pack {shell_path(root)}")))
         srcs.append(src)
     found += [("FAIL", d, "change `name` in one pack's pack.toml, or set `enabled = false` for one in packs.local.toml")
               for d in duplicate_packs(srcs)]
@@ -113,6 +114,17 @@ def _render_findings(srcs: list[Source]) -> list[Finding]:
     return found
 
 
+def shell_path(path: Path) -> str:
+    """A path for a command the user copies into a shell: under the home directory it starts with
+    `~` outside the quotes, so the shell still expands it; the rest is quoted only when needed.
+    Anchored on whole path parts, so a sibling of home whose name starts the same stays absolute."""
+    try:
+        rel = path.relative_to(Path.home())
+    except ValueError:
+        return shlex.quote(str(path))
+    return "~" if rel == Path(".") else "~/" + shlex.quote(str(rel))
+
+
 def _link_finding(link: Link, roots: list[Path]) -> Finding | None:
     state, dest = link.state(roots), tilde(link.dest)
     if state == "create":
@@ -127,9 +139,19 @@ def _link_finding(link: Link, roots: list[Path]) -> Finding | None:
     target = link_target(link.dest)
     if not target.exists():
         return ("FAIL", f"{link.harness}: {dest} is a broken link to {tilde(target)} (repo moved?)",
-                f"rm {dest} && {command('apply')}")
+                f"rm {shell_path(link.dest)} && {command('apply')}")
     return ("FAIL", f"{link.harness}: {dest} links to {tilde(target)}, outside brainrc and its packs",
             f"move that into a pack (or delete the link), then {command('apply')}")
+
+
+def _held_inside(old: Path, home: Path) -> str | None:
+    """What `rm -r old` would take with it: the home directory, the settings home or this checkout."""
+    o = old.resolve()
+    for name, path in (("your home directory", Path.home()), ("the settings home", home),
+                       ("the brainrc checkout", config.REPO)):
+        if path.resolve().is_relative_to(o):
+            return name
+    return None
 
 
 def _home_findings() -> list[Finding]:
@@ -148,8 +170,11 @@ def _home_findings() -> list[Finding]:
         if not old.exists() or old == skip:
             continue
         if home_has_content:
-            found.append(("WARN", f"{tilde(old)} is unused (settings home is {tilde(home)})",
-                          f"move anything you still need from it into {tilde(home)}, then remove it: rm -r {tilde(old)}"))
+            keep = f"move anything you still need from it into {tilde(home)}"
+            held = _held_inside(old, home)
+            fix = (f"{keep}, but don't remove {tilde(old)}: it holds {held}" if held
+                   else f"{keep}, then remove it: rm -r {shell_path(old)}")
+            found.append(("WARN", f"{tilde(old)} is unused (settings home is {tilde(home)})", fix))
         else:  # the old dir may hold the only settings: move them, don't delete them
             found.append(("WARN", f"{tilde(old)} holds settings, but the settings home is {tilde(home)}",
                           f"`{command('migrate')}` moves it there"))
@@ -205,18 +230,9 @@ def doctor_findings() -> list[Finding]:
     roots = [s.root for s in every_src]
     links, stale, merges = plan(srcs, every_src)
 
-    skipped = set()
-    for name, h in load_harnesses().items():
-        key = next((k for k in ("instructions", "skills") if k in h), None)
-        home = expand(h[key]).parent if key else None
-        if home and not home.is_dir():
-            skipped.add(name)
-            found.append(("WARN", f"{name}: {tilde(home)} doesn't exist (not installed?)",
-                          f"add `[{name}] enabled = false` to harnesses.local.toml, or install it"))
+    # A harness that isn't installed is neither planned nor checked: apply skips it too (#126).
     missing: dict[str, list[Link]] = {}
     for link in links:
-        if link.harness in skipped:
-            continue
         if link.state(roots) == "create":
             missing.setdefault(link.harness, []).append(link)
         elif f := _link_finding(link, roots):
@@ -230,20 +246,10 @@ def doctor_findings() -> list[Finding]:
     found += [("FAIL", f"{tilde(p)} is a stale link brainrc no longer makes", f"{command('apply')} (prunes it)")
               for p in stale]
 
-    # Broken links brainrc doesn't manage, in the directories it links into.
-    known = {link.dest for link in links} | set(stale)
-    for name, h in load_harnesses().items():
-        for kind in KINDS:
-            d = expand(h[kind]) if kind in h and name not in skipped else None
-            for p in sorted(d.iterdir()) if d and d.is_dir() else []:
-                if p.is_symlink() and not p.exists() and p not in known:
-                    found.append(("WARN", f"{name}: {tilde(p)} is a broken link not made by brainrc",
-                                  f"rm {tilde(p)}"))
+    found += _stray_link_findings({link.dest for link in links} | set(stale))
 
     found += [("FAIL", e, f"fix the JSON, then {command('apply')}") for e in invalid_fragments(srcs)]
     for m in merges:
-        if m.harness in skipped:
-            continue
         try:
             state, _ = settings_change(m)
         except FragmentError:
@@ -256,8 +262,8 @@ def doctor_findings() -> list[Finding]:
         elif state == "conflict":
             found.append(("FAIL", f"{m.harness}: {tilde(m.dest)} is invalid JSON",
                           f"fix it by hand, then {command('apply')}"))
-    found += _hook_findings(merges, skipped)
-    found += _mcp_findings(srcs, skipped)
+    found += _hook_findings(merges)
+    found += _mcp_findings(srcs)
     found += _home_findings()
     found += _plugin_findings()
     return found
@@ -266,12 +272,25 @@ def doctor_findings() -> list[Finding]:
 HOOK_SCRIPT = re.compile(r'"([^"]+\.py)"')  # the script in a `python3 "<dir>/<guard>.py"` command
 
 
-def _hook_findings(merges: list, skipped: set[str]) -> list[Finding]:
+def _stray_link_findings(known: set[Path]) -> list[Finding]:
+    """WARN for broken links brainrc doesn't manage, in the directories it links into."""
+    found = []
+    for name, h in load_harnesses().items():
+        for kind in KINDS:
+            d = expand(h[kind]) if kind in h else None
+            for p in sorted(d.iterdir()) if d and d.is_dir() else []:
+                if p.is_symlink() and not p.exists() and p not in known:
+                    found.append(("WARN", f"{name}: {tilde(p)} is a broken link not made by brainrc",
+                                  f"rm {shell_path(p)}"))
+    return found
+
+
+def _hook_findings(merges: list) -> list[Finding]:
     """brainrc's hooks in each settings file: the script exists and passes an empty payload.
     A missing script is skipped by the hook command, so its guard is silently off."""
     found = []
     for m in merges:
-        if m.harness in skipped or not m.fragments or not m.dest.is_file():
+        if not m.fragments or not m.dest.is_file():
             continue
         try:
             current = json.loads(m.dest.read_text())
@@ -298,21 +317,19 @@ def _hook_findings(merges: list, skipped: set[str]) -> list[Finding]:
                 found.append(("FAIL", f"{hook} can't run: python3 is not on PATH", "install Python 3"))
                 continue
             except subprocess.TimeoutExpired:
-                found.append(("FAIL", f"{hook} timed out after {timeout}s", f"run `python3 {tilde(script)}`"))
+                found.append(("FAIL", f"{hook} timed out after {timeout}s", f"run `python3 {shell_path(script)}`"))
                 continue
             if result.returncode:
                 found.append(("FAIL", f"{hook} exits {result.returncode} on an empty payload",
-                              f"run `python3 {tilde(script)}` to see why, then {command('apply')}"))
+                              f"run `python3 {shell_path(script)}` to see why, then {command('apply')}"))
     return found
 
 
-def _mcp_findings(srcs: list[Source], skipped: set[str]) -> list[Finding]:
+def _mcp_findings(srcs: list[Source]) -> list[Finding]:
     if errors := check_servers(srcs):
         return [("FAIL", e, f"fix mcp/servers.toml, then {command('apply')}") for e in errors]
     found = []
     for s in mcp_plan(srcs):
-        if s.harness in skipped:
-            continue
         state, _, clashing, _ = mcp_change(s)
         found += [("WARN", f"{s.harness}: your own MCP server `{n}` in {tilde(s.dest)} shadows brainrc's",
                    f"rename or remove yours, then {command('apply')}") for n in clashing]

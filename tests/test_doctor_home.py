@@ -72,6 +72,25 @@ class TestHomeFindings(unittest.TestCase):
         self.assertIn("migrate", fix)
         self.assertNotIn("rm -r", fix)
 
+    def test_unused_old_home_fix_quotes_the_dir(self):  # #105
+        legacy = self.home / "old home"
+        legacy.mkdir()
+        self.new.mkdir(parents=True)
+        (self.new / "instructions.md").write_text("x\n")
+        [(level, what, fix)] = self.findings(AICFG_HOME=str(legacy))
+        self.assertEqual(level, "WARN")
+        self.assertTrue(fix.endswith("then remove it: rm -r ~/'old home'"), fix)
+
+    def test_an_old_home_holding_the_settings_home_gets_no_rm(self):  # #105 review
+        self.new.mkdir(parents=True)
+        (self.new / "instructions.md").write_text("x\n")
+        for old, held in ((self.home / ".config", "the settings home"), (self.home, "your home directory")):
+            with self.subTest(old=old.name):
+                [(level, what, fix)] = self.findings(AICFG_HOME=str(old))
+                self.assertEqual(level, "WARN")
+                self.assertNotIn("rm", fix)
+                self.assertTrue(fix.endswith(f"it holds {held}"), fix)
+
     def test_only_new_dir_has_no_finding(self):
         self.new.mkdir(parents=True)
         self.assertEqual(self.findings(), [])

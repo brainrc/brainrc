@@ -93,7 +93,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md), [GOVERNANCE.md](GOVERNANCE.md), the [cod
 
 ## Security
 
-This repo is public. Don't commit secrets, tokens, internal hostnames, or absolute home-directory paths. Gitleaks runs in pre-commit and CI. To report a vulnerability, see [SECURITY.md](SECURITY.md).
+Treat this repo as public. Don't commit secrets, tokens, internal hostnames, or absolute home-directory paths. Gitleaks runs in pre-commit and CI. To report a vulnerability, see [SECURITY.md](SECURITY.md).
 
 ## Privacy
 

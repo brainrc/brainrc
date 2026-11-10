@@ -12,9 +12,18 @@ Details per harness: [harness support](formats.md#harness-support).
 ```bash
 git clone <this-repo> ~/brainrc
 cd ~/brainrc
+python3 scripts/brainrc.py init     # first run: pick harnesses, adopt your CLAUDE.md / AGENTS.md
 python3 scripts/brainrc.py status   # dry run: shows what would be linked
 python3 scripts/brainrc.py apply    # render rules + create symlinks
 ```
+
+`init` asks which installed harnesses to manage and writes the answer to `harnesses.local.toml`.
+If you already have an instructions file of your own (`~/.claude/CLAUDE.md`,
+`~/.codex/AGENTS.md`, ...), `apply` would report it as a `CONFLICT`, so `init` copies its text
+into `rules/adopted-<harness>.local.md` and moves the original aside as
+`<file>.bak-brainrc-<time>`. Adopted text is a local rule, so every harness loads it. `--yes`
+takes the defaults without asking, `--harness claude,codex` names the harnesses, `--no-adopt`
+leaves your files where they are, and `--dry-run` writes nothing. `init` never runs `apply`.
 
 `--help` lists the commands, and `<command> --help` shows one command's options. `status` and
 `apply` take `--only <harness>` (repeat it, or `--only claude,codex`) to touch only those
@@ -40,6 +49,7 @@ first, and the last 5 backups are kept).
 
 ```bash
 uv tool install git+https://github.com/brainrc/brainrc   # or: pipx install git+https://github.com/brainrc/brainrc
+brainrc init
 brainrc status
 brainrc apply
 ```
@@ -61,14 +71,14 @@ then re-run `apply`. Local files go in `~/.config/brainrc/` (`$BRAINRC_HOME`):
 directories or git URLs that `brainrc` fetches ([packs](packs.md#enable-a-pack)).
 
 Upgrading from the legacy `~/.config/ai-config/` (or `$AICFG_HOME`)? 0.5.0 no longer reads them, and
-`status`, `apply` and `update` refuse (writing nothing) until you migrate. Run `brainrc migrate --dry-run` to see
+`init`, `status`, `apply` and `update` refuse (writing nothing) until you migrate. Run `brainrc migrate --dry-run` to see
 the move, then `brainrc migrate`: it moves the directory and re-runs `apply`. With the old `AICFG_HOME` set, set
 `BRAINRC_HOME` to the new location first.
 
 `plugin` needs a checkout. Contributors use the clone above.
 
 `brainrc` never overwrites a file it doesn't manage. Pre-existing files show up as
-`CONFLICT` for you to move into the repo or delete.
+`CONFLICT` for you to move into the repo or delete (`init` does that for instruction files).
 
 Something missing in a harness? `python3 scripts/brainrc.py doctor` checks the install without
 changing anything: stale rules, missing or broken links (after moving the repo, say), broken

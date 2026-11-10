@@ -27,6 +27,7 @@ from .config import (
 from .sources import (
     check_packs, collisions, core_version, duplicate_packs, render_extensions, render_instructions, sources,
 )
+from .init import cmd_init
 from .opencode import rendered_agents
 from .packs import adopt_record, describe, fetch_pack, git_packs, needs_fetch
 from .plan import hooks_copy_current, invalid_fragments, plan, stale_hooks_copy
@@ -355,6 +356,19 @@ def _parser() -> argparse.ArgumentParser:
         return sub.add_parser(name, help=argparse.SUPPRESS if hidden else help,
                               description=description or help)
 
+    p = add("init", "first run: pick the harnesses to manage, and adopt their existing instruction "
+            "files", "Ask which installed harnesses brainrc should manage and write the answer to "
+            "harnesses.local.toml. A harness instructions file you wrote (~/.claude/CLAUDE.md, "
+            "~/.codex/AGENTS.md, ...) would be a CONFLICT for apply, so init copies its text into "
+            "rules/adopted-<harness>.local.md, which every harness loads, and moves the original "
+            "aside as <file>.bak-brainrc-<time>. It doesn't run apply.")
+    p.add_argument("--yes", "-y", action="store_true",
+                   help="ask nothing: manage every installed harness and adopt every instruction file")
+    p.add_argument("--harness", action="append", type=_harness_list, metavar="HARNESS",
+                   help="manage exactly these harnesses (repeat it, or separate names with commas); "
+                   "asks nothing")
+    p.add_argument("--no-adopt", action="store_true", help="leave instruction files where they are")
+    p.add_argument("--dry-run", action="store_true", help="print what init would do, write nothing")
     only_help = ("only these harnesses (repeat it, or separate names with commas); the others "
                  "are left as they are")
     p = add("status", "show what apply would change (the default command; writes nothing)")
@@ -398,8 +412,11 @@ def _dispatch(argv: list[str]) -> int:
     cmd = args.cmd or "status"
     if cmd == "migrate":
         return cmd_migrate(dry_run=args.dry_run)
-    if cmd in ("status", "apply", "update") and (code := refuse_unmigrated()):
+    if cmd in ("init", "status", "apply", "update") and (code := refuse_unmigrated()):
         return code
+    if cmd == "init":
+        named = [n for names in args.harness or [] for n in names] if args.harness else None
+        return cmd_init(yes=args.yes, harnesses=named, adopt=not args.no_adopt, dry_run=args.dry_run)
     if cmd in ("status", "apply"):
         only = [n for names in getattr(args, "only", None) or [] for n in names]
         return cmd_sync(apply=cmd == "apply", only=only or None)

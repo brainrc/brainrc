@@ -117,7 +117,7 @@ def _render_findings(srcs: list[Source]) -> list[Finding]:
 def shell_path(path: Path) -> str:
     """A path for a command the user copies into a shell: under the home directory it starts with
     `~` outside the quotes, so the shell still expands it; the rest is quoted only when needed.
-    Anchored on whole path parts, so a sibling such as /home/joe beside /home/jo stays absolute."""
+    Anchored on whole path parts, so a sibling of home whose name starts the same stays absolute."""
     try:
         rel = path.relative_to(Path.home())
     except ValueError:

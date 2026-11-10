@@ -21,4 +21,4 @@ Inline (review_context: shared). No CRITICAL/HIGH/MEDIUM. 1 LOW: `shell_path` of
 Push 105-fix-doc-drift, open a ready PR from pr-body.md against 104-local-tripwires (stacked, Closes #105). Ticket comment stays a draft. No ticket transition.
 
 ## engine · watch · review on #264
-Inline finding (bxker): `shell_path` built on `tilde()`, which isn't anchored, so `/home/joe/...` beside HOME `/home/jo` printed as `~e/...`. Fixed: `shell_path` works from `Path.relative_to(Path.home())`, with a sibling and a nested-path test (fails on the old helper). Also used for the `validate --pack` and `python3 <hook>` fixes the review named as non-blocking.
+Inline finding (bxker): `shell_path` built on `tilde()`, which isn't anchored, so a sibling of HOME whose name starts the same printed as `~e/...`. Fixed: `shell_path` works from `Path.relative_to(Path.home())`, with a sibling and a nested-path test (fails on the old helper). Also used for the `validate --pack` and `python3 <hook>` fixes the review named as non-blocking.

@@ -16,9 +16,19 @@ python3 scripts/brainrc.py status   # dry run: shows what would be linked
 python3 scripts/brainrc.py apply    # render rules + create symlinks
 ```
 
+`--help` lists the commands, and `<command> --help` shows one command's options. `status` and
+`apply` take `--only <harness>` (repeat it, or `--only claude,codex`) to touch only those
+harnesses and leave the others exactly as they are.
+
+`apply` only touches harnesses that are installed, so a machine with just Claude Code gets only
+`~/.claude` changes. A harness counts as installed when its config directory exists
+(`~/.claude`, `~/.codex`, `~/.config/opencode`, `~/.gemini/config`, `~/.cursor`). The others are
+named in the output and skipped; `enabled = true` for one in `harnesses.local.toml` manages it
+anyway. `apply` records what it manages in `$BRAINRC_HOME/harnesses.json`.
+
 Skills, agents, commands, and hooks are **symlinked** from each harness back into this repo,
 so `git pull` updates them in every harness at once. To stay on a release instead of `main`,
-check out its tag (`git checkout v0.3.29`) and re-run `apply`. Rules are different: they are rendered
+check out its tag (`git checkout v<X.Y.Z>`, from [Releases](https://github.com/brainrc/brainrc/releases)) and re-run `apply`. Rules are different: they are rendered
 into `~/.config/brainrc/instructions.md` (`$BRAINRC_HOME` to change it; `$XDG_CONFIG_HOME/brainrc` when that is set), so re-run `apply` after any change to `rules/` (edits included),
 and after you add or remove skills, agents, or commands. For Claude Code, `apply` also merges
 the guard hooks into `~/.claude/settings.json` (your other hooks are kept; a backup is written
@@ -62,7 +72,7 @@ the move, then `brainrc migrate`: it moves the directory and re-runs `apply`. Wi
 
 Something missing in a harness? `python3 scripts/brainrc.py doctor` checks the install without
 changing anything: stale rules, missing or broken links (after moving the repo, say), broken
-packs, unmerged hooks, and harnesses that aren't installed. Each problem comes with its fix.
+packs, and unmerged hooks. Each problem comes with its fix.
 [troubleshooting.md](troubleshooting.md) covers the rest, including how to uninstall.
 
 ## Plugins (no clone)
@@ -148,7 +158,7 @@ or turn on Developer Mode and run `git config --global core.symlinks true` befor
 
 | File | Purpose |
 |---|---|
-| `harnesses.local.toml` | Disable a harness or change paths (`[cursor]` / `enabled = false`) |
+| `harnesses.local.toml` | Disable a harness (`[cursor]` / `enabled = false`), manage one that isn't detected (`enabled = true`), or change paths |
 | `packs.local.toml` | Layer extra repos on top: skills, agents, rules, hooks, spec-agent extensions ([packs.md](packs.md)) |
 | `rules/*.local.md` | Private rules appended after the shared ones |
 

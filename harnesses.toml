@@ -1,6 +1,11 @@
 # Where each AI harness reads its user-level config.
 #
+# brainrc manages a harness only when it is installed: when its `home` directory exists (default:
+# the directory holding its `instructions` or `skills` path, e.g. ~/.claude). Others are skipped
+# and named in the output; `enabled = true` in harnesses.local.toml manages one anyway.
+#
 # Keys (all optional; omit a key to skip that content type for a harness):
+#   home         directory whose existence means the harness is installed (see above)
 #   skills       directory; each skills/<name>/ is symlinked into it
 #   agents       directory; each agents/<name>.md is symlinked into it
 #   agents_format "claude" (default) links agents as written; "opencode" links copies rendered

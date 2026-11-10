@@ -16,6 +16,14 @@ pre-commit install
 You need Python 3.11+. The pre-commit hooks run gitleaks, `brainrc validate`, the tests, and a
 check for home-directory paths on every commit.
 
+To keep your employer's or clients' names out of the repo, list them in `tripwires.local.toml`
+at the repo root. Git ignores the file, and `validate` fails on any tracked file that contains
+one of the terms, in its name or text, ignoring case:
+
+```toml
+terms = ["Initech", "initech.internal"]
+```
+
 ## Making a change
 
 1. Branch from `main`.

@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:203",
+    "id": "203",
+    "title": "Replace docs/roadmap.md with the epic list",
+    "url": "https://github.com/brainrc/brainrc/issues/203",
+    "pr": "https://github.com/brainrc/brainrc/pull/265",
+    "pr_draft": false
+  },
+  "slug": "203-roadmap-epic-list",
+  "branch": "203-roadmap-epic-list",
+  "base": "105-fix-doc-drift",
+  "worktree": "~/.brainrc-worktrees/brainrc/203-roadmap-epic-list",
+  "size": "small",
+  "mode": "inline",
+  "delivery": "normal",
+  "auto": true,
+  "oneshot": true,
+  "campaign": "campaign-094-neutral-core",
+  "stage": "deliver",
+  "gates": {
+    "spec": "approved",
+    "plan": "skipped",
+    "deliver": "approved"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/brainrc.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Rewrite the roadmap as the epic list, with a shape test",
+      "agent": "engine",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "docs/roadmap.md",
+        "tests/test_roadmap.py",
+        "changelog.d/203-roadmap-epic-list.md",
+        "docs/formats.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "sha": "2727fbc"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-11-10T06:19:29Z",
+    "stage_started_at": {
+      "intake": "2026-11-10T06:19:29Z",
+      "spec": "2026-11-10T06:19:29Z",
+      "implement": "2026-11-10T06:19:43Z",
+      "verify": "2026-11-10T06:20:41Z",
+      "document": "2026-11-10T06:21:03Z",
+      "deliver": "2026-11-10T06:21:03Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-11-10T06:19:43Z",
+        "approved_at": "2026-11-10T06:19:43Z"
+      },
+      "deliver": {
+        "presented_at": "2026-11-10T06:21:03Z",
+        "approved_at": "2026-11-10T06:21:03Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 1,
+      "first_pass": 1
+    },
+    "retries": 0,
+    "interventions": 0,
+    "pr_opened_at": "2026-11-10T06:22:09Z"
+  },
+  "living": [],
+  "review_context": "shared"
+}

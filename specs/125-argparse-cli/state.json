@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:125",
+    "id": "125",
+    "title": "Rebuild the CLI on argparse",
+    "url": "https://github.com/brainrc/brainrc/issues/125",
+    "pr": null,
+    "pr_draft": false
+  },
+  "slug": "125-argparse-cli",
+  "branch": "125-argparse-cli",
+  "base": "main",
+  "worktree": "~/.brainrc-worktrees/brainrc/125-argparse-cli",
+  "size": "standard",
+  "mode": "inline",
+  "delivery": "normal",
+  "auto": true,
+  "oneshot": true,
+  "campaign": "campaign-109-first-run-cli",
+  "stage": "deliver",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/brainrc.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "argparse parser, --only scope, tests and docs",
+      "agent": "engine",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "brainrc/cli.py",
+        "brainrc/config.py",
+        "brainrc/plan.py",
+        "brainrc/mcp.py",
+        "tests/test_cli_args.py",
+        "tests/test_brainrc.py",
+        "docs/install.md",
+        "changelog.d/125-argparse-cli.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC6",
+        "AC7"
+      ],
+      "review": "batch",
+      "sha": "8d5d8af",
+      "red": "assertion"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-11-10T16:29:57Z",
+    "stage_started_at": {
+      "intake": "2026-11-10T16:29:57Z",
+      "spec": "2026-11-10T16:31:00Z",
+      "plan": "2026-11-10T16:32:00Z",
+      "implement": "2026-11-10T16:33:00Z",
+      "verify": "2026-11-10T16:36:00Z",
+      "document": "2026-11-10T16:37:00Z",
+      "deliver": "2026-11-10T16:38:00Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-11-10T16:32:00Z",
+        "approved_at": "2026-11-10T16:32:00Z"
+      },
+      "plan": {
+        "presented_at": "2026-11-10T16:33:00Z",
+        "approved_at": "2026-11-10T16:33:00Z"
+      },
+      "deliver": {
+        "presented_at": "2026-11-10T16:38:00Z",
+        "approved_at": "2026-11-10T16:38:00Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 1,
+      "first_pass": 1
+    },
+    "retries": 0,
+    "interventions": 0,
+    "pr_opened_at": null
+  },
+  "living": [
+    "cli-entry-points"
+  ],
+  "review_context": "shared"
+}

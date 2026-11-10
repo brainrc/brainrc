@@ -18,3 +18,6 @@ Push 104-local-tripwires, open a ready PR from pr-body.md against main (Closes #
 
 ## engine · watch · review on #263
 One inline finding (bxker): the new git tests inherit a pre-commit hook's GIT_DIR / GIT_INDEX_FILE and stage temp files into the real index. Reproduced (84 files staged, 2 failures), fixed in LocalTripwireTest.setUp by dropping GIT_* for each test; reproduced again: 0 staged, 9 pass. The pre-existing GitPackTest issue is left as a follow-up for the owner.
+
+## engine · watch · second review on #263
+Non-blocking notes (bxker): the binary skip had no test, and a tracked symlink was followed, so its target file was checked instead of the target path git commits. Fixed: a symlink is checked by `os.readlink` and not followed; tests for a binary file and for a symlink (fails on the old code).

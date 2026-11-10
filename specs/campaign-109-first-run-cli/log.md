@@ -24,3 +24,6 @@ Artifacts: specs/campaign-109-first-run-cli/campaign.json
 
 ## 2026-11-10T16:54:00Z · child 2 gh:126 verified
 - Drafts ready (specs/126-installed-harnesses/pr-body.md). Child 3 gh:127 branches from 126-installed-harnesses.
+
+## engine · child 3 · verified
+gh:127 `127-brainrc-init` verified at 2026-11-10T17:03Z: 779 tests, validate OK. Content profiles left to #173 (owns profiles).

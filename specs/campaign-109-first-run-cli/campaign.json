@@ -32,9 +32,10 @@
       "ref": "gh:127",
       "order": 3,
       "depends_on": [],
-      "status": "todo",
-      "slug": null,
-      "pr": null
+      "status": "verified",
+      "slug": "127-brainrc-init",
+      "pr": null,
+      "branch": "127-brainrc-init"
     },
     {
       "ref": "gh:128",

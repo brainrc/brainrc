@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:127",
+    "id": "127",
+    "title": "aicfg init",
+    "url": "https://github.com/brainrc/brainrc/issues/127",
+    "pr": null,
+    "pr_draft": false
+  },
+  "slug": "127-brainrc-init",
+  "branch": "127-brainrc-init",
+  "base": "126-installed-harnesses",
+  "worktree": "~/.brainrc-worktrees/brainrc/127-brainrc-init",
+  "size": "standard",
+  "mode": "inline",
+  "delivery": "normal",
+  "auto": true,
+  "oneshot": true,
+  "campaign": "campaign-109-first-run-cli",
+  "stage": "deliver",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/brainrc.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "init command, adoption, CLI wiring, tests and docs",
+      "agent": "engine",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "brainrc/init.py",
+        "brainrc/cli.py",
+        "brainrc/__init__.py",
+        "docs/install.md",
+        "README.md",
+        "tests/test_init.py",
+        "tests/test_cli_args.py",
+        "changelog.d/127-brainrc-init.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC6",
+        "AC7"
+      ],
+      "review": "batch",
+      "sha": "ed3ebf2",
+      "red": "import"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-11-10T16:53:49Z",
+    "stage_started_at": {
+      "intake": "2026-11-10T16:53:49Z",
+      "spec": "2026-11-10T16:54:30Z",
+      "plan": "2026-11-10T16:59:40Z",
+      "implement": "2026-11-10T17:00:04Z",
+      "verify": "2026-11-10T17:00:16Z",
+      "document": "2026-11-10T17:02:45Z",
+      "deliver": "2026-11-10T17:03:30Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-11-10T16:59:40Z",
+        "approved_at": "2026-11-10T16:59:40Z"
+      },
+      "plan": {
+        "presented_at": "2026-11-10T17:00:04Z",
+        "approved_at": "2026-11-10T17:00:04Z"
+      },
+      "deliver": {
+        "presented_at": "2026-11-10T17:03:30Z",
+        "approved_at": "2026-11-10T17:03:30Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 1,
+      "first_pass": 1
+    },
+    "retries": 0,
+    "interventions": 0,
+    "pr_opened_at": null
+  },
+  "living": [
+    "cli-entry-points"
+  ],
+  "review_context": "shared"
+}

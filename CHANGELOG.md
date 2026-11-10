@@ -12,6 +12,10 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.5.9 (2026-11-10)
+
+- `validate` reads an optional, gitignored `tripwires.local.toml` (`terms = [...]`) and fails on any tracked core file whose name or text contains one of the terms, ignoring case, so each maintainer can keep employer and client names out of core without committing them. A tracked symlink is checked by the target path git commits, not by the file it points at, and binary files are skipped. It also fails if that file is ever tracked. The pre-commit hook runs it on every commit.
+
 ## 0.5.8 (2026-11-01)
 
 - Core's guard no longer asks about Proxmox `qm`/`pct` or `talosctl`: those rules moved to

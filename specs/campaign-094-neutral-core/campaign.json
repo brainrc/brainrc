@@ -8,7 +8,7 @@
   "oneshot": true,
   "gates": {
     "campaign": "approved",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "members": [
     {
@@ -39,7 +39,7 @@
       "ref": "gh:203",
       "order": 3,
       "depends_on": [],
-      "status": "in_progress",
+      "status": "verified",
       "slug": "203-roadmap-epic-list",
       "branch": "203-roadmap-epic-list",
       "pr": null,

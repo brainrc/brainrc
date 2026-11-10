@@ -5,3 +5,13 @@ gh:203 via ticket-github, child 3 of 3 in campaign gh:94 (`campaign-094-neutral-
 
 ## engine · Spec gate · auto-approved
 4 criteria (AC1–AC4). Defaults: wave = Roadmap ID prefix; E17 and E18 listed; fresh goal lines; README unchanged. `living_specs.py check`: no requirement changes. Plan stage skipped (small).
+
+## code-reviewer · gh:203 batch · done
+Inline (review_context: shared). No CRITICAL/HIGH/MEDIUM. 1 LOW: the page is a hand-kept snapshot and will drift; stated in its header.
+
+## engine · verify
+724 tests OK, validate OK. Live diff: 25 open epics, 25 listed.
+
+## engine · Deliver gate · auto-approved
+2026-11-10T06:21:03Z
+Push 203-roadmap-epic-list, open a ready PR from pr-body.md against 105-fix-doc-drift (stacked, Closes #203). Ticket comment stays a draft. No ticket transition.

@@ -19,11 +19,11 @@
   "auto": true,
   "oneshot": true,
   "campaign": "campaign-094-neutral-core",
-  "stage": "implement",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
     "plan": "skipped",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [
     "scripting"
@@ -42,7 +42,7 @@
       "id": "T1",
       "title": "Rewrite the roadmap as the epic list, with a shape test",
       "agent": "engine",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "docs/roadmap.md",
@@ -56,7 +56,8 @@
         "AC4"
       ],
       "review": "batch",
-      "red": "assertion"
+      "red": "assertion",
+      "sha": "2727fbc"
     }
   ],
   "blocked": null,
@@ -65,12 +66,19 @@
     "stage_started_at": {
       "intake": "2026-11-10T06:19:29Z",
       "spec": "2026-11-10T06:19:29Z",
-      "implement": "2026-11-10T06:19:43Z"
+      "implement": "2026-11-10T06:19:43Z",
+      "verify": "2026-11-10T06:20:41Z",
+      "document": "2026-11-10T06:21:03Z",
+      "deliver": "2026-11-10T06:21:03Z"
     },
     "gates": {
       "spec": {
         "presented_at": "2026-11-10T06:19:43Z",
         "approved_at": "2026-11-10T06:19:43Z"
+      },
+      "deliver": {
+        "presented_at": "2026-11-10T06:21:03Z",
+        "approved_at": "2026-11-10T06:21:03Z"
       }
     },
     "gate_rework": {
@@ -78,10 +86,12 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
-      "first_pass": 0
+      "total": 1,
+      "first_pass": 1
     },
     "retries": 0,
     "interventions": 0
-  }
+  },
+  "living": [],
+  "review_context": "shared"
 }

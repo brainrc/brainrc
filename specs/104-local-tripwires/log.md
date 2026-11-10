@@ -5,3 +5,13 @@ gh:104 via ticket-github, child 1 of 3 in campaign gh:94 (`campaign-094-neutral-
 
 ## engine · Spec gate · auto-approved
 6 criteria (AC1–AC6). Defaults: literal case-insensitive terms; walk without git; the error names the term. `living_specs.py check`: exit 0 (new area `validate`). Plan stage skipped (small): one-task plan written by the engine.
+
+## code-reviewer · gh:104 batch · done
+Inline (review_context: shared). No CRITICAL/HIGH/MEDIUM. 1 LOW: a tracked symlink to a directory skips the file-name check (it is not a file); kept, no core symlink names a person or company.
+
+## engine · verify
+712 tests OK (plain and XDG), validate OK (core, acme). Mutation check: 5 of 9 new tests fail on the base validate.py.
+
+## engine · Deliver gate · auto-approved
+2026-11-10T06:11:42Z
+Push 104-local-tripwires, open a ready PR from pr-body.md against main (Closes #104). Ticket comment stays a draft. No ticket transition.

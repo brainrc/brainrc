@@ -19,11 +19,11 @@
   "auto": true,
   "oneshot": true,
   "campaign": "campaign-094-neutral-core",
-  "stage": "implement",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
     "plan": "skipped",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [
     "scripting"
@@ -42,7 +42,7 @@
       "id": "T1",
       "title": "Local tripwires in validate, with tests and docs",
       "agent": "engine",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 1,
       "files": [
         "brainrc/validate.py",
@@ -59,7 +59,8 @@
         "AC5",
         "AC6"
       ],
-      "review": "batch"
+      "review": "batch",
+      "sha": "25f23d1"
     }
   ],
   "blocked": null,
@@ -68,12 +69,19 @@
     "stage_started_at": {
       "intake": "2026-11-10T06:04:53Z",
       "spec": "2026-11-10T06:07:52Z",
-      "implement": "2026-11-10T06:08:40Z"
+      "implement": "2026-11-10T06:08:40Z",
+      "verify": "2026-11-10T06:11:08Z",
+      "document": "2026-11-10T06:11:42Z",
+      "deliver": "2026-11-10T06:11:42Z"
     },
     "gates": {
       "spec": {
         "presented_at": "2026-11-10T06:08:40Z",
         "approved_at": "2026-11-10T06:08:40Z"
+      },
+      "deliver": {
+        "presented_at": "2026-11-10T06:11:42Z",
+        "approved_at": "2026-11-10T06:11:42Z"
       }
     },
     "gate_rework": {
@@ -81,10 +89,14 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
-      "first_pass": 0
+      "total": 1,
+      "first_pass": 1
     },
     "retries": 0,
     "interventions": 0
-  }
+  },
+  "living": [
+    "validate"
+  ],
+  "review_context": "shared"
 }

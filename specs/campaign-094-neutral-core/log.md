@@ -17,3 +17,6 @@ Decide: shape and order.
 Artifacts: specs/campaign-094-neutral-core/campaign.json
 
 - Child 1 gh:104 started: specs/104-local-tripwires/ on branch 104-local-tripwires (base main).
+
+## 2026-11-10T06:11:42Z · child 1 gh:104 verified
+- Drafts ready (specs/104-local-tripwires/pr-body.md). Child 2 gh:105 branches from 104-local-tripwires.

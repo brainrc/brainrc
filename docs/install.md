@@ -16,6 +16,10 @@ python3 scripts/brainrc.py status   # dry run: shows what would be linked
 python3 scripts/brainrc.py apply    # render rules + create symlinks
 ```
 
+`--help` lists the commands, and `<command> --help` shows one command's options. `status` and
+`apply` take `--only <harness>` (repeat it, or `--only claude,codex`) to touch only those
+harnesses and leave the others exactly as they are.
+
 Skills, agents, commands, and hooks are **symlinked** from each harness back into this repo,
 so `git pull` updates them in every harness at once. To stay on a release instead of `main`,
 check out its tag (`git checkout v<X.Y.Z>`, from [Releases](https://github.com/brainrc/brainrc/releases)) and re-run `apply`. Rules are different: they are rendered

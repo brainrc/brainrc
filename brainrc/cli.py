@@ -1,38 +1,12 @@
 """brainrc: sync this repo's skills, agents, commands, rules, and hooks into AI harnesses.
 
-Usage:
-  brainrc.py status                show what would change (default, no writes)
-  brainrc.py apply                 render rules and pack extensions to the settings home
-                                   ($BRAINRC_HOME, default ~/.config/brainrc), create/refresh symlinks, merge settings
-                                   and MCP servers (mcp/servers.toml)
-  brainrc.py validate [--pack DIR] check frontmatter, cross-references, packs, and tripwires
-                                   (used in CI); --pack checks core plus that pack only
-  brainrc.py doctor                diagnose this machine's install (read-only): stale renders,
-                                   missing/broken links, broken packs, unmerged hooks; exits 1
-                                   on any problem, each with its fix
-  brainrc.py migrate [--dry-run]   move an old settings home (AICFG_HOME or ~/.config/ai-config)
-                                   to BRAINRC_HOME (default ~/.config/brainrc), then apply; refuses
-                                   a non-empty target; --dry-run only prints the move
-  brainrc.py plugin                write the plugin manifests (.claude-plugin/, plugin.json);
-                                   validate fails when they're stale
-  brainrc.py release [--dry-run]   fold changelog.d/ fragments into CHANGELOG.md, bump VERSION,
-                                   and rewrite the plugin manifests (the release workflow runs it)
-  brainrc.py release --notes X.Y.Z print that version's CHANGELOG.md section (GitHub Release body)
-  brainrc.py tokens                estimate the context cost of every skill, agent, and command
-  brainrc.py update                refetch packs named by `git` URL at their `ref`, then apply
-  brainrc.py --version             print `brainrc <VERSION>`
-
-Sources: this repo ("core", versioned by VERSION) plus any packs listed in packs.toml /
-packs.local.toml, by `path` or by `git` URL (fetched into the settings home's packs/). A pack is a
-repo with the same layout and a pack.toml (see docs/packs.md);
-its `requires_core` must match VERSION, or validate fails and apply writes nothing.
-
-Safety: never overwrites a real file or a symlink pointing outside this repo or a pack.
-Those are reported as CONFLICT and left alone for you to resolve. Settings files
-are merged (only entries owned by brainrc are replaced) and backed up first.
+Sources are this repo ("core", versioned by VERSION) plus any packs listed in packs.toml /
+packs.local.toml, by `path` or by `git` URL (docs/packs.md). The commands and their options are
+built in `_parser`; `brainrc --help` and `brainrc <command> --help` print them.
 """
 from __future__ import annotations
 
+import argparse
 import os
 import shutil
 import sys
@@ -69,8 +43,23 @@ from .migrate import cmd_migrate
 CHANGED_HINT = "(changed during apply; close Claude Code and re-run)"
 
 
-def cmd_sync(apply: bool) -> int:
-    """status (apply=False) or apply; apply holds the settings home's apply.lock while it runs."""
+def cmd_sync(apply: bool, only: list[str] | None = None) -> int:
+    """status (apply=False) or apply; apply holds the settings home's apply.lock while it runs.
+    `only` limits links, settings and MCP merges to those harnesses; the rest are left as they are."""
+    if only:
+        try:
+            unknown = config.check_only(only)
+        except ConfigError as e:  # a broken harnesses.toml: the same error and exit as without --only
+            print(f"ERROR {e}")
+            return 1
+        if unknown:
+            print(f"ERROR {unknown}")
+            return 2
+    with config.only_harnesses(only):
+        return _locked_sync(apply)
+
+
+def _locked_sync(apply: bool) -> int:
     if not apply:
         return _sync(False)
     lock = settings_home() / "apply.lock"
@@ -223,7 +212,7 @@ def _sync(apply: bool) -> int:
         print(f"{'PRUNE':9} {'':9} {tilde(p)}")
         if apply:
             p.unlink()
-    copy = stale_hooks_copy(links)
+    copy = stale_hooks_copy(links) if config.harness_scope() is None else None
     if copy:
         changes += 1
         print(f"{'PRUNE':9} {'':9} {tilde(copy)}")
@@ -325,33 +314,94 @@ def main(argv: list[str]) -> int:
         return 0
 
 
+SUMMARY = "Sync skills, agents, commands, rules, hooks and MCP servers into AI coding harnesses."
+
+EPILOG = """\
+Sources: this repo ("core") plus the packs in packs.toml / packs.local.toml (docs/packs.md).
+Safety: brainrc never overwrites a file or a link it doesn't manage. Those are reported as
+CONFLICT and left alone; settings and MCP files are merged and backed up first."""
+
+
+class _Formatter(argparse.RawDescriptionHelpFormatter):
+    """Keeps the epilog's line breaks, and leaves hidden commands out of the command list."""
+
+    def _format_action(self, action):
+        if isinstance(action, argparse._SubParsersAction):
+            action._choices_actions = [a for a in action._choices_actions if a.help != argparse.SUPPRESS]
+        return super()._format_action(action)
+
+
+def _harness_list(value: str) -> list[str]:
+    return [n.strip() for n in value.split(",") if n.strip()]
+
+
+def _parser() -> argparse.ArgumentParser:
+    prog = config.command("").strip()
+    parser = argparse.ArgumentParser(prog=prog, description=SUMMARY, epilog=EPILOG,
+                                     formatter_class=_Formatter)
+    parser.add_argument("--version", action="store_true", help="print `brainrc <VERSION>` and exit")
+    sub = parser.add_subparsers(dest="cmd", metavar="<command>", title="commands")
+
+    def add(name: str, help: str, description: str | None = None, hidden: bool = False):
+        return sub.add_parser(name, help=argparse.SUPPRESS if hidden else help,
+                              description=description or help)
+
+    only_help = ("only these harnesses (repeat it, or separate names with commas); the others "
+                 "are left as they are")
+    p = add("status", "show what apply would change (the default command; writes nothing)")
+    p.add_argument("--only", action="append", type=_harness_list, metavar="HARNESS", help=only_help)
+    p = add("apply", "render rules and pack extensions, link items, merge settings and MCP servers",
+            "Render rules and pack extensions to the settings home ($BRAINRC_HOME, default "
+            "~/.config/brainrc), create or refresh the links in each harness, and merge hooks and "
+            "MCP servers (mcp/servers.toml) into its settings files.")
+    p.add_argument("--only", action="append", type=_harness_list, metavar="HARNESS", help=only_help)
+    add("update", "refetch packs named by `git` URL at their `ref`, then apply")
+    p = add("validate", "check frontmatter, cross-references, packs and tripwires (CI runs it)")
+    p.add_argument("--pack", metavar="DIR", help="check core plus this pack only")
+    add("doctor", "diagnose this machine's install (read-only); exits 1 on any problem, each "
+        "with its fix")
+    p = add("migrate", "move an old settings home (AICFG_HOME or ~/.config/ai-config) to "
+            "BRAINRC_HOME, then apply; refuses a non-empty target")
+    p.add_argument("--dry-run", action="store_true", help="only print the move")
+    add("tokens", "estimate the context cost of every skill, agent and command")
+    add("plugin", "write the plugin manifests (.claude-plugin/, plugin.json)", hidden=True)
+    p = add("release", "fold changelog.d/ into CHANGELOG.md, bump VERSION, rewrite the manifests",
+            hidden=True)
+    group = p.add_mutually_exclusive_group()
+    group.add_argument("--dry-run", action="store_true", help="print the release, write nothing")
+    group.add_argument("--notes", metavar="X.Y.Z", help="print that version's CHANGELOG.md section")
+    return parser
+
+
 def _dispatch(argv: list[str]) -> int:
-    cmd = argv[1] if len(argv) > 1 else "status"
-    if cmd == "--version" and len(argv) == 2:
+    parser = _parser()
+    try:
+        args = parser.parse_args(argv[1:])
+    except SystemExit as e:  # --help exits 0, a usage error 2
+        return e.code if isinstance(e.code, int) else 2
+    if args.version:
+        if args.cmd:
+            parser.print_usage(sys.stderr)
+            print(f"{parser.prog}: error: --version takes no command", file=sys.stderr)
+            return 2
         print(f"brainrc {'.'.join(map(str, core_version()))}")
         return 0
-    if cmd == "migrate" and (len(argv) == 2 or argv[2:] == ["--dry-run"]):
-        return cmd_migrate(dry_run=len(argv) == 3)
-    if cmd in ("status", "apply", "update") and len(argv) <= 2 and (code := refuse_unmigrated()):
+    cmd = args.cmd or "status"
+    if cmd == "migrate":
+        return cmd_migrate(dry_run=args.dry_run)
+    if cmd in ("status", "apply", "update") and (code := refuse_unmigrated()):
         return code
-    if cmd in ("status", "apply") and len(argv) <= 2:
-        return cmd_sync(apply=cmd == "apply")
+    if cmd in ("status", "apply"):
+        only = [n for names in getattr(args, "only", None) or [] for n in names]
+        return cmd_sync(apply=cmd == "apply", only=only or None)
     if cmd == "validate":
-        if len(argv) == 2:
-            return cmd_validate()
-        if len(argv) == 4 and argv[2] == "--pack":
-            return cmd_validate(argv[3])
-    if cmd == "plugin" and len(argv) == 2:
+        return cmd_validate(args.pack) if args.pack else cmd_validate()
+    if cmd == "plugin":
         return cmd_plugin()
-    if cmd == "release" and (len(argv) == 2 or argv[2:] == ["--dry-run"]):
-        return cmd_release(dry_run=len(argv) == 3)
-    if cmd == "release" and len(argv) == 4 and argv[2] == "--notes":
-        return cmd_release_notes(argv[3])
-    if cmd == "doctor" and len(argv) == 2:
+    if cmd == "release":
+        return cmd_release_notes(args.notes) if args.notes else cmd_release(dry_run=args.dry_run)
+    if cmd == "doctor":
         return cmd_doctor()
-    if cmd == "update" and len(argv) == 2:
+    if cmd == "update":
         return cmd_update()
-    if cmd == "tokens" and len(argv) == 2:
-        return cmd_tokens()
-    print(__doc__.replace("brainrc.py ", "brainrc ") if config.installed() else __doc__)
-    return 2
+    return cmd_tokens()

@@ -1507,9 +1507,9 @@ class InstalledModeTest(TempRepoCase):
         fixes = [fix for _, _, fix in brainrc.doctor_findings()]  # nothing applied yet
         self.assertIn("brainrc apply", fixes)
         self.assertFalse(any("scripts/brainrc.py" in f for f in fixes), fixes)
-        code, out = quiet(brainrc.main, ["brainrc", "bogus"])
-        self.assertEqual(code, 2)
-        self.assertIn("  brainrc status", out)
+        code, out = quiet(brainrc.main, ["brainrc", "--help"])
+        self.assertEqual(code, 0)
+        self.assertIn("usage: brainrc ", out)
         self.assertNotIn("brainrc.py", out)
 
     def test_plugin_needs_a_checkout(self):
@@ -2547,17 +2547,19 @@ class BrainrcCommandTest(unittest.TestCase):
         self.assertEqual(result.stdout, f"brainrc {(REPO / 'VERSION').read_text().strip()}\n")
 
     def test_usage_names_brainrc_in_a_checkout(self):
-        for arg in ("help", "bogus"):
-            result = self.run_script(arg)
-            self.assertEqual(result.returncode, 2)
-            self.assertIn("brainrc.py status", result.stdout)
-            self.assertNotIn("aicfg.py", result.stdout)
+        result = self.run_script("bogus")
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("usage: python3 scripts/brainrc.py", result.stderr)
+        result = self.run_script("--help")
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("status", result.stdout)
+        self.assertNotIn("aicfg", result.stdout)
 
     def test_usage_names_brainrc_when_installed(self):
         with mock.patch("brainrc.config.installed", return_value=True):
-            code, out = quiet(brainrc.cli.main, ["brainrc", "bogus"])
-        self.assertEqual(code, 2)
-        self.assertIn("brainrc status", out)
+            code, out = quiet(brainrc.cli.main, ["brainrc", "--help"])
+        self.assertEqual(code, 0)
+        self.assertIn("usage: brainrc ", out)
         self.assertNotIn("brainrc.py", out)
         self.assertNotIn("aicfg", out.replace("AICFG_HOME", ""))
 

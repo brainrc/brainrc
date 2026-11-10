@@ -1,6 +1,7 @@
 """Configuration: repo and render paths, TOML layering, harnesses, shared constants."""
 from __future__ import annotations
 
+import contextlib
 import operator
 import os
 import re
@@ -205,6 +206,43 @@ def check_config() -> list[str]:
 def load_harnesses(include_disabled: bool = False) -> dict[str, dict]:
     config = _layered("harnesses")
     return {n: h for n, h in config.items() if include_disabled or h.get("enabled", True)}
+
+
+_SCOPE: frozenset[str] | None = None  # set by `status/apply --only`; None means every harness
+
+
+def harness_scope() -> frozenset[str] | None:
+    """The harnesses `--only` limits this run to, or None for all of them."""
+    return _SCOPE
+
+
+def in_scope(name: str) -> bool:
+    return _SCOPE is None or name in _SCOPE
+
+
+@contextlib.contextmanager
+def only_harnesses(names: list[str] | None):
+    """Limit what plan() and mcp_plan() touch to `names` (None: no limit) while the block runs.
+    Harnesses outside the scope are left exactly as they are: no links, prunes or merges."""
+    global _SCOPE
+    old, _SCOPE = _SCOPE, frozenset(names) if names else None
+    try:
+        yield
+    finally:
+        _SCOPE = old
+
+
+def check_only(names: list[str]) -> str | None:
+    """Why `--only names` can't run (a name that isn't an enabled harness), or None.
+    Raises ConfigError for a broken harnesses.toml, as every command that reads it does."""
+    every, enabled = load_harnesses(include_disabled=True), load_harnesses()
+    for name in names:
+        if name not in every:
+            return f"--only {name}: no such harness (known: {', '.join(every)})"
+        if name not in enabled:
+            return (f"--only {name}: {name} is disabled (`enabled = false` in harnesses.toml "
+                    "or harnesses.local.toml)")
+    return None
 
 
 def expand(path: str) -> Path:

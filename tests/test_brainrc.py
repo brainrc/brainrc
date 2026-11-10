@@ -2135,6 +2135,14 @@ class LocalTripwireTest(TempRepoCase):
     """tripwires.local.toml: each maintainer's own forbidden terms, never committed (#104)."""
 
     def setUp(self):
+        # A pre-commit hook (or `git commit -a`, or any commit from a linked worktree) exports
+        # GIT_DIR / GIT_INDEX_FILE; without this, `git -C <tmp>` here and in validate would write
+        # to and read from that repo's index instead of the temp copy's. Started before
+        # super().setUp() so the cleanup, which runs after tearDown, restores the real env.
+        env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+        patcher = mock.patch.dict(os.environ, env, clear=True)
+        patcher.start()
+        self.addCleanup(patcher.stop)
         super().setUp()
         set_core_version(self.repo, "1.2.3")
         self.doc = self.repo / "skills/spec-agent/references/campaign.md"

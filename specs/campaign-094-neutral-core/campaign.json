@@ -27,12 +27,12 @@
       "ref": "gh:105",
       "order": 2,
       "depends_on": [],
-      "status": "todo",
-      "slug": null,
-      "branch": null,
+      "status": "verified",
+      "slug": "105-fix-doc-drift",
+      "branch": "105-fix-doc-drift",
       "pr": null,
       "pr_draft": false,
-      "base": null,
+      "base": "104-local-tripwires",
       "merged": false
     },
     {

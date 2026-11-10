@@ -2131,6 +2131,119 @@ class ValidateTest(unittest.TestCase):
             shutil.rmtree(tmp)
 
 
+class LocalTripwireTest(TempRepoCase):
+    """tripwires.local.toml: each maintainer's own forbidden terms, never committed (#104)."""
+
+    def setUp(self):
+        # A pre-commit hook (or `git commit -a`, or any commit from a linked worktree) exports
+        # GIT_DIR / GIT_INDEX_FILE; without this, `git -C <tmp>` here and in validate would write
+        # to and read from that repo's index instead of the temp copy's. Started before
+        # super().setUp() so the cleanup, which runs after tearDown, restores the real env.
+        env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+        patcher = mock.patch.dict(os.environ, env, clear=True)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        super().setUp()
+        set_core_version(self.repo, "1.2.3")
+        self.doc = self.repo / "skills/spec-agent/references/campaign.md"
+
+    def write_terms(self, text: str) -> None:
+        (self.repo / "tripwires.local.toml").write_text(text)
+
+    def git(self, *args: str) -> None:
+        subprocess.run(["git", "-C", str(self.repo), *args], check=True, capture_output=True)
+
+    def test_without_the_file_validate_passes(self):
+        self.doc.write_text(self.doc.read_text() + "\nWorked on this at Initech.\n")
+        code, out = quiet(brainrc.cmd_validate)
+        self.assertEqual(code, 0, out)
+
+    def test_a_term_in_a_core_file_fails_with_file_and_line(self):
+        lines = self.doc.read_text().splitlines()
+        self.doc.write_text("\n".join(lines + ["Worked on this at INITECH."]) + "\n")
+        self.write_terms('terms = ["initech"]\n')
+        code, out = quiet(brainrc.cmd_validate)
+        self.assertEqual(code, 1, out)
+        self.assertIn(f'skills/spec-agent/references/campaign.md:{len(lines) + 1}: local tripwire: '
+                      f'contains "initech" (tripwires.local.toml)', out)
+
+    def test_any_file_type_and_file_names_are_checked(self):
+        (self.repo / "agents/notes.py").write_text("# initech helper\n")
+        (self.repo / "skills/spec-agent/initech-notes.txt").write_text("plain\n")
+        self.write_terms('terms = ["Initech"]\n')
+        code, out = quiet(brainrc.cmd_validate)
+        self.assertEqual(code, 1, out)
+        self.assertIn('agents/notes.py:1: local tripwire: contains "Initech"', out)
+        self.assertIn('skills/spec-agent/initech-notes.txt: local tripwire: the file name contains "Initech"', out)
+
+    def test_a_term_found_nowhere_passes(self):
+        self.write_terms('terms = ["Initech", "Globex"]\n')
+        code, out = quiet(brainrc.cmd_validate)
+        self.assertEqual(code, 0, out)
+
+    def test_per_machine_local_files_are_not_checked(self):
+        (self.repo / "harnesses.local.toml").write_text("# the initech laptop\n")
+        (self.repo / "rules/90-initech.local.md").write_text("Initech-only rule.\n")
+        self.write_terms('terms = ["initech"]\n')
+        code, out = quiet(brainrc.cmd_validate)
+        self.assertEqual(code, 0, out)
+
+    def test_bad_terms_fail_without_a_traceback(self):
+        for text in ('terms = "initech"\n', 'terms = ["", "x"]\n', 'terms = [1]\n'):
+            self.write_terms(text)
+            code, out = quiet(brainrc.cmd_validate)
+            self.assertEqual(code, 1, text)
+            self.assertIn("tripwires.local.toml: `terms` must be a list of non-empty strings", out)
+        self.write_terms("terms = [\n")
+        code, out = quiet(brainrc.cmd_validate)
+        self.assertEqual(code, 1, out)
+        self.assertIn("tripwires.local.toml:1: invalid TOML", out)
+
+    def test_in_a_git_checkout_only_tracked_files_are_checked(self):
+        self.git("init", "-q")
+        (self.repo / ".gitignore").write_text("*.local.toml\n")
+        self.git("add", "-A")
+        (self.repo / "untracked-initech.md").write_text("initech\n")
+        self.write_terms('terms = ["initech"]\n')
+        code, out = quiet(brainrc.cmd_validate)
+        self.assertEqual(code, 0, out)
+        self.git("add", "untracked-initech.md")
+        code, out = quiet(brainrc.cmd_validate)
+        self.assertEqual(code, 1, out)
+        self.assertIn('untracked-initech.md:1: local tripwire: contains "initech"', out)
+
+    def test_binary_files_are_skipped(self):
+        (self.repo / "agents/blob.bin").write_bytes(b"\0\1\2" + b"x" * 100 + b"initech")
+        self.write_terms('terms = ["initech"]\n')
+        code, out = quiet(brainrc.cmd_validate)
+        self.assertEqual(code, 0, out)
+
+    def test_a_link_is_checked_by_its_target_path_not_followed(self):
+        outside = self.repo.parent / "outside.md"
+        outside.write_text("initech\n")  # not committed, so not checked
+        (self.repo / "skills/spec-agent/outside.txt").symlink_to(outside)
+        self.write_terms('terms = ["initech"]\n')
+        code, out = quiet(brainrc.cmd_validate)
+        self.assertEqual(code, 0, out)
+        (self.repo / "skills/spec-agent/ref.txt").symlink_to("../initech/ref.txt")  # broken, but committed as is
+        code, out = quiet(brainrc.cmd_validate)
+        self.assertEqual(code, 1, out)
+        self.assertIn('skills/spec-agent/ref.txt: local tripwire: the link target contains "initech"', out)
+
+    def test_the_file_must_never_be_tracked(self):
+        self.git("init", "-q")
+        self.write_terms('terms = ["initech"]\n')
+        self.git("add", "-f", "tripwires.local.toml")
+        code, out = quiet(brainrc.cmd_validate)
+        self.assertEqual(code, 1, out)
+        self.assertIn("tripwires.local.toml: is tracked by git", out)
+        self.assertNotIn("tripwires.local.toml:1:", out)  # its own terms don't trip on itself
+
+    def test_the_repo_ignores_the_file(self):
+        out = subprocess.run(["git", "-C", str(REPO), "check-ignore", "-q", "--no-index", "tripwires.local.toml"])
+        self.assertEqual(out.returncode, 0, "tripwires.local.toml must be gitignored")
+
+
 class ConfigErrorTest(TempRepoCase):
     """Bad harness and pack config: `ERROR <file>:<line>: <what>`, exit 1, nothing written."""
 

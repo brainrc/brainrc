@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:104",
+    "id": "104",
+    "title": "Keep core employer-neutral, mechanically",
+    "url": "https://github.com/brainrc/brainrc/issues/104",
+    "pr": "https://github.com/brainrc/brainrc/pull/263",
+    "pr_draft": false
+  },
+  "slug": "104-local-tripwires",
+  "branch": "104-local-tripwires",
+  "base": "main",
+  "worktree": "~/.brainrc-worktrees/brainrc/104-local-tripwires",
+  "size": "small",
+  "mode": "inline",
+  "delivery": "normal",
+  "auto": true,
+  "oneshot": true,
+  "campaign": "campaign-094-neutral-core",
+  "stage": "deliver",
+  "gates": {
+    "spec": "approved",
+    "plan": "skipped",
+    "deliver": "approved"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/brainrc.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Local tripwires in validate, with tests and docs",
+      "agent": "engine",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "brainrc/validate.py",
+        "tests/test_brainrc.py",
+        "AGENTS.md",
+        "CONTRIBUTING.md",
+        "changelog.d/104-local-tripwires.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC6"
+      ],
+      "review": "batch",
+      "sha": "25f23d1"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-11-10T06:04:53Z",
+    "stage_started_at": {
+      "intake": "2026-11-10T06:04:53Z",
+      "spec": "2026-11-10T06:07:52Z",
+      "implement": "2026-11-10T06:08:40Z",
+      "verify": "2026-11-10T06:11:08Z",
+      "document": "2026-11-10T06:11:42Z",
+      "deliver": "2026-11-10T06:11:42Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-11-10T06:08:40Z",
+        "approved_at": "2026-11-10T06:08:40Z"
+      },
+      "deliver": {
+        "presented_at": "2026-11-10T06:11:42Z",
+        "approved_at": "2026-11-10T06:11:42Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 1,
+      "first_pass": 1
+    },
+    "retries": 0,
+    "interventions": 0,
+    "pr_opened_at": "2026-11-10T06:22:09Z"
+  },
+  "living": [
+    "validate"
+  ],
+  "review_context": "shared"
+}

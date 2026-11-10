@@ -1,0 +1,51 @@
+{
+  "ref": "gh:94",
+  "shape": "ordered",
+  "dependency_source": "none",
+  "started_at": "2026-11-10T06:04:53Z",
+  "delivery": "stacked",
+  "auto": true,
+  "oneshot": true,
+  "gates": {
+    "campaign": "approved",
+    "deliver": "pending"
+  },
+  "members": [
+    {
+      "ref": "gh:104",
+      "order": 1,
+      "depends_on": [],
+      "status": "verified",
+      "slug": "104-local-tripwires",
+      "branch": "104-local-tripwires",
+      "pr": null,
+      "pr_draft": false,
+      "base": "main",
+      "merged": false
+    },
+    {
+      "ref": "gh:105",
+      "order": 2,
+      "depends_on": [],
+      "status": "todo",
+      "slug": null,
+      "branch": null,
+      "pr": null,
+      "pr_draft": false,
+      "base": null,
+      "merged": false
+    },
+    {
+      "ref": "gh:203",
+      "order": 3,
+      "depends_on": [],
+      "status": "todo",
+      "slug": null,
+      "branch": null,
+      "pr": null,
+      "pr_draft": false,
+      "base": null,
+      "merged": false
+    }
+  ]
+}

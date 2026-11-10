@@ -6,3 +6,6 @@ Ticket drift since it was written: overrides/README and AGENTS.md wording partly
 
 ## engine · Spec gate · auto-approved
 5 criteria (AC1–AC5). Defaults: "treat as public" wording; pins match major.minor or use a placeholder; all three `rm` fixes. `living_specs.py check`: exit 0 (new area `doctor`). Plan stage skipped (small).
+
+## engine · verify · T1 attempt 1 failed
+`OldNamesTest` flagged `AICFG_HOME` in the new tests/test_doctor_paths.py (old names are allowed only in listed files). Fix: the old-home quoting test moved into tests/test_doctor_home.py, which is on the allow list; plan files updated (wording only, no criterion change).

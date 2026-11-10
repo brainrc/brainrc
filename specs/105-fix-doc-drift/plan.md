@@ -23,6 +23,7 @@ against `VERSION`. Reword `overrides/README.md` from `harnesses.toml`, and the "
 |---|---|
 | `brainrc/doctor.py` | modify: `shell_path`, used by the three `rm` fixes |
 | `tests/test_doctor_paths.py` | new |
+| `tests/test_doctor_home.py` | modify: the old-home `rm -r` fix with a spaced path |
 | `tests/test_doc_versions.py` | new |
 | `docs/install.md`, `overrides/README.md`, `AGENTS.md`, `README.md` | modify |
 | `changelog.d/105-fix-doc-drift.md` | new |
@@ -36,5 +37,5 @@ scanner on the real docs and on a stale sample.
 
 ## Tasks
 - [ ] **T1** [agent: implementer] Quote doctor's rm paths, drop the stale pin, fix the docs, add the doc test
-  - files: `brainrc/doctor.py`, `tests/test_doctor_paths.py`, `tests/test_doc_versions.py`, `docs/install.md`, `overrides/README.md`, `AGENTS.md`, `README.md`, `changelog.d/105-fix-doc-drift.md`
+  - files: `brainrc/doctor.py`, `tests/test_doctor_paths.py`, `tests/test_doctor_home.py`, `tests/test_doc_versions.py`, `docs/install.md`, `overrides/README.md`, `AGENTS.md`, `README.md`, `changelog.d/105-fix-doc-drift.md`
   - criteria: AC1, AC2, AC3, AC4, AC5

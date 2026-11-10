@@ -1,4 +1,5 @@
-"""Doctor's copy-paste `rm` fixes quote the path but leave `~` for the shell to expand (#105)."""
+"""Doctor's copy-paste `rm` fixes quote the path but leave `~` for the shell to expand (#105).
+The old-home `rm -r` fix is tested in test_doctor_home.py."""
 import os
 import subprocess
 import tempfile
@@ -6,10 +7,8 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from brainrc.doctor import _home_findings, _link_finding, shell_path
+from brainrc.doctor import _link_finding, shell_path
 from brainrc.plan import Link
-
-HOME_VARS = ("HOME", "BRAINRC_HOME", "AICFG_HOME", "XDG_CONFIG_HOME")
 
 
 class ShellPathTest(unittest.TestCase):
@@ -45,9 +44,7 @@ class DoctorFixQuotingTest(unittest.TestCase):
         self.home.mkdir()
 
     def env(self):
-        env = {k: v for k, v in os.environ.items() if k not in HOME_VARS}
-        env["HOME"] = str(self.home)
-        return mock.patch.dict(os.environ, env, clear=True)
+        return mock.patch.dict(os.environ, {"HOME": str(self.home)})
 
     def test_broken_link_fix_quotes_the_link(self):
         dest = self.home / "Skills Dir" / "review"
@@ -57,17 +54,6 @@ class DoctorFixQuotingTest(unittest.TestCase):
             level, what, fix = _link_finding(Link("claude", dest, self.home / "repo/skills/review"), [])
         self.assertEqual(level, "FAIL")
         self.assertTrue(fix.startswith("rm ~/'Skills Dir/review' && "), fix)
-
-    def test_unused_old_home_fix_quotes_the_dir(self):
-        old = self.home / "old home"
-        old.mkdir()
-        new = self.home / ".config" / "brainrc"
-        new.mkdir(parents=True)
-        (new / "instructions.md").write_text("x\n")
-        with self.env(), mock.patch.dict(os.environ, {"AICFG_HOME": str(old)}):
-            [(level, what, fix)] = _home_findings()
-        self.assertEqual(level, "WARN")
-        self.assertTrue(fix.endswith("then remove it: rm -r ~/'old home'"), fix)
 
 if __name__ == "__main__":
     unittest.main()

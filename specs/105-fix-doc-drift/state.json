@@ -43,7 +43,7 @@
       "title": "Quote doctor rm paths, drop the stale pin, fix the docs, add the doc test",
       "agent": "engine",
       "status": "in_progress",
-      "attempts": 1,
+      "attempts": 2,
       "files": [
         "brainrc/doctor.py",
         "tests/test_doctor_paths.py",
@@ -52,7 +52,8 @@
         "overrides/README.md",
         "AGENTS.md",
         "README.md",
-        "changelog.d/105-fix-doc-drift.md"
+        "changelog.d/105-fix-doc-drift.md",
+        "tests/test_doctor_home.py"
       ],
       "criteria": [
         "AC1",
@@ -87,7 +88,7 @@
       "total": 0,
       "first_pass": 0
     },
-    "retries": 0,
+    "retries": 1,
     "interventions": 0
   }
 }

@@ -1,0 +1,1 @@
+PR: <PR_URL>. `apply` now touches only harnesses whose config directory exists, names the ones it skips, and lets `enabled = true` in harnesses.local.toml force one. It records what it manages in `$BRAINRC_HOME/harnesses.json`.

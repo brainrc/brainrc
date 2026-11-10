@@ -1,7 +1,8 @@
 # Canonical formats
 
 Every source uses the most widely adopted format so most harnesses consume it
-as-is. Adapters (see [roadmap](roadmap.md)) translate only where needed.
+as-is. Adapters translate only where a harness needs another shape (OpenCode agents, Cursor
+and OpenCode guard hooks).
 
 ## Skills: `skills/<name>/SKILL.md`
 

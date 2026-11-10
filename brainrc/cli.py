@@ -28,6 +28,7 @@ from .sources import (
     check_packs, collisions, core_version, duplicate_packs, render_extensions, render_instructions, sources,
 )
 from .init import cmd_init
+from .uninstall import cmd_uninstall
 from .opencode import rendered_agents
 from .packs import adopt_record, describe, fetch_pack, git_packs, needs_fetch
 from .plan import hooks_copy_current, invalid_fragments, plan, stale_hooks_copy
@@ -62,8 +63,11 @@ def cmd_sync(apply: bool, only: list[str] | None = None) -> int:
 
 
 def _locked_sync(apply: bool) -> int:
-    if not apply:
-        return _sync(False)
+    return _locked(lambda: _sync(True)) if apply else _sync(False)
+
+
+def _locked(run) -> int:
+    """run() while holding the settings home's apply.lock, so apply and uninstall never overlap."""
     lock = settings_home() / "apply.lock"
     lock.parent.mkdir(parents=True, exist_ok=True)
     with open(lock, "a") as f:
@@ -71,7 +75,7 @@ def _locked_sync(apply: bool) -> int:
             print(f"ERROR another brainrc apply is running (lock: {tilde(lock)})")
             print("\nNothing written. Let it finish, then re-run.")
             return 1
-        return _sync(True)
+        return run()
 
 
 def _try_lock(f) -> bool:
@@ -379,6 +383,15 @@ def _parser() -> argparse.ArgumentParser:
             "MCP servers (mcp/servers.toml) into its settings files.")
     p.add_argument("--only", action="append", type=_harness_list, metavar="HARNESS", help=only_help)
     add("update", "refetch packs named by `git` URL at their `ref`, then apply")
+    p = add("uninstall", "remove everything apply put into the harnesses",
+            "Remove the links brainrc made (broken ones too), its hooks in each settings file and "
+            "the MCP servers it added, then the files and directories that leaves empty. Your own "
+            "settings, hooks and servers stay, and an instructions file `init` moved aside is put "
+            "back. It works after the checkout is moved or deleted.")
+    p.add_argument("--dry-run", action="store_true", help="print what uninstall would remove, write nothing")
+    p.add_argument("--purge", action="store_true",
+                   help="also delete the settings home ($BRAINRC_HOME): local config, rendered files and "
+                   "fetched git packs")
     p = add("validate", "check frontmatter, cross-references, packs and tripwires (CI runs it)")
     p.add_argument("--pack", metavar="DIR", help="check core plus this pack only")
     add("doctor", "diagnose this machine's install (read-only); exits 1 on any problem, each "
@@ -412,8 +425,14 @@ def _dispatch(argv: list[str]) -> int:
     cmd = args.cmd or "status"
     if cmd == "migrate":
         return cmd_migrate(dry_run=args.dry_run)
-    if cmd in ("init", "status", "apply", "update") and (code := refuse_unmigrated()):
+    if cmd in ("init", "status", "apply", "update", "uninstall") and (code := refuse_unmigrated()):
         return code
+    if cmd == "uninstall":
+        if args.dry_run:
+            return cmd_uninstall(dry_run=True, purge=args.purge)
+        if not settings_home().exists():  # nothing to lock against, and the lock would create it
+            return cmd_uninstall(purge=args.purge)
+        return _locked(lambda: cmd_uninstall(purge=args.purge))
     if cmd == "init":
         named = [n for names in args.harness or [] for n in names] if args.harness else None
         return cmd_init(yes=args.yes, harnesses=named, adopt=not args.no_adopt, dry_run=args.dry_run)

@@ -83,7 +83,8 @@ the move, then `brainrc migrate`: it moves the directory and re-runs `apply`. Wi
 Something missing in a harness? `python3 scripts/brainrc.py doctor` checks the install without
 changing anything: stale rules, missing or broken links (after moving the repo, say), broken
 packs, and unmerged hooks. Each problem comes with its fix.
-[troubleshooting.md](troubleshooting.md) covers the rest, including how to uninstall.
+`brainrc uninstall` takes out everything `apply` put in (`--dry-run` first to see it);
+[troubleshooting.md](troubleshooting.md#uninstall) has the details and covers the rest.
 
 ## Plugins (no clone)
 

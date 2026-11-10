@@ -1,12 +1,18 @@
-"""Doctor's old `ai-config` plugin findings (spec 208, AC7 to AC11), against a temp HOME."""
+"""Doctor's plugin findings against a temp HOME: the old `ai-config` plugin (spec 208, AC7 to AC11),
+and the brainrc plugin installed next to brainrc's own links (#130)."""
 import json
 import os
+import shutil
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
 
-from brainrc.doctor import _plugin_findings, cmd_doctor
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from test_brainrc import TempRepoCase, brainrc, quiet  # noqa: E402
+
+from brainrc.doctor import _double_install_findings, _plugin_findings, cmd_doctor  # noqa: E402
 
 HOME_VARS = ("HOME", "BRAINRC_HOME", "AICFG_HOME", "XDG_CONFIG_HOME")
 
@@ -158,3 +164,91 @@ class TestPluginFindings(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class DoubleInstallTest(unittest.TestCase):
+    """#130: the brainrc plugin and brainrc's own links in the same harness."""
+
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.home = Path(tmp.name).resolve() / "home"
+        self.home.mkdir()
+        self.installed = self.home / ".claude" / "plugins" / "installed_plugins.json"
+        self.cursor_plugin = self.home / ".cursor" / "plugins" / "local" / "brainrc"
+
+    def findings(self, linked):
+        env = {k: v for k, v in os.environ.items() if k not in HOME_VARS}
+        env["HOME"] = str(self.home)
+        with mock.patch.dict(os.environ, env, clear=True):
+            return _double_install_findings(set(linked))
+
+    def install_claude_plugin(self, key="brainrc@brainrc", enabled=None):
+        self.installed.parent.mkdir(parents=True, exist_ok=True)
+        self.installed.write_text(json.dumps({"version": 2, "plugins": {key: [{"scope": "user"}]}}))
+        if enabled is not None:
+            (self.home / ".claude/settings.json").write_text(json.dumps({"enabledPlugins": {key: enabled}}))
+
+    def test_claude_plugin_and_links_warn_and_name_what_to_remove(self):
+        self.install_claude_plugin()
+        [(level, what, fix)] = self.findings({"claude"})
+        self.assertEqual(level, "WARN")
+        self.assertIn("brainrc@brainrc", what)
+        self.assertIn("twice", what)
+        self.assertIn("/plugin uninstall brainrc@brainrc", fix)
+        self.assertIn("[claude] enabled = false", fix)
+
+    def test_a_plugin_from_another_marketplace_counts(self):
+        self.install_claude_plugin("brainrc@my-fork")
+        [(_, what, fix)] = self.findings({"claude"})
+        self.assertIn("/plugin uninstall brainrc@my-fork", fix)
+
+    def test_no_warning_without_both(self):
+        self.install_claude_plugin()
+        self.assertEqual(self.findings({"codex"}), [])  # plugin only
+        self.install_claude_plugin("other@brainrc")
+        self.assertEqual(self.findings({"claude"}), [])  # links only, another plugin
+
+    def test_a_disabled_plugin_does_not_warn(self):
+        self.install_claude_plugin(enabled=False)
+        self.assertEqual(self.findings({"claude"}), [])
+        self.install_claude_plugin(enabled=True)
+        self.assertEqual(len(self.findings({"claude"})), 1)
+
+    def test_cursor_plugin_and_links_warn(self):
+        self.cursor_plugin.parent.mkdir(parents=True)
+        self.cursor_plugin.symlink_to(self.home / "src/brainrc")
+        [(level, what, fix)] = self.findings({"cursor"})
+        self.assertEqual(level, "WARN")
+        self.assertIn("~/.cursor/plugins/local/brainrc", what)
+        self.assertIn("[cursor] enabled = false", fix)
+        self.assertEqual(self.findings({"claude"}), [])
+
+
+class DoubleInstallDoctorTest(TempRepoCase):
+    """The warning from a real apply, through doctor_findings."""
+
+    def setUp(self):
+        super().setUp()
+        self.home = Path(tempfile.mkdtemp())
+        self.old_home = os.environ["HOME"]
+        os.environ["HOME"] = str(self.home)
+        (self.home / ".claude/plugins").mkdir(parents=True)
+        (self.home / ".claude/plugins/installed_plugins.json").write_text(
+            json.dumps({"version": 2, "plugins": {"brainrc@brainrc": [{"scope": "user"}]}}))
+
+    def tearDown(self):
+        os.environ["HOME"] = self.old_home
+        shutil.rmtree(self.home)
+        super().tearDown()
+
+    def double(self):
+        return [f for f in brainrc.doctor_findings() if "twice" in f[1]]
+
+    def test_doctor_warns_after_apply_and_not_before(self):
+        self.assertEqual(self.double(), [])
+        quiet(brainrc.cmd_sync, True)
+        self.assertEqual(len(self.double()), 1)
+        (self.repo / "harnesses.local.toml").write_text("[claude]\nenabled = false\n")
+        quiet(brainrc.cmd_sync, True)
+        self.assertEqual(self.double(), [])

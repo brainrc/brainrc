@@ -6,7 +6,7 @@
     "id": "129",
     "title": "apply --repair for a moved checkout",
     "url": "https://github.com/brainrc/brainrc/issues/129",
-    "pr": null,
+    "pr": "https://github.com/brainrc/brainrc/pull/271",
     "pr_draft": false
   },
   "slug": "129-apply-repair",
@@ -19,7 +19,7 @@
   "auto": true,
   "oneshot": true,
   "campaign": "campaign-109-first-run-cli",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -104,7 +104,7 @@
     },
     "retries": 0,
     "interventions": 0,
-    "pr_opened_at": null
+    "pr_opened_at": "2026-11-10T17:39:32Z"
   },
   "living": [
     "aicfg-apply",

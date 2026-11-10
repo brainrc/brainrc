@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:130",
+    "id": "130",
+    "title": "Doctor detects double installs",
+    "url": "https://github.com/brainrc/brainrc/issues/130",
+    "pr": "https://github.com/brainrc/brainrc/pull/272",
+    "pr_draft": false
+  },
+  "slug": "130-doctor-plugin-overlap",
+  "branch": "130-doctor-plugin-overlap",
+  "base": "129-apply-repair",
+  "worktree": "~/.brainrc-worktrees/brainrc/130-doctor-plugin-overlap",
+  "size": "small",
+  "mode": "inline",
+  "delivery": "normal",
+  "auto": true,
+  "oneshot": true,
+  "campaign": "campaign-109-first-run-cli",
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/brainrc.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "double-install warning, tests and docs",
+      "agent": "engine",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "brainrc/doctor.py",
+        "tests/test_doctor_plugin.py",
+        "docs/troubleshooting.md",
+        "changelog.d/130-doctor-plugin-overlap.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3"
+      ],
+      "review": "batch",
+      "sha": "c3ed729",
+      "red": "import"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-11-10T17:33:02Z",
+    "stage_started_at": {
+      "intake": "2026-11-10T17:33:02Z",
+      "spec": "2026-11-10T17:33:30Z",
+      "plan": "2026-11-10T17:34:00Z",
+      "implement": "2026-11-10T17:34:10Z",
+      "verify": "2026-11-10T17:37:06Z",
+      "document": "2026-11-10T17:37:30Z",
+      "deliver": "2026-11-10T17:37:40Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-11-10T17:34:00Z",
+        "approved_at": "2026-11-10T17:34:00Z"
+      },
+      "plan": {
+        "presented_at": "2026-11-10T17:34:10Z",
+        "approved_at": "2026-11-10T17:34:10Z"
+      },
+      "deliver": {
+        "presented_at": "2026-11-10T17:37:40Z",
+        "approved_at": "2026-11-10T17:37:40Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 1,
+      "first_pass": 1
+    },
+    "retries": 0,
+    "interventions": 0,
+    "pr_opened_at": "2026-11-10T17:39:32Z"
+  },
+  "living": [
+    "doctor"
+  ],
+  "review_context": "shared"
+}

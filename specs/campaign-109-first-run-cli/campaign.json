@@ -7,61 +7,75 @@
   "auto": true,
   "oneshot": true,
   "gates": {
-    "campaign": "approved"
+    "campaign": "approved",
+    "deliver": "approved"
   },
   "members": [
     {
       "ref": "gh:125",
       "order": 1,
       "depends_on": [],
-      "status": "verified",
+      "status": "delivered",
       "slug": "125-argparse-cli",
       "branch": "125-argparse-cli",
-      "pr": null
+      "pr": "https://github.com/brainrc/brainrc/pull/267",
+      "base": "main",
+      "merged": false
     },
     {
       "ref": "gh:126",
       "order": 2,
       "depends_on": [],
-      "status": "verified",
+      "status": "delivered",
       "slug": "126-installed-harnesses",
-      "pr": null,
-      "branch": "126-installed-harnesses"
+      "pr": "https://github.com/brainrc/brainrc/pull/268",
+      "branch": "126-installed-harnesses",
+      "base": "125-argparse-cli",
+      "merged": false
     },
     {
       "ref": "gh:127",
       "order": 3,
       "depends_on": [],
-      "status": "verified",
+      "status": "delivered",
       "slug": "127-brainrc-init",
-      "pr": null,
-      "branch": "127-brainrc-init"
+      "pr": "https://github.com/brainrc/brainrc/pull/269",
+      "branch": "127-brainrc-init",
+      "base": "126-installed-harnesses",
+      "merged": false
     },
     {
       "ref": "gh:128",
       "order": 4,
       "depends_on": [],
-      "status": "verified",
+      "status": "delivered",
       "slug": "128-brainrc-uninstall",
-      "pr": null,
-      "branch": "128-brainrc-uninstall"
+      "pr": "https://github.com/brainrc/brainrc/pull/270",
+      "branch": "128-brainrc-uninstall",
+      "base": "127-brainrc-init",
+      "merged": false
     },
     {
       "ref": "gh:129",
       "order": 5,
       "depends_on": [],
-      "status": "verified",
+      "status": "delivered",
       "slug": "129-apply-repair",
-      "pr": null,
-      "branch": "129-apply-repair"
+      "pr": "https://github.com/brainrc/brainrc/pull/271",
+      "branch": "129-apply-repair",
+      "base": "128-brainrc-uninstall",
+      "merged": false
     },
     {
       "ref": "gh:130",
       "order": 6,
       "depends_on": [],
-      "status": "todo",
-      "slug": null,
-      "pr": null
+      "status": "delivered",
+      "slug": "130-doctor-plugin-overlap",
+      "pr": "https://github.com/brainrc/brainrc/pull/272",
+      "branch": "130-doctor-plugin-overlap",
+      "base": "129-apply-repair",
+      "merged": false
     }
   ]
 }

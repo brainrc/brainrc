@@ -7,6 +7,8 @@ These rules apply to human contributors too. Setup and PR workflow: [CONTRIBUTIN
   paths like `/Users/<name>`. Use `~` and environment variable *names*.
 - Keep it generic: no employer or client names, internal tools, project keys, or account
   details. That content belongs in a pack (`docs/packs.md`); examples here use "acme".
+  List your own such terms in `tripwires.local.toml` (`terms = ["..."]`, gitignored):
+  `validate` and the pre-commit hook then fail on any tracked file that contains one.
 - Skills: `skills/<name>/SKILL.md` with frontmatter `name` (must equal the directory
   name) and `description` (what it does and *when* to use it).
 - Agents: `agents/<name>.md` with frontmatter `name` (must equal the file stem),

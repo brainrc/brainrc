@@ -1,0 +1,119 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:126",
+    "id": "126",
+    "title": "Only touch harnesses that are installed",
+    "url": "https://github.com/brainrc/brainrc/issues/126",
+    "pr": null,
+    "pr_draft": false
+  },
+  "slug": "126-installed-harnesses",
+  "branch": "126-installed-harnesses",
+  "base": "125-argparse-cli",
+  "worktree": "~/.brainrc-worktrees/brainrc/126-installed-harnesses",
+  "size": "standard",
+  "mode": "inline",
+  "delivery": "normal",
+  "auto": true,
+  "oneshot": true,
+  "campaign": "campaign-109-first-run-cli",
+  "stage": "deliver",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/brainrc.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Installed detection, skipped line, manifest, doctor, tests and docs",
+      "agent": "engine",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "brainrc/config.py",
+        "brainrc/manifest.py",
+        "brainrc/cli.py",
+        "brainrc/doctor.py",
+        "harnesses.toml",
+        "docs/install.md",
+        "tests/test_installed_harnesses.py",
+        "tests/test_brainrc.py",
+        "tests/test_cli_args.py",
+        "tests/test_migrate.py",
+        "tests/test_doctor_paths.py",
+        "changelog.d/126-installed-harnesses.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC6",
+        "AC7"
+      ],
+      "review": "batch",
+      "sha": "1af95cf",
+      "red": "assertion"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-11-10T16:38:28Z",
+    "stage_started_at": {
+      "intake": "2026-11-10T16:38:28Z",
+      "spec": "2026-11-10T16:39:30Z",
+      "plan": "2026-11-10T16:40:30Z",
+      "implement": "2026-11-10T16:41:00Z",
+      "verify": "2026-11-10T16:52:19Z",
+      "document": "2026-11-10T16:53:00Z",
+      "deliver": "2026-11-10T16:54:00Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-11-10T16:40:30Z",
+        "approved_at": "2026-11-10T16:40:30Z"
+      },
+      "plan": {
+        "presented_at": "2026-11-10T16:41:00Z",
+        "approved_at": "2026-11-10T16:41:00Z"
+      },
+      "deliver": {
+        "presented_at": "2026-11-10T16:54:00Z",
+        "approved_at": "2026-11-10T16:54:00Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 1,
+      "first_pass": 1
+    },
+    "retries": 0,
+    "interventions": 0,
+    "pr_opened_at": null
+  },
+  "living": [
+    "aicfg-apply",
+    "doctor"
+  ],
+  "review_context": "shared"
+}

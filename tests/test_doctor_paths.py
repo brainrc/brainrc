@@ -67,7 +67,7 @@ class DoctorFixQuotingTest(unittest.TestCase):
         (skills / "old one").symlink_to(self.home / "gone")
         harnesses = {"claude": {"skills": "~/Skills Dir"}}
         with self.env(), mock.patch("brainrc.doctor.load_harnesses", return_value=harnesses):
-            [(level, what, fix)] = _stray_link_findings(set(), set())
+            [(level, what, fix)] = _stray_link_findings(set())
         self.assertEqual(level, "WARN")
         self.assertEqual(fix, "rm ~/'Skills Dir/old one'")
 

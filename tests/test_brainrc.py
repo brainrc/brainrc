@@ -49,6 +49,20 @@ def copy_repo(dest: Path) -> None:
     shutil.copy2(REPO / "CHANGELOG.md", dest / "CHANGELOG.md")
 
 
+HARNESS_HOMES = (".claude", ".codex", ".config/opencode", ".gemini/config", ".cursor")
+
+
+def install_harnesses(home: Path) -> None:
+    """Make HOME look like every harness is installed, so apply manages all of them (#126)."""
+    for d in HARNESS_HOMES:
+        (home / d).mkdir(parents=True, exist_ok=True)
+
+
+def home_files(home: Path) -> list[Path]:
+    """Every file and link under HOME: what a command wrote there (the empty harness dirs aside)."""
+    return sorted(p for p in home.rglob("*") if p.is_symlink() or not p.is_dir())
+
+
 def set_core_version(repo: Path, version: str) -> None:
     """VERSION plus a CHANGELOG whose newest entry matches, as validate requires."""
     (repo / "VERSION").write_text(version + "\n")
@@ -203,6 +217,7 @@ class SyncFakeHomeTest(TempRepoCase):
         self.home = Path(tempfile.mkdtemp())
         self.old_home = os.environ["HOME"]
         os.environ["HOME"] = str(self.home)
+        install_harnesses(self.home)
 
     def tearDown(self):
         os.environ["HOME"] = self.old_home
@@ -213,7 +228,7 @@ class SyncFakeHomeTest(TempRepoCase):
         code, out = quiet(brainrc.cmd_sync, False)
         self.assertEqual(code, 0)
         self.assertIn("Dry run", out)
-        self.assertEqual(list(self.home.iterdir()), [])
+        self.assertEqual(home_files(self.home), [])
         self.assertFalse((self.repo / "dist").exists())
         self.assertFalse(self.settings_home.exists())
 
@@ -238,7 +253,7 @@ class SyncFakeHomeTest(TempRepoCase):
         self.assertFalse((skills_dir / "gone").is_symlink())
 
     def test_invalid_settings_json_is_a_conflict(self):
-        (self.home / ".claude").mkdir()
+        (self.home / ".claude").mkdir(exist_ok=True)
         settings = self.home / ".claude/settings.json"
         settings.write_text("{ not json")
         code, out = quiet(brainrc.cmd_sync, True)
@@ -272,7 +287,7 @@ class SyncFakeHomeTest(TempRepoCase):
 
     def test_uninstall_restores_the_settings_file(self):
         settings = self.home / ".claude/settings.json"
-        settings.parent.mkdir(parents=True)
+        settings.parent.mkdir(parents=True, exist_ok=True)
         settings.write_text('{"theme": "dark"}\n')
         quiet(brainrc.cmd_sync, True)
         (self.repo / "harnesses.local.toml").write_text("[claude]\nenabled = false\n")
@@ -286,7 +301,7 @@ class SyncFakeHomeTest(TempRepoCase):
         self.assertFalse((self.home / ".claude/settings.json").exists())
 
     def test_backups_are_capped(self):
-        (self.home / ".claude").mkdir()
+        (self.home / ".claude").mkdir(exist_ok=True)
         settings = self.home / ".claude/settings.json"
         for n in range(brainrc.BACKUPS_KEPT + 3):
             (settings.parent / f"settings.json.bak-brainrc-2026010{n}T000000Z").write_text("{}")
@@ -302,7 +317,7 @@ class SyncFakeHomeTest(TempRepoCase):
 
     def test_temp_name_includes_the_pid(self):
         settings = self.home / ".claude/settings.json"
-        settings.parent.mkdir()
+        settings.parent.mkdir(exist_ok=True)
         settings.write_text("{}")
         names, real = [], os.replace
 
@@ -319,7 +334,7 @@ class SyncFakeHomeTest(TempRepoCase):
     def test_a_second_apply_fails_while_one_holds_the_lock(self):
         import fcntl
         lock = self.settings_home / "apply.lock"
-        lock.parent.mkdir(parents=True)
+        lock.parent.mkdir(parents=True, exist_ok=True)
         with open(lock, "a") as held:
             fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
             code, out = quiet(brainrc.cmd_sync, True)
@@ -327,7 +342,7 @@ class SyncFakeHomeTest(TempRepoCase):
         self.assertEqual(code, 1, out)
         self.assertIn("another brainrc apply is running", out)
         self.assertIn("apply.lock", out)
-        self.assertEqual(list(self.home.iterdir()), [])
+        self.assertEqual(home_files(self.home), [])
         self.assertEqual(list(self.settings_home.iterdir()), [lock])
         self.assertEqual(status_code, 0, status_out)
         self.assertIn("Dry run", status_out)
@@ -347,7 +362,7 @@ class SyncFakeHomeTest(TempRepoCase):
 
     def test_settings_changed_during_apply_are_left_alone(self):
         settings = self.home / ".claude/settings.json"
-        settings.parent.mkdir()
+        settings.parent.mkdir(exist_ok=True)
         settings.write_text("{}")
         real = brainrc.cli.settings_change
 
@@ -368,7 +383,7 @@ class SyncFakeHomeTest(TempRepoCase):
     @unittest.skipIf(os.name == "nt", "POSIX permission bits")
     def test_settings_write_keeps_the_files_mode(self):
         settings = self.home / ".claude/settings.json"
-        settings.parent.mkdir()
+        settings.parent.mkdir(exist_ok=True)
         for mode in (0o600, 0o640):
             settings.write_text("{}")
             settings.chmod(mode)
@@ -381,7 +396,7 @@ class SyncFakeHomeTest(TempRepoCase):
     @unittest.skipIf(os.name == "nt", "POSIX permission bits")
     def test_temp_file_is_never_looser_than_the_target(self):
         settings = self.home / ".claude/settings.json"
-        settings.parent.mkdir()
+        settings.parent.mkdir(exist_ok=True)
         settings.write_text("{}")
         settings.chmod(0o600)
         seen, real = [], os.replace
@@ -405,7 +420,7 @@ class SyncFakeHomeTest(TempRepoCase):
         target = dotfiles / "settings.json"
         target.write_text('{"theme": "dark"}\n')
         settings = self.home / ".claude/settings.json"
-        settings.parent.mkdir()
+        settings.parent.mkdir(exist_ok=True)
         settings.symlink_to(target)
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
@@ -424,7 +439,7 @@ class SyncFakeHomeTest(TempRepoCase):
         dotfiles.mkdir()
         target = dotfiles / "settings.json"
         settings = self.home / ".claude/settings.json"
-        settings.parent.mkdir()
+        settings.parent.mkdir(exist_ok=True)
         settings.symlink_to(target)
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
@@ -433,10 +448,10 @@ class SyncFakeHomeTest(TempRepoCase):
         self.assertIn("hooks", json.loads(target.read_text()))
 
     def test_apply_then_in_sync_and_conflicts_respected(self):
-        (self.home / ".claude").mkdir()
+        (self.home / ".claude").mkdir(exist_ok=True)
         settings = self.home / ".claude/settings.json"
         settings.write_text(json.dumps({"hooks": {"SessionStart": [FOREIGN]}}))
-        (self.home / ".codex").mkdir()
+        (self.home / ".codex").mkdir(exist_ok=True)
         (self.home / ".codex/AGENTS.md").write_text("mine\n")
 
         code, out = quiet(brainrc.cmd_sync, True)
@@ -514,6 +529,7 @@ class PackSyncTest(TempRepoCase):
         self.home = Path(tempfile.mkdtemp())
         self.old_home = os.environ["HOME"]
         os.environ["HOME"] = str(self.home)
+        install_harnesses(self.home)
         self.pack = make_pack(Path(tempfile.mkdtemp()).resolve() / "acme-pack")
         set_core_version(self.repo, "1.2.3")
         self.enable_pack()
@@ -588,7 +604,7 @@ class PackSyncTest(TempRepoCase):
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 1)
         self.assertIn("skill `spec-agent` is defined in both core and acme", out)
-        self.assertEqual(list(self.home.iterdir()), [])
+        self.assertEqual(home_files(self.home), [])
 
     def test_missing_pack_is_an_error(self):
         (self.repo / "packs.local.toml").write_text('[ghost]\npath = "/nonexistent/pack"\n')
@@ -606,7 +622,7 @@ class PackSyncTest(TempRepoCase):
             self.assertEqual(code, 1, out)
             self.assertIn("acme:pack.toml: requires_core `>=2.0` is not satisfied by core 1.2.3", out)
             self.assertIn("Nothing written", out)
-        self.assertEqual(list(self.home.iterdir()), [])
+        self.assertEqual(home_files(self.home), [])
 
     def test_disabled_incompatible_pack_is_not_checked(self):
         self.set_requires_core('requires_core = ">=2.0"')
@@ -653,6 +669,7 @@ class DoctorTest(TempRepoCase):
         self.home = Path(tempfile.mkdtemp())
         self.old_home = os.environ["HOME"]
         os.environ["HOME"] = str(self.home)
+        install_harnesses(self.home)
         quiet(brainrc.cmd_sync, True)
         self.skills = self.home / ".claude/skills"
 
@@ -753,13 +770,9 @@ class DoctorTest(TempRepoCase):
         (self.skills / "spec-agent").mkdir()
         self.assert_one_fail("not a link", "move")
 
-    def test_harness_not_installed_warns(self):
-        shutil.rmtree(self.home / ".cursor")
-        findings = self.doctor(0)
-        self.assertEqual([f[0] for f in findings], ["WARN"], findings)
-        self.assertIn("cursor", findings[0][1])
-        self.assertIn("[cursor] enabled = false", findings[0][2])
-        self.assertIn("harnesses.local.toml", findings[0][2])
+    def test_a_harness_that_is_not_installed_is_skipped_not_reported(self):
+        shutil.rmtree(self.home / ".cursor")  # apply skips it (#126), so doctor has nothing to say
+        self.assertEqual(self.doctor(0), [])
 
     def test_missing_pack_path(self):
         (self.repo / "packs.local.toml").write_text('[ghost]\npath = "/nonexistent/pack"\n')
@@ -975,6 +988,7 @@ class SettingsHomeTest(TempRepoCase):
         self.home = Path(tempfile.mkdtemp())
         self.old_home = os.environ["HOME"]
         os.environ["HOME"] = str(self.home)
+        install_harnesses(self.home)
 
     def tearDown(self):
         os.environ["HOME"] = self.old_home
@@ -1009,10 +1023,10 @@ class SettingsHomeTest(TempRepoCase):
 
     def test_old_dist_link_is_updated_and_old_file_removed(self):
         old = self.repo / "dist/instructions.md"
-        old.parent.mkdir()
+        old.parent.mkdir(exist_ok=True)
         old.write_text("old render\n")
         link = self.home / ".claude/CLAUDE.md"
-        link.parent.mkdir(parents=True)
+        link.parent.mkdir(parents=True, exist_ok=True)
         link.symlink_to(old)
         code, out = quiet(brainrc.cmd_sync, False)
         self.assertRegex(out, r"UPDATE +claude +~/.claude/CLAUDE.md")
@@ -1176,6 +1190,7 @@ class OpenCodeAgentTest(TempRepoCase):
         self.home = Path(tempfile.mkdtemp())
         self.old_home = os.environ["HOME"]
         os.environ["HOME"] = str(self.home)
+        install_harnesses(self.home)
         self.agents = self.home / ".config/opencode/agents"
         self.renders = self.settings_home / "opencode/agents"
 
@@ -1244,6 +1259,7 @@ class CrashRegressionTest(TempRepoCase):
         self.home = Path(tempfile.mkdtemp())
         self.old_home = os.environ["HOME"]
         os.environ["HOME"] = str(self.home)
+        install_harnesses(self.home)
 
     def tearDown(self):
         os.environ["HOME"] = self.old_home
@@ -1269,7 +1285,7 @@ class CrashRegressionTest(TempRepoCase):
         self.assertEqual(code, 1, out)
         self.assertIn(f"ERROR {error}", out)
         self.assertIn("Nothing written", out)
-        self.assertEqual(list(self.home.iterdir()), [])
+        self.assertEqual(home_files(self.home), [])
 
     def test_invalid_fragment_is_a_doctor_finding(self):
         quiet(brainrc.cmd_sync, True)
@@ -1398,6 +1414,7 @@ class InstalledModeTest(TempRepoCase):
         self.home = Path(tempfile.mkdtemp())
         self.old_home = os.environ["HOME"]
         os.environ["HOME"] = str(self.home)
+        install_harnesses(self.home)
 
     def tearDown(self):
         os.environ["HOME"] = self.old_home
@@ -1475,7 +1492,7 @@ class InstalledModeTest(TempRepoCase):
 
     def test_an_old_link_into_the_package_is_repointed(self):
         link = self.home / ".claude/hooks/brainrc"
-        link.parent.mkdir(parents=True)
+        link.parent.mkdir(parents=True, exist_ok=True)
         link.symlink_to(self.core / "overrides/claude/hooks")
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
@@ -1507,9 +1524,9 @@ class InstalledModeTest(TempRepoCase):
         fixes = [fix for _, _, fix in brainrc.doctor_findings()]  # nothing applied yet
         self.assertIn("brainrc apply", fixes)
         self.assertFalse(any("scripts/brainrc.py" in f for f in fixes), fixes)
-        code, out = quiet(brainrc.main, ["brainrc", "bogus"])
-        self.assertEqual(code, 2)
-        self.assertIn("  brainrc status", out)
+        code, out = quiet(brainrc.main, ["brainrc", "--help"])
+        self.assertEqual(code, 0)
+        self.assertIn("usage: brainrc ", out)
         self.assertNotIn("brainrc.py", out)
 
     def test_plugin_needs_a_checkout(self):
@@ -1540,6 +1557,7 @@ class GitPackTest(TempRepoCase):
         self.home = Path(tempfile.mkdtemp())
         self.old_home = os.environ["HOME"]
         os.environ["HOME"] = str(self.home)
+        install_harnesses(self.home)
         self.tmp = Path(tempfile.mkdtemp())
         work = self.tmp / "work"
         shutil.copytree(REPO / "examples/pack-acme", work)
@@ -1600,7 +1618,7 @@ class GitPackTest(TempRepoCase):
         self.assertIn("ERROR", out)
         self.assertIn("Nothing written", out)
         self.assertFalse(self.clone.exists())
-        self.assertEqual(list(self.home.iterdir()), [])
+        self.assertEqual(home_files(self.home), [])
 
     def test_update_leaves_a_changed_clone_alone(self):
         self.use(git=self.url, ref="v1")
@@ -1728,7 +1746,7 @@ class GitPackTest(TempRepoCase):
         self.assertIn("ERROR git init timed out after 60s", out)
         self.assertIn("Nothing written", out)
         self.assertFalse(self.clone.exists())
-        self.assertEqual(list(self.home.iterdir()), [])
+        self.assertEqual(home_files(self.home), [])
 
     def test_git_calls_have_a_timeout(self):
         self.use(git=self.url, ref="v1")
@@ -1752,6 +1770,7 @@ class HarnessPluginTest(TempRepoCase):
         self.home = Path(tempfile.mkdtemp())
         self.old_home = os.environ["HOME"]
         os.environ["HOME"] = str(self.home)
+        install_harnesses(self.home)
         self.link = self.home / ".config/opencode/plugins/brainrc-guard.js"
         self.old_link = self.home / ".config/opencode/plugins/ai-config-guard.js"
 
@@ -1767,7 +1786,7 @@ class HarnessPluginTest(TempRepoCase):
         self.assertEqual(brainrc.doctor_findings(), [])
 
     def test_apply_replaces_the_old_guard_link(self):
-        self.old_link.parent.mkdir(parents=True)
+        self.old_link.parent.mkdir(parents=True, exist_ok=True)
         self.old_link.symlink_to(self.repo / "overrides/opencode/plugin.js")
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
@@ -1778,7 +1797,7 @@ class HarnessPluginTest(TempRepoCase):
         self.assertIn("in sync", out.lower())
 
     def test_a_real_file_at_the_old_guard_path_is_left_alone(self):
-        self.old_link.parent.mkdir(parents=True)
+        self.old_link.parent.mkdir(parents=True, exist_ok=True)
         self.old_link.write_text("// mine\n")
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
@@ -1786,7 +1805,7 @@ class HarnessPluginTest(TempRepoCase):
         self.assertTrue(self.link.is_symlink())
 
     def test_a_foreign_symlink_at_the_old_guard_path_is_left_alone(self):
-        self.old_link.parent.mkdir(parents=True)
+        self.old_link.parent.mkdir(parents=True, exist_ok=True)
         self.old_link.symlink_to(self.home)
         quiet(brainrc.cmd_sync, True)
         self.assertTrue(self.old_link.is_symlink())
@@ -1818,6 +1837,7 @@ class CursorHooksTest(TempRepoCase):
         self.home = Path(tempfile.mkdtemp())
         self.old_home = os.environ["HOME"]
         os.environ["HOME"] = str(self.home)
+        install_harnesses(self.home)
         self.hooks_json = self.home / ".cursor/hooks.json"
 
     def tearDown(self):
@@ -2252,6 +2272,7 @@ class ConfigErrorTest(TempRepoCase):
         self.home = Path(tempfile.mkdtemp())
         self.old_home = os.environ["HOME"]
         os.environ["HOME"] = str(self.home)
+        install_harnesses(self.home)
 
     def tearDown(self):
         os.environ["HOME"] = self.old_home
@@ -2265,7 +2286,7 @@ class ConfigErrorTest(TempRepoCase):
             code, out = quiet(fn, *args)
             self.assertEqual(code, 1, out)
             self.assertIn(f"ERROR {error}", out)
-        self.assertEqual(list(self.home.iterdir()), [])
+        self.assertEqual(home_files(self.home), [])
         fails = [f[1] for f in brainrc.doctor_findings() if f[0] == "FAIL"]
         self.assertTrue(any(error in f for f in fails), fails)
         code, _ = quiet(brainrc.cmd_doctor)
@@ -2390,6 +2411,7 @@ class DuplicatePackTest(TempRepoCase):
         self.home = Path(tempfile.mkdtemp())
         self.old_home = os.environ["HOME"]
         os.environ["HOME"] = str(self.home)
+        install_harnesses(self.home)
 
     def tearDown(self):
         os.environ["HOME"] = self.old_home
@@ -2413,7 +2435,7 @@ class DuplicatePackTest(TempRepoCase):
             code, out = quiet(fn, *args)
             self.assertEqual(code, 1, out)
             self.assertIn(error, out)
-        self.assertEqual(list(self.home.iterdir()), [])
+        self.assertEqual(home_files(self.home), [])
 
     def test_doctor_reports_duplicate_names(self):
         self.packs(one="acme", two="acme")
@@ -2450,6 +2472,7 @@ class PackApplyCheckTest(TempRepoCase):
         self.home = Path(tempfile.mkdtemp())
         self.old_home = os.environ["HOME"]
         os.environ["HOME"] = str(self.home)
+        install_harnesses(self.home)
         self.pack = self.repo / "packs-src/acme"
         (self.pack / "skills").mkdir(parents=True)
         (self.pack / "pack.toml").write_text('name = "acme"\nrequires_core = ">=0.1"\n')
@@ -2472,7 +2495,7 @@ class PackApplyCheckTest(TempRepoCase):
             self.assertIn(f"ERROR {error}", out)
             self.assertIn(f"validate --pack {brainrc.tilde(self.pack)}", out)
             self.assertIn("Nothing written", out)
-        self.assertEqual(list(self.home.iterdir()), [])
+        self.assertEqual(home_files(self.home), [])
         self.assertFalse(self.settings_home.joinpath("instructions.md").exists())
 
     def test_unprefixed_skill_is_refused(self):
@@ -2547,17 +2570,19 @@ class BrainrcCommandTest(unittest.TestCase):
         self.assertEqual(result.stdout, f"brainrc {(REPO / 'VERSION').read_text().strip()}\n")
 
     def test_usage_names_brainrc_in_a_checkout(self):
-        for arg in ("help", "bogus"):
-            result = self.run_script(arg)
-            self.assertEqual(result.returncode, 2)
-            self.assertIn("brainrc.py status", result.stdout)
-            self.assertNotIn("aicfg.py", result.stdout)
+        result = self.run_script("bogus")
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("usage: python3 scripts/brainrc.py", result.stderr)
+        result = self.run_script("--help")
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("status", result.stdout)
+        self.assertNotIn("aicfg", result.stdout)
 
     def test_usage_names_brainrc_when_installed(self):
         with mock.patch("brainrc.config.installed", return_value=True):
-            code, out = quiet(brainrc.cli.main, ["brainrc", "bogus"])
-        self.assertEqual(code, 2)
-        self.assertIn("brainrc status", out)
+            code, out = quiet(brainrc.cli.main, ["brainrc", "--help"])
+        self.assertEqual(code, 0)
+        self.assertIn("usage: brainrc ", out)
         self.assertNotIn("brainrc.py", out)
         self.assertNotIn("aicfg", out.replace("AICFG_HOME", ""))
 

@@ -90,7 +90,7 @@ def _doctor_sources() -> tuple[list[Source], list[Source], list[Finding]]:
             failed = cmd_validate(str(root))
         if failed:
             found.append(("FAIL", f"pack {src.name}: validate --pack fails",
-                          command(f"validate --pack {tilde(root)}")))
+                          command(f"validate --pack {shell_path(root)}")))
         srcs.append(src)
     found += [("FAIL", d, "change `name` in one pack's pack.toml, or set `enabled = false` for one in packs.local.toml")
               for d in duplicate_packs(srcs)]
@@ -115,13 +115,14 @@ def _render_findings(srcs: list[Source]) -> list[Finding]:
 
 
 def shell_path(path: Path) -> str:
-    """A path for a command the user copies into a shell: `~` stays outside the quotes so the
-    shell still expands it, and the rest is quoted only when it needs to be."""
-    shown = tilde(path)
-    if shown == "~" or shown.startswith("~/"):
-        rest = shown[2:]
-        return "~/" + shlex.quote(rest) if rest else "~"
-    return shlex.quote(shown)
+    """A path for a command the user copies into a shell: under the home directory it starts with
+    `~` outside the quotes, so the shell still expands it; the rest is quoted only when needed.
+    Anchored on whole path parts, so a sibling such as /home/joe beside /home/jo stays absolute."""
+    try:
+        rel = path.relative_to(Path.home())
+    except ValueError:
+        return shlex.quote(str(path))
+    return "~" if rel == Path(".") else "~/" + shlex.quote(str(rel))
 
 
 def _link_finding(link: Link, roots: list[Path]) -> Finding | None:
@@ -309,11 +310,11 @@ def _hook_findings(merges: list, skipped: set[str]) -> list[Finding]:
                 found.append(("FAIL", f"{hook} can't run: python3 is not on PATH", "install Python 3"))
                 continue
             except subprocess.TimeoutExpired:
-                found.append(("FAIL", f"{hook} timed out after {timeout}s", f"run `python3 {tilde(script)}`"))
+                found.append(("FAIL", f"{hook} timed out after {timeout}s", f"run `python3 {shell_path(script)}`"))
                 continue
             if result.returncode:
                 found.append(("FAIL", f"{hook} exits {result.returncode} on an empty payload",
-                              f"run `python3 {tilde(script)}` to see why, then {command('apply')}"))
+                              f"run `python3 {shell_path(script)}` to see why, then {command('apply')}"))
     return found
 
 

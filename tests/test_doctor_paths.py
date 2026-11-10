@@ -29,6 +29,12 @@ class ShellPathTest(unittest.TestCase):
         self.assertEqual(shell_path(self.home / "My Skills/it's"), "~/'My Skills/it'\"'\"'s'")
         self.assertEqual(shell_path(Path("/opt/a b/c")), "'/opt/a b/c'")
 
+    def test_a_sibling_of_home_is_not_shortened(self):
+        sibling = self.home.parent / (self.home.name + "e") / ".claude/x"   # "my homee" beside "my home"
+        self.assertEqual(shell_path(sibling), f"'{sibling}'")
+        nested = Path("/srv") / str(self.home).lstrip("/") / "old"            # home's path inside another
+        self.assertEqual(shell_path(nested), f"'{nested}'")
+
     def test_the_shell_reads_back_the_same_path(self):
         for path in (self.home / "My Skills/it's", self.home / "a;rm -rf x", Path("/opt/a b/$HOME")):
             out = subprocess.run(["sh", "-c", f"printf %s {shell_path(path)}"], capture_output=True,

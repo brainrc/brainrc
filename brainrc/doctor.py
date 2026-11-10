@@ -6,6 +6,7 @@ import io
 import json
 import os
 import re
+import shlex
 import subprocess
 from pathlib import Path
 
@@ -113,6 +114,16 @@ def _render_findings(srcs: list[Source]) -> list[Finding]:
     return found
 
 
+def shell_path(path: Path) -> str:
+    """A path for a command the user copies into a shell: `~` stays outside the quotes so the
+    shell still expands it, and the rest is quoted only when it needs to be."""
+    shown = tilde(path)
+    if shown == "~" or shown.startswith("~/"):
+        rest = shown[2:]
+        return "~/" + shlex.quote(rest) if rest else "~"
+    return shlex.quote(shown)
+
+
 def _link_finding(link: Link, roots: list[Path]) -> Finding | None:
     state, dest = link.state(roots), tilde(link.dest)
     if state == "create":
@@ -127,7 +138,7 @@ def _link_finding(link: Link, roots: list[Path]) -> Finding | None:
     target = link_target(link.dest)
     if not target.exists():
         return ("FAIL", f"{link.harness}: {dest} is a broken link to {tilde(target)} (repo moved?)",
-                f"rm {dest} && {command('apply')}")
+                f"rm {shell_path(link.dest)} && {command('apply')}")
     return ("FAIL", f"{link.harness}: {dest} links to {tilde(target)}, outside brainrc and its packs",
             f"move that into a pack (or delete the link), then {command('apply')}")
 
@@ -149,7 +160,7 @@ def _home_findings() -> list[Finding]:
             continue
         if home_has_content:
             found.append(("WARN", f"{tilde(old)} is unused (settings home is {tilde(home)})",
-                          f"move anything you still need from it into {tilde(home)}, then remove it: rm -r {tilde(old)}"))
+                          f"move anything you still need from it into {tilde(home)}, then remove it: rm -r {shell_path(old)}"))
         else:  # the old dir may hold the only settings: move them, don't delete them
             found.append(("WARN", f"{tilde(old)} holds settings, but the settings home is {tilde(home)}",
                           f"`{command('migrate')}` moves it there"))
@@ -238,7 +249,7 @@ def doctor_findings() -> list[Finding]:
             for p in sorted(d.iterdir()) if d and d.is_dir() else []:
                 if p.is_symlink() and not p.exists() and p not in known:
                     found.append(("WARN", f"{name}: {tilde(p)} is a broken link not made by brainrc",
-                                  f"rm {tilde(p)}"))
+                                  f"rm {shell_path(p)}"))
 
     found += [("FAIL", e, f"fix the JSON, then {command('apply')}") for e in invalid_fragments(srcs)]
     for m in merges:

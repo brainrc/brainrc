@@ -18,7 +18,7 @@ python3 scripts/brainrc.py apply    # render rules + create symlinks
 
 Skills, agents, commands, and hooks are **symlinked** from each harness back into this repo,
 so `git pull` updates them in every harness at once. To stay on a release instead of `main`,
-check out its tag (`git checkout v0.3.29`) and re-run `apply`. Rules are different: they are rendered
+check out its tag (`git checkout v<X.Y.Z>`, from [Releases](https://github.com/brainrc/brainrc/releases)) and re-run `apply`. Rules are different: they are rendered
 into `~/.config/brainrc/instructions.md` (`$BRAINRC_HOME` to change it; `$XDG_CONFIG_HOME/brainrc` when that is set), so re-run `apply` after any change to `rules/` (edits included),
 and after you add or remove skills, agents, or commands. For Claude Code, `apply` also merges
 the guard hooks into `~/.claude/settings.json` (your other hooks are kept; a backup is written

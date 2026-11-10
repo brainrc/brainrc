@@ -65,3 +65,11 @@ _Last changed by 207-brainrc-hooks-mcp-backups._
 ### Old on-disk names converge
 `brainrc apply` SHALL write the brainrc Codex markers, OpenCode guard link and fetch record, and SHALL recognize and replace the old ai-config ones on the next apply without duplicating them. (AC1, AC2, AC3, AC4)
 _Last changed by 237-rename-on-disk-names._
+
+### Only installed harnesses
+`brainrc apply` and `status` SHALL manage an enabled harness only when its home directory exists (the `home` key, else the parent of its `instructions` or `skills` path) or harnesses.local.toml enables it explicitly or defines it; they SHALL name each skipped harness, and SHALL never create a skipped harness's files. (AC1, AC2, AC3, AC4, AC5)
+_Last changed by 126-installed-harnesses._
+
+### Harness manifest
+`brainrc apply` SHALL write `<settings home>/harnesses.json` listing each managed harness's paths and the source roots it linked from, keeping entries outside `--only` and earlier roots. (AC6)
+_Last changed by 126-installed-harnesses._

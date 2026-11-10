@@ -15,7 +15,7 @@ REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO))
 sys.path.insert(0, str(REPO / "tests"))
 import brainrc  # noqa: E402
-from test_brainrc import TempRepoCase, copy_repo, quiet  # noqa: E402
+from test_brainrc import TempRepoCase, copy_repo, home_files, install_harnesses, quiet  # noqa: E402
 
 
 def run(*args: str) -> tuple[int, str, str]:
@@ -83,6 +83,7 @@ class OnlyTest(TempRepoCase):
         self.home = Path(tempfile.mkdtemp())
         self.old_home = os.environ["HOME"]
         os.environ["HOME"] = str(self.home)
+        install_harnesses(self.home)
 
     def tearDown(self):
         os.environ["HOME"] = self.old_home
@@ -90,17 +91,13 @@ class OnlyTest(TempRepoCase):
         super().tearDown()
 
     def touched(self) -> set[str]:
-        """Top-level entries of HOME, ignoring the settings home (it lives elsewhere)."""
-        return {p.name for p in self.home.iterdir()}
+        """The top-level entries of HOME that hold a file or link apply wrote."""
+        return {p.relative_to(self.home).parts[0] for p in home_files(self.home)}
 
     def test_apply_only_claude_touches_only_claude(self):
         code, out, _ = run("apply", "--only", "claude")
         self.assertEqual(code, 0, out)
         self.assertLessEqual(self.touched(), {".claude", ".claude.json"})
-        self.assertFalse((self.home / ".codex").exists())
-        self.assertFalse((self.home / ".cursor").exists())
-        self.assertFalse((self.home / ".config").exists())
-        self.assertFalse((self.home / ".gemini").exists())
         self.assertTrue((self.home / ".claude/skills/spec-agent").is_symlink())
         self.assertIn("hooks", (self.home / ".claude/settings.json").read_text())
 
@@ -110,7 +107,7 @@ class OnlyTest(TempRepoCase):
         self.assertIn("codex", out)
         self.assertNotIn(" claude ", out)
         self.assertNotIn(".claude", out)
-        self.assertEqual(list(self.home.iterdir()), [])
+        self.assertEqual(home_files(self.home), [])
 
     def test_several_harnesses_by_repeat_or_comma(self):
         for args in (["--only", "claude", "--only", "codex"], ["--only", "claude,codex"]):
@@ -127,7 +124,7 @@ class OnlyTest(TempRepoCase):
         code, out, _ = run("apply", "--only", "gemini")  # disabled in harnesses.toml
         self.assertEqual(code, 2)
         self.assertIn("disabled", out)
-        self.assertEqual(list(self.home.iterdir()), [])
+        self.assertEqual(home_files(self.home), [])
         self.assertFalse(self.settings_home.exists())
 
     def test_a_broken_harnesses_file_fails_as_without_only(self):
@@ -170,6 +167,7 @@ class OnlyInstalledTest(TempRepoCase):
         self.home = Path(tempfile.mkdtemp())
         self.old_home = os.environ["HOME"]
         os.environ["HOME"] = str(self.home)
+        install_harnesses(self.home)
 
     def tearDown(self):
         os.environ["HOME"] = self.old_home

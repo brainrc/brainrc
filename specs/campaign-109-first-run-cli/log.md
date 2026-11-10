@@ -21,3 +21,6 @@ Artifacts: specs/campaign-109-first-run-cli/campaign.json
 
 ## 2026-11-10T16:38:00Z · child 1 gh:125 verified
 - Drafts ready (specs/125-argparse-cli/pr-body.md). Child 2 gh:126 branches from 125-argparse-cli.
+
+## 2026-11-10T16:54:00Z · child 2 gh:126 verified
+- Drafts ready (specs/126-installed-harnesses/pr-body.md). Child 3 gh:127 branches from 126-installed-harnesses.

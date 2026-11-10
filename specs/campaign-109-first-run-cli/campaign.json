@@ -1,0 +1,64 @@
+{
+  "ref": "gh:109",
+  "shape": "ordered",
+  "dependency_source": "none",
+  "started_at": "2026-11-10T16:29:57Z",
+  "delivery": "stacked",
+  "auto": true,
+  "oneshot": true,
+  "gates": {
+    "campaign": "approved"
+  },
+  "members": [
+    {
+      "ref": "gh:125",
+      "order": 1,
+      "depends_on": [],
+      "status": "verified",
+      "slug": "125-argparse-cli",
+      "branch": "125-argparse-cli",
+      "pr": null
+    },
+    {
+      "ref": "gh:126",
+      "order": 2,
+      "depends_on": [],
+      "status": "verified",
+      "slug": "126-installed-harnesses",
+      "pr": null,
+      "branch": "126-installed-harnesses"
+    },
+    {
+      "ref": "gh:127",
+      "order": 3,
+      "depends_on": [],
+      "status": "todo",
+      "slug": null,
+      "pr": null
+    },
+    {
+      "ref": "gh:128",
+      "order": 4,
+      "depends_on": [],
+      "status": "todo",
+      "slug": null,
+      "pr": null
+    },
+    {
+      "ref": "gh:129",
+      "order": 5,
+      "depends_on": [],
+      "status": "todo",
+      "slug": null,
+      "pr": null
+    },
+    {
+      "ref": "gh:130",
+      "order": 6,
+      "depends_on": [],
+      "status": "todo",
+      "slug": null,
+      "pr": null
+    }
+  ]
+}

@@ -24,8 +24,11 @@ else stays a `CONFLICT`.
 
 ## Every skill shows up twice, or a hook runs twice
 
-Both the Claude Code plugin and the `brainrc` command's links are installed. Keep one: `/plugin uninstall
-brainrc@brainrc`, or remove the links (below).
+Both the plugin and the `brainrc` command's links are installed. `doctor` warns when it sees both
+in Claude Code or Cursor, and names which to remove. Keep one: in Claude Code, `/plugin uninstall
+brainrc@brainrc` (the links also bring the rules and your packs), or set `[claude] enabled = false`
+in `harnesses.local.toml` and run `apply`. In Cursor, keep the plugin (it brings the rules) and set
+`[cursor] enabled = false`, or remove `~/.cursor/plugins/local/brainrc`.
 
 If `doctor` warns that the old plugin `ai-config@ai-config` is installed, you have the plugin
 under both names: follow [Moving from ai-config](install.md#moving-from-ai-config).

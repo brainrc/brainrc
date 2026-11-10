@@ -4,8 +4,9 @@ Removes the links brainrc made (dangling ones too), its hook groups in each sett
 MCP servers it added, and the files and directories that leaves empty. Harness paths come from
 the manifest apply wrote (#126) as well as harnesses.toml, and a link counts as brainrc's when it
 points into any source root the manifest ever recorded, so uninstall still works after the
-checkout or a pack is moved or deleted. An instructions file `init` moved aside is put back.
-`--purge` also deletes the settings home: local config, rendered files and fetched git packs.
+checkout or a pack is moved or deleted. Manifest entries too broad to trust are ignored. An
+instructions file `init` moved aside is put back. `--purge` also deletes the settings home (local
+config, rendered files and fetched git packs), but only when it holds nothing brainrc didn't make.
 """
 from __future__ import annotations
 
@@ -34,7 +35,7 @@ from .config import (
     settings_home,
     tilde,
 )
-from .manifest import manifest_file, read_manifest
+from .manifest import checked_manifest, manifest_file
 from .mcp import ADAPTERS, McpSync, _owned_file, _read_record, mcp_change, record_owned, write_mcp
 from .plan import SettingsMerge, _managed_target, link_target
 from .settings import FileChanged, read_current, settings_change, write_settings
@@ -53,19 +54,24 @@ class Step:
     removes: set[Path] = field(default_factory=set)  # paths gone afterwards, for the empty-dir check
 
 
-def _harness_configs() -> tuple[list[tuple[str, dict]], list[str]]:
+# What brainrc keeps in the settings home. --purge deletes these and nothing else.
+SETTINGS_HOME_ENTRIES = re.compile(
+    r".*\.local\.(toml|md)|rules|packs|instructions\.md|extensions\.md|harnesses\.json|"
+    r"\.harnesses\.json\.tmp|mcp-owned\.json|apply\.lock|active-run|opencode|hooks")
+
+
+def _harness_configs(manifest: dict, warnings: list[str]) -> list[tuple[str, dict]]:
     """Every harness config to clean: what apply recorded, and what harnesses.toml says now."""
-    configs = list(read_manifest()["harnesses"].items())
-    warnings = []
+    configs = list(manifest["harnesses"].items())
     try:
         configs += list(load_harnesses(include_disabled=True).items())
     except ConfigError as e:
         warnings.append(f"{e} (using the paths apply recorded in {tilde(manifest_file())})")
-    return configs, warnings
+    return configs
 
 
-def _roots() -> list[Path]:
-    roots = [Path(r) for r in read_manifest()["roots"]] + [config.REPO]
+def _roots(manifest: dict) -> list[Path]:
+    roots = [Path(r) for r in manifest["roots"]] + [config.REPO]
     try:
         roots += [s.root for s in sources(include_disabled=True)]
     except ConfigError:
@@ -169,9 +175,9 @@ def _remove(path: Path) -> None:
 
 
 def _empty_after(d: Path, gone: set[Path]) -> bool:
-    """True if d holds nothing once every path in gone is removed."""
-    return d.is_dir() and not d.is_symlink() and all(
-        p in gone or _empty_after(p, gone) for p in d.iterdir())
+    """True if d holds nothing once every path in gone is removed. A folder of the user's, even an
+    empty one, keeps it."""
+    return d.is_dir() and not d.is_symlink() and all(p in gone for p in d.iterdir())
 
 
 def _empty_dirs(starts: list[tuple[str, Path, Path]], gone: set[Path]) -> list[Step]:
@@ -187,10 +193,39 @@ def _empty_dirs(starts: list[tuple[str, Path, Path]], gone: set[Path]) -> list[S
     return steps
 
 
+def _purge_refusal(home: Path, configs: list[tuple[str, dict]]) -> str | None:
+    """Why --purge must not delete the settings home, or None. It may be any directory
+    ($BRAINRC_HOME), so it is deleted only when everything in it is something brainrc keeps there."""
+    if home == Path.home() or home in Path.home().parents or not home.is_absolute():
+        return f"{tilde(home)} is your home directory or holds it"
+    xdg = os.environ.get("XDG_CONFIG_HOME", "")
+    for what, path in (("config directory", Path.home() / ".config"),
+                       ("config directory", Path(xdg) if os.path.isabs(xdg) else None),
+                       ("brainrc checkout", config.REPO)):
+        if path and (home == path or home in path.parents):
+            return f"it is your {what} or holds it ({tilde(path)})"
+    for name, h in configs:
+        hh = harness_home(h)
+        if hh and (hh == home or home in hh.parents):
+            return f"it holds {name}'s config ({tilde(hh)})"
+    others = sorted(p.name for p in home.iterdir() if not SETTINGS_HOME_ENTRIES.fullmatch(p.name))
+    if others:
+        more = f" and {len(others) - 3} more" if len(others) > 3 else ""
+        return f"it also holds files brainrc didn't make ({', '.join(others[:3])}{more})"
+    return None
+
+
+def _purge(home: Path) -> None:
+    for p in sorted(home.iterdir()):
+        _remove(p)
+    home.rmdir()
+
+
 def plan_uninstall(purge: bool = False) -> tuple[list[Step], list[str], list[str]]:
     """(steps in the order to run them, warnings, problems that stop part of the uninstall)."""
-    configs, warnings = _harness_configs()
-    roots = _roots()
+    manifest, warnings = checked_manifest()
+    configs = _harness_configs(manifest, warnings)
+    roots = _roots(manifest)
     problems: list[str] = []
     steps: list[Step] = []
     starts: list[tuple[str, Path, Path]] = []  # (harness, removed path, dir never removed)
@@ -223,10 +258,13 @@ def plan_uninstall(purge: bool = False) -> tuple[list[Step], list[str], list[str
     restored = {s.path for s in steps if s.action == "RESTORE"}
     gone = {p for s in steps for p in s.removes} - restored
     steps += _empty_dirs([s for s in starts if s[1] not in restored], gone)
-    if purge:
-        if settings_home().exists():
-            steps.append(Step("PURGE", "", settings_home(), lambda: shutil.rmtree(settings_home()),
-                              "local config, rendered files and fetched packs"))
+    refusal = _purge_refusal(settings_home(), configs) if purge and settings_home().is_dir() else None
+    if refusal:
+        problems.append(f"--purge left {tilde(settings_home())} alone: {refusal}. "
+                        "Delete what you want gone from it yourself")
+    if purge and settings_home().is_dir() and not refusal:
+        steps.append(Step("PURGE", "", settings_home(), lambda: _purge(settings_home()),
+                          "local config, rendered files and fetched packs"))
     else:
         generated = _generated()
         steps += [Step("REMOVE", "", p, lambda p=p: _remove(p), removes={p}) for p in generated]
@@ -239,7 +277,7 @@ def cmd_uninstall(dry_run: bool = False, purge: bool = False) -> int:
     steps, warnings, problems = plan_uninstall(purge)
     for w in warnings:
         print(f"WARN {w}")
-    changed = []
+    changed, failed = [], []
     for step in steps:
         note = f"  ({step.note})" if step.note else ""
         print(f"{step.action:9} {step.harness:9} {tilde(step.path)}{note}")
@@ -250,7 +288,10 @@ def cmd_uninstall(dry_run: bool = False, purge: bool = False) -> int:
         except FileChanged:
             changed.append(step.path)
             print(f"{'CHANGED':9} {step.harness:9} {tilde(step.path)}  (it changed while uninstall ran; left alone)")
-    if not dry_run and not purge and _owned_file().is_file() and not _read_record(_owned_file()):
+        except OSError as e:  # e.g. something was added to a directory after the plan was made
+            failed.append(step.path)
+            print(f"{'FAILED':9} {step.harness:9} {tilde(step.path)}  ({e.strerror or e}; left alone)")
+    if not dry_run and _owned_file().is_file() and not _read_record(_owned_file()):
         _owned_file().unlink()  # every server it recorded is gone
     for p in problems:
         print(f"ERROR {p}")
@@ -259,10 +300,11 @@ def cmd_uninstall(dry_run: bool = False, purge: bool = False) -> int:
     elif dry_run:
         print(f"\nDry run. Run `{config.command('uninstall')}` to remove them.")
     else:
-        print("\nUninstalled. The backups brainrc made (*.bak-brainrc-*) are kept beside each file.")
+        done = "Uninstalled, apart from the errors above." if problems or failed else "Uninstalled."
+        print(f"\n{done} The backups brainrc made (*.bak-brainrc-*) are kept beside each file.")
         if not purge and any(p.name != "apply.lock" for p in settings_home().glob("*")):
             print(f"Your local config and packs are still in {tilde(settings_home())}; "
                   f"`{config.command('uninstall --purge')}` deletes them too.")
         if changed:
             print("Close Claude Code (it rewrites ~/.claude.json while running), then re-run.")
-    return 1 if problems or changed else 0
+    return 1 if problems or changed or failed else 0

@@ -28,7 +28,7 @@ run, and brainrc's hooks and MCP servers stay in the user's settings files.
 ## Requirement changes
 ### Area: aicfg-apply
 #### ADDED: Uninstall
-`brainrc uninstall` SHALL remove every link whose target is a path brainrc links to under any source root recorded in the manifest or configured now, the hook groups and MCP servers brainrc owns, and the files and directories that leaves empty (never a harness home), SHALL back up every file it rewrites, SHALL restore an instructions file `init` moved aside, SHALL keep local config and packs unless `--purge`, and SHALL change nothing with `--dry-run`. (AC1, AC2, AC3, AC4, AC5, AC6, AC7)
+`brainrc uninstall` SHALL remove every link whose target is a path brainrc links to under any source root recorded in the manifest or configured now, the hook groups and MCP servers brainrc owns, and the files and directories that leaves empty (never a harness home), SHALL back up every file it rewrites, SHALL restore an instructions file `init` moved aside, SHALL keep local config and packs unless `--purge`, SHALL refuse `--purge` when the settings home is ~, holds ~ or a harness home, or holds a file brainrc didn't make, SHALL ignore manifest entries with a path outside ~, a `hooks_dir` that holds the harness home, or a root that is ~ or holds it, and SHALL change nothing with `--dry-run`. (AC1, AC2, AC3, AC4, AC5, AC6, AC7)
 
 ## Open questions
 None. Defaults taken under `--oneshot`:

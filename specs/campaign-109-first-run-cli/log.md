@@ -39,3 +39,6 @@ gh:130 `130-doctor-plugin-overlap` verified at 2026-11-10T17:37Z: 805 tests, val
 
 ## engine · stack Deliver gate · auto-approved
 `delivery: stacked`. Ready PRs opened 2026-11-10T17:39Z: #267 (125) on main, then #268 (126), #269 (127), #270 (128), #271 (129), #272 (130), each on the previous child's branch with "N of 6, stacked on #X. Retarget to `main` before merging." Ticket comments stay drafts; no ticket transitions. Merge order is 267 → 272; after each merge, merge `main` into the next branch, re-run its tests, and retarget its PR to `main` (Retarget rule). Never merged by the run.
+
+## code-reviewer · E4 review · fixes pushed
+#267, #268, #269 and #272 ready to merge with no blocking findings. #270 (purge safety, a crash on an empty user folder, manifest checks) and #271 (repair pruning the user's live links) fixed with tests, merged up the stack into 129 and 130.

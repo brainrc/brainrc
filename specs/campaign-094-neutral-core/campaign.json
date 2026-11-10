@@ -27,7 +27,7 @@
       "ref": "gh:105",
       "order": 2,
       "depends_on": [],
-      "status": "in_progress",
+      "status": "verified",
       "slug": "105-fix-doc-drift",
       "branch": "105-fix-doc-drift",
       "pr": null,

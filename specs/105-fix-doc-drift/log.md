@@ -9,3 +9,13 @@ Ticket drift since it was written: overrides/README and AGENTS.md wording partly
 
 ## engine · verify · T1 attempt 1 failed
 `OldNamesTest` flagged `AICFG_HOME` in the new tests/test_doctor_paths.py (old names are allowed only in listed files). Fix: the old-home quoting test moved into tests/test_doctor_home.py, which is on the allow list; plan files updated (wording only, no criterion change).
+
+## code-reviewer · gh:105 batch · done
+Inline (review_context: shared). No CRITICAL/HIGH/MEDIUM. 1 LOW: `shell_path` of a path that is exactly the home dir prints `~`; correct for `rm -r` only by intent, and doctor never prints that. Kept.
+
+## engine · verify
+720 tests OK (plain and XDG), validate OK (core, acme).
+
+## engine · Deliver gate · auto-approved
+2026-11-10T06:18:49Z
+Push 105-fix-doc-drift, open a ready PR from pr-body.md against 104-local-tripwires (stacked, Closes #105). Ticket comment stays a draft. No ticket transition.

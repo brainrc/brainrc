@@ -19,11 +19,11 @@
   "auto": true,
   "oneshot": true,
   "campaign": "campaign-094-neutral-core",
-  "stage": "implement",
+  "stage": "deliver",
   "gates": {
     "spec": "approved",
     "plan": "skipped",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [
     "scripting"
@@ -42,7 +42,7 @@
       "id": "T1",
       "title": "Quote doctor rm paths, drop the stale pin, fix the docs, add the doc test",
       "agent": "engine",
-      "status": "in_progress",
+      "status": "done",
       "attempts": 2,
       "files": [
         "brainrc/doctor.py",
@@ -63,7 +63,8 @@
         "AC5"
       ],
       "review": "batch",
-      "red": "compile-only"
+      "red": "compile-only",
+      "sha": "26230a5"
     }
   ],
   "blocked": null,
@@ -72,12 +73,19 @@
     "stage_started_at": {
       "intake": "2026-11-10T06:13:25Z",
       "spec": "2026-11-10T06:13:25Z",
-      "implement": "2026-11-10T06:13:39Z"
+      "implement": "2026-11-10T06:13:39Z",
+      "verify": "2026-11-10T06:15:52Z",
+      "document": "2026-11-10T06:18:49Z",
+      "deliver": "2026-11-10T06:18:49Z"
     },
     "gates": {
       "spec": {
         "presented_at": "2026-11-10T06:13:39Z",
         "approved_at": "2026-11-10T06:13:39Z"
+      },
+      "deliver": {
+        "presented_at": "2026-11-10T06:18:49Z",
+        "approved_at": "2026-11-10T06:18:49Z"
       }
     },
     "gate_rework": {
@@ -85,10 +93,14 @@
       "deliver": 0
     },
     "reviews": {
-      "total": 0,
-      "first_pass": 0
+      "total": 1,
+      "first_pass": 1
     },
     "retries": 1,
     "interventions": 0
-  }
+  },
+  "living": [
+    "doctor"
+  ],
+  "review_context": "shared"
 }

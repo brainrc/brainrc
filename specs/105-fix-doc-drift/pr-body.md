@@ -1,6 +1,6 @@
 Quote doctor's rm paths and fix doc drift
 
-Part of epic #94 (E3), 2 of 3, stacked on #PR104. Retarget to `main` before merging. Closes #105.
+Part of epic #94 (E3), 2 of 3, stacked on #263. Retarget to `main` before merging. Closes #105.
 
 ## Why
 Docs had drifted from the code. The install guide told people to stay on v0.3.29, from before the rename. `overrides/README.md` said only Claude Code was synced. `brainrc doctor` printed `rm` fixes with unquoted paths, so pasting one with a space in the path would fail or remove the wrong thing.

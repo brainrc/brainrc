@@ -74,7 +74,7 @@ class TempRepoCase(unittest.TestCase):
     config or write rendered files anywhere real."""
 
     def setUp(self):
-        self.repo = Path(tempfile.mkdtemp())
+        self.repo = Path(tempfile.mkdtemp()).resolve()  # macOS: /var is a link to /private/var
         copy_repo(self.repo)
         self.old_repo = brainrc.config.REPO
         brainrc.config.REPO = self.repo

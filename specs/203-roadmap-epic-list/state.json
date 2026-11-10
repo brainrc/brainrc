@@ -47,7 +47,8 @@
       "files": [
         "docs/roadmap.md",
         "tests/test_roadmap.py",
-        "changelog.d/203-roadmap-epic-list.md"
+        "changelog.d/203-roadmap-epic-list.md",
+        "docs/formats.md"
       ],
       "criteria": [
         "AC1",

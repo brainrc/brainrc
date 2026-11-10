@@ -15,3 +15,6 @@ Inline (review_context: shared). No CRITICAL/HIGH/MEDIUM. 1 LOW: the page is a h
 ## engine · Deliver gate · auto-approved
 2026-11-10T06:21:03Z
 Push 203-roadmap-epic-list, open a ready PR from pr-body.md against 105-fix-doc-drift (stacked, Closes #203). Ticket comment stays a draft. No ticket transition.
+
+## engine · watch · review on #265
+Inline finding (bxker): the wave test only checked that a `## Wave 0` heading came first. Now every item must sit under one of the six wave or group headings (fails with an item under `## Notes`). Also reworded `docs/formats.md`'s "Adapters (see roadmap)", which the new page no longer covers.

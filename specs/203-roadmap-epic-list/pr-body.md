@@ -8,7 +8,8 @@ Part of epic #94 (E3), 3 of 3, stacked on #264. Retarget to `main` before mergin
 ## What changed
 - `docs/roadmap.md` lists all 25 open epics, one line each: ID, title linked to its issue, and a one-line goal. They're grouped by wave, which is the `Roadmap ID` prefix of the epic's sub-issues (P0 to P4), with three more groups: owner decisions (D1), epics added after the waves (E17, E18, E23–E25), and open epics whose sub-issues are all closed (E2, E22).
 - The page says shipped work is in the CHANGELOG, and that an epic's own "Start after" note wins over the page order.
-- New `tests/test_roadmap.py` keeps every item a linked epic, with no repeated ID or issue, under a wave heading.
+- New `tests/test_roadmap.py` keeps every item a linked epic, with no repeated ID or issue, under one of the wave or group headings.
+- `docs/formats.md` no longer points to the roadmap for adapters; it names the ones that exist.
 
 ## Acceptance criteria
 - [x] AC1: every open epic is listed once. Verified by diffing the open epics from the GitHub API (titles starting "Epic", plus #63 and #18) against the page's issue links: 25 and 25.

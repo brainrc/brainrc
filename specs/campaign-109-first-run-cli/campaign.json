@@ -59,9 +59,10 @@
       "ref": "gh:130",
       "order": 6,
       "depends_on": [],
-      "status": "todo",
-      "slug": null,
-      "pr": null
+      "status": "verified",
+      "slug": "130-doctor-plugin-overlap",
+      "pr": null,
+      "branch": "130-doctor-plugin-overlap"
     }
   ]
 }

@@ -33,3 +33,6 @@ gh:128 `128-brainrc-uninstall` verified at 2026-11-10T17:20Z: 790 tests, validat
 
 ## engine · child 5 · verified
 gh:129 `129-apply-repair` verified at 2026-11-10T17:32Z: 799 tests, validate OK.
+
+## engine · child 6 · verified
+gh:130 `130-doctor-plugin-overlap` verified at 2026-11-10T17:37Z: 805 tests, validate OK. Every child verified.

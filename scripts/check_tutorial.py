@@ -94,6 +94,7 @@ def run(parsed: dict[int, tuple[str, str]], expected: dict[int, list[str]]) -> b
         home = Path(work, "home")
         checkout = home / "brainrc"
         shutil.copytree(REPO, checkout, symlinks=True, ignore=COPY_IGNORE)
+        (home / ".claude").mkdir()  # apply only touches installed harnesses, so install one
         env = {**os.environ, "HOME": str(home), "USERPROFILE": str(home),
                "BRAINRC_HOME": str(home / ".config" / "brainrc")}
         for k in ("XDG_CONFIG_HOME", "PYTHONPATH"):

@@ -15,3 +15,6 @@ Inline (review_context: shared). No CRITICAL/HIGH/MEDIUM. 1 LOW: a tracked symli
 ## engine · Deliver gate · auto-approved
 2026-11-10T06:11:42Z
 Push 104-local-tripwires, open a ready PR from pr-body.md against main (Closes #104). Ticket comment stays a draft. No ticket transition.
+
+## engine · watch · review on #263
+One inline finding (bxker): the new git tests inherit a pre-commit hook's GIT_DIR / GIT_INDEX_FILE and stage temp files into the real index. Reproduced (84 files staged, 2 failures), fixed in LocalTripwireTest.setUp by dropping GIT_* for each test; reproduced again: 0 staged, 9 pass. The pre-existing GitPackTest issue is left as a follow-up for the owner.

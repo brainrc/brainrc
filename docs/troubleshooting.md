@@ -107,7 +107,8 @@ put back. It reads which harnesses and source roots apply used from `$BRAINRC_HO
 so it still works after you move or delete the checkout or a pack.
 
 Your local config (`harnesses.local.toml`, `packs.local.toml`, `rules/*.local.md`) and fetched
-git packs stay in `$BRAINRC_HOME`; `uninstall --purge` deletes that directory too. Then delete
+git packs stay in `$BRAINRC_HOME`; `uninstall --purge` deletes that directory too, unless it
+holds files brainrc didn't make (then it says which, and leaves them). Then delete
 the repo, or `uv tool uninstall brainrc` (`pipx uninstall brainrc`).
 
 ## Every tool call is blocked, or `doctor` says `hook missing`

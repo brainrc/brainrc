@@ -30,6 +30,7 @@ class MigrateCase(unittest.TestCase):
         self.tmp = Path(tmp.name)
         self.home = self.tmp / "home"
         self.home.mkdir()
+        (self.home / ".claude").mkdir()  # an installed harness, so apply links into it (#126)
         self.new = self.home / ".config" / "brainrc"
         self.old = self.home / ".config" / "ai-config"
 
@@ -141,7 +142,7 @@ class TestMigrate(MigrateCase):
         proc = self.run_cli("migrate")
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
         self.assertIn("nothing to migrate", proc.stdout.lower())
-        self.assertEqual(self.snapshot(), ["home"])
+        self.assertEqual(self.snapshot(), ["home", "home/.claude"])
         self.legacy_install()
         self.assertEqual(self.run_cli("migrate").returncode, 0)
         before = self.snapshot()
@@ -181,7 +182,6 @@ class TestMigrate(MigrateCase):
     def test_ac13_failing_apply_reports_move_done(self):
         self.old.mkdir(parents=True)
         (self.old / "packs.local.toml").write_text("# no packs\n")
-        (self.home / ".claude").mkdir()
         (self.home / ".claude" / "CLAUDE.md").write_text("mine")  # a CONFLICT makes apply exit 1
         proc = self.run_cli("migrate")
         self.assertNotEqual(proc.returncode, 0)

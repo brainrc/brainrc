@@ -37,6 +37,7 @@ from .release import cmd_release, cmd_release_notes
 from .tokens import cmd_tokens
 from .validate import cmd_validate, pack_errors
 from .doctor import cmd_doctor
+from .manifest import updated_manifest, write_manifest
 from .migrate import cmd_migrate
 
 
@@ -257,6 +258,14 @@ def _sync(apply: bool) -> int:
         elif apply:
             record_owned(s, owned)  # e.g. adopt entries that already match after lost state
 
+    if apply:
+        managed = {n: h for n, h in config.load_harnesses().items() if config.in_scope(n)}
+        write_manifest(updated_manifest(managed, [s.root for s in srcs], config.harness_scope()))
+    missing = {n: home for n, home in config.missing_harnesses().items() if config.in_scope(n)}
+    if missing:
+        names = ", ".join(f"{n} ({tilde(home)})" for n, home in missing.items())
+        print(f"Skipped, not installed: {names}. To manage one anyway, set `enabled = true` "
+              "for it in harnesses.local.toml.")
     if not changes and not conflicts:
         print("Everything in sync.")
     elif not apply and changes:

@@ -230,18 +230,9 @@ def doctor_findings() -> list[Finding]:
     roots = [s.root for s in every_src]
     links, stale, merges = plan(srcs, every_src)
 
-    skipped = set()
-    for name, h in load_harnesses().items():
-        key = next((k for k in ("instructions", "skills") if k in h), None)
-        home = expand(h[key]).parent if key else None
-        if home and not home.is_dir():
-            skipped.add(name)
-            found.append(("WARN", f"{name}: {tilde(home)} doesn't exist (not installed?)",
-                          f"add `[{name}] enabled = false` to harnesses.local.toml, or install it"))
+    # A harness that isn't installed is neither planned nor checked: apply skips it too (#126).
     missing: dict[str, list[Link]] = {}
     for link in links:
-        if link.harness in skipped:
-            continue
         if link.state(roots) == "create":
             missing.setdefault(link.harness, []).append(link)
         elif f := _link_finding(link, roots):
@@ -255,12 +246,10 @@ def doctor_findings() -> list[Finding]:
     found += [("FAIL", f"{tilde(p)} is a stale link brainrc no longer makes", f"{command('apply')} (prunes it)")
               for p in stale]
 
-    found += _stray_link_findings({link.dest for link in links} | set(stale), skipped)
+    found += _stray_link_findings({link.dest for link in links} | set(stale))
 
     found += [("FAIL", e, f"fix the JSON, then {command('apply')}") for e in invalid_fragments(srcs)]
     for m in merges:
-        if m.harness in skipped:
-            continue
         try:
             state, _ = settings_change(m)
         except FragmentError:
@@ -273,8 +262,8 @@ def doctor_findings() -> list[Finding]:
         elif state == "conflict":
             found.append(("FAIL", f"{m.harness}: {tilde(m.dest)} is invalid JSON",
                           f"fix it by hand, then {command('apply')}"))
-    found += _hook_findings(merges, skipped)
-    found += _mcp_findings(srcs, skipped)
+    found += _hook_findings(merges)
+    found += _mcp_findings(srcs)
     found += _home_findings()
     found += _plugin_findings()
     return found
@@ -283,12 +272,12 @@ def doctor_findings() -> list[Finding]:
 HOOK_SCRIPT = re.compile(r'"([^"]+\.py)"')  # the script in a `python3 "<dir>/<guard>.py"` command
 
 
-def _stray_link_findings(known: set[Path], skipped: set[str]) -> list[Finding]:
+def _stray_link_findings(known: set[Path]) -> list[Finding]:
     """WARN for broken links brainrc doesn't manage, in the directories it links into."""
     found = []
     for name, h in load_harnesses().items():
         for kind in KINDS:
-            d = expand(h[kind]) if kind in h and name not in skipped else None
+            d = expand(h[kind]) if kind in h else None
             for p in sorted(d.iterdir()) if d and d.is_dir() else []:
                 if p.is_symlink() and not p.exists() and p not in known:
                     found.append(("WARN", f"{name}: {tilde(p)} is a broken link not made by brainrc",
@@ -296,12 +285,12 @@ def _stray_link_findings(known: set[Path], skipped: set[str]) -> list[Finding]:
     return found
 
 
-def _hook_findings(merges: list, skipped: set[str]) -> list[Finding]:
+def _hook_findings(merges: list) -> list[Finding]:
     """brainrc's hooks in each settings file: the script exists and passes an empty payload.
     A missing script is skipped by the hook command, so its guard is silently off."""
     found = []
     for m in merges:
-        if m.harness in skipped or not m.fragments or not m.dest.is_file():
+        if not m.fragments or not m.dest.is_file():
             continue
         try:
             current = json.loads(m.dest.read_text())
@@ -336,13 +325,11 @@ def _hook_findings(merges: list, skipped: set[str]) -> list[Finding]:
     return found
 
 
-def _mcp_findings(srcs: list[Source], skipped: set[str]) -> list[Finding]:
+def _mcp_findings(srcs: list[Source]) -> list[Finding]:
     if errors := check_servers(srcs):
         return [("FAIL", e, f"fix mcp/servers.toml, then {command('apply')}") for e in errors]
     found = []
     for s in mcp_plan(srcs):
-        if s.harness in skipped:
-            continue
         state, _, clashing, _ = mcp_change(s)
         found += [("WARN", f"{s.harness}: your own MCP server `{n}` in {tilde(s.dest)} shadows brainrc's",
                    f"rename or remove yours, then {command('apply')}") for n in clashing]

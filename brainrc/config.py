@@ -109,7 +109,7 @@ class ConfigError(Exception):
     pass
 
 
-PATH_KEYS = ("skills", "agents", "agents_format", "commands", "plugin", "instructions",
+PATH_KEYS = ("home", "skills", "agents", "agents_format", "commands", "plugin", "instructions",
              "hooks_dir", "settings", "mcp")
 
 
@@ -203,9 +203,48 @@ def check_config() -> list[str]:
     return warnings
 
 
-def load_harnesses(include_disabled: bool = False) -> dict[str, dict]:
+def load_harnesses(include_disabled: bool = False, include_missing: bool = False) -> dict[str, dict]:
+    """Harnesses from harnesses.toml with the local file over it. By default only the ones brainrc
+    manages: enabled, and installed (or enabled in harnesses.local.toml, which forces it).
+    include_missing keeps enabled ones that aren't installed; include_disabled keeps every one."""
     config = _layered("harnesses")
-    return {n: h for n, h in config.items() if include_disabled or h.get("enabled", True)}
+    if include_disabled:
+        return config
+    enabled = {n: h for n, h in config.items() if h.get("enabled", True)}
+    if include_missing:
+        return enabled
+    forced = _forced()
+    return {n: h for n, h in enabled.items() if n in forced or harness_installed(h)}
+
+
+def harness_home(h: dict) -> Path | None:
+    """The directory whose existence means the harness is installed: `home`, else the parent of its
+    `instructions` or `skills` path (e.g. ~/.claude), else None."""
+    if "home" in h:
+        return expand(h["home"])
+    key = next((k for k in ("instructions", "skills") if k in h), None)
+    return expand(h[key]).parent if key else None
+
+
+def harness_installed(h: dict) -> bool:
+    home = harness_home(h)
+    return home is None or home.is_dir()
+
+
+def _forced() -> set[str]:
+    """Harnesses managed even when not detected: those harnesses.local.toml enables explicitly,
+    and those it defines that the shipped harnesses.toml doesn't (the user's own harness)."""
+    shipped = _read_toml(REPO / "harnesses.toml")
+    local = _read_toml(local_dir() / "harnesses.local.toml")
+    return {n for n, t in local.items() if isinstance(t, dict)
+            and (t.get("enabled") is True or (n not in shipped and t.get("enabled", True)))}
+
+
+def missing_harnesses() -> dict[str, Path]:
+    """Enabled harnesses that brainrc skips because they aren't installed, with the home it looked for."""
+    managed = load_harnesses()
+    return {n: harness_home(h) for n, h in load_harnesses(include_missing=True).items()
+            if n not in managed and harness_home(h) is not None}
 
 
 _SCOPE: frozenset[str] | None = None  # set by `status/apply --only`; None means every harness
@@ -233,12 +272,15 @@ def only_harnesses(names: list[str] | None):
 
 
 def check_only(names: list[str]) -> str | None:
-    """Why `--only names` can't run (a name that isn't an enabled harness), or None.
+    """Why `--only names` can't run (a name that isn't an enabled, installed harness), or None.
     Raises ConfigError for a broken harnesses.toml, as every command that reads it does."""
-    every, enabled = load_harnesses(include_disabled=True), load_harnesses()
+    every, enabled, missing = load_harnesses(include_disabled=True), load_harnesses(), missing_harnesses()
     for name in names:
         if name not in every:
             return f"--only {name}: no such harness (known: {', '.join(every)})"
+        if name in missing:
+            return (f"--only {name}: {tilde(missing[name])} doesn't exist, so {name} isn't installed "
+                    f"(set `[{name}] enabled = true` in harnesses.local.toml to manage it anyway)")
         if name not in enabled:
             return (f"--only {name}: {name} is disabled (`enabled = false` in harnesses.toml "
                     "or harnesses.local.toml)")

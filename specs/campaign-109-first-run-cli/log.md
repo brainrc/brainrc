@@ -1,0 +1,23 @@
+# Campaign gh:109 · Epic E4: First-run CLI
+
+## 2026-11-10T16:29:57Z · intake
+- Started as `/work --campaign gh:109 --shape ordered --oneshot` from the owner's request to pick the next highest-impact epic and complete it in campaign mode.
+- Why this epic: E3 (wave 0) shipped, so wave 1 is next. Of E4, E5 and E6, E4 is the one the others wait on: E6's own "Start after" names E4, and E5's playbook edits the same harness paths E4 starts to detect. E6 already has open stacked PRs (#257 to #262); D1 (#95) is owner-only.
+- Members: gh:125, gh:126, gh:127, gh:128, gh:129, gh:130 (sub-issue order). All open, unassigned. None skipped.
+- Shape: ordered (`--shape ordered`, as the epic says; members differ).
+- Dependencies: the `blocked_by` API is empty for every child and no body has a `Depends on #N` line. Source `none`: epic order.
+- Order: 125, 126, 127, 128, 129, 130. No cycle, no out-of-epic link.
+- `--oneshot`: children run as `--oneshot`, `stacked`, every PR ready. Mode inline.
+- Names: the tickets predate the rename, so `aicfg` in them reads as `brainrc` and `aicfg/` as `brainrc/`.
+
+## engine · Campaign gate · auto-approved
+2026-11-10T16:29:57Z
+⛔ Campaign gate: campaign-109-first-run-cli
+Summary: ordered shape, 6 children in epic order (source none). Child N branches from child N-1; each gets its own Spec and Plan gates (auto-approved under `--oneshot`).
+Decide: shape and order.
+Artifacts: specs/campaign-109-first-run-cli/campaign.json
+
+- Child 1 gh:125 started: specs/125-argparse-cli/ on branch 125-argparse-cli (base main).
+
+## 2026-11-10T16:38:00Z · child 1 gh:125 verified
+- Drafts ready (specs/125-argparse-cli/pr-body.md). Child 2 gh:126 branches from 125-argparse-cli.

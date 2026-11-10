@@ -1,6 +1,7 @@
 # Instructions for AI assistants editing this repo
 
-This repo is **public** and is the source of truth for the owner's AI harness config.
+Treat this repo as **public**: it is the source of truth for the owner's AI harness config,
+and anything committed here can be read by anyone.
 These rules apply to human contributors too. Setup and PR workflow: [CONTRIBUTING.md](CONTRIBUTING.md).
 
 - Never add secrets, tokens, personal emails, internal hostnames, or absolute

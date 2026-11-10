@@ -70,5 +70,5 @@ python3 -m unittest discover -s tests
 
 ## Security
 
-This repo is public. Don't commit secrets, tokens, internal hostnames, or
+Treat this repo as public. Don't commit secrets, tokens, internal hostnames, or
 absolute home-directory paths. Gitleaks runs in pre-commit and CI.

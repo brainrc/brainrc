@@ -37,7 +37,7 @@ from .sources import (
 )
 from .opencode import agents_format, rendered_agents
 from .packs import needs_fetch
-from .plan import FragmentError, Link, invalid_fragments, link_target, plan
+from .plan import FragmentError, Link, invalid_fragments, link_target, moved_item, plan
 from .settings import _owned, settings_change
 from .mcp import check_servers, mcp_change, mcp_plan
 from .validate import ROLES_FIX, check_roles_link, cmd_validate
@@ -138,8 +138,9 @@ def _link_finding(link: Link, roots: list[Path]) -> Finding | None:
                 f"move it into the repo or a pack (or delete it), then {command('apply')}")
     target = link_target(link.dest)
     if not target.exists():
-        return ("FAIL", f"{link.harness}: {dest} is a broken link to {tilde(target)} (repo moved?)",
-                f"rm {shell_path(link.dest)} && {command('apply')}")
+        fix = command("apply --repair") if moved_item(target, link.source) else \
+            f"rm {shell_path(link.dest)} && {command('apply')}"
+        return ("FAIL", f"{link.harness}: {dest} is a broken link to {tilde(target)} (repo moved?)", fix)
     return ("FAIL", f"{link.harness}: {dest} links to {tilde(target)}, outside brainrc and its packs",
             f"move that into a pack (or delete the link), then {command('apply')}")
 

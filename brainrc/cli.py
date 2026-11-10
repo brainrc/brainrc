@@ -39,7 +39,7 @@ from .release import cmd_release, cmd_release_notes
 from .tokens import cmd_tokens
 from .validate import cmd_validate, pack_errors
 from .doctor import cmd_doctor
-from .manifest import read_manifest, updated_manifest, write_manifest
+from .manifest import checked_manifest, updated_manifest, write_manifest
 from .migrate import cmd_migrate
 
 
@@ -110,13 +110,24 @@ def _copy_hooks(overrides: Path, copy_root: Path) -> None:
     shutil.rmtree(old, ignore_errors=True)
 
 
-def _old_roots(srcs, roots: list[Path]) -> list[Path]:
-    """apply --repair: source roots apply recorded before, plus each one a broken link points into."""
-    old = [Path(r) for r in read_manifest()["roots"] if Path(r) not in roots]
+def _old_roots(srcs, roots: list[Path]) -> tuple[list[Path], list[Path]]:
+    """apply --repair: (source roots apply recorded before, roots whose stale links may be pruned).
+
+    A recorded root is trusted: links into it are repaired, and stale ones pruned. A root inferred
+    from a broken link (an install from before the manifest) only adds pruning, and only when it no
+    longer exists and isn't ~, / or one of ~'s ancestors, so a live link of the user's is never
+    taken for brainrc's. The broken link itself is repaired as a moved item either way."""
+    manifest, warnings = checked_manifest()
+    for w in warnings:
+        print(f"WARN {w}")
+    trusted = [Path(r) for r in manifest["roots"] if Path(r) not in roots]
+    prune = list(trusted)
+    home = Path.home()
     for link in plan(srcs)[0]:
-        if link.state(roots, old) == "repair" and (root := old_root(link_target(link.dest), link.source, roots)):
-            old.append(root)
-    return list(dict.fromkeys(old))
+        if link.state(roots, trusted) == "repair" and (root := old_root(link_target(link.dest), link.source, roots)):
+            if not os.path.lexists(root) and root != home and root not in home.parents:
+                prune.append(root)
+    return trusted, list(dict.fromkeys(prune))
 
 
 def _sync(apply: bool, repair: bool = False) -> int:
@@ -205,8 +216,8 @@ def _sync(apply: bool, repair: bool = False) -> int:
             if not any(legacy_instructions().parent.iterdir()):
                 legacy_instructions().parent.rmdir()
 
-    old = _old_roots(srcs, roots) if repair else None
-    links, stale, merges = plan(srcs, old_roots=old)
+    old, prune = _old_roots(srcs, roots) if repair else (None, None)
+    links, stale, merges = plan(srcs, old_roots=prune)
     conflicts, changed, changes, repairable = 0, 0, len(pending), 0
     for link in links:
         state = link.state(roots, old)

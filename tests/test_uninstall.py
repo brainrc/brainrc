@@ -8,6 +8,7 @@ import shutil
 import sys
 import tempfile
 import unittest
+import unittest.mock
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -183,6 +184,75 @@ class UninstallTest(TempRepoCase):
         self.assertEqual(code, 0, out)
         self.assertTrue((self.home / ".claude/skills/spec-agent").is_symlink())
         self.assertIn("brainrc", self.settings.read_text())
+
+    def test_purge_never_deletes_a_settings_home_that_holds_other_files(self):
+        config = self.home / ".config"
+        (config / "nvim").mkdir(parents=True)
+        (config / "nvim/init.lua").write_text("keep\n")
+        os.environ["BRAINRC_HOME"] = str(config)
+        quiet(brainrc.cmd_sync, True)
+        code, out = run("uninstall", "--purge")
+        self.assertEqual(code, 1, out)
+        self.assertNotIn("PURGE", out)
+        self.assertIn("--purge left ~/.config alone", out.replace(str(self.home), "~"))
+        self.assertEqual((config / "nvim/init.lua").read_text(), "keep\n")
+        self.assertFalse((config / "harnesses.json").exists())  # brainrc's own files still go
+        self.assertFalse((self.home / ".claude/skills/spec-agent").is_symlink())
+
+    def test_purge_never_deletes_home_or_a_harness_config(self):
+        quiet(brainrc.cmd_sync, True)
+        for home, reason in ((self.home, "home directory"), (self.home / ".config", "config directory"),
+                             (self.home / ".config/opencode", "opencode's config"), (self.repo, "checkout")):
+            os.environ["BRAINRC_HOME"] = str(home)
+            code, out = run("uninstall", "--purge", "--dry-run")
+            self.assertIn(reason, out)
+            self.assertNotIn("PURGE", out)
+        self.assertTrue((self.home / ".claude/skills/my-skill/SKILL.md").is_file())
+
+    def test_purge_keeps_a_file_it_didnt_make_in_its_own_home(self):
+        quiet(brainrc.cmd_sync, True)
+        (self.settings_home / "notes.txt").write_text("mine\n")
+        code, out = run("uninstall", "--purge")
+        self.assertEqual(code, 1, out)
+        self.assertIn("notes.txt", out)
+        self.assertEqual((self.settings_home / "notes.txt").read_text(), "mine\n")
+
+    def test_an_empty_folder_of_the_users_is_left_and_the_run_finishes(self):
+        quiet(brainrc.cmd_sync, True)
+        (self.home / ".cursor/skills/my-wip").mkdir()
+        code, out = run("uninstall")
+        self.assertEqual(code, 0, out)
+        self.assertTrue((self.home / ".cursor/skills/my-wip").is_dir())
+        self.assertNotIn("RMDIR     cursor    ~/.cursor/skills\n", out.replace(str(self.home), "~"))
+        self.assertFalse((self.settings_home / "harnesses.json").exists())
+
+    def test_a_directory_that_fills_up_after_the_plan_is_reported_not_a_crash(self):
+        quiet(brainrc.cmd_sync, True)
+        steps, _, _ = brainrc.uninstall.plan_uninstall()
+        rmdir = next(s for s in steps if s.action == "RMDIR")
+        for s in steps[:steps.index(rmdir)]:
+            s.run()
+        (rmdir.path / "late").write_text("x")
+        with unittest.mock.patch("brainrc.uninstall.plan_uninstall", return_value=([rmdir], [], [])):
+            code, out = run("uninstall")
+        self.assertEqual(code, 1, out)
+        self.assertIn("FAILED", out)
+        self.assertTrue((rmdir.path / "late").is_file())
+
+    def test_manifest_entries_too_broad_to_trust_are_ignored(self):
+        quiet(brainrc.cmd_sync, True)
+        (self.repo / "harnesses.local.toml").write_text("[claude\n")  # only the manifest is left
+        manifest = json.loads((self.settings_home / "harnesses.json").read_text())
+        manifest["harnesses"]["claude"]["hooks_dir"] = "~/"
+        manifest["harnesses"]["codex"]["skills"] = "/etc"
+        manifest["roots"].append("/")
+        (self.settings_home / "harnesses.json").write_text(json.dumps(manifest))
+        code, out = run("uninstall", "--dry-run")
+        self.assertIn("ignored harness 'claude': hooks_dir = '~/'", out)
+        self.assertIn("ignored harness 'codex': skills = '/etc' is not inside ~", out)
+        self.assertIn("ignored root '/'", out)
+        self.assertNotIn("~/.claude/settings.json", out.replace(str(self.home), "~"))
+        self.assertIn("~/.cursor/hooks.json", out.replace(str(self.home), "~"))
 
 
 if __name__ == "__main__":

@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from .config import settings_home
+from .config import expand, harness_home, settings_home, tilde
 
 VERSION = 1
 
@@ -30,6 +30,49 @@ def read_manifest() -> dict:
     harnesses = data.get("harnesses") if isinstance(data.get("harnesses"), dict) else {}
     return {"version": VERSION, "roots": [r for r in roots if isinstance(r, str)],
             "harnesses": {n: h for n, h in harnesses.items() if isinstance(h, dict)}}
+
+
+PATH_KEYS = ("home", "skills", "agents", "commands", "plugin", "instructions", "hooks_dir", "settings", "mcp")
+
+
+def _inside_home(path: Path) -> bool:
+    """True if path is strictly inside the home directory (so never ~, / or one of ~'s ancestors)."""
+    return path.is_absolute() and Path.home() in path.parents
+
+
+def checked_manifest() -> tuple[dict, list[str]]:
+    """The manifest with what uninstall and repair must not trust left out, and a warning for each.
+
+    A harness entry is dropped when one of its paths is not inside ~, or its hooks_dir is the
+    harness home or one of its ancestors (its hook commands would then match the user's own). A
+    root is dropped when it is not absolute, or is /, ~ or one of ~'s ancestors."""
+    data = read_manifest()
+    warnings, harnesses = [], {}
+    for name, h in data["harnesses"].items():
+        try:
+            paths = {k: expand(h[k]) for k in PATH_KEYS if k in h}
+            home = harness_home(h)
+        except (TypeError, ValueError):
+            paths, home = None, None
+        bad = None if paths is not None else "a path that isn't a string"
+        for key, path in (paths or {}).items():
+            if bad is None and not _inside_home(path):
+                bad = f"{key} = {h[key]!r} is not inside ~"
+        hooks = (paths or {}).get("hooks_dir")
+        if bad is None and hooks and home and (hooks == home or hooks in home.parents):
+            bad = f"hooks_dir = {h['hooks_dir']!r} is the harness home or holds it"
+        if bad:
+            warnings.append(f"{tilde(manifest_file())}: ignored harness {name!r}: {bad}")
+        else:
+            harnesses[name] = h
+    roots = []
+    for r in data["roots"]:
+        root = Path(r)
+        if not root.is_absolute() or root == Path.home() or root in Path.home().parents:
+            warnings.append(f"{tilde(manifest_file())}: ignored root {r!r}: too broad to trust")
+        else:
+            roots.append(r)
+    return {**data, "roots": roots, "harnesses": harnesses}, warnings
 
 
 def updated_manifest(managed: dict[str, dict], roots: list[Path], scope: frozenset[str] | None) -> dict:

@@ -27,7 +27,7 @@ them one by one. A package upgrade to a new Python leaves the same breakage.
 ## Requirement changes
 ### Area: aicfg-apply
 #### ADDED: Repair links after a move
-`brainrc apply --repair` (and `status --repair`, which writes nothing) SHALL relink a link whose target is under a source root recorded in the manifest, or is missing and ends with the planned source's last two path parts, and SHALL prune links into those old roots whose item is gone; every other link it doesn't manage SHALL stay a `CONFLICT`. (AC1, AC2, AC3, AC4, AC5)
+`brainrc apply --repair` (and `status --repair`, which writes nothing) SHALL relink a link whose target is under a source root recorded in the manifest, or is missing and ends with the planned source's last two path parts, and SHALL prune links whose item is gone that point into a recorded root, or into a root inferred from a broken link that no longer exists and is not ~ or one of its ancestors; it SHALL ignore recorded roots that are ~, / or an ancestor of ~, and every other link it doesn't manage, the user's live links included, SHALL stay as it is. (AC1, AC2, AC3, AC4, AC5)
 ### Area: doctor
 #### ADDED: Repair hint
 `brainrc doctor` SHALL give `apply --repair` as the fix for a broken link that names the same item as the planned source, and `rm` plus `apply` for any other broken link. (AC6)

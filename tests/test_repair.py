@@ -125,6 +125,46 @@ class RepairTest(TempRepoCase):
         self.assertFalse(any(".codex" in str(p) for p in self.links_into(old)))
         self.assertTrue(any(".claude" in str(p) for p in self.links_into(old)))
 
+    def test_the_users_live_links_survive_a_repair_of_their_broken_one(self):
+        quiet(brainrc.cmd_sync, True)
+        notes = self.home / "dotfiles/skills/my-notes"
+        notes.mkdir(parents=True)
+        (notes / "SKILL.md").write_text("x\n")
+        mine = self.home / ".claude/skills/my-notes"
+        mine.symlink_to(notes)
+        self.skill.unlink()
+        self.skill.symlink_to(self.home / "dotfiles/skills/spec-agent")  # the user's own, broken
+        code, out = run("apply", "--repair")
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("PRUNE", out)
+        self.assertEqual(os.readlink(mine), str(notes))
+        self.assertEqual(os.readlink(self.skill), str(self.repo / "skills/spec-agent"))
+
+    def test_a_shallow_broken_link_never_makes_home_a_root(self):
+        quiet(brainrc.cmd_sync, True)
+        (self.home / "skills/my-notes").mkdir(parents=True)
+        mine = self.home / ".claude/skills/my-notes"
+        mine.symlink_to(self.home / "skills/my-notes")  # a live link of the user's
+        self.skill.unlink()
+        self.skill.symlink_to(self.home / "skills/spec-agent")  # broken: its derived root is ~
+        (trusted, prune), _ = quiet(brainrc.cli._old_roots, brainrc.sources(), [self.repo])
+        self.assertNotIn(self.home, trusted + prune)
+        code, out = run("apply", "--repair")
+        self.assertEqual(code, 0, out)
+        self.assertTrue(mine.is_symlink())
+
+    def test_manifest_roots_too_broad_to_trust_are_ignored(self):
+        quiet(brainrc.cmd_sync, True)
+        manifest = self.settings_home / "harnesses.json"
+        data = __import__("json").loads(manifest.read_text())
+        data["roots"] += [str(self.home), "/"]
+        manifest.write_text(__import__("json").dumps(data))
+        code, out = run("status", "--repair")
+        self.assertEqual(code, 0, out)
+        self.assertIn("ignored root", out)
+        (trusted, _), _ = quiet(brainrc.cli._old_roots, brainrc.sources(), [self.repo])
+        self.assertEqual(trusted, [])
+
 
 if __name__ == "__main__":
     unittest.main()

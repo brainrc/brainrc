@@ -19,8 +19,8 @@ rules) needs `apply`, edits included. Restart the harness or start a new session
 If you moved the repo, the old links are broken and `apply` reports each as a `CONFLICT`. Run
 `python3 scripts/brainrc.py apply --repair` from the new location: it relinks every broken link
 that points at the same item's old location (`skills/<name>`, `agents/<name>.md`, ...) and prunes
-the ones whose item is gone. `status --repair` shows the changes first. A broken link to anything
-else stays a `CONFLICT`.
+the ones into the old location whose item is gone. `status --repair` shows the changes first. A
+broken link to anything else stays a `CONFLICT`, and your own working links are never touched.
 
 ## Every skill shows up twice, or a hook runs twice
 
@@ -110,7 +110,8 @@ put back. It reads which harnesses and source roots apply used from `$BRAINRC_HO
 so it still works after you move or delete the checkout or a pack.
 
 Your local config (`harnesses.local.toml`, `packs.local.toml`, `rules/*.local.md`) and fetched
-git packs stay in `$BRAINRC_HOME`; `uninstall --purge` deletes that directory too. Then delete
+git packs stay in `$BRAINRC_HOME`; `uninstall --purge` deletes that directory too, unless it
+holds files brainrc didn't make (then it says which, and leaves them). Then delete
 the repo, or `uv tool uninstall brainrc` (`pipx uninstall brainrc`).
 
 ## Every tool call is blocked, or `doctor` says `hook missing`

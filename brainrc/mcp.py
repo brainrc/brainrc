@@ -12,7 +12,7 @@ import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 
-from .config import ConfigError, expand, former_homes, load_harnesses, settings_home
+from .config import ConfigError, expand, former_homes, in_scope, load_harnesses, settings_home
 from .settings import replace_file
 from .sources import Source
 
@@ -153,7 +153,7 @@ def mcp_plan(srcs: list[Source]) -> list[McpSync]:
     enabled = load_harnesses()
     syncs = []
     for name, h in load_harnesses(include_disabled=True).items():
-        if "mcp" not in h or name not in ADAPTERS:
+        if "mcp" not in h or name not in ADAPTERS or not in_scope(name):
             continue
         wanted = {n: s for n, s in servers.items()
                   if name in enabled and name in s.get("harnesses", [name])}

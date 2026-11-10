@@ -161,6 +161,11 @@ def stale_hooks_copy(links: list[Link]) -> Path | None:
     return root if root.exists() and not any(link.copy for link in links) else None
 
 
+def _scoped(harnesses: dict[str, dict]) -> dict[str, dict]:
+    """The harnesses inside `--only` (all of them without it)."""
+    return {n: h for n, h in harnesses.items() if config.in_scope(n)}
+
+
 def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
          ) -> tuple[list[Link], list[Path], list[SettingsMerge]]:
     srcs = srcs if srcs is not None else sources()
@@ -168,7 +173,7 @@ def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
     roots = [s.root for s in every_src]
     links: list[Link] = []
     merges: list[SettingsMerge] = []
-    for name, h in load_harnesses().items():
+    for name, h in _scoped(load_harnesses()).items():
         for kind in KINDS:
             if kind in h:
                 d = expand(h[kind])
@@ -199,7 +204,7 @@ def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
     # A disabled harness keeps its settings file, so take brainrc's hooks back out of it:
     # merging no fragments removes only the groups brainrc owns.
     enabled = load_harnesses()
-    for name, h in load_harnesses(include_disabled=True).items():
+    for name, h in _scoped(load_harnesses(include_disabled=True)).items():
         if name not in enabled and "settings" in h:
             known = set()
             if "hooks_dir" in h:
@@ -210,7 +215,7 @@ def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
     # disabled harnesses). Only symlinks pointing at a path brainrc links to are touched.
     wanted = {link.dest for link in links}
     candidates: set[Path] = set()
-    for h in load_harnesses(include_disabled=True).values():
+    for h in _scoped(load_harnesses(include_disabled=True)).values():
         for kind in KINDS:
             d = expand(h[kind]) if kind in h else None
             if d and d.is_dir():

@@ -1,0 +1,75 @@
+{
+  "ref": "gh:243",
+  "shape": "ordered",
+  "dependency_source": "none",
+  "started_at": "2026-10-31T16:09:57Z",
+  "delivery": "stacked",
+  "auto": true,
+  "oneshot": true,
+  "gates": {
+    "campaign": {
+      "presented_at": "2026-10-31T16:09:57Z",
+      "approved_at": "2026-10-31T16:09:57Z"
+    },
+    "deliver": {
+      "presented_at": "2026-11-01T00:26:37Z",
+      "approved_at": "2026-11-01T00:26:37Z"
+    }
+  },
+  "members": [
+    {
+      "ref": "local:specs/tickets/243-1-connector-create.md",
+      "order": 1,
+      "depends_on": [],
+      "status": "delivered",
+      "slug": "243-1-connector-create",
+      "branch": "243-1-connector-create",
+      "pr": "https://github.com/brainrc/brainrc/pull/259",
+      "pr_draft": false,
+      "base": "main",
+      "merged": false
+    },
+    {
+      "ref": "local:specs/tickets/243-2-researcher-proof.md",
+      "order": 2,
+      "depends_on": [
+        "local:specs/tickets/243-1-connector-create.md"
+      ],
+      "status": "delivered",
+      "slug": "243-2-researcher-proof",
+      "branch": "243-2-researcher-proof",
+      "pr": "https://github.com/brainrc/brainrc/pull/260",
+      "pr_draft": false,
+      "base": "243-1-connector-create",
+      "merged": false
+    },
+    {
+      "ref": "local:specs/tickets/243-3-ticket-gate.md",
+      "order": 3,
+      "depends_on": [
+        "local:specs/tickets/243-2-researcher-proof.md"
+      ],
+      "status": "delivered",
+      "slug": "243-3-ticket-gate",
+      "branch": "243-3-ticket-gate",
+      "pr": "https://github.com/brainrc/brainrc/pull/261",
+      "pr_draft": false,
+      "base": "243-2-researcher-proof",
+      "merged": false
+    },
+    {
+      "ref": "local:specs/tickets/243-4-plan-evals-docs.md",
+      "order": 4,
+      "depends_on": [
+        "local:specs/tickets/243-3-ticket-gate.md"
+      ],
+      "status": "delivered",
+      "slug": "243-4-plan-evals-docs",
+      "branch": "243-4-plan-evals-docs",
+      "pr": "https://github.com/brainrc/brainrc/pull/262",
+      "pr_draft": false,
+      "base": "243-3-ticket-gate",
+      "merged": false
+    }
+  ]
+}

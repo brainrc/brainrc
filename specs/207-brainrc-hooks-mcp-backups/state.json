@@ -1,0 +1,231 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:207",
+    "id": "207",
+    "title": "Rename: owned hooks dir, MCP ownership and backups",
+    "url": "https://github.com/brainrc/brainrc/issues/207",
+    "pr": "https://github.com/brainrc/brainrc/pull/233"
+  },
+  "slug": "207-brainrc-hooks-mcp-backups",
+  "branch": "207-brainrc-hooks-mcp-backups",
+  "base": "main",
+  "size": "standard",
+  "mode": "subagent",
+  "delivery": "normal",
+  "auto": true,
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/brainrc.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Backups use the brainrc name, prune across both names",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "brainrc/settings.py",
+        "tests/test_backups.py",
+        "tests/test_aicfg.py",
+        "docs/troubleshooting.md"
+      ],
+      "criteria": [
+        "AC9",
+        "AC10"
+      ],
+      "review": "batch",
+      "after": [],
+      "wave": 1,
+      "worktree": null,
+      "started_at": "2026-10-28T13:00:38Z",
+      "commit": "b907aaa",
+      "red": "assertion",
+      "finished_at": "2026-10-28T13:04:20Z"
+    },
+    {
+      "id": "T2",
+      "title": "Hook ownership covers both dir names, by path component",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "brainrc/config.py",
+        "tests/test_ownership.py"
+      ],
+      "criteria": [
+        "AC4",
+        "AC5"
+      ],
+      "review": "each",
+      "after": [],
+      "wave": 1,
+      "worktree": null,
+      "started_at": "2026-10-28T13:00:38Z",
+      "finished_at": "2026-10-28T13:02:46Z",
+      "commit": "578766c",
+      "red": "assertion"
+    },
+    {
+      "id": "T3",
+      "title": "MCP ownership records honored from former homes, read-only",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 2,
+      "files": [
+        "brainrc/mcp.py",
+        "tests/test_mcp.py"
+      ],
+      "criteria": [
+        "AC6",
+        "AC7",
+        "AC8"
+      ],
+      "review": "each",
+      "after": [],
+      "wave": 1,
+      "worktree": null,
+      "started_at": "2026-10-28T13:00:38Z",
+      "finished_at": "2026-10-28T13:04:20Z",
+      "commit": "01ec260",
+      "red": "assertion"
+    },
+    {
+      "id": "T4",
+      "title": "Rename hook dirs, prune old links",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "harnesses.toml",
+        "brainrc/config.py",
+        "brainrc/plan.py",
+        "tests/test_aicfg.py",
+        "docs/packs.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC3"
+      ],
+      "review": "each",
+      "after": [
+        "T1",
+        "T2"
+      ],
+      "commit": "5de6abc",
+      "red": "assertion"
+    },
+    {
+      "id": "T5",
+      "title": "Convergence tests for an old-name install, plus changelog fragment",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "tests/test_rename_converge.py",
+        "changelog.d/207-brainrc-hooks-mcp-backups.md"
+      ],
+      "criteria": [
+        "AC2",
+        "AC11",
+        "AC12",
+        "AC13"
+      ],
+      "review": "batch",
+      "after": [
+        "T3",
+        "T4"
+      ],
+      "commit": "0eccf28"
+    },
+    {
+      "id": "F1",
+      "title": "Prune only files named exactly like a settings backup",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "brainrc/settings.py",
+        "tests/test_backups.py"
+      ],
+      "criteria": [
+        "AC10"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "bbdc408"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-28T05:08:03Z",
+    "stage_started_at": {
+      "intake": "2026-10-28T05:08:03Z",
+      "spec": "2026-10-28T05:08:03Z",
+      "plan": "2026-10-28T05:09:32Z",
+      "implement": "2026-10-28T13:00:29Z",
+      "verify": "2026-10-28T13:57:44Z",
+      "document": "2026-10-28T13:57:44Z",
+      "deliver": "2026-10-28T13:57:44Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-28T05:09:32Z",
+        "approved_at": "2026-10-28T05:09:32Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-28T05:12:28Z",
+        "approved_at": "2026-10-28T13:00:29Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-28T13:57:44Z",
+        "approved_at": "2026-10-28T13:57:44Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 4,
+      "first_pass": 3
+    },
+    "retries": 1,
+    "interventions": 1,
+    "waves": {
+      "count": 1,
+      "max_width": 3,
+      "task_minutes": 10,
+      "wall_minutes": 4
+    },
+    "pr_opened_at": "2026-10-28T14:09:45Z",
+    "time_to_merge": 142
+  },
+  "living": [
+    "aicfg-apply"
+  ],
+  "watch": {
+    "entered_at": "2026-10-28T14:09:45Z",
+    "merged_at": "2026-10-28T16:31:58Z",
+    "post_merge": "pass",
+    "outcome": "merged",
+    "review_rounds": 0
+  }
+}

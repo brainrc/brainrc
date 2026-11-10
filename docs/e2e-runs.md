@@ -4,6 +4,11 @@ Real spec-agent runs on the [sandbox](../examples/sandbox/README.md), graded wit
 `python3 scripts/evals.py check` ([evals](evals.md)). Add a section per session, newest first.
 CONTRIBUTING.md § Releases says when a run is required.
 
+**Worktrees.** Runs now work in `<repo parent>/.brainrc-worktrees/<repo-name>/<slug>`. A
+sandbox that denies writes outside the repo needs `--add-dir <repo parent>/.brainrc-worktrees`.
+The `Worktree:` dispatch line (`cd` in every command) remains as the fallback for harnesses
+whose subagents take no working directory, not the norm.
+
 ## 2026-10-24 · Claude Code · ticket 001, Understand quiz
 
 **Result: 14/14**, including the new `metrics.understanding.asked` ≥ 1 check. Inline mode (size
@@ -47,7 +52,7 @@ task-min in 0.6 wall-min, and the retro reported it.
 
 ## 2026-10-18 · Claude Code · subagent mode, ticket 003
 
-**Setup.** Headless Claude Code (`claude -p`) after `aicfg apply`, so the 9 role agents loaded as
+**Setup.** Headless Claude Code (`claude -p`) after `brainrc apply`, so the 9 role agents loaded as
 named subagents. `acceptEdits` with a Bash allowlist (`git`, `python3`, a few read-only tools);
 worktrees under a `TMPDIR` passed with `--add-dir`. A person answered each gate.
 
@@ -77,7 +82,7 @@ this size save about 15s (40% of implement time); the saving grows with task siz
 
 ## 2026-10-18 · Claude Code · 0.3.29
 
-**Setup.** Headless Claude Code (`claude -p`), with ai-config loaded via `--plugin-dir` (skills,
+**Setup.** Headless Claude Code (`claude -p`), with brainrc loaded via `--plugin-dir` (skills,
 agents, guard hooks) and `rules/*.md` appended to the system prompt. Default permission mode with
 an allowlist (file tools, `python3`, local `git`); everything else was denied. Each sandbox was a
 fresh copy set up per its README, with no remote. A script answered every gate by resuming the

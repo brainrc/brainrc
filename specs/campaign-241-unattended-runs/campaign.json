@@ -1,0 +1,76 @@
+{
+  "ref": "gh:241",
+  "shape": "ordered",
+  "dependency_source": "body",
+  "started_at": "2026-10-30T01:53:17Z",
+  "delivery": "sequential",
+  "gates": {
+    "campaign": {
+      "presented_at": "2026-10-30T01:53:17Z",
+      "approved_at": "2026-10-30T02:46:42Z"
+    }
+  },
+  "members": [
+    {
+      "ref": "gh:255",
+      "order": 1,
+      "depends_on": [],
+      "status": "delivered",
+      "slug": "255-run-worktrees",
+      "branch": "255-run-worktrees",
+      "pr": "https://github.com/brainrc/brainrc/pull/257",
+      "merged": true
+    },
+    {
+      "ref": "gh:242",
+      "order": 2,
+      "depends_on": [
+        "gh:255"
+      ],
+      "status": "delivered",
+      "slug": "242-oneshot",
+      "branch": "242-oneshot",
+      "pr": "https://github.com/brainrc/brainrc/pull/258",
+      "merged": true
+    },
+    {
+      "ref": "gh:243",
+      "order": 3,
+      "depends_on": [],
+      "status": "delivered",
+      "slug": "243-planning-mode",
+      "branch": "243-planning-mode",
+      "pr": "https://github.com/brainrc/brainrc/pull/262",
+      "pr_draft": false
+    },
+    {
+      "ref": "gh:244",
+      "order": 4,
+      "depends_on": [],
+      "status": "waiting",
+      "slug": null,
+      "branch": null,
+      "pr": null
+    },
+    {
+      "ref": "gh:245",
+      "order": 5,
+      "depends_on": [],
+      "status": "waiting",
+      "slug": null,
+      "branch": null,
+      "pr": null
+    },
+    {
+      "ref": "gh:256",
+      "order": 6,
+      "depends_on": [
+        "gh:255"
+      ],
+      "status": "waiting",
+      "slug": null,
+      "branch": null,
+      "pr": null
+    }
+  ]
+}

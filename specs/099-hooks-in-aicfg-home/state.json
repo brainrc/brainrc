@@ -1,0 +1,179 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:99",
+    "id": "99",
+    "title": "Copy hooks into AICFG_HOME",
+    "url": "https://github.com/brainrc/brainrc/issues/99",
+    "pr": "https://github.com/brainrc/brainrc/pull/215"
+  },
+  "slug": "099-hooks-in-aicfg-home",
+  "branch": "099-hooks-in-aicfg-home",
+  "base": "098-hooks-fail-open",
+  "campaign": "specs/campaign-092-safe-writes",
+  "size": "standard",
+  "mode": "fallback",
+  "delivery": "normal",
+  "stage": "watch",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/aicfg.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Installed hooks copied to AICFG_HOME and kept current",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "aicfg/config.py",
+        "aicfg/plan.py",
+        "aicfg/cli.py",
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5"
+      ],
+      "review": "each",
+      "commit": "07fc501",
+      "red": "assertion"
+    },
+    {
+      "id": "T2",
+      "title": "Remove the copy when no harness with hooks is enabled",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "aicfg/plan.py",
+        "aicfg/cli.py",
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC6"
+      ],
+      "review": "each",
+      "after": [
+        "T1"
+      ],
+      "commit": "f936f4b",
+      "red": "assertion"
+    },
+    {
+      "id": "T3",
+      "title": "Install docs: where installed hooks live",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "docs/install.md"
+      ],
+      "criteria": [
+        "AC1"
+      ],
+      "review": "batch",
+      "after": [
+        "T2"
+      ],
+      "commit": "78f56dd"
+    },
+    {
+      "id": "F1",
+      "title": "Correct install.md upgrade note",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "docs/install.md"
+      ],
+      "criteria": [
+        "AC1"
+      ],
+      "review": "batch",
+      "after": [
+        "T3"
+      ],
+      "commit": "214add7"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-25T23:17:57Z",
+    "stage_started_at": {
+      "intake": "2026-10-25T23:17:57Z",
+      "spec": "2026-10-25T23:17:57Z",
+      "plan": "2026-10-25T23:19:49Z",
+      "implement": "2026-10-25T23:25:55Z",
+      "document": "2026-10-25T23:45:41Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-25T23:20:37Z",
+        "approved_at": "2026-10-25T23:23:39Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-25T23:23:39Z",
+        "approved_at": "2026-10-25T23:25:55Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-25T23:46:44Z",
+        "approved_at": "2026-10-25T23:47:35Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 1,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 6,
+      "first_pass": 5
+    },
+    "retries": 1,
+    "interventions": 0,
+    "pr_opened_at": "2026-10-25T23:48:18Z"
+  },
+  "review_context": "shared",
+  "living": [
+    "aicfg-apply"
+  ],
+  "watch": {
+    "checked_at": "2026-10-26T02:48:55Z",
+    "head_sha": "a693950",
+    "ci_failures": [
+      {
+        "check": "validate (gitleaks step)",
+        "sha": "a693950",
+        "cause": "external",
+        "task": null
+      }
+    ],
+    "review_rounds": 0,
+    "threads": {
+      "total": 0,
+      "fixed": 0,
+      "replied": 0,
+      "flagged": 0
+    },
+    "thread_log": []
+  }
+}

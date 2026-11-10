@@ -75,9 +75,7 @@ class GuardOutwardTest(unittest.TestCase):
             "migrate -path db/migrations -database $DATABASE_URL up",
             "goose -dir migrations postgres \"host=db.prod.internal\" up",
             "psql -h db.prod.internal -c 'DROP TABLE users'",
-            # homelab
-            "qm destroy 105",
-            "talosctl -n 10.0.0.2 upgrade --image x",
+            # hosts
             "sudo reboot",
             # git global options before the subcommand
             "git -C ../other push origin main",
@@ -101,7 +99,6 @@ class GuardOutwardTest(unittest.TestCase):
             "gh release create v1.0.0",
             "gh repo delete o/r --yes",
             "argocd cluster rm prod",
-            "pct stop 200",
             "sudo halt",
             "helm rollback api 3",
             "kubectl rollout undo deploy/api",
@@ -151,8 +148,6 @@ class GuardOutwardTest(unittest.TestCase):
             "migrate -path db/migrations -database postgres://dev:dev@localhost:55432/app up",
             "psql -h localhost -p 55432 -c 'DROP TABLE t'",
             "psql -h db.prod.internal -c 'select 1'",
-            "qm list",
-            "talosctl -n 10.0.0.2 dashboard",
             # near misses for the rules above
             "git -C ../other status",
             "git -c core.pager=cat log -3",
@@ -169,7 +164,6 @@ class GuardOutwardTest(unittest.TestCase):
             "gh secret list",
             "gh release view v1.0.0",
             "argocd cluster list",
-            "pct list",
             "helm history api",
             "kubectl rollout history deploy/api",
             "aws s3 ls s3://bucket/site/",
@@ -219,6 +213,56 @@ FAKE_PEM = "-----BEGIN " + "RSA PRIVATE KEY-----\nMIIE..."
 FAKE_AWS_SECRET = "aws_secret_access_key = " + "wJalr" + "Q" * 35
 FAKE_GITLAB = "glpat-" + "x" * 20
 FAKE_JWT = "eyJ" + "a" * 12 + ".eyJ" + "b" * 12 + "." + "c" * 12
+
+
+HOMELAB_HOOKS = HOOKS.parent.parent.parent / "examples" / "pack-homelab" / "overrides" / "claude" / "hooks"
+HOMELAB_RISKY = ["qm destroy 105", "pct stop 200", "talosctl -n 10.0.0.2 upgrade --image x"]
+
+
+def homelab(payload: dict | str) -> str | None:
+    data = payload if isinstance(payload, str) else json.dumps(payload)
+    out = subprocess.run(
+        [sys.executable, str(HOMELAB_HOOKS / "guard_homelab.py")],
+        input=data, capture_output=True, text=True, check=True,
+    ).stdout.strip()
+    return json.loads(out)["hookSpecificOutput"]["permissionDecision"] if out else None
+
+
+class HomelabGuardTest(unittest.TestCase):
+    """The Proxmox and Talos rules live in examples/pack-homelab, not in core."""
+
+    def test_core_no_longer_asks(self):
+        for command in HOMELAB_RISKY:
+            with self.subTest(command=command):
+                self.assertIsNone(bash(command))
+
+    def test_pack_asks_for_destructive(self):
+        for command in HOMELAB_RISKY + [
+            "qm migrate 105 node2",
+            "pct rollback 200 snap1",
+            "talosctl reset -n 10.0.0.2",
+            "sh -c 'qm destroy 105'",
+            "ls;pct shutdown 200",
+        ]:
+            with self.subTest(command=command):
+                self.assertEqual(homelab({"tool_name": "Bash", "tool_input": {"command": command}}), "ask")
+
+    def test_pack_allows_read_only(self):
+        for command in ["qm list", "pct list", "talosctl -n 10.0.0.2 dashboard",
+                        "talosctl -n 10.0.0.2 get members", "echo qm-destroy", "git status"]:
+            with self.subTest(command=command):
+                self.assertIsNone(homelab({"tool_name": "Bash", "tool_input": {"command": command}}))
+
+    def test_pack_ignores_other_tools_and_bad_payloads(self):
+        self.assertIsNone(homelab({"tool_name": "Read", "tool_input": {"command": "qm destroy 105"}}))
+        self.assertIsNone(homelab("not json"))
+        self.assertIsNone(homelab({"tool_name": "Bash"}))
+
+    def test_pack_fragment_runs_hook_from_its_hooks_dir(self):
+        fragment = json.loads((HOMELAB_HOOKS.parent / "settings.fragment.json").read_text())
+        commands = [h["command"] for e in fragment["hooks"]["PreToolUse"] for h in e["hooks"]]
+        self.assertEqual(len(commands), 1)
+        self.assertIn("{{hooks_dir}}/guard_homelab.py", commands[0])
 
 
 def write(path: str, content: str, tool: str = "Write") -> str | None:
@@ -403,3 +447,90 @@ class CursorGuardTest(unittest.TestCase):
             self.assertEqual(reply["permission"], "deny")
         finally:
             shutil.rmtree(link_dir)
+
+
+REPO = HOOKS.parent.parent.parent
+sys.path.insert(0, str(REPO))
+import brainrc  # noqa: E402  (the package at the repo root)
+
+RISKY = {"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": "git push origin main"}}
+SAFE = {"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": "ls"}}
+CURSOR_RISKY = {"hook_event_name": "beforeShellExecution", "command": "git push origin main", "cwd": "/tmp/project"}
+
+
+def fragment_commands(harness: str, hooks_dir: Path) -> list[str]:
+    """Hook commands as apply writes them, pointing at hooks_dir."""
+    rendered = brainrc.render_fragment(REPO / "overrides" / harness / "settings.fragment.json", str(hooks_dir))
+    return [h["command"] for groups in rendered["hooks"].values() for g in groups
+            for h in [g, *g.get("hooks", [])] if "command" in h]
+
+
+def run_command(command: str, payload: dict) -> subprocess.CompletedProcess:
+    """Run a hook command through the shell, as the harness does."""
+    return subprocess.run(["sh", "-c", command], input=json.dumps(payload), capture_output=True, text=True)
+
+
+class FailOpenTest(unittest.TestCase):
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp)
+
+    def hooks_dir(self, harness: str) -> Path:
+        """A link to the real hooks, as apply makes it."""
+        d = self.tmp / harness
+        d.symlink_to(REPO / "overrides" / harness / "hooks")
+        return d
+
+    def remove_target(self, link: Path) -> None:
+        """The checkout moved or the package went away: the link now dangles."""
+        link.unlink()
+        link.symlink_to(self.tmp / "gone")
+
+    def test_claude_commands_behave_like_the_guards_when_present(self):
+        d = self.hooks_dir("claude")
+        commands = fragment_commands("claude", d)
+        self.assertEqual(len(commands), 2)
+        for command, script in zip(commands, ["guard_outward.py", "guard_secrets.py"]):
+            for payload in (RISKY, SAFE):
+                direct = subprocess.run([sys.executable, str(d / script)], input=json.dumps(payload),
+                                        capture_output=True, text=True)
+                via = run_command(command, payload)
+                self.assertEqual((via.returncode, via.stdout), (direct.returncode, direct.stdout), command)
+        decision = json.loads(run_command(commands[0], RISKY).stdout)["hookSpecificOutput"]["permissionDecision"]
+        self.assertEqual(decision, "ask")
+
+    def test_claude_commands_pass_when_the_hooks_are_gone(self):
+        d = self.hooks_dir("claude")
+        commands = fragment_commands("claude", d)
+        self.remove_target(d)
+        for command in commands:
+            result = run_command(command, RISKY)
+            self.assertEqual((result.returncode, result.stdout), (0, ""), command)
+
+    def test_cursor_commands_behave_like_the_guard_when_present(self):
+        d = self.hooks_dir("cursor")
+        for command in fragment_commands("cursor", d):
+            result = run_command(command, CURSOR_RISKY)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(json.loads(result.stdout)["permission"], "deny")
+
+    def test_cursor_commands_allow_when_the_hooks_are_gone(self):
+        d = self.hooks_dir("cursor")
+        commands = fragment_commands("cursor", d)
+        self.remove_target(d)
+        self.assertEqual(len(commands), 2)
+        for command in commands:
+            result = run_command(command, CURSOR_RISKY)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(json.loads(result.stdout), {"permission": "allow"})
+
+    def test_apply_replaces_old_form_hook_groups(self):
+        old_command = 'python3 "$HOME/.claude/hooks/ai-config/guard_outward.py"'
+        current = {"hooks": {"PreToolUse": [
+            {"matcher": "Bash|mcp__.*", "hooks": [{"type": "command", "command": old_command, "timeout": 5}]}]}}
+        wanted = brainrc.render_fragment(REPO / "overrides/claude/settings.fragment.json", "~/.claude/hooks/ai-config")
+        merged = brainrc.merge_settings(current, wanted)
+        self.assertEqual(merged["hooks"], wanted["hooks"])
+        self.assertNotIn(old_command, json.dumps(merged))

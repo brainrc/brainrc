@@ -1,7 +1,8 @@
 # Canonical formats
 
 Every source uses the most widely adopted format so most harnesses consume it
-as-is. Adapters (see [roadmap](roadmap.md)) translate only where needed.
+as-is. Adapters translate only where a harness needs another shape (OpenCode agents, Cursor
+and OpenCode guard hooks).
 
 ## Skills: `skills/<name>/SKILL.md`
 
@@ -27,7 +28,7 @@ Claude Code subagent format.
 name: my-agent
 description: When to delegate to this agent.
 tools: Read, Grep, Glob   # optional; omit to inherit all tools
-model: sonnet             # optional: haiku | sonnet | opus | inherit
+model: sonnet             # optional: haiku | sonnet | opus | inherit, or a full ID (claude-sonnet-5-5)
 ---
 System prompt...
 ```
@@ -72,8 +73,8 @@ url = "https://docs.example.com/mcp"          # HTTP instead of `command`
 `~/.codex/config.toml` (a marked `[mcp_servers]` block), and `~/.config/opencode/opencode.json`
 (`mcp`). `env_from` becomes a reference the harness expands when it starts the server
 (`${NAME}`, `env_vars`, `{env:NAME}`), so no value is written anywhere; `validate` rejects an
-`env` table. Only servers ai-config wrote are replaced or removed (tracked in
-`$AICFG_HOME/mcp-owned.json`). A server you defined yourself under the same name is reported as a
+`env` table. Only servers brainrc wrote are replaced or removed (tracked in
+`$BRAINRC_HOME/mcp-owned.json`). A server you defined yourself under the same name is reported as a
 conflict and left alone. Claude Code rewrites `~/.claude.json` while it runs, so apply MCP changes
 with it closed. Cursor and Antigravity aren't supported yet.
 
@@ -93,18 +94,18 @@ machine. Format and extension points: [packs.md](packs.md).
 | Guard hooks | ✅ | ❌ rules only | ✅ plugin, deny only | ❌ | ✅ shell and reads, deny only |
 | MCP | ✅ `~/.claude.json` | ✅ `config.toml` | ✅ `opencode.json` | ⏳ | ⏳ |
 
-Cursor has no user rules file: `aicfg` links skills and merges guard hooks into
+Cursor has no user rules file: `brainrc` links skills and merges guard hooks into
 `~/.cursor/hooks.json`, and rules arrive only through the plugin (`.cursor-plugin/`, see the
 [install](install.md#cursor)), which loads each `rules/*.md` because it
 carries `alwaysApply: true`.
 
 OpenCode can't read Claude's agent frontmatter (a `tools: Read, Grep` string makes its whole config
-invalid), so `apply` links copies rendered to `$AICFG_HOME/opencode/agents/`
+invalid), so `apply` links copies rendered to `$BRAINRC_HOME/opencode/agents/`
 (`agents_format = "opencode"` in `harnesses.toml`). Each copy has `mode: subagent` and a `deny` for
 every tool the agent lacks; tools it has follow your own OpenCode permissions. Lossy: `model` is
 dropped (the subagent uses its caller's model) and `mcp__*` tools aren't mapped.
 
 Antigravity CLI paths (`~/.gemini/config/`) come from its changelog and user reports, not a live
-run. It can also install ai-config as a plugin ([install](install.md#antigravity-cli)).
+run. It can also install brainrc as a plugin ([install](install.md#antigravity-cli)).
 
 Harness paths change often. If one moves, update `harnesses.toml`.

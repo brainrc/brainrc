@@ -1,0 +1,83 @@
+{
+  "ref": "gh:199",
+  "shape": "ordered",
+  "dependency_source": "none",
+  "started_at": "2026-10-27T18:43:34Z",
+  "delivery": "sequential",
+  "auto": true,
+  "members": [
+    {
+      "ref": "gh:204",
+      "order": 1,
+      "depends_on": [],
+      "status": "delivered",
+      "slug": "204-point-urls-brainrc",
+      "branch": "204-point-urls-brainrc",
+      "pr": "https://github.com/brainrc/brainrc/pull/229",
+      "base": "main",
+      "merged": true
+    },
+    {
+      "ref": "gh:205",
+      "order": 2,
+      "depends_on": [],
+      "status": "delivered",
+      "slug": "205-brainrc-package-command",
+      "branch": "205-brainrc-package-command",
+      "pr": "https://github.com/brainrc/brainrc/pull/230",
+      "base": "main",
+      "merged": true
+    },
+    {
+      "ref": "gh:206",
+      "order": 3,
+      "depends_on": [],
+      "status": "delivered",
+      "slug": "206-brainrc-settings-home",
+      "branch": "206-brainrc-settings-home",
+      "pr": "https://github.com/brainrc/brainrc/pull/232",
+      "base": "main",
+      "merged": true
+    },
+    {
+      "ref": "gh:207",
+      "order": 4,
+      "depends_on": [],
+      "status": "delivered",
+      "slug": "207-brainrc-hooks-mcp-backups",
+      "branch": "207-brainrc-hooks-mcp-backups",
+      "pr": "https://github.com/brainrc/brainrc/pull/233",
+      "base": "main",
+      "merged": true
+    },
+    {
+      "ref": "gh:208",
+      "order": 5,
+      "depends_on": [],
+      "status": "delivered",
+      "slug": "208-brainrc-plugin-namespace",
+      "branch": "208-brainrc-plugin-namespace",
+      "pr": "https://github.com/brainrc/brainrc/pull/234",
+      "base": "main",
+      "merged": true
+    },
+    {
+      "ref": "gh:209",
+      "order": 6,
+      "depends_on": [],
+      "status": "delivered",
+      "slug": "209-brainrc-docs-wording",
+      "branch": "209-brainrc-docs-wording",
+      "pr": "https://github.com/brainrc/brainrc/pull/235",
+      "base": "main",
+      "merged": true
+    }
+  ],
+  "gates": {
+    "campaign": {
+      "presented_at": "2026-10-27T18:45:03Z",
+      "approved_at": "2026-10-27T18:45:03Z"
+    }
+  },
+  "completed_at": "2026-10-28T20:16:04Z"
+}

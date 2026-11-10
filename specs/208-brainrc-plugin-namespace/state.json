@@ -1,0 +1,211 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:208",
+    "id": "208",
+    "title": "Rename: plugin namespace brainrc@brainrc",
+    "url": "https://github.com/brainrc/brainrc/issues/208",
+    "pr": "https://github.com/brainrc/brainrc/pull/234"
+  },
+  "slug": "208-brainrc-plugin-namespace",
+  "branch": "208-brainrc-plugin-namespace",
+  "base": "main",
+  "size": "standard",
+  "mode": "subagent",
+  "delivery": "normal",
+  "auto": true,
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/brainrc.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Rename the plugin and marketplace; regenerate manifests with `python3 scripts/brainrc.py plugin`",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "brainrc/plugin.py",
+        ".claude-plugin/plugin.json",
+        ".claude-plugin/marketplace.json",
+        ".cursor-plugin/plugin.json",
+        "plugin.json",
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC12"
+      ],
+      "review": "batch",
+      "after": [],
+      "wave": 1,
+      "started_at": "2026-10-28T16:44:54Z",
+      "commit": "317abd6",
+      "red": "assertion",
+      "finished_at": "2026-10-28T16:47:58Z"
+    },
+    {
+      "id": "T2",
+      "title": "Doctor warns about an old `ai-config` plugin (Claude Code, Cursor), read-only",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 2,
+      "files": [
+        "brainrc/doctor.py",
+        "tests/test_doctor_plugin.py"
+      ],
+      "criteria": [
+        "AC7",
+        "AC8",
+        "AC9",
+        "AC10",
+        "AC11",
+        "AC12"
+      ],
+      "review": "each",
+      "after": [],
+      "wave": 1,
+      "worktree": null,
+      "started_at": "2026-10-28T16:44:54Z",
+      "finished_at": "2026-10-28T16:47:48Z",
+      "commit": "955086e",
+      "red": "assertion"
+    },
+    {
+      "id": "T3",
+      "title": "Docs and spec-agent use `brainrc` names; move-from note; troubleshooting points at the doctor WARN",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "README.md",
+        "docs/install.md",
+        "docs/troubleshooting.md",
+        "docs/spec-agent.md",
+        "docs/harness-packages.md",
+        "skills/spec-agent/SKILL.md",
+        "tests/test_plugin_docs.py"
+      ],
+      "criteria": [
+        "AC4",
+        "AC5",
+        "AC6",
+        "AC12"
+      ],
+      "review": "batch",
+      "after": [
+        "T1",
+        "T2"
+      ],
+      "commit": "90274d5",
+      "red": "assertion"
+    },
+    {
+      "id": "T4",
+      "title": "Changelog fragment: `bump: patch` (owner's choice at the Plan gate), **[pack contract]** bullet (rename, reinstall steps, pack `dependencies` name, doctor WARN) unless the owner picks patch at the Plan gate",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "changelog.d/208-brainrc-plugin-namespace.md"
+      ],
+      "criteria": [
+        "AC12"
+      ],
+      "review": "batch",
+      "after": [
+        "T3"
+      ],
+      "commit": "7ecefe4"
+    },
+    {
+      "id": "F1",
+      "title": "Say which harness shows the brainrc: skill prefix",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "changelog.d/208-brainrc-plugin-namespace.md"
+      ],
+      "criteria": [
+        "AC12"
+      ],
+      "review": "batch",
+      "commit": "8417140"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-28T16:39:46Z",
+    "stage_started_at": {
+      "intake": "2026-10-28T16:39:46Z",
+      "spec": "2026-10-28T16:39:46Z",
+      "plan": "2026-10-28T16:42:34Z",
+      "implement": "2026-10-28T16:44:44Z",
+      "verify": "2026-10-28T17:03:51Z",
+      "document": "2026-10-28T17:03:51Z",
+      "deliver": "2026-10-28T17:03:51Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-28T16:42:34Z",
+        "approved_at": "2026-10-28T16:42:34Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-28T16:44:09Z",
+        "approved_at": "2026-10-28T16:44:44Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-28T17:03:51Z",
+        "approved_at": "2026-10-28T17:03:51Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 3,
+      "first_pass": 1
+    },
+    "retries": 1,
+    "interventions": 1,
+    "waves": {
+      "count": 1,
+      "max_width": 2,
+      "task_minutes": 6,
+      "wall_minutes": 3
+    },
+    "pr_opened_at": "2026-10-28T17:05:50Z",
+    "time_to_merge": 0
+  },
+  "living": [
+    "plugin-packaging"
+  ],
+  "watch": {
+    "entered_at": "2026-10-28T17:05:50Z",
+    "merged_at": "2026-10-28T17:05:54Z",
+    "post_merge": "pass",
+    "outcome": "merged",
+    "review_rounds": 0
+  }
+}

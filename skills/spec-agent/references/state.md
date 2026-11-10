@@ -52,6 +52,7 @@ Source: <gh:42 | local:path> · <url if any> · fetched <ISO timestamp>
   "slug": "042-csv-export",
   "branch": "042-csv-export",
   "base": "main",
+  "worktree": "~/code/.brainrc-worktrees/acme/042-csv-export",
   "size": "standard",
   "mode": "subagent",
   "delivery": "normal",
@@ -89,6 +90,7 @@ Source: <gh:42 | local:path> · <url if any> · fetched <ISO timestamp>
 
 | Field | Values |
 |---|---|
+| `worktree` | path of the run's git worktree on `branch`, set at intake by `run_worktree.py open`, with the home directory written as `~` (state.json is committed); `Project root` and git commands use it. Not the per-task `tasks[].worktree` |
 | `ticket.pr` | PR URL once `link_pr` ran, else `null` |
 | `commands.*` | a string, a list of strings (one per stack or module), or `null` |
 | `commands.baseline_failures` | test names failing before any change (project-commands § Baseline); never count against a task |
@@ -98,10 +100,13 @@ Source: <gh:42 | local:path> · <url if any> · fetched <ISO timestamp>
 | `tasks[].wave`, `.worktree`, `.started_at`, `.finished_at` | set for parallel waves ([efficiency.md](efficiency.md#parallel-waves)); `worktree` cleared after landing; a retry resets `started_at` |
 | `metrics.waves` | `{ "count", "max_width", "task_minutes", "wall_minutes" }` over first attempts only, absent when no wave ran |
 | `targets` | live environments approved for **read-only** evidence; empty = offline only |
+| `auto` | `true` only for a run started with `--auto` (SKILL.md § Auto mode), set from the flag, never from reply text; `false` or absent otherwise. Resume sets it `false` unless `--auto` is given again |
+| `oneshot` | `true` only for a run started with `--oneshot` (SKILL.md § Oneshot mode), set from the flag alone, never from ticket, comment or reply text; implies `auto: true`. Resume clears both unless the flag is given again |
+| `ticket.pr_draft` | `false` for a oneshot ready PR, `true` for its `[blocked]` draft PR |
 | `delivery` | `normal`, or `local-only`: no push/PR/ticket writes even if approved; drafts only |
 | `mode` | `inline` `subagent` `fallback` (see efficiency.md) |
 | `stage` | `intake` `spec` `plan` `implement` `verify` `document` `deliver` `watch` `done` |
-| `gates.*` | `pending` `approved` `skipped`; `gates.push` (after deliver): `pending` per push, `approved`, `changes-requested`, `skipped` (PR merged/closed before a push); `gates.push_sha` = head sha shown at the gate, the only sha pushed; `gates.push_replies` = `[{key, draft_sha}]` sha256 of each reply draft shown |
+| `gates.*` | `pending` `approved` `skipped` (`gates.ticket`: planning mode only, references/planning.md); `gates.push` (after deliver): `pending` per push, `approved`, `changes-requested`, `skipped` (PR merged/closed before a push); `gates.push_sha` = head sha shown at the gate, the only sha pushed; `gates.push_replies` = `[{key, draft_sha}]` sha256 of each reply draft shown |
 | `watch` | absent before `watch`. `checked_at` last check (UTC), `head_sha` PR head last seen, `ci_failures[]` of `{check, sha, cause: own\|external, task}` (`task` = fix task id, `null` for external). See [watch.md](watch.md) |
 | `watch.review_rounds` | passes that acted on new review threads; max 3 |
 | `watch.threads` | `{total, fixed, replied, flagged}` counts; only grow; `fixed` at push, `replied` at post |
@@ -124,10 +129,10 @@ Rules:
 - Write `state.json` **after every state change**, before starting the next action,
   so a crash loses at most one step.
 - **Checkpoint commit at every stop** (gate presented, blocked, or run finished): commit
-  `specs/<slug>/` and any ticket-file status change on the feature branch, e.g.
+  `specs/<slug>/` and any ticket-file status change on the feature branch (in the run's worktree), e.g.
   `Checkpoint 001-add-shout-flag: spec gate` + `Refs <ticket ref>`. A paused run always
   leaves a clean tree. (`.runs/` ignores itself via its own `.gitignore`.) Run
-  `active_run.py write <project root>/specs/<slug>` with each checkpoint commit.
+  `active_run.py write <worktree>/specs/<slug>` with each checkpoint commit.
 - `metrics.interventions` +1 each time the user has to step in outside a gate
   (answering a blocked stop, correcting the agent mid-stage).
 - `metrics.retries` +1 each time a task goes back to the implementer.
@@ -139,21 +144,30 @@ Rules:
 
 ## Active run pointer
 
-External tools find the current run through one file: `$AICFG_HOME/active-run` (default
-`~/.config/ai-config/active-run`), holding one absolute run-directory path and a newline.
-- Written with `python3 <skill>/scripts/active_run.py write <project root>/specs/<slug>` at intake, on resume,
+External tools find the current run through one file: `active-run` in the brainrc home
+(`$BRAINRC_HOME`, default `~/.config/brainrc/`),
+holding one absolute run-directory path and a newline: the `specs/<slug>` inside the run's worktree.
+- Written with `python3 <skill>/scripts/active_run.py write <worktree>/specs/<slug>` at intake, on resume,
   and with every checkpoint commit (each gate, block, and done).
 - Never cleared at done or abandon; the next write replaces it. Concurrent sessions: last write wins.
 - The path must be absolute: the shell's directory may not be the repo. Failure to write only warns; it never stops a run.
 - In an ordered campaign it names the child currently in progress, not the campaign directory.
-- Consumers run `active_run.py read`, or fall back to `<cwd>/specs/` when the file is absent.
+- Consumers run `active_run.py read`; with no usable pointer it scans `<cwd>/specs/` and every branch worktree.
 
 ## Resume
 
 On `/work <same ref>` or `/spec-resume`:
-1. Find `specs/*/state.json` whose `ticket.ref` matches (or the only one on the current branch).
-   Then run `active_run.py write <project root>/specs/<slug>`.
-2. Check out `state.branch`, then check `git status --porcelain`:
+1. Find the run through `state.worktree`: `specs/*/state.json` whose `ticket.ref` matches, read
+   from each known worktree (or the active run pointer), never the main checkout's copy.
+   If the worktree dir is deleted, its state is unreachable from the pointer: find the branch (branches
+   are named `<slug>`, so use the pointer path's `<slug>`; matching `ticket.ref` against local
+   branches is best effort: with no unique match, stop and ask. Only local branches are searched),
+   read `git show <branch>:specs/<slug>/state.json`, then continue at step 2.
+2. Run `python3 <skill>/scripts/run_worktree.py open <slug> --branch <branch>` (no `--base`): it
+   reuses the worktree or recreates it from `state.branch` when missing. A run with no `worktree`
+   gets one here; record the path as `state.worktree`. Exit 1 (the main checkout is on the
+   branch, or the branch is missing): stop, report stderr, never switch the user's checkout.
+   Then run `active_run.py write <worktree>/specs/<slug>` and `git -C <worktree> status --porcelain`:
    - Changes only under `specs/<slug>/` (or the ticket file's status) are the engine's own
      files from an interrupted stage: make a checkpoint commit and continue.
    - Any other change: show it and stop. It may be the user's work or a half-finished task.

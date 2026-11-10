@@ -1,4 +1,4 @@
-// ai-config guard plugin for OpenCode: runs the same Python guards as Claude Code's hooks
+// brainrc guard plugin for OpenCode: runs the same Python guards as Claude Code's hooks
 // (overrides/claude/hooks). OpenCode can't prompt from a plugin, so an "ask" blocks the call
 // too; the model gets the reason and should ask the user to run the command themselves.
 import { spawnSync } from "node:child_process";
@@ -6,7 +6,7 @@ import { realpathSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-// aicfg links this file; resolve the link so the guards are found in a checkout or a package.
+// brainrc links this file; resolve the link so the guards are found in a checkout or a package.
 const HOOKS = join(dirname(realpathSync(fileURLToPath(import.meta.url))), "..", "claude", "hooks");
 const GUARDS = ["guard_outward.py", "guard_secrets.py"];
 

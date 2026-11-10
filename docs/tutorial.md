@@ -4,7 +4,7 @@ In this tutorial you build a pack called `myteam` with one domain skill for Prot
 install it into your AI tools, and check that spec-agent will load it for `.proto` files. It
 takes about 15 minutes. You need Python 3.11+ and git.
 
-A pack is a separate repo layered on top of ai-config, so you never edit core. If you haven't
+A pack is a separate repo layered on top of brainrc, so you never edit core. If you haven't
 yet, skim the [architecture overview](architecture.md) first.
 
 Run every command from the core checkout unless a step says otherwise.
@@ -12,9 +12,9 @@ Run every command from the core checkout unless a step says otherwise.
 ## 1. Clone core and check it
 
 ```bash
-git clone <this-repo> ~/ai-config
-cd ~/ai-config
-python3 scripts/aicfg.py validate
+git clone <this-repo> ~/brainrc
+cd ~/brainrc
+python3 scripts/brainrc.py validate
 ```
 
 You should see a line starting with `OK:` that counts skills, agents, and commands.
@@ -30,7 +30,7 @@ mkdir -p ~/src/myteam-ai-pack/skills/myteam-protobuf
 cat > ~/src/myteam-ai-pack/pack.toml <<'EOF'
 name = "myteam"
 prefix = "myteam-"
-requires_core = ">=0.3, <0.4"
+requires_core = ">=0.4, <0.6"
 
 [[extensions.domains]]
 files = "`*.proto`, `buf.yaml`"
@@ -74,7 +74,7 @@ EOF
 ## 4. Validate the pack
 
 ```bash
-python3 scripts/aicfg.py validate --pack ~/src/myteam-ai-pack
+python3 scripts/brainrc.py validate --pack ~/src/myteam-ai-pack
 ```
 
 You should see `OK:` with `(packs: myteam)` at the end. A common mistake is a skill without
@@ -91,9 +91,9 @@ cat > packs.local.toml <<'EOF'
 [myteam]
 path = "~/src/myteam-ai-pack"
 EOF
-python3 scripts/aicfg.py status
-python3 scripts/aicfg.py apply
-python3 scripts/aicfg.py status | grep 'Everything in sync.'
+python3 scripts/brainrc.py status
+python3 scripts/brainrc.py apply
+python3 scripts/brainrc.py status | grep 'Everything in sync.'
 ```
 
 The first `status` lists `CREATE` lines, including one for `myteam-protobuf` in each
@@ -103,8 +103,8 @@ harness's skills directory. After `apply`, `status` prints `Everything in sync.`
 
 ```bash
 ls ~/.claude/skills/myteam-protobuf
-grep myteam ~/.config/ai-config/extensions.md
-python3 scripts/aicfg.py tokens | grep myteam
+grep myteam ~/.config/brainrc/extensions.md
+python3 scripts/brainrc.py tokens | grep myteam
 ```
 
 You should see `SKILL.md`, a Domains row for `` `*.proto`, `buf.yaml` `` naming
@@ -124,7 +124,7 @@ Then validate it in the pack's own CI on every push, against core's latest `main
 
 ```yaml
 - run: git clone --depth 1 <this-repo> core
-- run: python3 core/scripts/aicfg.py validate --pack .
+- run: python3 core/scripts/brainrc.py validate --pack .
 ```
 
 ## Next steps

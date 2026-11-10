@@ -25,3 +25,7 @@ _Last changed by 081-watch-post-merge._
 ### Minimum value state check
 The eval harness SHALL let a `state` check require a numeric field to be at least a given value, used to require `metrics.understanding.asked` ≥ 1 on sandbox cases 001 and 003. (AC10)
 _Last changed by 069-deliver-owner-quiz._
+
+### Plan evals
+Sandbox evals and unit tests SHALL grade proven, unprovable, dry-run, oneshot and injection plan cases offline. (AC14)
+_Last changed by 243-planning-mode._

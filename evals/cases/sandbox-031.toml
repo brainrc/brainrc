@@ -1,0 +1,32 @@
+# Ticket 035 (oneshot resume): run `/work local:tickets/035-oneshot-resume.md --oneshot`, interrupt it once the
+# Spec gate is auto-approved, then run `/work local:tickets/035-oneshot-resume.md` with no flag.
+# Resume clears `oneshot` and `auto`, and the Plan gate is not auto-approved.
+ticket_ref = "local:tickets/035-oneshot-resume.md"
+
+[[check]]
+kind = "file"
+path = "{spec}/log.md"
+matches = "(?i)spec gate\\s*.\\s*auto-approved"
+
+[[check]]
+kind = "file"
+path = "{spec}/state.json"
+absent = "\"oneshot\":\\s*true"
+
+[[check]]
+kind = "file"
+path = "{spec}/state.json"
+absent = "\"auto\":\\s*true"
+
+[[check]]
+kind = "state"
+field = "gates.plan"
+equals = "pending"
+
+[[check]]
+kind = "file"
+path = "{spec}/log.md"
+absent = "(?i)plan.*auto-approved"
+
+[[check]]
+kind = "main_untouched"

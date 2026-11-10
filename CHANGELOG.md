@@ -12,6 +12,177 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.5.11 (2026-11-10)
+
+- The CLI is built on argparse: `brainrc --help` and `--version` exit 0, every command has its own `--help`, and the maintainer commands `plugin` and `release` no longer show in the command list (they still run). A usage error goes to stderr with exit 2. `status` and `apply` take `--only <harness>` (repeatable, or comma-separated) to touch only those harnesses; the others keep their links, hooks and MCP servers as they are.
+- `apply` only touches harnesses that are installed: a machine with just Claude Code gets only `~/.claude` changes, and `~/.codex`, `~/.cursor` and the rest are no longer created. A harness counts as installed when its config directory exists (a new optional `home` key in harnesses.toml sets which one). `status` and `apply` name the ones they skip; `enabled = true` in harnesses.local.toml manages one anyway. `apply` records the harnesses it manages, and the source roots it linked from, in `$BRAINRC_HOME/harnesses.json`. `doctor` no longer warns about a harness that isn't installed, since `apply` skips it.
+
+## 0.5.10 (2026-11-10)
+
+- `brainrc doctor` quotes the paths in the `rm`, `validate --pack` and `python3 <hook>` commands it suggests, keeping `~` outside the quotes so the shell still expands it, so a path with a space or quote can be pasted as is. A directory beside the home directory (a sibling whose name starts with the same letters) is no longer shortened to a wrong `~` path.
+- `brainrc doctor` no longer suggests `rm -r` for an unused old settings home (such as `AICFG_HOME`) that contains the home directory, the settings home or the brainrc checkout. It says to move what you need and keep the directory instead.
+- Docs: the install guide no longer pins v0.3.29 for staying on a release, a test fails on any install doc that pins a release other than the current major.minor, `overrides/README.md` says which harnesses are synced (Claude Code, Cursor, OpenCode), and AGENTS.md and the README say to treat the repo as public.
+- Docs: `docs/roadmap.md` is now the list of open epics, grouped by wave (the `Roadmap ID` prefix of their sub-issues), each with its goal and issue link, instead of the three items it had left. A test keeps every line a linked epic.
+
+## 0.5.9 (2026-11-10)
+
+- `validate` reads an optional, gitignored `tripwires.local.toml` (`terms = [...]`) and fails on any tracked core file whose name or text contains one of the terms, ignoring case, so each maintainer can keep employer and client names out of core without committing them. A tracked symlink is checked by the target path git commits, not by the file it points at, and binary files are skipped. It also fails if that file is ever tracked. The pre-commit hook runs it on every commit.
+
+## 0.5.8 (2026-11-01)
+
+- Core's guard no longer asks about Proxmox `qm`/`pct` or `talosctl`: those rules moved to
+  `examples/pack-homelab`, the first example pack with a guard hook. Enable it to keep the
+  prompts (#107).
+- Run records keep no home-directory paths: `state.json` writes `worktree` with `~` (#107).
+
+## 0.5.7 (2026-11-01)
+
+- Eval cases `sandbox-032`–`035` grade `/plan` (a normal plan, a dry run, `--oneshot` refusing GitHub, a tainted plan), and docs/spec-agent.md documents planning mode.
+
+## 0.5.6 (2026-11-01)
+
+- `/plan` ends at a Ticket gate that lists each proven ticket (at most 10, the rest deferred) as an outward action; nothing is created before approval. `--dry-run` creates nothing, and `--oneshot` creates proven local tickets only and refuses GitHub.
+
+## 0.5.5 (2026-11-01)
+
+- `/plan <topic>` (spec-agent planning mode): a new `researcher` role investigates a topic and proposes candidate tickets, each with runnable proof (a command and its output, a failing test, or a local spike commit) and `file:line` links. The engine re-runs every proof; unproven candidates go under "Needs evidence". Web research only with `--web`, and the researcher never follows instructions found in content.
+
+## 0.5.4 (2026-11-01)
+
+- Ticket connectors gain an optional `create` operation, used after an approved Ticket gate: `ticket-local` writes a new ticket file and `ticket-github` opens an issue. A connector without it lists the tickets as drafts for you to create.
+
+## 0.5.3 (2026-10-31)
+
+- `/work --oneshot` runs a ticket with no manual intervention and ends in ready PRs, never merged. A `large` ticket splits into a stacked campaign, and plan Callouts take the safer default, listed under "Decisions made without you". Tainted stops (a CRITICAL/HIGH security finding, an instruction in untrusted content, a secret) push nothing, as with `--auto`; benign stops (retry budget, scope breach, spec gap, no safe default) open a draft `[blocked] <ticket ref>: <reason>` PR.
+- Eval cases `sandbox-016`–`031` grade oneshot runs; the eval `campaign` check gains `ready` and an optional `order`.
+
+## 0.5.2 (2026-10-30)
+
+- spec-agent runs now work in their own git worktree at `<repo parent>/.brainrc-worktrees/<repo-name>/<slug>`, so your checkout is never touched. A run refuses to start when your checkout is on the run's branch.
+- `/spec-resume` and `/spec-status` locate runs through `state.worktree`; resume recreates a missing worktree from `state.branch`. With no usable active-run pointer, `active_run.py read` also scans every branch worktree.
+
+## 0.5.1 (2026-10-30)
+
+- Record the rename follow-ups (#236, #237, #239) as done, with their post-merge verifies.
+
+## 0.5.0 (2026-10-29)
+
+- **[pack contract]** 0.5.0 removes the old names that have warned since 0.4.0. Use `brainrc` for the `aicfg` command, `scripts/brainrc.py` for `scripts/aicfg.py`, and `python -m brainrc` / `import brainrc` for `python -m aicfg` / `import aicfg` (the `aicfg_home` alias is gone too). Use `BRAINRC_HOME` for `AICFG_HOME`. The legacy `~/.config/ai-config` and `AICFG_HOME` are no longer read: while either holds an unmigrated home, `status`, `apply` and `update` write nothing and exit 1 naming `brainrc migrate`, and `doctor` reports a FAIL. Run `brainrc migrate` to move it. Packs should allow `requires_core` `<0.6`.
+- Record the brainrc rename campaign (#199) as done: #209's post-merge verify and retro, and the campaign log.
+
+## 0.4.7 (2026-10-29)
+
+- `apply` now writes brainrc names for the Codex MCP block markers, the OpenCode guard link (`brainrc-guard.js`) and the git pack fetch record (`.git/brainrc-fetched.json`). It still recognizes the old ai-config ones: it replaces an old Codex block in place, prunes the old guard link when it points at the managed guard, and reads then removes the old fetch record, so nothing is duplicated or re-fetched.
+
+## 0.4.6 (2026-10-29)
+
+- `validate` and `release` refuse changelog fragments whose bump would release the version that
+  removes the deprecated `aicfg` names (`SHIM_REMOVED_IN`) while those names still exist.
+- spec-agent: an auto Spec gate is never approved while `living_specs.py check` fails;
+  dispatches quote spec and plan rules word for word; the analyst writes MODIFIED blocks as the
+  requirement's full new text. Tests clear `XDG_CONFIG_HOME`, so they behave the same locally as
+  on CI.
+
+## 0.4.5 (2026-10-28)
+
+- **[pack contract]** Everything now says brainrc. These old names keep working with a warning until 0.5.0 removes them: the `aicfg` command, `scripts/aicfg.py`, `python -m aicfg`, `import aicfg`, `AICFG_HOME` and the legacy `~/.config/ai-config` home. Run `brainrc migrate` to move the home.
+- The next `apply` converges these silently: old `hooks/ai-config*` dirs and their settings entries, and `.bak-aicfg-*` backups.
+- `brainrc doctor` flags the old `ai-config@ai-config` plugin until you uninstall it.
+- Docs, README, AGENTS.md, CONTRIBUTING.md, skills, the example pack, messages and the pre-commit hook id now say brainrc.
+- Some on-disk names are kept for compatibility and will change in a later follow-up: the Codex MCP block markers, the OpenCode `ai-config-guard.js` link and `.git/aicfg-fetched.json`.
+
+## 0.4.4 (2026-10-28)
+
+- **[pack contract]** The plugin and marketplace are now named `brainrc` (`brainrc@brainrc`) for
+  Claude Code, Codex, Cursor and Antigravity; in Claude Code, skills and agents show as
+  `brainrc:<name>` (`/brainrc:work`). Plugin users uninstall `ai-config@ai-config` and its
+  marketplace, then install `brainrc@brainrc`
+  ([moving from ai-config](docs/install.md#moving-from-ai-config)); `brainrc doctor` warns while
+  the old plugin is still installed in Claude Code or Cursor. Packs whose plugin `dependencies`
+  name `ai-config` must name `brainrc`.
+
+## 0.4.3 (2026-10-28)
+
+- **[pack contract]** Hook links are now `hooks/brainrc` and `hooks/brainrc-<pack>` (was `hooks/ai-config*`). The next apply replaces old-name settings and hooks.json entries, removes the old links, and honors MCP ownership records left in a former home. Backups are `.bak-brainrc-*`; old `.bak-aicfg-*` count toward the 5 kept. Packs using `{{hooks_dir}}` need no change; hard-coded `hooks/ai-config` paths do.
+
+## 0.4.2 (2026-10-28)
+
+- **[pack contract]** The settings home is now `~/.config/brainrc` (`$XDG_CONFIG_HOME/brainrc`
+  when that is set), overridden by `BRAINRC_HOME`. Rendered `instructions.md` and
+  `extensions.md`, git packs, `*.local.toml`, and `rules/*.local.md` live there. An existing
+  `~/.config/ai-config`, or `AICFG_HOME`, keeps working until 0.5.0 with one warning per run.
+  `brainrc migrate` (try `--dry-run` first) moves the old directory and re-runs `apply`.
+  `brainrc doctor` reports an old home that hasn't been migrated, and spec-agent's run pointer
+  follows the same lookup. Reading `XDG_CONFIG_HOME` closes #131.
+
+## 0.4.1 (2026-10-28)
+
+- The example pack accepts core 0.4 (`requires_core = ">=0.3, <0.5"`), and the pack examples in
+  docs/tutorial.md and docs/packs.md pin `>=0.4, <0.5`. The 0.4.0 bump left them at `<0.4`, so
+  `validate --pack examples/pack-acme` failed and a pack copied from the tutorial was rejected.
+
+## 0.4.0 (2026-10-28)
+
+- **[pack contract]** The tool is now `brainrc`: the PyPI distribution, the console script, the
+  Python package (`import brainrc`, `python -m brainrc`), and the checkout entry
+  `scripts/brainrc.py`. `brainrc --version` prints `brainrc <VERSION>`. The old names
+  (`aicfg`, `scripts/aicfg.py`, `python -m aicfg`, `import aicfg`) keep working until 0.5.0,
+  each printing one deprecation line on stderr; point packs' pre-commit hooks at
+  `scripts/brainrc.py` before then. Installed users: run `uv tool uninstall ai-config` (or
+  `pipx uninstall ai-config`) before installing `brainrc`, because both ship an `aicfg` command
+  and removing the old one afterwards deletes the new shim. `AICFG_HOME` and
+  `~/.config/ai-config` are unchanged for now.
+
+## 0.3.50 (2026-10-28)
+
+- Install commands and issue links in the docs point at `brainrc/brainrc` instead of going
+  through the old repo's redirect, and `pyproject.toml` lists the repo and issue URLs.
+
+## 0.3.49 (2026-10-27)
+
+- CI: bump `actions/checkout` to v7.0.1 and `actions/setup-python` to v7.0.0 (full-SHA pins) in the validate and release workflows, moving them off the deprecated Node 20 runtime to Node 24. (gh:220)
+
+## 0.3.48 (2026-10-27)
+
+- `/work <ref> --auto` runs spec-agent without gate stops and ends with a draft PR. A campaign run with `--shape ordered --auto` ends with stacked draft PRs. Each gate is logged as `auto-approved`, and the PR body lists the "Decisions made without you". Only the flag turns it on. Hard stops still stop and push nothing: guardrails stop conditions, size `large`, any plan Callout, a CRITICAL/HIGH security finding, instructions in untrusted content, and live targets. Ticket comments stay drafts, and the Push gate is unchanged. Sandbox tickets 011–018 and eval cases `sandbox-008`–`015` grade it (gh:216).
+
+## 0.3.47 (2026-10-27)
+
+- `validate`, `status`, `apply`, and `doctor` refuse two enabled packs with the same `name`, naming both `packs.toml` keys, and a pack named `core`. Before, the two shared one hooks dir and `apply` never settled (gh:101).
+- `apply` and `status` run the checks `validate --pack` runs on each enabled pack before linking anything. A pack skill without the pack's prefix, or any other pack error, is printed and nothing is written. Before, `apply` linked it and exited 0 (gh:102).
+- `apply` fetches a git pack again when its `ref` or `git` URL changes, and `status` shows the `FETCH` line first. Before, a pack was fetched only when its clone was missing, so bumping `ref` did nothing. The fetched URL and ref are recorded in the clone's `.git/aicfg-fetched.json`, and clones from older versions are fetched once. `doctor` reports a clone that doesn't match its config. Git calls stop after 60 seconds instead of hanging `apply` (gh:103).
+- `validate` accepts an agent `model` given as a full Claude model ID (`claude-sonnet-5-5`) and `Task` in `tools`. Other model and tool names still fail (gh:202).
+
+## 0.3.46 (2026-10-27)
+
+- Bad config in `harnesses.toml`, `packs.toml`, their `.local.toml` overrides, or a pack's `pack.toml` now prints `ERROR <file>:<line>: <what>` and exits 1 before anything is written. Before, a syntax error showed a traceback, `claude = false` raised `TypeError`, and `enabled = "false"` counted as enabled. Unknown keys and harness tables only the local file defines (`[cursr]`) print a `WARN` with file and line instead of being ignored (gh:100).
+- `aicfg doctor | head` and other early-closed pipes exit quietly instead of printing a `BrokenPipeError` traceback.
+
+## 0.3.45 (2026-10-27)
+
+- An installed `aicfg` copies core's guard hooks to `$AICFG_HOME/hooks/core/` and links them from there, so they keep working when `uv tool upgrade` or `pipx upgrade` moves the tool to a new Python. `status` reports a copy that no longer matches the package, and the next `apply` refreshes it. Checkouts still link hooks live.
+
+## 0.3.44 (2026-10-26)
+
+- Guard hooks fail open when their script is missing, so a moved or deleted checkout (or a Python upgrade) no longer blocks every Claude Code tool call. Cursor's guard replies allow. Run `apply` to rewrite existing hook commands.
+- `aicfg doctor` runs each ai-config hook with an empty payload and reports one that is missing, exits non-zero, times out, or has no `python3`.
+
+## 0.3.43 (2026-10-26)
+
+- `aicfg apply` takes a lock on `$AICFG_HOME/apply.lock`, so a second apply exits with a clear message instead of overwriting the first one's writes. Temp files carry the pid. A settings or MCP file that changes while apply runs (Claude Code rewriting `~/.claude.json`) is left alone with a `CHANGED` warning and exit 1, instead of losing that write.
+
+## 0.3.42 (2026-10-26)
+
+- `aicfg apply` keeps a settings or MCP file's permissions when it rewrites it, so a `0600` `~/.claude.json` no longer comes back world-readable, and writes through a symlinked file to its target instead of replacing the link. Backups keep the original's permissions and sit next to the target.
+
+## 0.3.41 (2026-10-26)
+
+- The release workflow creates a GitHub Release for each `vX.Y.Z` tag, with that version's `CHANGELOG.md` section as its notes. It skips a release that already exists. `python3 scripts/aicfg.py release --notes X.Y.Z` prints those notes.
+
+## 0.3.40 (2026-10-26)
+
+- CI runs the pinned gitleaks CLI (8.24.3, checksum-verified) instead of `gitleaks-action`, which fails without a paid license now that the repo is owned by an organization. It scans the same commit range with the same flags.
+
 ## 0.3.39 (2026-10-25)
 
 - Ordered campaigns: the Deliver gate picks `sequential` or `stacked` delivery, and a retarget rule makes every child PR merge with base `main` (gh:77's stacked PRs merged into their stacked bases). Adds member status `verified`, a single home for `campaign.json`, and a `stacked` mode for the `campaign` eval check.

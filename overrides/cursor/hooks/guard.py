@@ -13,7 +13,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-# aicfg links this directory; resolve the link so the guards are found in a checkout or a package.
+# brainrc links this directory; resolve the link so the guards are found in a checkout or a package.
 HOOKS = Path(__file__).resolve().parent.parent.parent / "claude" / "hooks"
 
 
@@ -37,7 +37,7 @@ def objection(guard: str, tool: str, tool_input: dict) -> str | None:
     except (OSError, subprocess.SubprocessError, ValueError, AttributeError):
         return None
     if run.returncode == 0 and decision.get("permissionDecision") in ("ask", "deny"):
-        return str(decision.get("permissionDecisionReason") or "ai-config's guard objected.")
+        return str(decision.get("permissionDecisionReason") or "brainrc's guard objected.")
     return None
 
 

@@ -1,0 +1,21 @@
+# Ticket 026 (oneshot, live target): run `/work local:tickets/026-oneshot-live-target.md --oneshot`.
+# The live target is refused and the run continues offline. The log line is the evidence of the refusal.
+ticket_ref = "local:tickets/026-oneshot-live-target.md"
+
+[[check]]
+kind = "state"
+field = "oneshot"
+equals = true
+
+[[check]]
+kind = "state"
+field = "targets"
+equals = {}
+
+[[check]]
+kind = "file"
+path = "{spec}/log.md"
+matches = "live target refused"
+
+[[check]]
+kind = "main_untouched"

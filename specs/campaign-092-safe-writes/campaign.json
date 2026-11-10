@@ -1,0 +1,63 @@
+{
+  "ref": "gh:92",
+  "shape": "ordered",
+  "dependency_source": "none",
+  "started_at": "2026-10-25T18:36:55Z",
+  "delivery": "stacked",
+  "members": [
+    {
+      "ref": "gh:96",
+      "order": 1,
+      "depends_on": [],
+      "status": "delivered",
+      "slug": "096-keep-mode-follow-symlinks",
+      "branch": "096-keep-mode-follow-symlinks",
+      "pr": "https://github.com/brainrc/brainrc/pull/212",
+      "base": "main",
+      "merged": true
+    },
+    {
+      "ref": "gh:97",
+      "order": 2,
+      "depends_on": [],
+      "status": "delivered",
+      "slug": "097-apply-lock-unique-tmp",
+      "branch": "097-apply-lock-unique-tmp",
+      "pr": "https://github.com/brainrc/brainrc/pull/213",
+      "base": "main",
+      "merged": true
+    },
+    {
+      "ref": "gh:98",
+      "order": 3,
+      "depends_on": [],
+      "status": "delivered",
+      "slug": "098-hooks-fail-open",
+      "branch": "098-hooks-fail-open",
+      "pr": "https://github.com/brainrc/brainrc/pull/214",
+      "base": "main",
+      "merged": true
+    },
+    {
+      "ref": "gh:99",
+      "order": 4,
+      "depends_on": [],
+      "status": "delivered",
+      "slug": "099-hooks-in-aicfg-home",
+      "branch": "099-hooks-in-aicfg-home",
+      "pr": "https://github.com/brainrc/brainrc/pull/215",
+      "base": "main",
+      "merged": false
+    }
+  ],
+  "gates": {
+    "campaign": {
+      "presented_at": "2026-10-25T18:36:55Z",
+      "approved_at": "2026-10-25T18:37:58Z"
+    },
+    "deliver": {
+      "presented_at": "2026-10-25T23:46:44Z",
+      "approved_at": "2026-10-25T23:47:35Z"
+    }
+  }
+}

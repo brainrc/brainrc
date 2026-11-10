@@ -3,30 +3,34 @@ requires = ["hatchling>=1.25"]
 build-backend = "hatchling.build"
 
 [project]
-name = "ai-config"
+name = "brainrc"
 dynamic = ["version"]
-description = "aicfg: sync skills, agents, rules, and guard hooks into AI coding harnesses"
+description = "brainrc: sync skills, agents, rules, and guard hooks into AI coding harnesses"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.11"
 
+[project.urls]
+Repository = "https://github.com/brainrc/brainrc"
+Issues = "https://github.com/brainrc/brainrc/issues"
+
 [project.scripts]
-aicfg = "aicfg.cli:entry"
+brainrc = "brainrc.cli:entry"
 
 [tool.hatch.version]
 path = "VERSION"
 pattern = "(?P<version>\\S+)"
 
 [tool.hatch.build.targets.wheel]
-packages = ["aicfg"]
+packages = ["brainrc"]
 
 [tool.hatch.build.targets.wheel.force-include]
-"skills" = "aicfg/_core/skills"
-"agents" = "aicfg/_core/agents"
-"rules" = "aicfg/_core/rules"
-"overrides" = "aicfg/_core/overrides"
-"mcp" = "aicfg/_core/mcp"
-"harnesses.toml" = "aicfg/_core/harnesses.toml"
-"packs.toml" = "aicfg/_core/packs.toml"
-"VERSION" = "aicfg/_core/VERSION"
-"CHANGELOG.md" = "aicfg/_core/CHANGELOG.md"
+"skills" = "brainrc/_core/skills"
+"agents" = "brainrc/_core/agents"
+"rules" = "brainrc/_core/rules"
+"overrides" = "brainrc/_core/overrides"
+"mcp" = "brainrc/_core/mcp"
+"harnesses.toml" = "brainrc/_core/harnesses.toml"
+"packs.toml" = "brainrc/_core/packs.toml"
+"VERSION" = "brainrc/_core/VERSION"
+"CHANGELOG.md" = "brainrc/_core/CHANGELOG.md"

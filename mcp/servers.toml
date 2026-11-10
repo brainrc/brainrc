@@ -1,4 +1,4 @@
-# Canonical MCP server registry. `aicfg apply` merges these servers into Claude Code,
+# Canonical MCP server registry. `brainrc apply` merges these servers into Claude Code,
 # Codex, and OpenCode (format: docs/formats.md#mcp-servers-mcpserverstoml).
 #
 # Secrets: NEVER put values here. `env_from` names environment variables that must exist

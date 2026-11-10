@@ -1,9 +1,9 @@
 {
-  "name": "ai-config",
-  "version": "0.3.39",
+  "name": "brainrc",
+  "version": "0.5.11",
   "description": "Skills, agents, commands, and guard hooks for spec-driven work: spec-agent takes a ticket to a reviewed PR through approval gates.",
   "author": {
-    "name": "ai-config contributors"
+    "name": "brainrc contributors"
   },
   "license": "MIT",
   "hooks": {
@@ -13,7 +13,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/overrides/claude/hooks/guard_outward.py\"",
+            "command": "f=\"${CLAUDE_PLUGIN_ROOT}/overrides/claude/hooks/guard_outward.py\"; [ ! -f \"$f\" ] || python3 \"$f\"",
             "timeout": 5
           }
         ]
@@ -23,7 +23,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/overrides/claude/hooks/guard_secrets.py\"",
+            "command": "f=\"${CLAUDE_PLUGIN_ROOT}/overrides/claude/hooks/guard_secrets.py\"; [ ! -f \"$f\" ] || python3 \"$f\"",
             "timeout": 5
           }
         ]

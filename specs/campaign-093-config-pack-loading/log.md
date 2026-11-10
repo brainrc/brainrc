@@ -1,0 +1,33 @@
+# Campaign gh:93 log
+
+## 2026-10-27T02:09:00Z · intake
+- Members: gh:100, gh:101, gh:102, gh:103, gh:202 (sub-issue order). All open, unassigned. None skipped.
+- Shape: ordered (`--shape ordered`; members differ, no links).
+- Dependencies: API `blocked_by` empty for every child; body fallback finds no `Depends on #N` lines. Source `none`: epic order.
+- Order: 100, 101, 102, 103, 202. No cycle, no out-of-epic link.
+- Epic body suggests `stacked` delivery; delivery is chosen at the Deliver gate (recorded `sequential` default until then).
+- Note: children 1-4 say "N of 4", gh:202 says "5 of 5" (added later). Epic sub-issue list has 5; all 5 are in.
+
+## 2026-10-27T02:09:00Z · Campaign gate presented
+
+## 2026-10-27T02:09:22Z · Campaign gate approved
+- Child 1 gh:100 started: specs/100-readable-config-errors/ on branch 100-readable-config-errors (from main).
+
+## 2026-10-27T02:26:33Z · child 1 gh:100 verified
+- Drafts ready; waits for the stack Deliver gate. Review ran shared (fallback, user chose to continue in-session). Child 2 gh:101 starts on 101-reject-duplicate-pack-names from 100-readable-config-errors.
+
+## 2026-10-27T02:30:50Z · child 2 gh:101 verified
+- Size small, inline. Drafts ready. Child 3 gh:102 starts on 102-apply-validates-packs from 101-reject-duplicate-pack-names.
+
+## 2026-10-27T02:35:14Z · child 3 gh:102 verified
+- Size small, inline. Drafts ready. Child 4 gh:103 starts on 103-refetch-git-pack-on-change from 102-apply-validates-packs.
+
+## 2026-10-27T02:42:56Z · child 4 gh:103 verified
+- Drafts ready. Review shared (user chose in-session). Child 5 gh:202 starts on 202-validate-model-ids-task-tool from 103-refetch-git-pack-on-change.
+
+## 2026-10-27T02:45:23Z · child 5 gh:202 verified; stack Deliver gate presented
+- Size small, inline. All five children verified.
+
+## 2026-10-27T02:46:10Z · stack Deliver gate approved (stacked)
+- gh:100 → #221 (base main), gh:101 → #222 (base 100), gh:102 → #223 (base 101), gh:103 → #224 (base 102), gh:202 → #225 (base 103). All draft. Comments posted on #100-#103, #202. Merge in order; before each merge, merge main into the branch, re-run tests, retarget to main.
+- #225's body first went up with a placeholder (`#PR4`) and was corrected to #224 right away.

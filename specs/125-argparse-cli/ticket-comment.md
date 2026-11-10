@@ -1,0 +1,1 @@
+PR: <PR_URL>. The CLI is now argparse: `--help` and `--version` exit 0, every command has its own `--help`, and `plugin` / `release` are hidden from the list. `status` and `apply` take `--only <harness>` and leave the other harnesses exactly as they are.

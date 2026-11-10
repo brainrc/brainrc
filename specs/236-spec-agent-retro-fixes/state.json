@@ -1,0 +1,112 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "local",
+    "ref": "local:specs/tickets/236-spec-agent-retro-fixes.md",
+    "id": "236",
+    "title": "spec-agent fixes from the rename campaign's retros",
+    "url": null,
+    "pr": "https://github.com/brainrc/brainrc/pull/236"
+  },
+  "slug": "236-spec-agent-retro-fixes",
+  "branch": "236-spec-agent-retro-fixes",
+  "base": "main",
+  "size": "small",
+  "mode": "inline",
+  "delivery": "normal",
+  "auto": true,
+  "stop_at_deliver": true,
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "skipped",
+    "deliver": "approved"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/brainrc.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Removal-release check and XDG isolation",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "brainrc/release.py",
+        "tests/test_brainrc.py",
+        "changelog.d/236-spec-agent-retro-fixes.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "bdd16a8"
+    },
+    {
+      "id": "T2",
+      "title": "Three spec-agent rules",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "skills/spec-agent/SKILL.md",
+        "skills/spec-agent/references/handoff.md",
+        "agents/analyst.md"
+      ],
+      "criteria": [
+        "AC3"
+      ],
+      "review": "batch",
+      "commit": "4175d8c"
+    }
+  ],
+  "blocked": null,
+  "living": [
+    "release"
+  ],
+  "metrics": {
+    "started_at": "2026-10-29T02:14:13Z",
+    "stage_started_at": {
+      "intake": "2026-10-29T02:14:13Z",
+      "spec": "2026-10-29T02:14:13Z",
+      "implement": "2026-10-29T02:14:13Z",
+      "verify": "2026-10-29T02:14:13Z",
+      "document": "2026-10-29T02:14:13Z",
+      "deliver": "2026-10-29T02:14:13Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-29T02:14:13Z",
+        "approved_at": "2026-10-29T02:14:13Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-29T02:14:13Z",
+        "approved_at": "2026-10-29T04:20:00Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 1,
+      "first_pass": 1
+    },
+    "retries": 0,
+    "interventions": 0,
+    "finished_at": "2026-10-29T04:50:00Z"
+  }
+}

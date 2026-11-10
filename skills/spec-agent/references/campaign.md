@@ -140,8 +140,12 @@ which lists the offending links. The gate states the shape, the order, and the s
 
 **Build.** Each child is a normal run: own `specs/<slug>/`, its own Spec and Plan gates
 presented (the Campaign gate does not stand in for them), implement, verify. Child N's branch
-starts from child N-1's branch (child 1 from the default branch). The active-run pointer names
-the child in progress. A verified child is `verified` until the Deliver gate.
+starts from child N-1's branch (child 1 from the default branch). Each child gets its own
+worktree via `run_worktree.py open` with that `--base`.
+Writes to `specs/campaign-<slug>/` happen in the worktree of the child branch in progress.
+From the Deliver gate on, they happen in the stack tip's.
+The campaign gate's writes made before child 1 go in child 1's worktree once it is opened.
+The active-run pointer names the child in progress. A verified child is `verified` until the Deliver gate.
 
 **Deliver gate ⛔.** One Understand quiz over the stack's combined diff (lifecycle.md § Understand
 quiz; counted by the largest child's size; patch: the last child's branch against the base), then
@@ -162,6 +166,23 @@ in review, merge that change into the later branches and re-run their tests firs
 
 **Failure.** A child that fails or is blocked pauses every later child; earlier ones are
 unaffected. The Stops above still apply.
+
+**Auto (`--auto`, SKILL.md § Auto mode).** Ordered shape only (a playbook campaign with `--auto`
+is refused at intake). `campaign.json` gets `auto: true` from the flag, and each child's
+`state.json` inherits it. The Campaign gate and every child's Spec and Plan gates are
+auto-approved and logged. The stack Deliver gate is auto-approved with `delivery: stacked`:
+every child's draft PR opens, child 1 on the default branch and each later one on its
+predecessor's branch, with the "N of M, stacked on #X" line. A child's hard stop sets it
+`blocked` and pauses the later children. A stack with a blocked child opens no PRs. Merging and
+retargeting stay manual (Retarget rule).
+
+**Oneshot (`--oneshot`, SKILL.md § Oneshot mode).** Overrides the Auto paragraph's draft PRs and
+"a stack with a blocked child opens no PRs". A `large` ticket or `--campaign --oneshot` (ordered)
+runs children as `--oneshot`, `stacked`, every PR ready; `campaign.json` gets `oneshot: true` and
+each member its `pr_draft`. A `large` split writes `specs/campaign-<slug>/` with `ref` set to the parent
+ticket's ref. A child's benign stop opens its draft `[blocked]` PR; a tainted stop
+pushes nothing and opens no PR. Either way later children pause and earlier ready PRs stay open.
+Never merged. A playbook campaign with `--oneshot` is refused, as with `--auto`; `local-only` opens nothing.
 
 **Merge detection.** Pull-based, never polled. On `/work --campaign <ref>` or /spec-resume, for
 each `waiting` child (or stacked child not yet based on `main`) read its predecessor's PR state

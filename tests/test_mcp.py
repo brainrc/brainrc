@@ -2,14 +2,19 @@
 import json
 import os
 import shutil
+import stat
 import tempfile
+import unittest
 import tomllib
 from pathlib import Path
+from unittest import mock
 
-from test_aicfg import TempRepoCase, aicfg, make_pack, quiet, set_core_version
+from test_brainrc import TempRepoCase, brainrc, make_pack, quiet, set_core_version
 
 GH = '[servers.gh]\ncommand = "npx"\nargs = ["-y", "@modelcontextprotocol/server-github"]\nenv_from = ["GH_TOKEN"]\n'
 DOCS = '[servers.docs]\nurl = "https://docs.example.com/mcp"\n'
+GH_CLAUDE = {"type": "stdio", "command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"],
+             "env": {"GH_TOKEN": "${GH_TOKEN}"}}
 SECRET = "s3cret-value-never-written"
 
 
@@ -40,12 +45,12 @@ class McpCase(TempRepoCase):
         path.write_text(text)
 
     def apply(self) -> str:
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         return out
 
     def validate_errors(self) -> str:
-        code, out = quiet(aicfg.cmd_validate)
+        code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1, out)
         return out
 
@@ -53,7 +58,7 @@ class McpCase(TempRepoCase):
 class RegistryTest(McpCase):
     def test_valid_registry_passes(self):
         self.registry(GH + DOCS + '\n[servers.only-codex]\ncommand = "x"\nharnesses = ["codex"]\n')
-        code, out = quiet(aicfg.cmd_validate)
+        code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 0, out)
 
     def test_bad_entries_are_reported(self):
@@ -102,27 +107,27 @@ class PackServersTest(McpCase):
 class AdapterTest(McpCase):
     def servers(self, text: str) -> dict:
         self.registry(text)
-        return aicfg.mcp.load_servers(aicfg.sources())
+        return brainrc.mcp.load_servers(brainrc.sources())
 
     def test_claude_entries(self):
         s = self.servers(GH + DOCS)
-        self.assertEqual(aicfg.mcp.render_entry("claude", s["gh"]),
+        self.assertEqual(brainrc.mcp.render_entry("claude", s["gh"]),
                          {"type": "stdio", "command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"],
                           "env": {"GH_TOKEN": "${GH_TOKEN}"}})
-        self.assertEqual(aicfg.mcp.render_entry("claude", s["docs"]),
+        self.assertEqual(brainrc.mcp.render_entry("claude", s["docs"]),
                          {"type": "http", "url": "https://docs.example.com/mcp"})
 
     def test_opencode_entries(self):
         s = self.servers(GH + DOCS)
-        self.assertEqual(aicfg.mcp.render_entry("opencode", s["gh"]),
+        self.assertEqual(brainrc.mcp.render_entry("opencode", s["gh"]),
                          {"type": "local", "command": ["npx", "-y", "@modelcontextprotocol/server-github"],
                           "environment": {"GH_TOKEN": "{env:GH_TOKEN}"}, "enabled": True})
-        self.assertEqual(aicfg.mcp.render_entry("opencode", s["docs"]),
+        self.assertEqual(brainrc.mcp.render_entry("opencode", s["docs"]),
                          {"type": "remote", "url": "https://docs.example.com/mcp", "enabled": True})
 
     def test_codex_block_round_trips(self):
         s = self.servers(GH + DOCS + '[servers.odd]\ncommand = "a \\"b\\" \\\\ c"\nargs = ["é", "\\n"]\n')
-        parsed = tomllib.loads(aicfg.mcp.render_codex_block(s))["mcp_servers"]
+        parsed = tomllib.loads(brainrc.mcp.render_codex_block(s))["mcp_servers"]
         self.assertEqual(parsed["gh"], {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"],
                                         "env_vars": ["GH_TOKEN"]})
         self.assertEqual(parsed["docs"], {"url": "https://docs.example.com/mcp"})
@@ -146,7 +151,7 @@ class McpSyncTest(McpCase):
         self.assertEqual(set(json.loads(self.opencode.read_text())["mcp"]), {"gh", "docs"})
         self.assertEqual(set(tomllib.loads(self.codex.read_text())["mcp_servers"]), {"gh", "docs"})
         self.assertNotIn(SECRET, self.written())
-        self.assertIn("Everything in sync", quiet(aicfg.cmd_sync, False)[1])
+        self.assertIn("Everything in sync", quiet(brainrc.cmd_sync, False)[1])
 
     def test_foreign_entries_and_keys_are_kept_and_stale_owned_ones_removed(self):
         self.claude.write_text(json.dumps({"userID": "u", "mcpServers": {"mine": {"type": "http", "url": "https://m"}}}))
@@ -158,23 +163,141 @@ class McpSyncTest(McpCase):
         self.assertEqual(data["userID"], "u")
         self.assertEqual(set(data["mcpServers"]), {"mine", "gh"})
 
+    @unittest.skipIf(os.name == "nt", "POSIX permission bits")
+    def test_a_private_claude_json_stays_private(self):
+        self.claude.write_text(json.dumps({"userID": "u"}))
+        self.claude.chmod(0o600)
+        self.registry(GH)
+        self.apply()
+        self.assertIn("gh", json.loads(self.claude.read_text())["mcpServers"])
+        self.assertEqual(stat.S_IMODE(self.claude.stat().st_mode), 0o600)
+
+    def test_a_symlinked_claude_json_stays_linked(self):
+        dotfiles = self.home / "dotfiles"
+        dotfiles.mkdir()
+        target = dotfiles / "claude.json"
+        target.write_text(json.dumps({"userID": "u"}))
+        target.chmod(0o600)
+        self.claude.symlink_to(target)
+        self.registry(GH)
+        self.apply()
+        self.assertTrue(self.claude.is_symlink())
+        self.assertEqual(self.claude.readlink(), target)
+        data = json.loads(target.read_text())
+        self.assertEqual(data["userID"], "u")
+        self.assertIn("gh", data["mcpServers"])
+        if os.name != "nt":
+            self.assertEqual(stat.S_IMODE(target.stat().st_mode), 0o600)
+
+    def test_a_claude_json_changed_during_apply_is_left_alone(self):
+        self.claude.write_text(json.dumps({"userID": "u"}))
+        self.registry(GH)
+        real = brainrc.cli.mcp_change
+
+        def claude_writes_meanwhile(s):
+            result = real(s)
+            if s.dest == self.claude:
+                self.claude.write_text(json.dumps({"userID": "u", "numStartups": 2}))
+            return result
+
+        with mock.patch("brainrc.cli.mcp_change", claude_writes_meanwhile):
+            code, out = quiet(brainrc.cmd_sync, True)
+        self.assertEqual(code, 1, out)
+        self.assertRegex(out, r"CHANGED +claude +~/.claude.json")
+        self.assertIn("close Claude Code", out)
+        self.assertEqual(json.loads(self.claude.read_text()), {"userID": "u", "numStartups": 2})
+        self.assertIn("gh", json.loads(self.opencode.read_text())["mcp"])
+
     def test_a_users_own_server_of_the_same_name_is_never_overwritten(self):
         self.claude.write_text(json.dumps({"mcpServers": {"gh": {"type": "stdio", "command": "my-gh"}}}))
         self.registry(GH + DOCS)
-        code, out = quiet(aicfg.cmd_sync, True)
+        code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 1, out)
         self.assertIn("CONFLICT", out)
         self.assertIn("gh", out)
         servers = json.loads(self.claude.read_text())["mcpServers"]
         self.assertEqual(servers["gh"], {"type": "stdio", "command": "my-gh"})
         self.assertIn("docs", servers)
-        self.assertTrue(any("gh" in f[1] and "mcp" in f[1].lower() for f in aicfg.doctor_findings()))
+        self.assertTrue(any("gh" in f[1] and "mcp" in f[1].lower() for f in brainrc.doctor_findings()))
 
     def test_an_identical_entry_is_adopted_when_ownership_was_lost(self):
         self.registry(GH)
         self.apply()
-        (aicfg.aicfg_home() / "mcp-owned.json").unlink()
-        self.assertIn("Everything in sync", quiet(aicfg.cmd_sync, False)[1])
+        (brainrc.settings_home() / "mcp-owned.json").unlink()
+        self.assertIn("Everything in sync", quiet(brainrc.cmd_sync, False)[1])
+
+    def _former_record(self, owned: dict) -> Path:
+        old = self.home / ".config" / "ai-config"
+        old.mkdir(parents=True, exist_ok=True)
+        os.environ["BRAINRC_HOME"] = str(self.home / "new-home")
+        self.addCleanup(os.environ.pop, "BRAINRC_HOME", None)
+        record = old / "mcp-owned.json"
+        record.write_text(json.dumps(owned, indent=2) + "\n")
+        return record
+
+    def test_a_former_homes_record_is_honored_read_only(self):
+        self.registry(GH + DOCS)
+        self.claude.write_text(json.dumps({"mcpServers": {"gh": {"type": "stdio", "command": "old-gh", "args": []}}}))
+        record = self._former_record({str(self.claude): ["gh"]})
+        before = record.read_text()
+        code, out = quiet(brainrc.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("CONFLICT", out)
+        servers = json.loads(self.claude.read_text())["mcpServers"]
+        self.assertEqual(servers["gh"]["args"], ["-y", "@modelcontextprotocol/server-github"])
+        self.assertEqual(set(servers), {"gh", "docs"})
+        self.assertEqual(record.read_text(), before)
+        new = json.loads((self.home / "new-home" / "mcp-owned.json").read_text())
+        self.assertEqual(new[str(self.claude)], ["docs", "gh"])
+        self.assertIn("Everything in sync", quiet(brainrc.cmd_sync, False)[1])
+
+    def test_after_removal_the_resolved_record_keeps_an_empty_list_over_a_former_one(self):
+        self.registry(GH)
+        self.claude.write_text(json.dumps({"mcpServers": {"gh": GH_CLAUDE}}))
+        record = self._former_record({str(self.claude): ["gh"]})
+        before = record.read_text()
+        self.apply()
+        self.registry("# nothing\n")
+        self.apply()
+        self.assertEqual(json.loads(self.claude.read_text()).get("mcpServers", {}), {})
+        new = json.loads((self.home / "new-home" / "mcp-owned.json").read_text())
+        self.assertEqual(new[str(self.claude)], [])
+        # the user adds their own `gh` later: neither record may claim it
+        mine = {"type": "stdio", "command": "my-gh"}
+        self.claude.write_text(json.dumps({"mcpServers": {"gh": mine}}))
+        self.registry(GH)
+        code, out = quiet(brainrc.cmd_sync, True)
+        self.assertEqual(code, 1, out)
+        self.assertIn("CONFLICT", out)
+        self.assertEqual(json.loads(self.claude.read_text())["mcpServers"]["gh"], mine)
+        self.assertEqual(record.read_text(), before)
+
+    def test_when_both_records_list_a_file_the_resolved_home_wins(self):
+        self.registry(DOCS)
+        self.claude.write_text(json.dumps({"mcpServers": {
+            "gh": {"type": "stdio", "command": "x"}, "docs": {"type": "http", "url": "https://old"}}}))
+        self._former_record({str(self.claude): ["gh"]})
+        (self.home / "new-home").mkdir()
+        (self.home / "new-home" / "mcp-owned.json").write_text(json.dumps({str(self.claude): ["docs"]}))
+        code, out = quiet(brainrc.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        # docs (resolved record) is updated; gh (only the former record) is not ours, so it stays
+        self.assertEqual(json.loads(self.claude.read_text())["mcpServers"],
+                         {"gh": {"type": "stdio", "command": "x"},
+                          "docs": {"type": "http", "url": "https://docs.example.com/mcp"}})
+
+    def test_a_corrupt_former_record_claims_nothing(self):
+        for raw in ("not json", "[]", json.dumps({str(self.claude): "gh"})):
+            with self.subTest(raw=raw):
+                record = self._former_record({})
+                record.write_text(raw)
+                self.claude.write_text(json.dumps({"mcpServers": {"gh": {"type": "stdio", "command": "my-gh"}}}))
+                self.registry(GH)
+                code, out = quiet(brainrc.cmd_sync, True)
+                self.assertEqual(code, 1, out)
+                self.assertIn("CONFLICT", out)
+                self.assertEqual(json.loads(self.claude.read_text())["mcpServers"]["gh"]["command"], "my-gh")
+                self.assertEqual(record.read_text(), raw)
 
     def test_codex_block_keeps_user_content_and_is_removed_cleanly(self):
         original = 'model = "o3"\n\n[mcp_servers.mine]\ncommand = "mine"\n'
@@ -187,6 +310,53 @@ class McpSyncTest(McpCase):
         self.registry("")
         self.apply()
         self.assertEqual(self.codex.read_text(), original)
+
+    OLD_START = "# >>> ai-config mcp servers (written by aicfg apply; edits here are replaced)"
+    OLD_END = "# <<< ai-config mcp servers"
+
+    def test_codex_block_is_written_with_brainrc_markers(self):
+        self.registry(GH)
+        self.apply()
+        text = self.codex.read_text()
+        self.assertIn("# >>> brainrc mcp servers (written by brainrc apply; edits here are replaced)", text)
+        self.assertIn("# <<< brainrc mcp servers", text)
+
+    def test_an_old_marker_block_is_replaced_once_and_user_content_kept(self):
+        before, after = 'model = "o3"\n', '\n[mcp_servers.mine]\ncommand = "mine"\n'
+        self.codex.write_text(f'{before}\n{self.OLD_START}\n[mcp_servers.gh]\ncommand = "old"\n{self.OLD_END}\n{after}')
+        self.registry(GH)
+        self.apply()
+        text = self.codex.read_text()
+        self.assertNotIn("ai-config", text)
+        self.assertEqual(text.count("# >>> brainrc mcp servers"), 1)
+        self.assertEqual(tomllib.loads(text)["mcp_servers"]["gh"]["command"], "npx")
+        start, end = "# >>> brainrc mcp servers (written by brainrc apply; edits here are replaced)\n", \
+            "# <<< brainrc mcp servers\n"
+        body = text.split(start)[1].split(end)[0]
+        self.assertEqual(text, f"{before}\n{start}{body}{end}{after}")  # in place, user bytes kept
+        self.apply()
+        self.assertEqual(self.codex.read_text(), text)
+
+    def test_an_unterminated_old_block_is_left_alone(self):
+        self.codex.write_text(f'{self.OLD_START}\n[mcp_servers.gh]\ncommand = "old"\n')
+        was = self.codex.read_text()
+        self.registry(GH)
+        code, out = quiet(brainrc.cmd_sync, True)  # no end marker: brainrc can't tell where it stops
+        self.assertIn("CONFLICT  codex", out)
+        self.assertEqual(self.codex.read_text(), was)
+
+    def test_old_and_new_blocks_together_leave_one_brainrc_block(self):
+        new_start = "# >>> brainrc mcp servers (written by brainrc apply; edits here are replaced)"
+        self.codex.write_text(f'model = "o3"\n\n{self.OLD_START}\n[mcp_servers.a]\ncommand = "a"\n{self.OLD_END}\n\n'
+                              f'{new_start}\n[mcp_servers.b]\ncommand = "b"\n# <<< brainrc mcp servers\n')
+        self.registry(GH)
+        self.apply()
+        text = self.codex.read_text()
+        self.assertEqual(text.count("mcp servers (written by"), 1)
+        self.assertEqual(set(tomllib.loads(text)["mcp_servers"]), {"gh"})
+        self.assertEqual(tomllib.loads(text)["model"], "o3")
+        self.apply()
+        self.assertEqual(self.codex.read_text(), text)
 
     def test_harnesses_filter(self):
         self.registry(GH + 'harnesses = ["codex"]\n')
@@ -205,6 +375,6 @@ class McpSyncTest(McpCase):
         self.registry(GH)
         self.apply()
         self.registry(GH + DOCS)
-        self.assertTrue(any("mcp" in f[1].lower() for f in aicfg.doctor_findings()))
+        self.assertTrue(any("mcp" in f[1].lower() for f in brainrc.doctor_findings()))
         self.apply()
-        self.assertEqual([f for f in aicfg.doctor_findings() if "mcp" in f[1].lower()], [])
+        self.assertEqual([f for f in brainrc.doctor_findings() if "mcp" in f[1].lower()], [])

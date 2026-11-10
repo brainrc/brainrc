@@ -1,0 +1,93 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:204",
+    "id": "204",
+    "title": "Rename: point URLs and manifests at brainrc/brainrc",
+    "url": "https://github.com/brainrc/brainrc/issues/204",
+    "pr": "https://github.com/brainrc/brainrc/pull/229"
+  },
+  "slug": "204-point-urls-brainrc",
+  "branch": "204-point-urls-brainrc",
+  "base": "main",
+  "size": "small",
+  "mode": "inline",
+  "delivery": "normal",
+  "auto": true,
+  "stage": "watch",
+  "gates": {
+    "spec": "approved",
+    "plan": "skipped",
+    "deliver": "approved"
+  },
+  "domains": [],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/aicfg.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Point docs and pyproject at brainrc/brainrc",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "README.md",
+        "docs/install.md",
+        "docs/harness-packages.md",
+        "docs/roadmap.md",
+        "pyproject.toml",
+        "changelog.d/204-point-urls-brainrc.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3"
+      ],
+      "review": "batch",
+      "commit": "9af5a4c"
+    }
+  ],
+  "blocked": null,
+  "living": [],
+  "metrics": {
+    "started_at": "2026-10-27T18:43:34Z",
+    "stage_started_at": {
+      "intake": "2026-10-27T18:43:34Z",
+      "spec": "2026-10-27T18:45:03Z",
+      "deliver": "2026-10-28T01:16:33Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-27T18:47:20Z",
+        "approved_at": "2026-10-27T18:47:20Z"
+      },
+      "deliver": {
+        "presented_at": null,
+        "approved_at": "2026-10-28T01:16:33Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 1,
+      "first_pass": 1
+    },
+    "retries": 0,
+    "interventions": 1,
+    "pr_opened_at": "2026-10-28T01:16:33Z"
+  },
+  "watch": {
+    "entered_at": "2026-10-28T01:16:33Z"
+  }
+}

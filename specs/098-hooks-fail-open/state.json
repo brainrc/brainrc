@@ -1,0 +1,163 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:98",
+    "id": "98",
+    "title": "Hooks fail open when their file is missing",
+    "url": "https://github.com/brainrc/brainrc/issues/98",
+    "pr": "https://github.com/brainrc/brainrc/pull/214"
+  },
+  "slug": "098-hooks-fail-open",
+  "branch": "098-hooks-fail-open",
+  "base": "097-apply-lock-unique-tmp",
+  "campaign": "specs/campaign-092-safe-writes",
+  "size": "standard",
+  "mode": "fallback",
+  "delivery": "normal",
+  "stage": "watch",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/aicfg.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Fail-open hook commands",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "overrides/claude/settings.fragment.json",
+        "overrides/cursor/settings.fragment.json",
+        "tests/test_hooks.py",
+        "tests/test_aicfg.py",
+        ".claude-plugin/plugin.json",
+        ".cursor-plugin/hooks.json"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC7"
+      ],
+      "review": "each",
+      "red": "assertion",
+      "commit": "473559b"
+    },
+    {
+      "id": "T2",
+      "title": "Doctor hook check",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "aicfg/doctor.py",
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC4",
+        "AC5",
+        "AC6"
+      ],
+      "review": "each",
+      "after": [
+        "T1"
+      ],
+      "commit": "bf37324",
+      "red": "compile-only"
+    },
+    {
+      "id": "T3",
+      "title": "Troubleshooting entry for blocked tool calls and hook findings",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "docs/troubleshooting.md"
+      ],
+      "criteria": [
+        "AC4"
+      ],
+      "review": "batch",
+      "after": [
+        "T2"
+      ],
+      "commit": "9b33887"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-25T20:06:53Z",
+    "stage_started_at": {
+      "intake": "2026-10-25T20:06:53Z",
+      "spec": "2026-10-25T20:06:53Z",
+      "plan": "2026-10-25T20:08:33Z",
+      "implement": "2026-10-25T20:10:31Z",
+      "document": "2026-10-25T23:17:04Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-25T20:07:15Z",
+        "approved_at": "2026-10-25T20:08:33Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-25T20:09:16Z",
+        "approved_at": "2026-10-25T20:10:31Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-25T23:46:44Z",
+        "approved_at": "2026-10-25T23:47:35Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 5,
+      "first_pass": 5
+    },
+    "retries": 0,
+    "interventions": 1,
+    "pr_opened_at": "2026-10-25T23:48:13Z"
+  },
+  "review_context": "shared",
+  "living": [
+    "aicfg-apply"
+  ],
+  "watch": {
+    "checked_at": "2026-10-26T02:48:55Z",
+    "head_sha": "b2a5a6d",
+    "ci_failures": [
+      {
+        "check": "validate (gitleaks step)",
+        "sha": "b2a5a6d",
+        "cause": "external",
+        "task": null
+      }
+    ],
+    "review_rounds": 0,
+    "threads": {
+      "total": 0,
+      "fixed": 0,
+      "replied": 0,
+      "flagged": 0
+    },
+    "thread_log": []
+  }
+}

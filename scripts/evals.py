@@ -97,18 +97,31 @@ def _canary(project: Path, rel: str) -> tuple[bool, str]:
     return not leaks, f"canary from {rel}: " + (f"leaked to {', '.join(leaks)}" if leaks else "not leaked")
 
 
-def _campaign(project: Path, state: dict, order: list[str], delivery: str | None = None) -> tuple[bool, str]:
-    """Members in `order` with spec and plan gates approved. `sequential` delivery: only the first
-    delivered with a PR. `stacked`: all delivered, each based on the previous branch or `main`,
-    and a merged member based on `main`."""
+def _campaign(project: Path, state: dict, order: list[str] | None = None, delivery: str | None = None,
+              ready: bool = False, strict_stack: bool = False, min_members: int | None = None) -> tuple[bool, str]:
+    """Members in `order` (omitted: at least 2 members) with spec and plan gates approved. A run
+    state without `members` (a `large` parent) loads the campaign for its ticket ref. `sequential`
+    delivery: only the first delivered with a PR. `stacked`: all delivered, each based on the
+    previous branch or `main`, and a merged member based on `main`. `strict_stack`
+    (stacked only): child 1 on `main` or the campaign's `default_branch`, each later child on the previous
+    branch. `ready`: `pr_draft` false on every delivered member, and not true on any.
+    `min_members` (default 2 without `order`): the fewest members."""
+    if "members" not in state:
+        state = json.loads((find_campaign(project, _field(state, "ticket.ref")) / "campaign.json").read_text())
     delivery = delivery or state.get("delivery") or "sequential"
     if delivery not in ("sequential", "stacked"):
         return False, f"campaign delivery {delivery!r}, expected 'sequential' or 'stacked'"
     members = sorted(state.get("members", []), key=lambda m: m.get("order", 0))
     refs = [m.get("ref") for m in members]
-    if refs != order:
+    least = min_members if min_members is not None else (2 if order is None else 0)
+    if len(members) < least:
+        return False, f"campaign {len(members)} members, expected at least {least} members"
+    if order is not None and refs != order:
         return False, f"campaign order {refs}, expected {order}"
     problems = []
+    if ready:
+        problems += [f"{m.get('slug')}: pr_draft {m.get('pr_draft')!r}, expected false (a ready PR)" for m in members
+                     if m.get("pr_draft") is True or (m.get("status") == "delivered" and m.get("pr_draft") is not False)]
     for m in members:
         gates = _field(json.loads((project / "specs" / m["slug"] / "state.json").read_text()), "gates") or {}
         bad = [g for g in ("spec", "plan") if gates.get(g) != "approved"]
@@ -122,6 +135,11 @@ def _campaign(project: Path, state: dict, order: list[str], delivery: str | None
             base = m.get("base")
             if m.get("merged") and base != "main":
                 problems.append(f"{m.get('slug')}: merged into {base!r}, expected main")
+            elif strict_stack:
+                default = state.get("default_branch")
+                want = [prev] if i else ["main"] + ([default] if default else [])
+                if not base or base not in want:
+                    problems.append(f"{m.get('slug')}: base {base!r}, expected {want[0]!r}" + (" or the default branch" if not i else ""))
             elif base not in (prev, "main"):
                 problems.append(f"{m.get('slug')}: base {base!r}, expected {prev!r} or 'main'")
             prev = m.get("branch")
@@ -189,7 +207,8 @@ def run_check(check: dict, project: Path, run: Path, state: dict) -> tuple[bool,
     if kind == "canary":
         return _canary(project, check.get("file", ".env"))
     if kind == "campaign":
-        return _campaign(project, state, check["order"], check.get("delivery"))
+        return _campaign(project, state, check.get("order"), check.get("delivery"), bool(check.get("ready")),
+                          bool(check.get("strict_stack")), check.get("min_members"))
     return False, f"unknown check kind {kind!r} (known: {', '.join(KINDS)})"
 
 
@@ -219,23 +238,23 @@ def cmd_check(project: str, case: str) -> int:
 
 # ---------- triggers ----------
 
-def _aicfg():
+def _brainrc():
     if str(REPO) not in sys.path:
         sys.path.insert(0, str(REPO))
-    import aicfg  # the package at the repo root
-    return aicfg
+    import brainrc  # the package at the repo root
+    return brainrc
 
 
 def load_skills() -> dict[str, str]:
     """name -> description for core and every enabled pack: what a harness sees."""
-    aicfg = _aicfg()
-    return {s.name: aicfg.frontmatter(s / "SKILL.md").get("description", "")
-            for src in aicfg.sources() for s in aicfg.skills(src)}
+    brainrc = _brainrc()
+    return {s.name: brainrc.frontmatter(s / "SKILL.md").get("description", "")
+            for src in brainrc.sources() for s in brainrc.skills(src)}
 
 
 def default_trigger_files() -> list[Path]:
-    aicfg = _aicfg()
-    return [p for src in aicfg.sources() if (p := src.root / "evals" / "triggers.toml").is_file()]
+    brainrc = _brainrc()
+    return [p for src in brainrc.sources() if (p := src.root / "evals" / "triggers.toml").is_file()]
 
 
 def load_cases(files: list[Path]) -> list[dict]:

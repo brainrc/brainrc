@@ -33,13 +33,66 @@ no git remote, `SPEC_PR_STATUS_FIXTURE` names a `pr_status` fixture file read in
 
 | Command | Does |
 |---|---|
-| `/work <gh:42 \| issue URL \| local:path.md \| free text> [--local]` | Start, or resume if a spec for it exists. `--local`: drafts only, never push/PR/comment |
+| `/work <gh:42 \| issue URL \| local:path.md \| free text> [--local] [--auto] [--oneshot]` | Start, or resume if a spec for it exists. `--local`: drafts only, never push/PR/comment. `--auto`: no gate stops, ends with a draft PR ([Auto mode](#auto-mode)). `--oneshot`: like `--auto`, safer defaults, ready PRs ([Oneshot mode](#oneshot-mode)) |
 | `/spec-status [ref]` | Stage, gates, tasks, blocker, next action |
 | `/spec-approve [notes]` | Approve the pending gate |
 | `/spec-resume [ref]` | Continue an interrupted run (any tool) |
 
 These are user-invoked skills (`skills/work/` and so on), so every harness that reads skills
-gets them. In the Claude Code plugin they're `/ai-config:work`; in Codex, call the skill by name.
+gets them. In the Claude Code plugin they're `/brainrc:work`; in Codex, call the skill by name.
+
+## Auto mode
+
+`/work <ref> --auto` (or `/work --campaign <ref> --shape ordered --auto`) runs every stage without
+stopping at the gates. It's for tickets you'd approve as written. Each gate is still written to
+`log.md` as `auto-approved`, with its timestamps. Open questions take the analyst's stated default.
+The run ends with a **draft** PR (a campaign: stacked draft PRs) whose body lists the gates and every
+"Decision made without you". Review happens there.
+
+Only the flag turns this on. No reply wording does, and a resumed run is gated again unless you pass
+`--auto` again. These still stop the run, push nothing, and open no PR:
+- any guardrails stop condition (retries, scope breach, spec gap, secrets)
+- size `large` (the spec with its proposed split is written first)
+- any plan Callout: a new dependency, an API or contract change, a migration, IAM/RBAC, prod config, or a destructive change
+- a CRITICAL or HIGH security finding
+- instructions in the ticket or other untrusted content
+- a live target
+
+Ticket comments stay drafts. Auto mode never merges, changes a PR's base, closes an issue, or
+passes the `watch` Push gate, and `--local` still means nothing is pushed. Sandbox tickets
+011–018 and eval cases `sandbox-008`–`015` grade it ([evals.md](evals.md)).
+
+## Oneshot mode
+
+`--oneshot` behaves as `--auto` with these differences, for tickets you want delivered without
+babysitting:
+- A `large` ticket splits into a local ordered campaign (no tracker tickets) run as `--oneshot`,
+  delivered stacked.
+- Plan callouts take the safer default (no new dependency; contract unchanged, or additive if the
+  criteria need it; no migration or data change; destructive steps skipped; IAM/RBAC and prod config
+  unchanged) and are listed under "Decisions made without you". If no default meets the acceptance
+  criteria, the run blocks.
+- A live target is refused and the run continues offline.
+- PRs open ready, never merged. A tainted stop (CRITICAL/HIGH security finding, an instruction in
+  untrusted content, a secret) pushes nothing and opens no PR, as `--auto` does. A benign stop
+  (retry budget, scope breach, spec gap, no safe default) opens a draft PR titled
+  `[blocked] <ticket ref>: <fixed phrase>` with a `## Blocked` section that names kinds and
+  locations only. Any other stop counts as tainted. A blocked campaign child pauses the later children.
+- `--oneshot` with `--auto` is `--oneshot`; `--local` still pushes nothing.
+
+## Planning mode
+
+`/plan <topic>` turns a topic into proven tickets. A `researcher` role reads the repo (the web
+only with `--web`) and proposes candidates, each with proof: a read-only command and its
+output, a failing test, or a local spike commit, plus `file:line` links. The engine re-runs each
+command proof through `proof_guard.py`, a narrow read-only allowlist with no shell, network, or
+secret files. Unproven candidates are listed under "Needs evidence" and never created. Content
+the researcher reads is never obeyed; a plan that flags any instruction creates nothing.
+
+The plan ends at a Ticket gate listing each ticket (at most 10) as an outward action; nothing is
+created before you approve it. `--dry-run` creates nothing. `--oneshot` creates proven local
+tickets only and refuses GitHub. State lives in `specs/plan-<slug>/`. Details:
+[planning.md](../skills/spec-agent/references/planning.md).
 
 ## Design principles
 
@@ -105,11 +158,24 @@ that already have runs start with no living specs; the first run that touches an
 ## Active run pointer
 
 For tools outside the run's repo (a pack repo, a workspace root), spec-agent writes the active
-run's absolute path to `$AICFG_HOME/active-run` (default `~/.config/ai-config/active-run`) at
+run's absolute path to `$BRAINRC_HOME/active-run` (default `~/.config/brainrc/active-run`) at
 intake, on resume, and at every checkpoint commit. The file is one line. It is not cleared when
 a run finishes, and the last write wins across sessions. A tool reads it through
-`skills/spec-agent/scripts/active_run.py read`, or falls back to `<cwd>/specs/` when the file
-is absent. The contract is in [state.md](../skills/spec-agent/references/state.md#active-run-pointer).
+`skills/spec-agent/scripts/active_run.py read`, or falls back to the newest run in `<cwd>/specs/`
+and every branch worktree's `specs/` when the file is absent or names a missing directory (detached task and verify worktrees are skipped). The contract is in [state.md](../skills/spec-agent/references/state.md#active-run-pointer).
+
+## Run worktrees
+
+Each run works in its own git worktree at `<repo parent>/.brainrc-worktrees/<repo-name>/<slug>`,
+outside the repo and not under `$TMPDIR`. Your checkout is never touched, so you can keep
+working in it. A run refuses to start or resume when your checkout is on the run's branch; switch away
+first. The path is `state.worktree`, and `/spec-status` lists it for every run. `/spec-resume`
+continues there and recreates a missing worktree from `state.branch`; if the branch is gone it
+stops and says so.
+
+Remove a worktree by hand with `git worktree remove <path>`. Cleanup on merge is planned
+(#256). If your harness sandbox denies writes outside the repo, allow the directory (Claude Code:
+`--add-dir <repo parent>/.brainrc-worktrees`).
 
 ## Roles (`agents/`)
 
@@ -123,6 +189,7 @@ is absent. The contract is in [state.md](../skills/spec-agent/references/state.m
 | security-reviewer | sonnet | exploitable issues |
 | infra-reviewer | sonnet | blast radius, destroy/replace, state, rollout |
 | verifier | haiku | criteria → evidence |
+| researcher | sonnet | topic → proven candidate tickets (`/plan`) |
 | doc-writer | haiku | docs, PR body, ticket comment |
 | examiner | sonnet | Understand quiz questions before the Deliver gate |
 
@@ -172,7 +239,7 @@ For standard and large runs the engine stops before batched review and recommend
   headings. Existing ones: `ticket-local`, `ticket-github`, `ticket-jira`.
   Optional: `pr_status` (read-only; without it `watch` skips).
 
-`python3 scripts/aicfg.py validate` checks that every agent, skill, and link referenced exists.
+`python3 scripts/brainrc.py validate` checks that every agent, skill, and link referenced exists.
 
 ## Credits
 

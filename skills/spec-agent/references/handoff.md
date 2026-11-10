@@ -51,15 +51,19 @@ Project commands: test=`…` lint=`…` validate=`…`
 Role skills: <name: absolute SKILL.md path, …> (the skills the role file names)
 Domain skills: <name: absolute SKILL.md path, …>   Targets: <approved envs/contexts, or "offline only">
 Delivery: <normal | local-only>
-Worktree: <absolute path> (parallel waves only) Work only here. Start every shell command with
+Worktree: <absolute path> (task worktree in a wave, else `state.worktree`; also the fallback for harnesses whose subagents take no working directory) Work only here. Start every shell command with
 `cd <path> &&` or use absolute paths, and create files with the file tools, not shell redirects.
-Before landing, the engine checks every changed path with `worktree_fence.py`; a write outside
+Waves only: before landing, the engine checks every changed path with `worktree_fence.py`; a write outside
 this worktree or your files is a failed attempt.
 Follow your role instructions. End with a handoff block as your final message, under 150 words,
 in exactly this format:
 ## <agent> · <task> · <done|blocked|changes-requested>
 **Did:** … **Evidence:** … **Changed files:** … **Findings:** (reviewers) … **Open issues:** … **Next:** …
 ```
+
+When a task must follow a rule the spec or plan states (a precedence, which record wins, a
+name), quote that rule word for word in the dispatch, or name the section to read. Never
+paraphrase it.
 
 Subagents can't resolve paths relative to this skill, so the dispatch always carries absolute
 paths and the literal handoff format. Never assume a role can read `references/`.

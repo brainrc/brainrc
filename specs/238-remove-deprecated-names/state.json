@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "local",
+    "ref": "local:specs/tickets/238-remove-deprecated-names.md",
+    "id": "238",
+    "title": "Remove the deprecated aicfg names in 0.5.0",
+    "url": null,
+    "pr": "https://github.com/brainrc/brainrc/pull/239"
+  },
+  "slug": "238-remove-deprecated-names",
+  "branch": "238-remove-deprecated-names",
+  "base": "237-rename-on-disk-names",
+  "size": "standard",
+  "mode": "subagent",
+  "delivery": "normal",
+  "auto": true,
+  "stop_at_deliver": true,
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [
+    "scripting",
+    "ci-pipelines"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/brainrc.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Remove the deprecated names and refuse an unmigrated old home",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "aicfg/",
+        "scripts/aicfg.py",
+        "pyproject.toml",
+        ".github/workflows/validate.yml",
+        "brainrc/cli.py",
+        "brainrc/config.py",
+        "brainrc/__init__.py",
+        "brainrc/doctor.py",
+        "brainrc/release.py",
+        "skills/spec-agent/scripts/active_run.py",
+        "scripts/check_install.py",
+        "tests/",
+        "examples/pack-acme/pack.toml",
+        "docs/install.md",
+        "docs/packs.md",
+        "docs/tutorial.md",
+        "docs/troubleshooting.md",
+        "skills/spec-agent/SKILL.md",
+        "skills/spec-agent/references/state.md",
+        "changelog.d/238-remove-deprecated-names.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC6",
+        "AC7",
+        "AC8",
+        "AC9"
+      ],
+      "review": "each"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-29T03:15:00Z",
+    "stage_started_at": {
+      "intake": "2026-10-29T03:15:00Z",
+      "spec": "2026-10-29T03:15:00Z",
+      "plan": "2026-10-29T03:15:00Z",
+      "implement": "2026-10-29T03:15:00Z",
+      "verify": "2026-10-29T04:10:00Z",
+      "document": "2026-10-29T04:10:00Z",
+      "deliver": "2026-10-29T04:10:00Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-29T03:15:00Z",
+        "approved_at": "2026-10-29T03:15:00Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-29T03:15:00Z",
+        "approved_at": "2026-10-29T03:15:00Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-29T04:10:00Z",
+        "approved_at": "2026-10-29T04:20:00Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 1,
+      "first_pass": 1
+    },
+    "retries": 0,
+    "interventions": 0,
+    "finished_at": "2026-10-29T04:50:00Z"
+  }
+}

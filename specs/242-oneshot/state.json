@@ -1,0 +1,370 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:242",
+    "id": "242",
+    "title": "spec-agent: `--oneshot`, no manual intervention, ready PRs as output",
+    "url": "https://github.com/brainrc/brainrc/issues/242",
+    "pr": "https://github.com/brainrc/brainrc/pull/258",
+    "pr_draft": false
+  },
+  "slug": "242-oneshot",
+  "branch": "242-oneshot",
+  "base": "main",
+  "worktree": "~/.brainrc-worktrees/brainrc/242-oneshot",
+  "size": "standard",
+  "mode": "subagent",
+  "delivery": "normal",
+  "auto": false,
+  "campaign": "specs/campaign-241-unattended-runs",
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/brainrc.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "campaign check: ticket-ref fallback, optional order, ready",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "scripts/evals.py",
+        "tests/test_evals.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC7"
+      ],
+      "review": "batch",
+      "after": [],
+      "started_at": "2026-10-30T13:38:20Z",
+      "sha": "e0386ea",
+      "red": "assertion",
+      "finished_at": "2026-10-30T13:43:18Z"
+    },
+    {
+      "id": "T2",
+      "title": "Oneshot instructions and docs",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 2,
+      "files": [
+        "skills/spec-agent/SKILL.md",
+        "skills/spec-agent/references/guardrails.md",
+        "skills/spec-agent/references/campaign.md",
+        "skills/spec-agent/references/state.md",
+        "skills/spec-agent/templates/pr-body.md",
+        "docs/spec-agent.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC6",
+        "AC7",
+        "AC8",
+        "AC9",
+        "AC10",
+        "AC11"
+      ],
+      "review": "each",
+      "after": [],
+      "started_at": "2026-10-30T13:43:18Z",
+      "sha": "8eeda14",
+      "finished_at": "2026-10-30T18:20:14Z"
+    },
+    {
+      "id": "T3",
+      "title": "Blocked-stop cases 016-020",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "examples/sandbox/tickets/019-oneshot-injection.md",
+        "examples/sandbox/tickets/020-*.md",
+        "examples/sandbox/tickets/021-*.md",
+        "examples/sandbox/tickets/022-*.md",
+        "examples/sandbox/tickets/023-oneshot-retry.md",
+        "evals/cases/sandbox-016.toml",
+        "evals/cases/sandbox-017.toml",
+        "evals/cases/sandbox-018.toml",
+        "evals/cases/sandbox-019.toml",
+        "evals/cases/sandbox-020.toml",
+        "tests/test_oneshot_cases.py",
+        "examples/sandbox/tickets/032-oneshot-spec-gap.md",
+        "examples/sandbox/tickets/033-oneshot-no-safe-default.md",
+        "evals/cases/sandbox-028.toml",
+        "evals/cases/sandbox-029.toml"
+      ],
+      "criteria": [
+        "AC3",
+        "AC4"
+      ],
+      "review": "batch",
+      "after": [
+        "T2"
+      ],
+      "wave": 1,
+      "started_at": "2026-10-30T18:20:14Z",
+      "sha": "85f4967",
+      "finished_at": "2026-10-30T18:05:00Z"
+    },
+    {
+      "id": "T4",
+      "title": "Flag cases 021-024",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "examples/sandbox/tickets/024-oneshot-callouts.md",
+        "examples/sandbox/tickets/025-*.md",
+        "examples/sandbox/tickets/026-*.md",
+        "examples/sandbox/tickets/027-oneshot-wording.md",
+        "evals/cases/sandbox-021.toml",
+        "evals/cases/sandbox-022.toml",
+        "evals/cases/sandbox-023.toml",
+        "evals/cases/sandbox-024.toml",
+        "tests/test_oneshot_flag_cases.py"
+      ],
+      "criteria": [
+        "AC2",
+        "AC5",
+        "AC6",
+        "AC9",
+        "AC10"
+      ],
+      "review": "batch",
+      "after": [
+        "T2"
+      ],
+      "wave": 1,
+      "started_at": "2026-10-30T18:20:14Z",
+      "sha": "c21be9d",
+      "finished_at": "2026-10-30T18:25:32Z"
+    },
+    {
+      "id": "T5",
+      "title": "Campaign cases 025-027",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "examples/sandbox/tickets/028-oneshot-large.md",
+        "examples/sandbox/tickets/029-*.md",
+        "examples/sandbox/tickets/030-*.md",
+        "examples/sandbox/tickets/031-oneshot-child-secret.md",
+        "evals/cases/sandbox-025.toml",
+        "evals/cases/sandbox-026.toml",
+        "evals/cases/sandbox-027.toml",
+        "tests/test_oneshot_campaign_cases.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC7",
+        "AC8"
+      ],
+      "review": "batch",
+      "after": [
+        "T1",
+        "T2"
+      ],
+      "started_at": "2026-10-30T18:25:32Z",
+      "sha": "f8229d0",
+      "finished_at": "2026-10-30T18:30:20Z"
+    },
+    {
+      "id": "T6",
+      "title": "Sandbox README, docs/evals.md, changelog fragment",
+      "agent": "engine",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "examples/sandbox/README.md",
+        "docs/evals.md",
+        "changelog.d/242-oneshot.md"
+      ],
+      "criteria": [
+        "AC11"
+      ],
+      "review": "batch",
+      "after": [
+        "T1",
+        "T3",
+        "T4",
+        "T5"
+      ],
+      "sha": "4e8b9da",
+      "finished_at": "2026-10-30T18:30:20Z"
+    },
+    {
+      "id": "F1",
+      "title": "Fail closed on unlisted stops; ticket ref in blocked title",
+      "agent": "engine",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "skills/spec-agent/SKILL.md",
+        "skills/spec-agent/templates/pr-body.md",
+        "docs/spec-agent.md",
+        "skills/spec-agent/references/guardrails.md",
+        "skills/spec-agent/references/campaign.md"
+      ],
+      "criteria": [
+        "AC3",
+        "AC4",
+        "AC8"
+      ],
+      "review": "batch",
+      "sha": "d2c8dbf"
+    },
+    {
+      "id": "F2",
+      "title": "Tighten oneshot eval cases; add 030, 031",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "evals/cases/",
+        "examples/sandbox/",
+        "tests/test_oneshot_*.py",
+        "docs/evals.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC3",
+        "AC4",
+        "AC7",
+        "AC8",
+        "AC10"
+      ],
+      "review": "batch",
+      "sha": "43a58b8"
+    },
+    {
+      "id": "F3",
+      "title": "evals.py campaign: strict ready, strict_stack, min_members",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "scripts/evals.py",
+        "tests/test_evals.py",
+        "docs/evals.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC7"
+      ],
+      "review": "batch",
+      "sha": "58035a4"
+    },
+    {
+      "id": "F4",
+      "title": "Document the large-split campaign ref",
+      "agent": "engine",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "skills/spec-agent/references/campaign.md"
+      ],
+      "criteria": [
+        "AC1"
+      ],
+      "review": "batch",
+      "sha": "31b929d"
+    },
+    {
+      "id": "F5",
+      "title": "Resume case needs a oneshot first run; strict_stack fails missing base",
+      "agent": "engine",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "scripts/evals.py",
+        "tests/test_evals.py",
+        "tests/test_oneshot_flag_cases.py",
+        "evals/cases/sandbox-017.toml",
+        "evals/cases/sandbox-021.toml",
+        "evals/cases/sandbox-031.toml"
+      ],
+      "criteria": [
+        "AC7",
+        "AC10"
+      ],
+      "review": "batch",
+      "sha": "478fdb3"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-30T04:28:30Z",
+    "stage_started_at": {
+      "intake": "2026-10-30T04:28:30Z",
+      "spec": "2026-10-30T04:28:30Z",
+      "plan": "2026-10-30T04:34:52Z",
+      "implement": "2026-10-30T13:38:20Z",
+      "verify": "2026-10-31T05:17:20Z",
+      "document": "2026-10-31T05:22:09Z",
+      "deliver": "2026-10-31T05:23:54Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-30T04:29:56Z",
+        "approved_at": "2026-10-30T04:34:52Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-30T04:38:16Z",
+        "approved_at": "2026-10-30T13:38:20Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-31T05:23:54Z",
+        "approved_at": "2026-10-31T15:42:25Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 1,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 4,
+      "first_pass": 2
+    },
+    "retries": 1,
+    "interventions": 1,
+    "waves": {
+      "count": 1,
+      "max_width": 2,
+      "task_minutes": 6.1,
+      "wall_minutes": 3.5
+    },
+    "pr_opened_at": "2026-10-31T15:52:32Z",
+    "finished_at": "2026-10-31T15:57:02Z"
+  },
+  "living": [
+    "run-lifecycle",
+    "campaign-mode"
+  ],
+  "watch": {
+    "outcome": "merged",
+    "merged_at": "2026-10-31T15:53:45Z",
+    "post_merge": "pass",
+    "checked_at": "2026-10-31T15:57:02Z"
+  }
+}

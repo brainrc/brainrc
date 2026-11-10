@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:243",
+    "id": "243",
+    "title": "spec-agent: planning mode, research to proven tickets",
+    "url": "https://github.com/brainrc/brainrc/issues/243",
+    "pr": "https://github.com/brainrc/brainrc/pull/262"
+  },
+  "slug": "243-planning-mode",
+  "branch": "243-planning-mode",
+  "base": "main",
+  "worktree": "~/.brainrc-worktrees/brainrc/243-planning-mode",
+  "size": "large",
+  "mode": "subagent",
+  "delivery": "normal",
+  "auto": true,
+  "oneshot": true,
+  "campaign": "specs/campaign-241-unattended-runs",
+  "stage": "watch",
+  "gates": {
+    "spec": "approved",
+    "plan": "pending",
+    "deliver": "pending"
+  },
+  "domains": [],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/brainrc.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-31T16:08:20Z",
+    "stage_started_at": {
+      "intake": "2026-10-31T16:08:20Z",
+      "spec": "2026-10-31T16:08:20Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-31T16:09:57Z",
+        "approved_at": "2026-10-31T16:09:57Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  },
+  "split_campaign": "specs/campaign-243-planning-mode"
+}

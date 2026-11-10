@@ -5,9 +5,9 @@ repos:
       - id: gitleaks
   - repo: local
     hooks:
-      - id: aicfg-validate
-        name: aicfg validate
-        entry: python3 scripts/aicfg.py validate
+      - id: brainrc-validate
+        name: brainrc validate
+        entry: python3 scripts/brainrc.py validate
         language: system
         pass_filenames: false
       - id: unit-tests

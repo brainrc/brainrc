@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:101",
+    "id": "101",
+    "title": "Reject duplicate pack names",
+    "url": "https://github.com/brainrc/brainrc/issues/101",
+    "pr": "https://github.com/brainrc/brainrc/pull/222"
+  },
+  "slug": "101-reject-duplicate-pack-names",
+  "branch": "101-reject-duplicate-pack-names",
+  "base": "100-readable-config-errors",
+  "campaign": "specs/campaign-093-config-pack-loading",
+  "size": "small",
+  "mode": "inline",
+  "delivery": "normal",
+  "stage": "watch",
+  "gates": {
+    "spec": "approved",
+    "plan": "skipped",
+    "deliver": "approved"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/aicfg.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Refuse duplicate pack names",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "aicfg/sources.py",
+        "aicfg/cli.py",
+        "aicfg/validate.py",
+        "aicfg/doctor.py",
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "d40a193"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-27T02:26:54Z",
+    "stage_started_at": {
+      "intake": "2026-10-27T02:26:54Z",
+      "spec": "2026-10-27T02:26:54Z",
+      "implement": "2026-10-27T02:30:50Z",
+      "verify": "2026-10-27T02:30:50Z",
+      "document": "2026-10-27T02:30:50Z",
+      "deliver": "2026-10-27T02:30:50Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-27T02:27:18Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-27T02:45:23Z",
+        "approved_at": "2026-10-27T02:46:10Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 1,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0,
+    "pr_opened_at": "2026-10-27T02:48:49Z"
+  },
+  "living": [
+    "aicfg-config"
+  ],
+  "watch": {
+    "entered_at": "2026-10-27T02:48:49Z"
+  }
+}

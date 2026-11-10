@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "local",
+    "ref": "local:specs/tickets/243-3-ticket-gate.md",
+    "id": "243.3",
+    "title": "Ticket gate, dry run, cap and oneshot",
+    "url": null,
+    "pr": null
+  },
+  "slug": "243-3-ticket-gate",
+  "branch": "243-3-ticket-gate",
+  "base": "243-2-researcher-proof",
+  "worktree": "~/.brainrc-worktrees/brainrc/243-3-ticket-gate",
+  "size": "standard",
+  "mode": "inline",
+  "delivery": "normal",
+  "auto": true,
+  "oneshot": true,
+  "campaign": "specs/campaign-243-planning-mode",
+  "stage": "deliver",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "pending"
+  },
+  "domains": [],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/brainrc.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Ticket gate",
+      "agent": "engine",
+      "status": "done",
+      "attempts": 2,
+      "files": [
+        "skills/spec-agent/references/planning.md",
+        "skills/spec-agent/references/guardrails.md",
+        "skills/spec-agent/references/state.md",
+        "skills/spec-agent/SKILL.md",
+        "skills/ticket-local/SKILL.md",
+        "tests/test_planning.py",
+        "changelog.d/243-3-ticket-gate.md"
+      ],
+      "criteria": [
+        "AC4",
+        "AC5",
+        "AC6",
+        "AC7",
+        "AC10"
+      ],
+      "review": "batch",
+      "sha": "6c55703"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-31T23:57:59Z",
+    "stage_started_at": {
+      "intake": "2026-10-31T23:57:59Z",
+      "implement": "2026-10-31T23:57:59Z",
+      "verify": "2026-10-31T23:57:59Z",
+      "deliver": "2026-10-31T23:57:59Z"
+    },
+    "gates": {},
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 2,
+      "first_pass": 1
+    },
+    "retries": 1,
+    "interventions": 0
+  }
+}

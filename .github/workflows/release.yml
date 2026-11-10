@@ -2,8 +2,9 @@ name: release
 
 # On every merge to main: fold changelog.d/ fragments into CHANGELOG.md, bump VERSION, regenerate
 # the plugin manifests, commit, and tag v<VERSION>. With no fragments, just tag VERSION if the tag
-# is missing. The push uses GITHUB_TOKEN, so it doesn't trigger another run. If main is protected,
-# allow GitHub Actions to bypass the rule for this workflow (CONTRIBUTING.md § Releases).
+# is missing. Then create the GitHub Release for v<VERSION> if there isn't one yet. The push uses
+# GITHUB_TOKEN, so it doesn't trigger another run. If main is protected, allow GitHub Actions to
+# bypass the rule for this workflow (CONTRIBUTING.md § Releases).
 
 on:
   push:
@@ -22,17 +23,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: main # the tip, so a queued run sees the previous run's release commit
           fetch-depth: 0
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
       - name: Fold fragments
         run: |
-          python3 scripts/aicfg.py release
-          python3 scripts/aicfg.py validate
+          python3 scripts/brainrc.py release
+          python3 scripts/brainrc.py validate
       - name: Commit, tag, and push
         run: |
           version="$(cat VERSION)"
@@ -48,4 +49,15 @@ jobs:
           else
             git tag -a "v${version}" -m "v${version}"
             git push --atomic origin HEAD:main "v${version}"
+          fi
+      - name: GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version="$(cat VERSION)"
+          if gh release view "v${version}" >/dev/null 2>&1; then
+            echo "v${version} already released"
+          else
+            python3 scripts/brainrc.py release --notes "$version" > "$RUNNER_TEMP/notes.md"
+            gh release create "v${version}" --verify-tag --title "v${version}" --notes-file "$RUNNER_TEMP/notes.md"
           fi

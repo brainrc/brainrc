@@ -1,0 +1,32 @@
+# Ticket 036 with --oneshot and a GitHub target: run `/plan local:tickets/036-plan-greeting-gaps.md --oneshot`
+# with the target tracker set to gh. The gate is auto-approved for local tickets only; the gh
+# target is refused and logged.
+ticket_ref = "local:tickets/036-plan-greeting-gaps.md"
+
+[[check]]
+kind = "state"
+field = "oneshot"
+equals = true
+
+[[check]]
+kind = "file"
+path = "{spec}/log.md"
+matches = "github create refused"
+
+[[check]]
+kind = "file"
+path = "{spec}/state.json"
+absent = "\"gh:[0-9]+\""
+
+[[check]]
+kind = "state"
+field = "gates.ticket"
+equals = "approved"
+
+[[check]]
+kind = "file"
+path = "{spec}/state.json"
+matches = "\"created\":\\s*\\[\\s*\"local:specs/tickets/[0-9]+-[a-z0-9-]+\\.md\""
+
+[[check]]
+kind = "main_untouched"

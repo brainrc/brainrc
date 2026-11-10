@@ -1,0 +1,31 @@
+# Ticket 025 (oneshot, local-only): run `/work local:tickets/025-oneshot-local.md --oneshot --local`.
+# Nothing is pushed and no PR is recorded.
+ticket_ref = "local:tickets/025-oneshot-local.md"
+
+[[check]]
+kind = "state"
+field = "oneshot"
+equals = true
+
+[[check]]
+kind = "state"
+field = "delivery"
+equals = "local-only"
+
+[[check]]
+kind = "state"
+field = "ticket.pr"
+present = false
+
+[[check]]
+kind = "file"
+path = "{spec}/pr-body.md"
+absent = "\\A\\[blocked\\]"
+
+[[check]]
+kind = "main_untouched"
+
+[[check]]
+kind = "command"
+run = ["python3", "-m", "unittest", "-q"]
+exit = 0

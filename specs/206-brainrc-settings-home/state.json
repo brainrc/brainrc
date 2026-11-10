@@ -1,0 +1,298 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:206",
+    "id": "206",
+    "title": "Rename: settings home ~/.config/brainrc and BRAINRC_HOME",
+    "url": "https://github.com/brainrc/brainrc/issues/206",
+    "pr": "https://github.com/brainrc/brainrc/pull/232"
+  },
+  "slug": "206-brainrc-settings-home",
+  "branch": "206-brainrc-settings-home",
+  "base": "main",
+  "size": "standard",
+  "mode": "subagent",
+  "delivery": "normal",
+  "auto": false,
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved",
+    "push": "approved",
+    "push_sha": "548a5ec"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/brainrc.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Contract tests for home resolution and warnings",
+      "agent": "test-writer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "tests/test_settings_home.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC6"
+      ],
+      "review": "each",
+      "after": [],
+      "commit": "374b004",
+      "red": "assertion"
+    },
+    {
+      "id": "T2",
+      "title": "Home lookup, once-per-run warning, fixtures on BRAINRC_HOME",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "brainrc/config.py",
+        "brainrc/cli.py",
+        "tests/test_aicfg.py",
+        "tests/test_cli_entry_points.py",
+        "scripts/check_install.py",
+        "tests/test_settings_home.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC6",
+        "AC16"
+      ],
+      "review": "each",
+      "after": [
+        "T1"
+      ],
+      "commit": "914bf27",
+      "red": "assertion"
+    },
+    {
+      "id": "T3",
+      "title": "Doctor home findings",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "brainrc/doctor.py",
+        "tests/test_doctor_home.py"
+      ],
+      "criteria": [
+        "AC14"
+      ],
+      "review": "batch",
+      "after": [
+        "T2"
+      ],
+      "commit": "0ba9317",
+      "red": "assertion"
+    },
+    {
+      "id": "T4",
+      "title": "brainrc migrate [--dry-run], links re-pointed via former homes, usage text",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 2,
+      "files": [
+        "brainrc/migrate.py",
+        "brainrc/cli.py",
+        "brainrc/plan.py",
+        "tests/test_migrate.py"
+      ],
+      "criteria": [
+        "AC7",
+        "AC8",
+        "AC9",
+        "AC10",
+        "AC11",
+        "AC12",
+        "AC13"
+      ],
+      "review": "each",
+      "after": [
+        "T2"
+      ],
+      "commit": "209a4de",
+      "red": "assertion"
+    },
+    {
+      "id": "T5",
+      "title": "active_run.py resolution plus spec-agent home lines",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "skills/spec-agent/scripts/active_run.py",
+        "tests/test_active_run.py",
+        "skills/spec-agent/SKILL.md",
+        "skills/spec-agent/references/state.md"
+      ],
+      "criteria": [
+        "AC15"
+      ],
+      "review": "batch",
+      "after": [],
+      "commit": "edb6e9f",
+      "red": "assertion"
+    },
+    {
+      "id": "T6",
+      "title": "Docs naming the home, plus changelog fragment",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "docs/install.md",
+        "docs/packs.md",
+        "docs/formats.md",
+        "changelog.d/206-brainrc-settings-home.md"
+      ],
+      "criteria": [
+        "AC16"
+      ],
+      "review": "batch",
+      "after": [
+        "T3",
+        "T4",
+        "T5"
+      ],
+      "commit": "434e68d"
+    },
+    {
+      "id": "F1",
+      "title": "Point doctor at migrate when the old home holds the only settings",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "brainrc/doctor.py",
+        "tests/test_doctor_home.py"
+      ],
+      "criteria": [
+        "AC14"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "6c0af5d"
+    },
+    {
+      "id": "F2",
+      "title": "Name the brainrc home in the architecture and packaging docs",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "docs/architecture.md",
+        "docs/harness-packages.md"
+      ],
+      "criteria": [
+        "AC16"
+      ],
+      "review": "batch",
+      "commit": "303ada3"
+    },
+    {
+      "id": "C1",
+      "title": "Isolate the default-home test from XDG_CONFIG_HOME",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "tests/test_aicfg.py"
+      ],
+      "criteria": [
+        "AC16"
+      ],
+      "review": "batch",
+      "red": "assertion",
+      "commit": "7ee973c"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-10-28T03:15:37Z",
+    "stage_started_at": {
+      "intake": "2026-10-28T03:15:37Z",
+      "spec": "2026-10-28T03:15:37Z",
+      "plan": "2026-10-28T03:24:09Z",
+      "implement": "2026-10-28T03:27:11Z",
+      "verify": "2026-10-28T04:40:11Z",
+      "document": "2026-10-28T04:50:21Z",
+      "deliver": "2026-10-28T04:50:44Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-10-28T03:23:27Z",
+        "approved_at": "2026-10-28T03:24:09Z"
+      },
+      "plan": {
+        "presented_at": "2026-10-28T03:26:49Z",
+        "approved_at": "2026-10-28T03:27:11Z"
+      },
+      "deliver": {
+        "presented_at": "2026-10-28T04:50:44Z",
+        "approved_at": "2026-10-28T04:51:26Z"
+      },
+      "push": {
+        "presented_at": "2026-10-28T04:58:43Z",
+        "approved_at": "2026-10-28T04:59:13Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 6,
+      "first_pass": 2
+    },
+    "retries": 1,
+    "interventions": 1,
+    "pr_opened_at": "2026-10-28T04:55:21Z",
+    "post_deliver_retries": 1,
+    "time_to_merge": 7
+  },
+  "living": [
+    "aicfg-config",
+    "aicfg-apply",
+    "run-pointer"
+  ],
+  "watch": {
+    "entered_at": "2026-10-28T04:55:21Z",
+    "checked_at": "2026-10-28T04:58:43Z",
+    "ci_failures": [
+      {
+        "check": "validate",
+        "sha": "e494fef",
+        "cause": "own",
+        "task": "C1"
+      }
+    ],
+    "merged_at": "2026-10-28T05:02:24Z",
+    "post_merge": "pass",
+    "outcome": "merged",
+    "review_rounds": 0
+  }
+}

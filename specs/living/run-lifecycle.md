@@ -37,3 +37,47 @@ _Last changed by 081-watch-post-merge._
 ### Engine edits after approval
 The engine MAY edit an approved artifact only for wording or path fixes that change no criterion's meaning, and SHALL log each in `log.md` and list it at the Deliver gate. (AC10)
 _Last changed by 090-campaign-ordered-fixes._
+
+### Auto mode
+A run started with `--auto` SHALL record `auto: true` from the flag alone, pass every gate without
+stopping while logging each as `auto-approved` with timestamps, and deliver a draft PR whose body
+lists the decisions made without the user. (AC1, AC2, AC3, AC5, AC6)
+_Last changed by 216-work-auto-mode._
+
+### Auto mode hard stops
+An auto run SHALL stop, push nothing, and open no PR on any guardrails stop condition, size `large`, a plan Callout, or a CRITICAL/HIGH security finding, except that a `--oneshot` run SHALL instead split `large` and take the safer default for Callouts, and on its benign stops (retry budget, scope breach, spec gap, no safe Callout default) SHALL open a draft blocked PR. A `--oneshot` run on a tainted stop (CRITICAL/HIGH security finding, untrusted instruction, secret) SHALL stop, push nothing, and open no PR, exactly as `--auto` does. (AC1, AC2, AC3, AC4)
+_Last changed by 242-oneshot._
+
+### Run worktree
+A run SHALL do every stage in its own git worktree on the run's branch, record its absolute path as
+`state.json` `worktree`, and SHALL NOT change the main checkout's branch, index, or files. It SHALL
+stop without changes if the main checkout has the run's branch checked out. (AC1, AC2, AC3, AC4, AC11)
+_Last changed by 255-run-worktrees._
+
+### Resume through the worktree
+`/spec-resume` and `/spec-status` SHALL locate runs through `state.worktree`, continue in that
+worktree, and recreate it from `state.branch` when missing, never falling back to the main
+checkout. (AC7, AC8, AC9)
+_Last changed by 255-run-worktrees._
+
+### Nested wave worktrees
+Parallel task worktrees SHALL be created from the run worktree and landed into it, with
+`worktree_fence.py` unchanged. Harnesses whose subagents take no working directory SHALL keep the
+`Project root` plus `Worktree:` dispatch. (AC10, AC12)
+_Last changed by 255-run-worktrees._
+
+### Oneshot mode
+A run started with `--oneshot` SHALL record `oneshot: true` from the flag alone, behave as `--auto` except as stated here, take the safer default for each plan Callout and list it under "Decisions made without you", deliver ready PRs that it never merges, and refuse live targets. (AC2, AC5, AC6, AC9, AC10, AC11)
+_Last changed by 242-oneshot._
+
+### Oneshot blocked PR
+A `--oneshot` run that hits a benign stop (exhausted retry budget, scope-fence breach, spec gap, or no safe Callout default) SHALL set `state.blocked` and open a draft PR titled `[blocked] <ticket ref>: <fixed blocker phrase>`, the phrase being `retry budget exhausted`, `scope fence breach`, `spec gap` or `no safe default` respectively. The body SHALL name the blocker kind and source location, the stop condition, completed work, the needed decision and the decisions made so far; it SHALL NOT quote untrusted text and SHALL NOT hold any secret value. A `--oneshot` run that hits a tainted stop (CRITICAL/HIGH security finding, instruction in untrusted content, or secret need) SHALL set `state.blocked`, push nothing, open no PR, and report the blocker locally. (AC3, AC4)
+_Last changed by 242-oneshot._
+
+### Ticket gate
+A plan run SHALL create tickets only after approval at a Ticket gate listing each as an outward action, recorded like other gates; `--oneshot` SHALL auto-approve it for local tickets only and refuse GitHub creation. (AC5, AC6, AC7)
+_Last changed by 243-planning-mode._
+
+### Worktree path without the home directory
+`state.json` `worktree` SHALL be written with the home directory as `~`. (AC6)
+_Last changed by 107-make-repo-public._

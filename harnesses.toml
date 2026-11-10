@@ -1,13 +1,18 @@
 # Where each AI harness reads its user-level config.
 #
+# brainrc manages a harness only when it is installed: when its `home` directory exists (default:
+# the directory holding its `instructions` or `skills` path, e.g. ~/.claude). Others are skipped
+# and named in the output; `enabled = true` in harnesses.local.toml manages one anyway.
+#
 # Keys (all optional; omit a key to skip that content type for a harness):
+#   home         directory whose existence means the harness is installed (see above)
 #   skills       directory; each skills/<name>/ is symlinked into it
 #   agents       directory; each agents/<name>.md is symlinked into it
 #   agents_format "claude" (default) links agents as written; "opencode" links copies rendered
-#                to $AICFG_HOME/opencode/agents in OpenCode's format
+#                to $BRAINRC_HOME/opencode/agents in OpenCode's format
 #   commands     directory; each commands/<name>.md is symlinked into it
 #   plugin       file; symlinked to overrides/<harness>/plugin.js (OpenCode's guard plugin)
-#   instructions file; symlinked to the rendered $AICFG_HOME/instructions.md (default ~/.config/ai-config)
+#   instructions file; symlinked to the rendered $BRAINRC_HOME/instructions.md (default ~/.config/brainrc)
 #   hooks_dir    directory; symlinked to overrides/<harness>/hooks. Fragments refer to it
 #                as {{hooks_dir}}, so moving it keeps hook commands working
 #   settings     JSON file; hooks from overrides/<harness>/settings.fragment.json are
@@ -24,7 +29,7 @@ skills = "~/.claude/skills"
 agents = "~/.claude/agents"
 commands = "~/.claude/commands"
 instructions = "~/.claude/CLAUDE.md"
-hooks_dir = "~/.claude/hooks/ai-config"
+hooks_dir = "~/.claude/hooks/brainrc"
 settings = "~/.claude/settings.json"
 mcp = "~/.claude.json"
 
@@ -41,7 +46,7 @@ skills = "~/.config/opencode/skills"
 commands = "~/.config/opencode/command"
 agents = "~/.config/opencode/agents"
 agents_format = "opencode"
-plugin = "~/.config/opencode/plugins/ai-config-guard.js"
+plugin = "~/.config/opencode/plugins/brainrc-guard.js"
 instructions = "~/.config/opencode/AGENTS.md"
 mcp = "~/.config/opencode/opencode.json"
 
@@ -61,6 +66,6 @@ instructions = "~/.gemini/GEMINI.md"
 [cursor]
 enabled = true
 skills = "~/.cursor/skills"
-hooks_dir = "~/.cursor/hooks/ai-config"
+hooks_dir = "~/.cursor/hooks/brainrc"
 settings = "~/.cursor/hooks.json"
 # instructions: Cursor's global User Rules live in the Settings UI, not a file

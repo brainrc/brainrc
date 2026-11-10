@@ -1,7 +1,7 @@
 # Harness packages
 
-What each harness supports for installing ai-config as a native package, without a clone.
-Research for [#50](https://github.com/bxker/ai-config/issues/50), done 2026-10-08. Formats
+What each harness supports for installing brainrc as a native package, without a clone.
+Research for [#50](https://github.com/brainrc/brainrc/issues/50), done 2026-10-08. Formats
 change fast: re-check a harness's docs before building its package. Gemini CLI was retired for
 consumer accounts on 2026-06-18; [Antigravity CLI](#antigravity-cli) replaced it.
 
@@ -9,7 +9,7 @@ consumer accounts on 2026-06-18; [Antigravity CLI](#antigravity-cli) replaced it
 
 | Harness | Package and install | Rules without a clone | Hooks | Agents | Packs |
 |---|---|---|---|---|---|
-| Claude Code | `.claude-plugin/` ([shipped](install.md#claude-code)); `/plugin install` | `SessionStart` hook output (10,000-char cap) | yes: allow, ask, deny | yes, as `ai-config:<name>` | plugin `dependencies` with semver ranges |
+| Claude Code | `.claude-plugin/` ([shipped](install.md#claude-code)); `/plugin install` | `SessionStart` hook output (10,000-char cap) | yes: allow, ask, deny | yes, as `brainrc:<name>` | plugin `dependencies` with semver ranges |
 | Codex | `.codex-plugin/` **or `.claude-plugin/`** (verified); `codex plugin marketplace add owner/repo` | no plugin route: `~/.codex/AGENTS.md` or config `developer_instructions` | yes: `PreToolUse`, `SessionStart` | TOML roles in config; not shippable in a plugin | separate plugin; no dependencies found |
 | Antigravity CLI | root `plugin.json` ([shipped](install.md#antigravity-cli), unverified); `agy plugin install <git url>` | plugin `rules/*.md` with `trigger:` frontmatter | yes: `PreToolUse` ask or deny; no known "no opinion" reply | markdown, `agents/` | separate plugin; no dependencies found |
 | OpenCode | JS plugin (npm or `~/.config/opencode/plugins/`): hooks and tools only | `instructions[]` config or `AGENTS.md` | blocks by throwing; no ask | markdown files with a different frontmatter | `plugin[]`, `instructions[]`, `skills.paths` |
@@ -27,7 +27,7 @@ Sources: [hooks](https://code.claude.com/docs/en/hooks.md),
   compaction. Over 10,000 characters, Claude sees a 2,000-character preview only. A plugin-root
   `CLAUDE.md`, rules, and most settings are not loaded. `claude plugin validate` accepts the hook
   (checked here); that the text reaches the model is **unconfirmed** (needs a live session).
-- Packs: `"dependencies": [{"name": "ai-config", "version": "^0.3"}]` installs core with a pack;
+- Packs: `"dependencies": [{"name": "brainrc", "version": "^0.3"}]` installs core with a pack;
   versions resolve to git tags `<plugin>--v<version>`. `claude plugin list --json` lists installed
   plugins with their paths. A pack skill dispatching a core agent across plugins is **unconfirmed**.
 - Hooks from several plugins all run; `deny` > `ask` > `allow`.
@@ -39,7 +39,7 @@ here): `codex-rs/core-plugins/`, `codex-rs/hooks/`, `codex-rs/agent-roles/`.
 
 - Reads `.claude-plugin/marketplace.json` and `.claude-plugin/plugin.json` as well as its own
   `.codex-plugin/`. **Verified** with Codex 0.161.0: `codex plugin marketplace add <repo>` and
-  `codex plugin add ai-config@ai-config` install our plugin unchanged. The install copy **drops
+  `codex plugin add brainrc@brainrc` install our plugin unchanged. The install copy **drops
   symlinks** (`skills/spec-agent/roles`), so spec-agent falls back to `../../agents/`.
 - Skills: native, `~/.agents/skills` (`~/.codex/skills` deprecated). Custom prompts are deprecated
   for skills; a plugin's `commands/` become skills, **except any that use `$ARGUMENTS`** (verified:
@@ -78,7 +78,7 @@ was blocked here): `packages/web/src/content/docs/`.
 
 - A plugin is a JS module: hooks (`tool.execute.before`), tools, and system-prompt transforms. It
   can't ship agent, skill, or command files, so the package is a config dir plus a small plugin.
-- Agents need a transform ([#19](https://github.com/bxker/ai-config/issues/19), shipped in 0.3.19):
+- Agents need a transform ([#19](https://github.com/brainrc/brainrc/issues/19), shipped in 0.3.19):
   Claude's `tools: Read, Grep` makes OpenCode's whole config invalid (verified, 1.18.35); it wants
   `permission`, `model` as `provider/model-id`, and `mode: subagent`.
 - Guard plugin: `tool.execute.before` can block by throwing and `permission.ask` can answer a
@@ -113,16 +113,16 @@ community [`cursor-hooks`](https://www.npmjs.com/package/cursor-hooks) package.
    Antigravity needs a root `plugin.json`; OpenCode needs a config dir plus a JS hook plugin.
 2. **Commands should become skills**, or be generated per harness: Codex skips `$ARGUMENTS`
    commands and Antigravity has no commands.
-3. **Rules and pack extensions need rendering outside the checkout** (`$AICFG_HOME`), then each
+3. **Rules and pack extensions need rendering outside the checkout** (`$BRAINRC_HOME`), then each
    harness loads them its own way. Codex plugins have no rules route yet.
 4. **Guard hooks need a deny fallback**: only Claude Code reliably supports ask.
 
 ## Proposed order for #50
 
-1. Render to `$AICFG_HOME`; spec-agent reads extensions from there (every harness needs it).
+1. Render to `$BRAINRC_HOME`; spec-agent reads extensions from there (every harness needs it).
 2. Codex through the existing `.claude-plugin/`: test the install, convert commands to skills.
 3. Antigravity plugin: root `plugin.json`, rule triggers (done, unverified); hooks after a live test.
 4. OpenCode: agent transform (#19, done); guard plugin (deny only) done in 0.3.25.
 5. Cursor: `.cursor-plugin/` plugin and guard hooks (deny only) done in 0.3.26; unverified in a real Cursor.
-6. Installable `aicfg` (`uv tool install` or `pipx install` from GitHub, core bundled): done in
-   0.3.22. Packs by git URL, fetched by `aicfg` (`git` + `ref`, `aicfg update`): done in 0.3.23.
+6. Installable `brainrc` (`uv tool install` or `pipx install` from GitHub, core bundled): done in
+   0.3.22. Packs by git URL, fetched by `brainrc` (`git` + `ref`, `brainrc update`): done in 0.3.23.

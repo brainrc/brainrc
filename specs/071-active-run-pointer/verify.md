@@ -16,7 +16,7 @@ Run at 2026-10-21T01:42:06Z on commit `142747e`. Raw logs in `specs/071-active-r
 ## Acceptance criteria
 | Criterion | Evidence | Result |
 |---|---|---|
-| AC1 | `test_write_from_other_directory_records_absolute_run_path` passes. Manual: run dir in `.runs/ac1/repo-a/specs/071-x`, `write` from `.runs/ac1/session-b`, `read` from `.runs/ac1/cwd-c` printed `/home/user/ai-config/specs/071-active-run-pointer/.runs/ac1/repo-a/specs/071-x` (exit 0); pointer bytes end in `\n` | pass |
+| AC1 | `test_write_from_other_directory_records_absolute_run_path` passes. Manual: run dir in `.runs/ac1/repo-a/specs/071-x`, `write` from `.runs/ac1/session-b`, `read` from `.runs/ac1/cwd-c` printed `~/ai-config/specs/071-active-run-pointer/.runs/ac1/repo-a/specs/071-x` (exit 0); pointer bytes end in `\n` | pass |
 | AC2 | `test_write_defaults_to_dot_config_ai_config_when_env_unset` passes (HOME temp, AICFG_HOME unset) | pass |
 | AC3 | `test_pointer_is_single_line_path_plus_newline_only` passes (byte-exact `path\n`); manual `od -c` of AC1 pointer shows one path and one `\n` | pass |
 | AC4 | Doc: `references/lifecycle.md:36-37` (intake step 5 runs `active_run.py write`); `SKILL.md:74-75` (run once the run exists, after intake). Agent behavior, not executable here | pass |

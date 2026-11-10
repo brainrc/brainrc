@@ -112,7 +112,7 @@ def main() -> int:
             "hookSpecificOutput": {
                 "hookEventName": "PreToolUse",
                 "permissionDecision": decision,
-                "permissionDecisionReason": f"ai-config guard: {reason}.",
+                "permissionDecisionReason": f"brainrc guard: {reason}.",
             }
         }, sys.stdout)
     return 0

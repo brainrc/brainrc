@@ -23,3 +23,15 @@ Artifacts: specs/campaign-094-neutral-core/campaign.json
 
 ## 2026-11-10T06:18:49Z · child 2 gh:105 verified
 - One retry (old-name test). Drafts ready (specs/105-fix-doc-drift/pr-body.md). Child 3 gh:203 branches from 105-fix-doc-drift.
+
+## 2026-11-10T06:21:03Z · child 3 gh:203 verified
+
+## engine · stack Deliver gate · auto-approved
+2026-11-10T06:21:03Z
+⛔ Deliver gate: campaign-094-neutral-core (stacked, oneshot)
+Outward actions, in merge order:
+1. Push 104-local-tripwires; open a ready PR against main from specs/104-local-tripwires/pr-body.md.
+2. Push 105-fix-doc-drift; open a ready PR against 104-local-tripwires from specs/105-fix-doc-drift/pr-body.md ("2 of 3, stacked on #X").
+3. Push 203-roadmap-epic-list; open a ready PR against 105-fix-doc-drift from specs/203-roadmap-epic-list/pr-body.md ("3 of 3, stacked on #X").
+Ticket comments stay drafts. No ticket transition, no merge, no retarget.
+- Delivered 2026-11-10T06:22:09Z: #263 (gh:104, base main), #264 (gh:105, base 104-local-tripwires), #265 (gh:203, base 105-fix-doc-drift). All ready, none merged. Retarget each to main after its predecessor merges (campaign.md § Retarget rule).

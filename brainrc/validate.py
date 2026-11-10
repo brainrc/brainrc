@@ -1,10 +1,11 @@
-"""Validation: frontmatter, references, packs, and tripwires (used in CI)."""
+"""Validation: frontmatter, references, packs, tripwires, and local tripwires (used in CI)."""
 from __future__ import annotations
 
 import fnmatch
 import json
 import os
 import re
+import subprocess
 from pathlib import Path
 
 from .mcp import check_servers
@@ -138,6 +139,8 @@ def _validate_source(src: Source, agent_names: set[str], skill_names: set[str]) 
     if not src.is_core:
         errors += _validate_pack(src, agent_names, skill_names)
     errors += _check_tripwires(src)
+    if src.is_core:
+        errors += _check_local_tripwires(src)
     return errors
 
 
@@ -205,6 +208,60 @@ def _check_tripwires(src: Source) -> list[str]:
             for n, line in enumerate(p.read_text(errors="replace").splitlines(), 1):
                 if pattern.search(line) and not (allow and allow.search(line)):
                     errors.append(f"{src.rel(p)}:{n}: tripwire {tid}: {t.get('message', t['pattern'])}")
+    return errors
+
+
+LOCAL_TRIPWIRES = "tripwires.local.toml"
+LOCAL_FILES = ("*.local.toml", "*.local.md", "*.local.json")  # per-machine, gitignored
+
+
+def _tracked_files(src: Source) -> tuple[list[Path], bool]:
+    """Files git tracks in the core checkout, and whether git answered. Without git (an installed
+    copy, or a checkout git can't read), every file outside dot-directories, dist/ and node_modules/,
+    except the per-machine *.local.* files."""
+    try:
+        out = subprocess.run(["git", "-C", str(src.root), "ls-files", "-z"], capture_output=True, check=True)
+    except (OSError, subprocess.CalledProcessError):
+        return [p for p in _tripwire_files(src, ["*"])
+                if not any(fnmatch.fnmatch(p.name, pat) for pat in LOCAL_FILES)], False
+    return sorted(src.root / name for name in out.stdout.decode(errors="replace").split("\0") if name), True
+
+
+def _check_local_tripwires(src: Source) -> list[str]:
+    """Each maintainer's own forbidden terms (an employer, a client), kept out of git in
+    tripwires.local.toml as `terms = [...]`: any tracked core file that contains one fails, by name or
+    content, compared case-insensitively. The file itself must never be tracked."""
+    path = src.root / LOCAL_TRIPWIRES
+    if not path.is_file():
+        return []
+    files, from_git = _tracked_files(src)
+    errors = [f"{LOCAL_TRIPWIRES}: is tracked by git; remove it with `git rm --cached {LOCAL_TRIPWIRES}`"
+              for p in files if from_git and p == path]
+    try:
+        terms = _read_toml(path).get("terms", [])
+    except ConfigError as e:
+        return errors + [str(e)]
+    if not isinstance(terms, list) or not all(isinstance(t, str) and t.strip() for t in terms):
+        return errors + [f"{LOCAL_TRIPWIRES}: `terms` must be a list of non-empty strings"]
+    needles = [(t, t.strip().casefold()) for t in terms]
+    for p in files if needles else []:
+        if p == path or not (p.is_symlink() or p.is_file()):
+            continue
+        rel = src.rel(p)
+        errors += [f"{rel}: local tripwire: the file name contains \"{t}\" ({LOCAL_TRIPWIRES})"
+                   for t, n in needles if n in rel.casefold()]
+        if p.is_symlink():  # git commits the link's target path, not the file it points at
+            target = os.readlink(p).casefold()
+            errors += [f"{rel}: local tripwire: the link target contains \"{t}\" ({LOCAL_TRIPWIRES})"
+                       for t, n in needles if n in target]
+            continue
+        data = p.read_bytes()
+        if b"\0" in data[:8192]:
+            continue  # binary
+        for lineno, line in enumerate(data.decode(errors="replace").splitlines(), 1):
+            folded = line.casefold()
+            errors += [f"{rel}:{lineno}: local tripwire: contains \"{t}\" ({LOCAL_TRIPWIRES})"
+                       for t, n in needles if n in folded]
     return errors
 
 

@@ -1,0 +1,51 @@
+{
+  "ref": "gh:94",
+  "shape": "ordered",
+  "dependency_source": "none",
+  "started_at": "2026-11-10T06:04:53Z",
+  "delivery": "stacked",
+  "auto": true,
+  "oneshot": true,
+  "gates": {
+    "campaign": "approved",
+    "deliver": "approved"
+  },
+  "members": [
+    {
+      "ref": "gh:104",
+      "order": 1,
+      "depends_on": [],
+      "status": "delivered",
+      "slug": "104-local-tripwires",
+      "branch": "104-local-tripwires",
+      "pr": "https://github.com/brainrc/brainrc/pull/263",
+      "pr_draft": false,
+      "base": "main",
+      "merged": false
+    },
+    {
+      "ref": "gh:105",
+      "order": 2,
+      "depends_on": [],
+      "status": "delivered",
+      "slug": "105-fix-doc-drift",
+      "branch": "105-fix-doc-drift",
+      "pr": "https://github.com/brainrc/brainrc/pull/264",
+      "pr_draft": false,
+      "base": "104-local-tripwires",
+      "merged": false
+    },
+    {
+      "ref": "gh:203",
+      "order": 3,
+      "depends_on": [],
+      "status": "delivered",
+      "slug": "203-roadmap-epic-list",
+      "branch": "203-roadmap-epic-list",
+      "pr": "https://github.com/brainrc/brainrc/pull/265",
+      "pr_draft": false,
+      "base": "105-fix-doc-drift",
+      "merged": false
+    }
+  ]
+}

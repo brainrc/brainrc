@@ -21,13 +21,13 @@ The first `status` previews what `apply` would write and writes nothing. It work
 
 ```text
 $ python3 scripts/brainrc.py status
-CREATE    claude    ~/.claude/skills/aws
+CREATE    claude    ~/.claude/skills/brainrc-aws
 ...                 (about 160 lines, one per file)
 MERGE     cursor    ~/.cursor/hooks.json  (hooks)
 
 Dry run. Run `apply` to write.
 $ python3 scripts/brainrc.py apply
-CREATE    claude    ~/.claude/skills/aws
+CREATE    claude    ~/.claude/skills/brainrc-aws
 ...
 MERGE     cursor    ~/.cursor/hooks.json  (hooks)
 $ python3 scripts/brainrc.py status
@@ -66,7 +66,7 @@ document → deliver, run by a team of small agents, with your approval at three
 application code *and* infrastructure.
 
 ```
-/work gh:42                 # or: /work local:tickets/7.md · /work add a --dry-run flag to the sync CLI
+/brainrc-work gh:42                 # or: /brainrc-work local:tickets/7.md · /brainrc-work add a --dry-run flag to the sync CLI
 ```
 
 You approve the **spec**, the **plan**, and **delivery** (push, PR, ticket update). Everything

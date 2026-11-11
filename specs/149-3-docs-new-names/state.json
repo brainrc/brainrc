@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "local",
+    "ref": "local:specs/tickets/149-3-docs-new-names.md",
+    "id": "149.3",
+    "title": "Move docs and references to the new skill names",
+    "url": null,
+    "pr": null,
+    "pr_draft": false,
+    "parent": "gh:149"
+  },
+  "slug": "149-3-docs-new-names",
+  "branch": "149-3-docs-new-names",
+  "base": "149-2-reserved-names",
+  "worktree": "~/.brainrc-worktrees/brainrc/149-3-docs-new-names",
+  "size": "standard",
+  "mode": "subagent",
+  "delivery": "normal",
+  "auto": true,
+  "oneshot": true,
+  "campaign": "specs/campaign-113-oss-readiness",
+  "stage": "deliver",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "pending"
+  },
+  "domains": [],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/brainrc.py validate",
+      "python3 scripts/check_tutorial.py",
+      "python3 scripts/check_tutorial.py --readme"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Rename references in shipped docs, deprecation note, fragment",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 2,
+      "files": [
+        "README.md",
+        "CONTRIBUTING.md",
+        "docs/",
+        "rules/",
+        "agents/",
+        "skills/",
+        "examples/sandbox/README.md",
+        "changelog.d/149-3-docs-new-names.md",
+        "evals/triggers.toml",
+        "tests/test_planning.py",
+        "tests/test_plugin_docs.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC6",
+        "AC7"
+      ],
+      "review": "batch",
+      "started_at": "2026-11-03T13:46:04Z",
+      "finished_at": "2026-11-03T13:55:37Z",
+      "commit": "9503649"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-11-03T13:46:04Z",
+    "stage_started_at": {
+      "intake": "2026-11-03T13:46:04Z",
+      "spec": "2026-11-03T13:46:04Z",
+      "plan": "2026-11-03T13:46:04Z",
+      "implement": "2026-11-03T13:46:04Z",
+      "verify": "2026-11-03T13:56:45Z",
+      "document": "2026-11-03T13:56:45Z",
+      "deliver": "2026-11-03T13:56:45Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-11-03T13:46:04Z",
+        "approved_at": "2026-11-03T13:46:04Z"
+      },
+      "plan": {
+        "presented_at": "2026-11-03T13:46:04Z",
+        "approved_at": "2026-11-03T13:46:04Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 1,
+      "plan": 1,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 1,
+      "first_pass": 1
+    },
+    "retries": 1,
+    "interventions": 0
+  },
+  "living": [
+    "core-skill-names"
+  ]
+}

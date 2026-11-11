@@ -103,9 +103,9 @@
       "depends_on": [
         "local:specs/tickets/149-2-reserved-names.md"
       ],
-      "status": "todo",
-      "slug": null,
-      "branch": null,
+      "status": "verified",
+      "slug": "149-3-docs-new-names",
+      "branch": "149-3-docs-new-names",
       "pr": null,
       "pr_draft": false,
       "base": null,

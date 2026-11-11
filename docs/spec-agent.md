@@ -15,7 +15,7 @@ on its own.
 > review ([below](#harness-support)).
 
 ```
-/work gh:42
+/brainrc-work gh:42
   intake ─► analyst ─► ⛔ SPEC ─► architect ─► ⛔ PLAN ─► implementer ×N ─► reviewers ─►
   verifier ─► doc-writer ─► ⛔ DELIVER ─► push · PR · ticket update ─► retro ─► watch
 ```
@@ -33,17 +33,17 @@ no git remote, `SPEC_PR_STATUS_FIXTURE` names a `pr_status` fixture file read in
 
 | Command | Does |
 |---|---|
-| `/work <gh:42 \| issue URL \| local:path.md \| free text> [--local] [--auto] [--oneshot]` | Start, or resume if a spec for it exists. `--local`: drafts only, never push/PR/comment. `--auto`: no gate stops, ends with a draft PR ([Auto mode](#auto-mode)). `--oneshot`: like `--auto`, safer defaults, ready PRs ([Oneshot mode](#oneshot-mode)) |
+| `/brainrc-work <gh:42 \| issue URL \| local:path.md \| free text> [--local] [--auto] [--oneshot]` | Start, or resume if a spec for it exists. `--local`: drafts only, never push/PR/comment. `--auto`: no gate stops, ends with a draft PR ([Auto mode](#auto-mode)). `--oneshot`: like `--auto`, safer defaults, ready PRs ([Oneshot mode](#oneshot-mode)) |
 | `/spec-status [ref]` | Stage, gates, tasks, blocker, next action |
 | `/spec-approve [notes]` | Approve the pending gate |
 | `/spec-resume [ref]` | Continue an interrupted run (any tool) |
 
-These are user-invoked skills (`skills/work/` and so on), so every harness that reads skills
-gets them. In the Claude Code plugin they're `/brainrc:work`; in Codex, call the skill by name.
+These are user-invoked skills (`skills/brainrc-work/` and so on), so every harness that reads skills
+gets them. In the Claude Code plugin they're `/brainrc:brainrc-work`; in Codex, call the skill by name.
 
 ## Auto mode
 
-`/work <ref> --auto` (or `/work --campaign <ref> --shape ordered --auto`) runs every stage without
+`/brainrc-work <ref> --auto` (or `/brainrc-work --campaign <ref> --shape ordered --auto`) runs every stage without
 stopping at the gates. It's for tickets you'd approve as written. Each gate is still written to
 `log.md` as `auto-approved`, with its timestamps. Open questions take the analyst's stated default.
 The run ends with a **draft** PR (a campaign: stacked draft PRs) whose body lists the gates and every
@@ -82,7 +82,7 @@ babysitting:
 
 ## Planning mode
 
-`/plan <topic>` turns a topic into proven tickets. A `researcher` role reads the repo (the web
+`/brainrc-plan <topic>` turns a topic into proven tickets. A `researcher` role reads the repo (the web
 only with `--web`) and proposes candidates, each with proof: a read-only command and its
 output, a failing test, or a local spike commit, plus `file:line` links. The engine re-runs each
 command proof through `proof_guard.py`, a narrow read-only allowlist with no shell, network, or
@@ -110,7 +110,7 @@ tickets only and refuses GitHub. State lives in `specs/plan-<slug>/`. Details:
 
 ## Campaigns
 
-`/work --campaign <epic | query | refs> [--shape playbook|ordered]` runs many related tickets.
+`/brainrc-work --campaign <epic | query | refs> [--shape playbook|ordered]` runs many related tickets.
 Two shapes, detected from the template check plus the children's depends-on links (`--shape` overrides):
 
 - **playbook**: near-identical tickets. One shared playbook, approved at one Campaign gate, then
@@ -118,7 +118,7 @@ Two shapes, detected from the template check plus the children's depends-on link
 - **ordered**: different or dependent children, built in dependency order. Dependencies come from
   the connector (`api`, then `body`, then `frontmatter`; else epic order). Each child gets its own
   Spec and Plan gates. One Deliver gate covers all children and picks the delivery: `sequential`
-  (only the first PR opens; resuming with `/work --campaign` or `/spec-resume` opens the next after
+  (only the first PR opens; resuming with `/brainrc-work --campaign` or `/spec-resume` opens the next after
   its predecessor merges) or `stacked` (all PRs open at once, each based on the previous child's
   branch). Either way a child PR merges only with base `main`: on resume after its predecessor
   merges, `main` is merged into its branch and a stacked PR is retargeted to `main`.
@@ -175,13 +175,13 @@ Remove a worktree by hand with `git worktree remove <path>`. Cleanup on merge is
 | security-reviewer | sonnet | exploitable issues |
 | infra-reviewer | sonnet | blast radius, destroy/replace, state, rollout |
 | verifier | haiku | criteria → evidence |
-| researcher | sonnet | topic → proven candidate tickets (`/plan`) |
+| researcher | sonnet | topic → proven candidate tickets (`/brainrc-plan`) |
 | doc-writer | haiku | docs, PR body, ticket comment |
 
 ## Domain skills (`skills/`)
 
-Loaded only when the work touches their files: `go-service`, `terraform` (incl. Terragrunt,
-Atlantis, Spacelift), `aws`, `kubernetes` (Helm, Kustomize), `gitops` (Argo CD, Flux),
+Loaded only when the work touches their files: `go-service`, `brainrc-terraform` (incl. Terragrunt,
+Atlantis, Spacelift), `brainrc-aws`, `kubernetes` (Helm, Kustomize), `gitops` (Argo CD, Flux),
 `ci-pipelines` (GitHub Actions), `containers`, `db-migrations`, `observability`, `scripting`
 (Python, Bash). Each holds offline validation commands, conventions, a review checklist,
 and what never to run without approval.

@@ -11,7 +11,7 @@
 | Paths, not contents, in dispatch | `references/handoff.md` | subagents load only what they need |
 | Handoff blocks ≤ ~150 words; engine reads only the newest | `references/handoff.md` | main thread stays small across long runs |
 | Command output to `.runs/`, read summaries | `references/efficiency.md` | test/plan logs never flood context |
-| Plan summarized via `terraform show -json` + jq | `skills/terraform` | resource actions instead of full plan text |
+| Plan summarized via `terraform show -json` + jq | `skills/brainrc-terraform` | resource actions instead of full plan text |
 | Checks scoped to changed packages/roots during implement | `references/efficiency.md` | faster loops; full run once at verify |
 | Domain skills load on demand | Agent Skills progressive disclosure | only the stacks touched cost tokens |
 | Short, de-duplicated global rules | `rules/` | rules load in every session of every tool |

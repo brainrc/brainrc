@@ -1,0 +1,156 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:148",
+    "id": "148",
+    "title": "Rewrite the README for strangers",
+    "url": "https://github.com/brainrc/brainrc/issues/148",
+    "pr": null,
+    "pr_draft": false
+  },
+  "slug": "148-readme-for-strangers",
+  "branch": "148-readme-for-strangers",
+  "base": "147-ci-matrix",
+  "worktree": "~/.brainrc-worktrees/brainrc/148-readme-for-strangers",
+  "size": "standard",
+  "mode": "subagent",
+  "delivery": "normal",
+  "auto": true,
+  "oneshot": true,
+  "campaign": "specs/campaign-113-oss-readiness",
+  "stage": "deliver",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "pending"
+  },
+  "domains": [
+    "scripting",
+    "ci-pipelines"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/brainrc.py validate",
+      "python3 scripts/check_tutorial.py"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "README quickstart check: --readme, parse_readme, shared run(), tests, CI step",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "scripts/check_tutorial.py",
+        "tests/test_check_tutorial.py",
+        ".github/workflows/validate.yml"
+      ],
+      "criteria": [
+        "AC4",
+        "AC10"
+      ],
+      "review": "batch",
+      "started_at": "2026-11-03T06:26:38Z",
+      "finished_at": "2026-11-03T06:31:33Z",
+      "commit": "33cc15e",
+      "red": "assertion"
+    },
+    {
+      "id": "T2",
+      "title": "README lead, quickstart, install, transcript, spec-agent second, tests, fragment",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "README.md",
+        "tests/test_check_tutorial.py",
+        "changelog.d/148-readme-for-strangers.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC8",
+        "AC9",
+        "AC10"
+      ],
+      "review": "batch",
+      "after": [
+        "T1"
+      ],
+      "started_at": "2026-11-03T06:31:33Z",
+      "finished_at": "2026-11-03T13:03:30Z",
+      "commit": "4a5c532",
+      "red": "assertion"
+    },
+    {
+      "id": "T3",
+      "title": "Why not table",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "README.md"
+      ],
+      "criteria": [
+        "AC6",
+        "AC7",
+        "AC9"
+      ],
+      "review": "batch",
+      "after": [
+        "T2"
+      ],
+      "started_at": "2026-11-03T13:03:30Z",
+      "finished_at": "2026-11-03T13:11:18Z",
+      "commit": "be24e87"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-11-03T06:24:22Z",
+    "stage_started_at": {
+      "intake": "2026-11-03T06:24:22Z",
+      "spec": "2026-11-03T06:24:22Z",
+      "plan": "2026-11-03T06:25:20Z",
+      "implement": "2026-11-03T06:26:38Z",
+      "verify": "2026-11-03T13:14:44Z",
+      "document": "2026-11-03T13:17:43Z",
+      "deliver": "2026-11-03T13:18:58Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-11-03T06:25:20Z",
+        "approved_at": "2026-11-03T06:25:20Z"
+      },
+      "plan": {
+        "presented_at": "2026-11-03T06:26:38Z",
+        "approved_at": "2026-11-03T06:26:38Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 2,
+      "first_pass": 2
+    },
+    "retries": 0,
+    "interventions": 0
+  },
+  "living": [
+    "project-docs"
+  ]
+}

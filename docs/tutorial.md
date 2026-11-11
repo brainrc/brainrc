@@ -7,7 +7,8 @@ takes about 15 minutes. You need Python 3.11+ and git.
 A pack is a separate repo layered on top of brainrc, so you never edit core. If you haven't
 yet, skim the [architecture overview](architecture.md) first.
 
-Run every command from the core checkout unless a step says otherwise.
+Run every command from the core checkout unless a step says otherwise. CI runs steps 1-5 of this
+page on every change (`scripts/check_tutorial.py`), so they stay accurate.
 
 ## 1. Clone core and check it
 

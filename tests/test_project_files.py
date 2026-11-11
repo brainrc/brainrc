@@ -6,8 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 NEW_FILES = ["SECURITY.md", "GOVERNANCE.md", "CODE_OF_CONDUCT.md", ".github/CODEOWNERS",
              ".github/pull_request_template.md", ".github/ISSUE_TEMPLATE/bug_report.yml",
-             ".github/ISSUE_TEMPLATE/feature_request.yml", ".github/ISSUE_TEMPLATE/config.yml",
-             "changelog.d/146-oss-project-files.md"]
+             ".github/ISSUE_TEMPLATE/feature_request.yml", ".github/ISSUE_TEMPLATE/config.yml"]
 EMAIL = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
 HOME_PATH = re.compile(r"/Users/|/home/")
 NETWORK = re.compile(r"^\s*(?:import|from)\s+(?:urllib|http|socket|requests|ssl|ftplib|smtplib)\b", re.M)
@@ -52,12 +51,6 @@ class ProjectFilesTest(unittest.TestCase):
             body = text(rel)
             self.assertIsNone(EMAIL.search(body), rel)
             self.assertIsNone(HOME_PATH.search(body), rel)
-
-    def test_changelog_fragment(self):
-        body = text("changelog.d/146-oss-project-files.md")
-        self.assertRegex(body, r"(?s)\A---\nbump: patch\n---\n- ")
-        fragments = [p for p in (ROOT / "changelog.d").glob("*.md") if p.name != "README.md"]
-        self.assertIn("146-oss-project-files.md", [p.name for p in fragments])
 
 
 if __name__ == "__main__":

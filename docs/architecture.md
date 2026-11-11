@@ -15,7 +15,7 @@ flowchart LR
     files["skills/ · agents/ · commands/<br/>instructions file · hooks · settings.json"]
   end
   subgraph run["Run time, in the AI tool"]
-    engine["/work → spec-agent engine<br/>reads extensions.md"]
+    engine["/brainrc-work → spec-agent engine<br/>reads extensions.md"]
     roles["agents (analyst … verifier)<br/>domain skills · connector"]
   end
   core --> apply
@@ -35,7 +35,7 @@ flowchart LR
 | install | render extensions | each enabled pack's `pack.toml` | `$BRAINRC_HOME/extensions.md` (and, deprecated, `skills/spec-agent/references/extensions.md`) |
 | install | link and merge | `harnesses.toml`, `overrides/<harness>/` | symlinks in each harness dir, hook entries in its settings file |
 | run | every session | the instructions file, skill descriptions | nothing |
-| run | `/work <ticket>` | `extensions.md`, the connector, agents, domain skills | `specs/<slug>/` in your project, commits on a feature branch |
+| run | `/brainrc-work <ticket>` | `extensions.md`, the connector, agents, domain skills | `specs/<slug>/` in your project, commits on a feature branch |
 | run | every tool call (Claude Code) | guard hooks | an allow, ask, or deny decision |
 
 Skills, agents, commands, and hooks are symlinks, so `git pull` updates them at once. Rules and

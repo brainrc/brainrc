@@ -22,7 +22,7 @@ class PluginDocsTest(unittest.TestCase):
     def test_install_commands_use_new_names(self):
         install = text("docs/install.md")
         for want in ("/plugin install brainrc@brainrc", "codex plugin add brainrc@brainrc",
-                     "~/.cursor/plugins/local/brainrc", "/brainrc:work", "brainrc:<name>"):
+                     "~/.cursor/plugins/local/brainrc", "/brainrc:brainrc-work", "brainrc:<name>"):
             self.assertIn(want, install)
         self.assertIn("/plugin install brainrc@brainrc", text("README.md"))
 

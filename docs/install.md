@@ -90,7 +90,7 @@ packs, and unmerged hooks. Each problem comes with its fix.
 
 ### Claude Code
 
-Claude Code users can install the skills (including `/work`), agents, and guard hooks as a plugin:
+Claude Code users can install the skills (including `/brainrc-work`), agents, and guard hooks as a plugin:
 
 ```text
 /plugin marketplace add brainrc/brainrc
@@ -99,7 +99,7 @@ Claude Code users can install the skills (including `/work`), agents, and guard 
 
 | Piece | Plugin | `brainrc` |
 |---|---|---|
-| Skills, agents | yes, named `brainrc:<name>` (`/brainrc:work`) | yes |
+| Skills, agents | yes, named `brainrc:<name>` (`/brainrc:brainrc-work`) | yes |
 | Claude guard hooks | yes | yes |
 | Rules (`rules/`) | no: plugins can't load instructions into every session | yes |
 | Packs, other harnesses (Codex, OpenCode, Antigravity, Cursor) | no | yes |
@@ -114,7 +114,7 @@ codex plugin marketplace add brainrc/brainrc
 codex plugin add brainrc@brainrc
 ```
 
-Codex gets the skills (`work`, `review`, `spec-*`, and the rest) and the agent files spec-agent
+Codex gets the skills (`brainrc-work`, `brainrc-review`, `spec-*`, and the rest) and the agent files spec-agent
 reads. Rules don't come with a Codex plugin: run `brainrc`, or copy `rules/*.md` into
 `~/.codex/AGENTS.md`. Whether Codex runs the plugin's guard hooks is not yet verified
 ([harness packages](harness-packages.md#codex)).
@@ -184,7 +184,7 @@ rules/          Global instructions, as ordered markdown fragments (00-core.md, 
                 Concatenated into CLAUDE.md / AGENTS.md.
 skills/<name>/  Agent Skills: spec-agent engine, ticket connectors, domain skills (terraform, aws, ...).
 agents/         Agent roles (analyst, architect, implementer, reviewers, verifier, doc-writer).
-commands/       Optional, for packs: slash commands. Core's (/work, /review, /spec-*) are skills.
+commands/       Optional, for packs: slash commands. Core's (/brainrc-work, /brainrc-review, /spec-*) are skills.
 mcp/            Canonical MCP server registry. Env var names only, never secret values.
 overrides/      Harness-specific config (Claude guard hooks + settings fragment).
 harnesses.toml  Where each harness reads each content type.

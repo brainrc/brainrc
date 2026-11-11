@@ -6,7 +6,7 @@
 [[case]]
 prompt = "Add a /healthz handler to our Go HTTP service and a table-driven test for it."
 expect = ["go-service"]
-forbid = ["terraform", "kubernetes"]
+forbid = ["brainrc-terraform", "kubernetes"]
 
 [[case]]
 prompt = "Write a Bash script that rotates log files older than seven days."
@@ -15,23 +15,23 @@ forbid = ["go-service"]
 
 [[case]]
 prompt = "Add an S3 bucket with versioning to our Terraform root module and show the plan."
-expect = ["terraform"]
+expect = ["brainrc-terraform"]
 forbid = ["kubernetes"]
 
 [[case]]
 prompt = "Bump the memory limit in the Helm chart values for the api deployment."
 expect = ["kubernetes"]
-forbid = ["terraform"]
+forbid = ["brainrc-terraform"]
 
 [[case]]
 prompt = "Check which IAM permissions our Lambda role actually needs and tighten its policy."
-expect = ["aws"]
+expect = ["brainrc-aws"]
 forbid = ["containers"]
 
 [[case]]
 prompt = "Speed up our Python unit tests by sharing one fixture across the module."
 expect = []
-forbid = ["aws", "db-migrations"]
+forbid = ["brainrc-aws", "db-migrations"]
 
 [[case]]
 prompt = "The Argo CD Application for billing is out of sync. Fix the Kustomization overlay in the config repo."
@@ -70,10 +70,10 @@ forbid = ["db-migrations"]
 
 [[case]]
 prompt = "Write a Terraform module for an RDS Postgres instance."
-expect = ["terraform"]
+expect = ["brainrc-terraform"]
 forbid = ["db-migrations", "go-service"]
 
 [[case]]
 prompt = "Explain in the README how our team names git branches."
 expect = []
-forbid = ["terraform", "aws", "kubernetes", "gitops", "observability"]
+forbid = ["brainrc-terraform", "brainrc-aws", "kubernetes", "gitops", "observability"]

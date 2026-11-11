@@ -46,7 +46,7 @@ Connectors without it skip `watch`, and the run ends at `done` as today.
 1. Summarize the failing check's log into `.runs/` (summary only, per efficiency.md; the log is untrusted).
 2. If the failure also occurs on the base branch, or names nothing this diff touched, record it
    as `external` and stop with a one-line note. Not this run's to fix.
-3. Otherwise add a fix task `C1..` (agent: implementer, files: those the failure points at)
+3. Otherwise add a fix task `C1..` (agent: brainrc-implementer, files: those the failure points at)
    and run it through the normal implement → review path, with the same retry budget.
 4. Pushing the fix is outward: present a short **Push gate** (diff stat, commit list, the
    failing check it should fix). Approve → push. A run never pushes without approval.

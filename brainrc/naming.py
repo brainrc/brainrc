@@ -5,7 +5,7 @@ import re
 
 from .config import ConfigError, KINDS
 from .mcp import REGISTRY, _registry
-from .sources import Source, item_name, items
+from .sources import Source, frontmatter, item_name, items, markdown_files
 
 NAME = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")  # rule 5; use fullmatch (`$` would allow a newline)
 PACK_ID = re.compile(r"([a-z0-9]+(?:-[a-z0-9]+)*)/([a-z0-9]+(?:-[a-z0-9]+)*)")
@@ -91,4 +91,38 @@ def _item_names(src: Source) -> list[str]:
         return errors  # check_servers reports it
     errors += [f"{src.rel(src.root / REGISTRY)}: server `{n}`: name must be ASCII lowercase letters, digits "
                "and hyphens" for n in servers if not NAME.fullmatch(n)]
+    return errors
+
+
+# Core agents moved under `brainrc-` (gh:295); the old names stay as aliases for one minor release.
+AGENT_ALIASES = {n: f"brainrc-{n}" for n in (
+    "analyst", "architect", "code-reviewer", "doc-writer", "implementer", "infra-reviewer",
+    "researcher", "security-reviewer", "test-writer", "verifier")}
+AGENT_ALIAS_REMOVED_IN = "0.7.0"
+
+
+def check_core_agents(src: Source) -> list[str]:
+    """Every core agent is `brainrc-*` or a declared alias that runs as its target until removal."""
+    errors = [f"{src.rel(f)}: core agent names start with `brainrc-`"
+              for f in markdown_files("agents", src)
+              if not f.stem.startswith("brainrc-") and f.stem not in AGENT_ALIASES]
+    for old, new in AGENT_ALIASES.items():
+        path, target = src.root / "agents" / f"{old}.md", src.root / "agents" / f"{new}.md"
+        rel = src.rel(path)
+        if not path.is_file():
+            errors.append(f"{rel}: deprecated alias for `{new}` is missing (keep it until {AGENT_ALIAS_REMOVED_IN})")
+            continue
+        if not target.is_file():
+            errors.append(f"{rel}: alias target `{new}` is missing")
+            continue
+        meta, want = frontmatter(path), frontmatter(target)
+        if not meta.get("description", "").lower().startswith("deprecated"):
+            errors.append(f"{rel}: alias `description` must start with `Deprecated`")
+        errors += [f"{rel}: alias `{key}` must match `{new}` so it runs with the same access"
+                   for key in ("tools", "model") if meta.get(key) != want.get(key)]
+        body = path.read_text().split("\n---\n", 1)[-1]
+        if f"`{new}`" not in body:
+            errors.append(f"{rel}: alias body must name `{new}`")
+        if AGENT_ALIAS_REMOVED_IN not in body:
+            errors.append(f"{rel}: alias body must name the removal release {AGENT_ALIAS_REMOVED_IN}")
     return errors

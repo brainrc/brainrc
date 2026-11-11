@@ -104,7 +104,7 @@ max_always_tokens = 800   # optional budget for rules + descriptions (see Contex
 [[extensions.domains]]    # extra rows for spec-agent's Domains table
 files = "`deploy/*.yaml`, `charts/acme-*`"
 skills = ["acme-deploy"]
-reviewer = "infra-reviewer"
+reviewer = "brainrc-infra-reviewer"
 
 [[extensions.intake_context]]   # skills spec-agent runs after fetching the ticket
 skill = "acme-context"

@@ -34,7 +34,7 @@
       "ref": "gh:295",
       "order": 3,
       "depends_on": [],
-      "status": "todo",
+      "status": "verified",
       "slug": "295-brainrc-agents",
       "branch": "claude/project-thread-atsed2",
       "pr": null

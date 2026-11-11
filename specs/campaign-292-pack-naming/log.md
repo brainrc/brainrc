@@ -12,3 +12,10 @@
 
 ## 2026-11-11T06:45:00Z · Campaign gate · auto-approved
 Order gh:293 → gh:294 → gh:295. Size standard each. Delivery: one draft PR, `Closes` per member.
+
+## 2026-11-11T07:35:00Z · all members verified
+- gh:293 docs, gh:294 `brainrc/naming.py` with near-miss tests, gh:295 agents renamed with aliases.
+- The naming checks are a breaking [pack contract] change, so the fragment says `bump: minor` (0.6.0), and
+  the agent aliases go in 0.7.0. 0.6.0 is also the release the five skill aliases from 0.5.14 promised to
+  leave in; removing them is outside this epic, so they stay. Owner's call whether to remove them first.
+- The example packs now pin `<0.7` so they still validate after the release.

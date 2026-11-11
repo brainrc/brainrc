@@ -2,14 +2,14 @@
 name = "acme"
 prefix = "acme-"                  # skills, agents, and commands must start with this
 id = "acme/acme-ai-pack"          # optional: <owner>/<pack>; the prefix starts with the owner (docs/packs.md#naming)
-requires_core = ">=0.3, <0.6"     # core versions this pack works with (docs/packs.md#compatibility)
+requires_core = ">=0.5, <0.7"     # core versions this pack works with (docs/packs.md#compatibility)
 max_always_tokens = 400          # rules + descriptions loaded every session (docs/packs.md#context-cost)
 
 # Extra row for spec-agent's Domains table: files that load acme-deploy and get infra review.
 [[extensions.domains]]
 files = "`deploy/*.yaml`, `charts/acme-*`"
 skills = ["acme-deploy"]
-reviewer = "infra-reviewer"
+reviewer = "brainrc-infra-reviewer"
 
 # Skills spec-agent runs right after fetching a ticket.
 [[extensions.intake_context]]

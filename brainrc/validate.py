@@ -9,7 +9,7 @@ import subprocess
 from pathlib import Path
 
 from .mcp import check_servers
-from .naming import check_pack_names
+from .naming import check_core_agents, check_pack_names
 from . import config
 from .config import (
     ConfigError,
@@ -133,6 +133,7 @@ def _validate_source(src: Source, agent_names: set[str], skill_names: set[str]) 
 
     if src.is_core:
         errors += _check_aliases(src)
+        errors += check_core_agents(src)
         errors += [f"{src.rel(s)}: skill name `{s.name}` is reserved (a harness built-in); use a `brainrc-` name"
                    for s in skills(src) if s.name in RESERVED_SKILL_NAMES and s.name not in DEPRECATED_ALIASES]
         errors += [f"{src.rel(r)}: missing `trigger` frontmatter (Antigravity drops the rule without it)"

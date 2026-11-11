@@ -14,3 +14,6 @@ Inline (review_context: shared). No CRITICAL/HIGH. Checked that the var is resol
 
 ## engine · verify
 903 tests OK (plain, and with the three vars set to temp dirs: nothing written there), validate OK (core, acme). See verify.md.
+
+## engine · Deliver gate · auto-approved
+Pushed the epic branch and opened draft PR #335 against main (one PR for the epic, per the build plan), body from `specs/campaign-110-harness-paths/pr-body.md`. No ticket comment or transition; merging is the owner's.

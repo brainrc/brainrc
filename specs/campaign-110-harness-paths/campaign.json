@@ -27,7 +27,7 @@
       },
       "status": "delivered",
       "slug": "132-claude-config-dir",
-      "pr": null
+      "pr": "https://github.com/brainrc/brainrc/pull/335"
     },
     {
       "ref": "gh:133",
@@ -39,7 +39,7 @@
       },
       "status": "delivered",
       "slug": "133-codex-home",
-      "pr": null
+      "pr": "https://github.com/brainrc/brainrc/pull/335"
     },
     {
       "ref": "gh:134",
@@ -51,7 +51,7 @@
       },
       "status": "delivered",
       "slug": "134-opencode-xdg",
-      "pr": null
+      "pr": "https://github.com/brainrc/brainrc/pull/335"
     }
   ],
   "gates": {
@@ -60,8 +60,8 @@
       "approved_at": "2026-11-11T04:20:00Z"
     },
     "deliver": {
-      "presented_at": null,
-      "approved_at": null
+      "presented_at": "2026-11-11T05:10:04Z",
+      "approved_at": "2026-11-11T05:10:04Z"
     }
   }
 }

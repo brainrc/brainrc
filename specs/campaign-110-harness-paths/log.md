@@ -17,3 +17,6 @@ Delivery: one branch and one draft PR to main for the whole epic (build plan), c
   vars set they wrote into the real dirs. Fixed in gh:132's commit; the playbook's step 4 now says so.
 - Finding: the manifest check trusted only paths inside `~`, so CLAUDE_CONFIG_DIR outside `~` made
   uninstall warn. It now also trusts the dir a harness var names now; the format is unchanged.
+
+## 2026-11-11T05:10:04Z · Deliver gate · auto-approved
+- gh:132, gh:133, gh:134 → draft PR #335 (base main), one commit each. Next: review by the owner's code-reviewer, then the owner merges.

@@ -6,7 +6,7 @@
     "id": "132",
     "title": "Harness paths: read CLAUDE_CONFIG_DIR for claude",
     "url": "https://github.com/brainrc/brainrc/issues/132",
-    "pr": null,
+    "pr": "https://github.com/brainrc/brainrc/pull/335",
     "pr_draft": true
   },
   "slug": "132-claude-config-dir",
@@ -19,11 +19,11 @@
   "auto": true,
   "oneshot": false,
   "campaign": "campaign-110-harness-paths",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": "pending"
+    "deliver": "approved"
   },
   "domains": [
     "scripting"
@@ -66,7 +66,7 @@
         "AC5"
       ],
       "review": "batch",
-      "sha": null,
+      "sha": "3c23d57",
       "red": "assertion"
     }
   ],
@@ -80,7 +80,7 @@
       "implement": "2026-11-11T04:21:00Z",
       "verify": "2026-11-11T04:54:26Z",
       "document": "2026-11-11T04:56:00Z",
-      "deliver": null
+      "deliver": "2026-11-11T05:10:04Z"
     },
     "gates": {
       "spec": {
@@ -92,8 +92,8 @@
         "approved_at": "2026-11-11T04:20:00Z"
       },
       "deliver": {
-        "presented_at": null,
-        "approved_at": null
+        "presented_at": "2026-11-11T05:10:04Z",
+        "approved_at": "2026-11-11T05:10:04Z"
       }
     },
     "gate_rework": {
@@ -107,7 +107,7 @@
     },
     "retries": 0,
     "interventions": 0,
-    "pr_opened_at": null
+    "pr_opened_at": "2026-11-11T05:10:04Z"
   },
   "living": [
     "aicfg-apply"

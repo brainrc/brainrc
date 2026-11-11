@@ -1,0 +1,130 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:147",
+    "id": "147",
+    "title": "CI matrix, lint and types",
+    "url": "https://github.com/brainrc/brainrc/issues/147",
+    "pr": null,
+    "pr_draft": false
+  },
+  "slug": "147-ci-matrix",
+  "branch": "147-ci-matrix",
+  "base": "146-oss-project-files",
+  "worktree": "~/.brainrc-worktrees/brainrc/147-ci-matrix",
+  "size": "standard",
+  "mode": "subagent",
+  "delivery": "normal",
+  "auto": true,
+  "oneshot": true,
+  "campaign": "specs/campaign-113-oss-readiness",
+  "stage": "deliver",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "pending"
+  },
+  "domains": [
+    "ci-pipelines",
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/brainrc.py validate"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Tutorial check script that reads its commands from the doc",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "scripts/check_tutorial.py",
+        "tests/test_check_tutorial.py"
+      ],
+      "criteria": [
+        "AC5",
+        "AC6",
+        "AC8"
+      ],
+      "review": "batch",
+      "started_at": "2026-11-03T06:02:17Z",
+      "finished_at": "2026-11-03T06:06:55Z",
+      "commit": "f72ccf9",
+      "red": "assertion"
+    },
+    {
+      "id": "T2",
+      "title": "Validate matrix, non-blocking Windows, single gitleaks, tutorial step, changelog",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 2,
+      "files": [
+        ".github/workflows/validate.yml",
+        "changelog.d/147-ci-matrix.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC7",
+        "AC8"
+      ],
+      "review": "each",
+      "after": [
+        "T1"
+      ],
+      "started_at": "2026-11-03T06:06:55Z",
+      "finished_at": "2026-11-03T06:15:08Z",
+      "commit": "29cbb10"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-11-03T05:59:09Z",
+    "stage_started_at": {
+      "intake": "2026-11-03T05:59:09Z",
+      "spec": "2026-11-03T05:59:09Z",
+      "plan": "2026-11-03T06:00:11Z",
+      "implement": "2026-11-03T06:02:17Z",
+      "verify": "2026-11-03T06:15:08Z",
+      "document": "2026-11-03T06:20:22Z",
+      "deliver": "2026-11-03T06:24:09Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-11-03T06:00:11Z",
+        "approved_at": "2026-11-03T06:04:24Z"
+      },
+      "plan": {
+        "presented_at": "2026-11-03T06:02:17Z",
+        "approved_at": "2026-11-03T06:04:24Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 1,
+      "plan": 1,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 3,
+      "first_pass": 1
+    },
+    "retries": 1,
+    "interventions": 0
+  },
+  "living": [
+    "ci"
+  ]
+}

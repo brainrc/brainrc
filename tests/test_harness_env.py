@@ -1,4 +1,4 @@
-"""Each harness's own env var moves its paths (#110): CLAUDE_CONFIG_DIR (#132). Set, they win; unset, empty or relative, the default does."""
+"""Each harness's own env var moves its paths (#110): CLAUDE_CONFIG_DIR (#132), CODEX_HOME (#133). Set, they win; unset, empty or relative, the default does."""
 import json
 import os
 import shutil
@@ -17,6 +17,7 @@ from brainrc import config  # noqa: E402
 # harness -> (env var, its default dir under ~, the dir under the var, MCP file relative to ~ / the var)
 HARNESSES = {
     "claude": ("CLAUDE_CONFIG_DIR", ".claude", "", ".claude.json", ".claude.json"),
+    "codex": ("CODEX_HOME", ".codex", "", ".codex/config.toml", "config.toml"),
 }
 
 
@@ -127,6 +128,16 @@ class SetTest(HarnessEnvCase):
         self.assertIn(str(d / "hooks" / "brainrc"), settings)
         self.assertTrue((d / "hooks" / "brainrc").is_symlink())
 
+    def test_codex_home_under_home(self):
+        self.lifecycle("codex", str(self.home / "alt" / "codex"))
+        self.assertFalse((self.home / ".codex").exists())
+
+    def test_codex_manifest_records_the_resolved_path(self):
+        self.configure("codex", str(self.home / "alt" / "codex"))
+        run("apply", "--only", "codex")
+        manifest = json.loads((self.settings_home / "harnesses.json").read_text())
+        self.assertEqual(manifest["harnesses"]["codex"]["skills"], "~/alt/codex/skills")
+
 
 
 class UnsetTest(HarnessEnvCase):
@@ -145,6 +156,12 @@ class EmptyTest(HarnessEnvCase):
                 d, _ = self.lifecycle(harness, "")
                 self.assertEqual(d, self.home / HARNESSES[harness][1])
                 shutil.rmtree(d)  # uninstalled: the next harness's doctor run sees only itself
+
+
+class RelativeTest(HarnessEnvCase):
+    def test_a_relative_value_is_ignored(self):
+        d, _ = self.lifecycle("codex", "rel/codex")
+        self.assertEqual(d, self.home / ".codex")
 
 
 class DoctorPluginDirTest(HarnessEnvCase):

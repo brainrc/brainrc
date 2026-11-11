@@ -37,10 +37,10 @@ mcp = "${CLAUDE_CONFIG_DIR:-~}/.claude.json"  # Claude Code keeps it inside CLAU
 
 [codex]
 enabled = true
-skills = "~/.codex/skills"
-commands = "~/.codex/prompts"
-instructions = "~/.codex/AGENTS.md"
-mcp = "~/.codex/config.toml"
+skills = "${CODEX_HOME:-~/.codex}/skills"
+commands = "${CODEX_HOME:-~/.codex}/prompts"
+instructions = "${CODEX_HOME:-~/.codex}/AGENTS.md"
+mcp = "${CODEX_HOME:-~/.codex}/config.toml"
 
 [opencode]
 enabled = true

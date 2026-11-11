@@ -85,3 +85,7 @@ _Last changed by 129-apply-repair._
 ### Claude Code config dir from CLAUDE_CONFIG_DIR
 `brainrc` SHALL resolve every claude path in harnesses.toml from `CLAUDE_CONFIG_DIR` when it holds an absolute path, and from `~/.claude` when it is unset, empty or relative, for `status`, `apply`, `doctor` and `uninstall` alike. (AC1, AC2, AC3, AC4)
 _Last changed by 132-claude-config-dir._
+
+### Codex home from CODEX_HOME
+`brainrc` SHALL resolve every codex path in harnesses.toml from `CODEX_HOME` when it holds an absolute path, and from `~/.codex` when it is unset, empty or relative, for `status`, `apply`, `doctor` and `uninstall` alike. (AC1, AC2, AC3, AC4)
+_Last changed by 133-codex-home._

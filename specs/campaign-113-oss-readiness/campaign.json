@@ -45,9 +45,9 @@
       "depends_on": [
         "gh:147"
       ],
-      "status": "todo",
-      "slug": null,
-      "branch": null,
+      "status": "verified",
+      "slug": "148-readme-for-strangers",
+      "branch": "148-readme-for-strangers",
       "pr": null,
       "pr_draft": false,
       "base": null,

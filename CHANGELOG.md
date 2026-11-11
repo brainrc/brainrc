@@ -12,6 +12,18 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.5.14 (2026-11-11)
+
+- CI: `validate` now runs on ubuntu, macOS and Windows across Python 3.11, 3.12 and 3.13 (fail-fast off). Windows cells are reported but non-blocking, since Windows is unsupported natively. Gitleaks runs once, in the ubuntu 3.12 cell.
+- CI: a final gate job keeps the `validate` check name, so branch protection on `validate` still works; it passes only when all blocking cells pass.
+- CI: a new step runs `scripts/check_tutorial.py`, which executes steps 1-5 of `docs/tutorial.md` and fails with the step name when a documented command or output breaks.
+- ruff, pyright and coverage are deferred pending owner approval of the new dependencies.
+- README now leads with what brainrc syncs (one config into five AI tools), then a quickstart with a real `status`/`apply` transcript; spec-agent moves below Install.
+- `scripts/check_tutorial.py --readme` runs the README quickstart in a temp HOME so its commands and documented output cannot rot.
+- Rename the core skills `work`, `review`, `plan`, `aws`, and `terraform` to `brainrc-work`, `brainrc-review`, `brainrc-plan`, `brainrc-aws`, and `brainrc-terraform`. The old names remain as deprecated aliases until 0.6.0; the `aws` and `terraform` aliases no longer auto-trigger (the `brainrc-` names do). `validate` checks the aliases.
+- `validate` rejects a core skill named after a harness built-in (`review`, `plan`, `init`, `help`, `status`, `compact`), except the deprecated aliases kept until 0.6.0.
+- Docs, rules, agents, and skills now use the new core skill names: `brainrc-work`, `brainrc-review`, `brainrc-plan`, `brainrc-aws`, and `brainrc-terraform` (slash commands `/brainrc-work`, `/brainrc-review`, `/brainrc-plan`). The old names `work`, `review`, `plan`, `aws`, and `terraform` remain as deprecated aliases until 0.6.0, when they are removed. `validate` rejects a core skill with a reserved built-in name unless it is a declared deprecated alias. A harness that ignores `disable-model-invocation` (Antigravity) may still list the old names.
+
 ## 0.5.13 (2026-11-11)
 
 - New `brainrc init` for the first run: it asks which installed harnesses to manage and writes the answer to `harnesses.local.toml`, keeping the rest of that file as it is. An instructions file you already have (`~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`, ...) would be a `CONFLICT` for `apply`, so `init` copies its text into `rules/adopted-<harness>.local.md`, which every harness loads, and moves the original aside as `<file>.bak-brainrc-<time>`. `--yes` takes the defaults, `--harness` names the harnesses, `--no-adopt` leaves your files alone, and `--dry-run` writes nothing. Without a terminal it needs `--yes` or `--harness`. `init` never runs `apply`.

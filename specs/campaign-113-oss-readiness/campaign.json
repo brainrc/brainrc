@@ -1,0 +1,71 @@
+{
+  "ref": "gh:113",
+  "shape": "ordered",
+  "dependency_source": "none",
+  "started_at": "2026-11-03T05:39:54Z",
+  "delivery": "stacked",
+  "auto": true,
+  "oneshot": true,
+  "gates": {
+    "campaign": {
+      "presented_at": "2026-11-03T05:39:54Z",
+      "approved_at": "2026-11-03T05:39:54Z"
+    }
+  },
+  "members": [
+    {
+      "ref": "gh:146",
+      "order": 1,
+      "depends_on": [],
+      "status": "verified",
+      "slug": "146-oss-project-files",
+      "branch": "146-oss-project-files",
+      "pr": null,
+      "pr_draft": false,
+      "base": null,
+      "merged": false
+    },
+    {
+      "ref": "gh:147",
+      "order": 2,
+      "depends_on": [
+        "gh:146"
+      ],
+      "status": "todo",
+      "slug": null,
+      "branch": null,
+      "pr": null,
+      "pr_draft": false,
+      "base": null,
+      "merged": false
+    },
+    {
+      "ref": "gh:148",
+      "order": 3,
+      "depends_on": [
+        "gh:147"
+      ],
+      "status": "todo",
+      "slug": null,
+      "branch": null,
+      "pr": null,
+      "pr_draft": false,
+      "base": null,
+      "merged": false
+    },
+    {
+      "ref": "gh:149",
+      "order": 4,
+      "depends_on": [
+        "gh:148"
+      ],
+      "status": "todo",
+      "slug": null,
+      "branch": null,
+      "pr": null,
+      "pr_draft": false,
+      "base": null,
+      "merged": false
+    }
+  ]
+}

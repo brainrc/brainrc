@@ -61,7 +61,8 @@ overrides: [docs/install.md](docs/install.md).
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) and the rules in [AGENTS.md](AGENTS.md). Before committing:
+See [CONTRIBUTING.md](CONTRIBUTING.md), [GOVERNANCE.md](GOVERNANCE.md), the
+[code of conduct](CODE_OF_CONDUCT.md), and the rules in [AGENTS.md](AGENTS.md). Before committing:
 
 ```bash
 python3 scripts/brainrc.py validate
@@ -71,4 +72,11 @@ python3 -m unittest discover -s tests
 ## Security
 
 Treat this repo as public. Don't commit secrets, tokens, internal hostnames, or
-absolute home-directory paths. Gitleaks runs in pre-commit and CI.
+absolute home-directory paths. Gitleaks runs in pre-commit and CI. To report a
+vulnerability, see [SECURITY.md](SECURITY.md).
+
+## Privacy
+
+brainrc sends no usage data and has no telemetry. Its own code makes no network calls. The only
+external commands it runs are `git`, to fetch packs you name by URL, and `ccusage`, only if you
+pass `--ccusage` to the retro script. The eval scripts run only the model command you configure.

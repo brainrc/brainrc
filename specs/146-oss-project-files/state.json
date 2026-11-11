@@ -1,0 +1,186 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:146",
+    "id": "146",
+    "title": "Open-source project files",
+    "url": "https://github.com/brainrc/brainrc/issues/146",
+    "pr": null,
+    "pr_draft": false
+  },
+  "slug": "146-oss-project-files",
+  "branch": "146-oss-project-files",
+  "base": "main",
+  "worktree": "~/.brainrc-worktrees/brainrc/146-oss-project-files",
+  "size": "standard",
+  "mode": "subagent",
+  "delivery": "normal",
+  "auto": true,
+  "oneshot": true,
+  "campaign": "specs/campaign-113-oss-readiness",
+  "stage": "deliver",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "pending"
+  },
+  "domains": [],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/brainrc.py validate"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "SECURITY and GOVERNANCE",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "SECURITY.md",
+        "GOVERNANCE.md",
+        "tests/test_security_docs.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC8",
+        "AC11"
+      ],
+      "review": "batch",
+      "wave": 1,
+      "started_at": "2026-11-03T05:43:52Z",
+      "finished_at": "2026-11-03T05:46:19Z",
+      "commit": "df0d610",
+      "red": "assertion"
+    },
+    {
+      "id": "T2",
+      "title": "CODEOWNERS, PR template, issue forms",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        ".github/CODEOWNERS",
+        ".github/pull_request_template.md",
+        ".github/ISSUE_TEMPLATE/bug_report.yml",
+        ".github/ISSUE_TEMPLATE/feature_request.yml",
+        ".github/ISSUE_TEMPLATE/config.yml",
+        "tests/test_github_templates.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC5",
+        "AC6",
+        "AC7",
+        "AC11"
+      ],
+      "review": "batch",
+      "wave": 1,
+      "started_at": "2026-11-03T05:43:52Z",
+      "finished_at": "2026-11-03T05:47:01Z",
+      "commit": "b39e7bf",
+      "red": "assertion"
+    },
+    {
+      "id": "T3",
+      "title": "Contributor Covenant 2.1",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "CODE_OF_CONDUCT.md",
+        "tests/test_code_of_conduct.py"
+      ],
+      "criteria": [
+        "AC1",
+        "AC4",
+        "AC11"
+      ],
+      "review": "batch",
+      "wave": 1,
+      "started_at": "2026-11-03T05:43:52Z",
+      "finished_at": "2026-11-03T05:47:01Z",
+      "commit": "b5ce3f0",
+      "red": "assertion"
+    },
+    {
+      "id": "T4",
+      "title": "README links, Privacy statement, hygiene test, changelog",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "README.md",
+        "tests/test_project_files.py",
+        "changelog.d/146-oss-project-files.md"
+      ],
+      "criteria": [
+        "AC9",
+        "AC10",
+        "AC11",
+        "AC12"
+      ],
+      "review": "batch",
+      "after": [
+        "T1",
+        "T2",
+        "T3"
+      ],
+      "started_at": "2026-11-03T05:47:07Z",
+      "finished_at": "2026-11-03T05:49:27Z",
+      "commit": "f273df1",
+      "red": "assertion"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-11-03T05:39:54Z",
+    "stage_started_at": {
+      "intake": "2026-11-03T05:39:54Z",
+      "spec": "2026-11-03T05:41:36Z",
+      "plan": "2026-11-03T05:42:31Z",
+      "implement": "2026-11-03T05:43:52Z",
+      "verify": "2026-11-03T05:52:58Z",
+      "document": "2026-11-03T05:57:31Z",
+      "deliver": "2026-11-03T05:58:40Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-11-03T05:42:31Z",
+        "approved_at": "2026-11-03T05:42:31Z"
+      },
+      "plan": {
+        "presented_at": "2026-11-03T05:43:52Z",
+        "approved_at": "2026-11-03T05:43:52Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 1,
+      "first_pass": 1
+    },
+    "retries": 0,
+    "interventions": 0,
+    "waves": {
+      "count": 1,
+      "max_width": 3,
+      "task_minutes": 6.7,
+      "wall_minutes": 2.4
+    }
+  },
+  "living": []
+}

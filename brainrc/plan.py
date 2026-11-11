@@ -31,15 +31,36 @@ class Link:
     source: Path
     copy: tuple[Path, Path] | None = None  # (overrides dir, copy root): source is a hooks copy
 
-    def state(self, roots: list[Path] | None = None) -> str:
+    def state(self, roots: list[Path] | None = None, repair: list[Path] | None = None) -> str:
+        """ok | create | update | conflict, or with `repair` (old source roots, possibly empty)
+        repair: a link into one of those roots, or a broken link to this item's old location."""
         if self.dest.is_symlink():
             target = link_target(self.dest)
             if os.path.normpath(target) == os.path.normpath(self.source):
                 return "ok" if not self.copy or hooks_copy_current(*self.copy) else "update"
             if _from_former_home(target, self.source):
                 return "update"
-            return "update" if _inside(target, roots or [config.REPO]) else "conflict"
+            if _inside(target, roots or [config.REPO]):
+                return "update"
+            if repair is not None and (_inside(target, repair) or moved_item(target, self.source)):
+                return "repair"
+            return "conflict"
         return "conflict" if self.dest.exists() else "create"
+
+
+def moved_item(target: Path, source: Path) -> bool:
+    """True if target is a broken link's target that names the same item as source: the same kind
+    dir and name (`skills/x`), as a link into a moved checkout or an old package path does."""
+    return not os.path.lexists(target) and target.parts[-2:] == source.parts[-2:]
+
+
+def old_root(target: Path, source: Path, roots: list[Path]) -> Path | None:
+    """The source root a repaired link's target was under: target minus source's path in its root."""
+    for root in roots:
+        if source.is_relative_to(root):
+            depth = len(source.relative_to(root).parts)
+            return target.parents[depth - 1] if len(target.parts) > depth else None
+    return None
 
 
 def _from_former_home(target: Path, source: Path) -> bool:
@@ -166,11 +187,12 @@ def _scoped(harnesses: dict[str, dict]) -> dict[str, dict]:
     return {n: h for n, h in harnesses.items() if config.in_scope(n)}
 
 
-def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
-         ) -> tuple[list[Link], list[Path], list[SettingsMerge]]:
+def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None,
+         old_roots: list[Path] | None = None) -> tuple[list[Link], list[Path], list[SettingsMerge]]:
+    """old_roots (apply --repair): where sources used to be, so links into them count as stale."""
     srcs = srcs if srcs is not None else sources()
     every_src = every_src if every_src is not None else sources(include_disabled=True)
-    roots = [s.root for s in every_src]
+    roots = [s.root for s in every_src] + (old_roots or [])
     links: list[Link] = []
     merges: list[SettingsMerge] = []
     for name, h in _scoped(load_harnesses()).items():

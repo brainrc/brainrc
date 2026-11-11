@@ -1,0 +1,1 @@
+PR: <PR_URL>. New `brainrc init` picks the harnesses to manage (asking, or `--yes` / `--harness`) and adopts an existing instructions file into `rules/adopted-<harness>.local.md`, moving the original aside, so init then apply has no CONFLICT and the text still loads. Content profiles wait for #173; managed-block mode is a follow-up.

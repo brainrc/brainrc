@@ -763,6 +763,11 @@ class DoctorTest(TempRepoCase):
     def test_broken_link_after_moving_the_repo(self):
         (self.skills / "spec-agent").unlink()
         (self.skills / "spec-agent").symlink_to("/nonexistent/old-checkout/skills/spec-agent")
+        self.assert_one_fail("broken", "apply --repair")
+
+    def test_broken_link_to_another_item(self):
+        (self.skills / "spec-agent").unlink()
+        (self.skills / "spec-agent").symlink_to("/nonexistent/somewhere/else")
         self.assert_one_fail("broken", "rm")
 
     def test_real_file_where_a_link_belongs(self):

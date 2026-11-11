@@ -16,13 +16,19 @@ existing ones show up at once, but new or removed ones need `apply`. Rules are d
 they're rendered into `~/.config/brainrc/instructions.md` (or `$BRAINRC_HOME`), so **every** change to `rules/` (or a pack's
 rules) needs `apply`, edits included. Restart the harness or start a new session afterwards.
 
-If you moved the repo, the old links are broken. `doctor` names each one: delete it, then
-`apply`.
+If you moved the repo, the old links are broken and `apply` reports each as a `CONFLICT`. Run
+`python3 scripts/brainrc.py apply --repair` from the new location: it relinks every broken link
+that points at the same item's old location (`skills/<name>`, `agents/<name>.md`, ...) and prunes
+the ones into the old location whose item is gone. `status --repair` shows the changes first. A
+broken link to anything else stays a `CONFLICT`, and your own working links are never touched.
 
 ## Every skill shows up twice, or a hook runs twice
 
-Both the Claude Code plugin and the `brainrc` command's links are installed. Keep one: `/plugin uninstall
-brainrc@brainrc`, or remove the links (below).
+Both the plugin and the `brainrc` command's links are installed. `doctor` warns when it sees both
+in Claude Code or Cursor, and names which to remove. Keep one: in Claude Code, `/plugin uninstall
+brainrc@brainrc` (the links also bring the rules and your packs), or set `[claude] enabled = false`
+in `harnesses.local.toml` and run `apply`. In Cursor, keep the plugin (it brings the rules) and set
+`[cursor] enabled = false`, or remove `~/.cursor/plugins/local/brainrc`.
 
 If `doctor` warns that the old plugin `ai-config@ai-config` is installed, you have the plugin
 under both names: follow [Moving from ai-config](install.md#moving-from-ai-config).
@@ -91,18 +97,22 @@ Close Claude Code before `apply` changes MCP servers: it rewrites `~/.claude.jso
 
 ## Uninstall
 
-1. Disable every harness in `harnesses.local.toml`, and every pack in `packs.local.toml`:
+```bash
+python3 scripts/brainrc.py uninstall --dry-run   # see what goes
+python3 scripts/brainrc.py uninstall             # or `brainrc uninstall` from the package
+```
 
-   ```toml
-   [claude]
-   enabled = false
-   ```
+`uninstall` removes every link brainrc made (broken ones too), takes its hooks out of each
+settings file and the MCP servers it added out of each MCP file, and removes the files and
+directories that leaves empty. Your own settings, hooks, and servers stay, every file it
+rewrites is backed up first (`*.bak-brainrc-*`), and an instructions file `init` moved aside is
+put back. It reads which harnesses and source roots apply used from `$BRAINRC_HOME/harnesses.json`,
+so it still works after you move or delete the checkout or a pack.
 
-   Repeat for `codex`, `opencode`, `antigravity`, and `cursor`.
-2. Run `python3 scripts/brainrc.py apply`. It removes every link it made, including the hooks
-   directory, takes brainrc's hooks out of `~/.claude/settings.json`, and removes the MCP
-   servers it added (backing each file up first). Your other settings, hooks, and servers stay.
-3. Delete the repo.
+Your local config (`harnesses.local.toml`, `packs.local.toml`, `rules/*.local.md`) and fetched
+git packs stay in `$BRAINRC_HOME`; `uninstall --purge` deletes that directory too, unless it
+holds files brainrc didn't make (then it says which, and leaves them). Then delete
+the repo, or `uv tool uninstall brainrc` (`pipx uninstall brainrc`).
 
 ## Every tool call is blocked, or `doctor` says `hook missing`
 

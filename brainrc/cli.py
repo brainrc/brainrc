@@ -27,9 +27,11 @@ from .config import (
 from .sources import (
     check_packs, collisions, core_version, duplicate_packs, render_extensions, render_instructions, sources,
 )
+from .init import cmd_init
+from .uninstall import cmd_uninstall
 from .opencode import rendered_agents
 from .packs import adopt_record, describe, fetch_pack, git_packs, needs_fetch
-from .plan import hooks_copy_current, invalid_fragments, plan, stale_hooks_copy
+from .plan import hooks_copy_current, invalid_fragments, link_target, old_root, plan, stale_hooks_copy
 from .mcp import check_servers, mcp_change, mcp_plan, record_owned, write_mcp
 from .settings import FileChanged, read_current, settings_change, write_settings
 from .plugin import cmd_plugin
@@ -37,16 +39,17 @@ from .release import cmd_release, cmd_release_notes
 from .tokens import cmd_tokens
 from .validate import cmd_validate, pack_errors
 from .doctor import cmd_doctor
-from .manifest import updated_manifest, write_manifest
+from .manifest import checked_manifest, updated_manifest, write_manifest
 from .migrate import cmd_migrate
 
 
 CHANGED_HINT = "(changed during apply; close Claude Code and re-run)"
 
 
-def cmd_sync(apply: bool, only: list[str] | None = None) -> int:
+def cmd_sync(apply: bool, only: list[str] | None = None, repair: bool = False) -> int:
     """status (apply=False) or apply; apply holds the settings home's apply.lock while it runs.
-    `only` limits links, settings and MCP merges to those harnesses; the rest are left as they are."""
+    `only` limits links, settings and MCP merges to those harnesses; the rest are left as they are.
+    `repair` relinks links into a moved checkout or an old package path (see Link.state)."""
     if only:
         try:
             unknown = config.check_only(only)
@@ -57,12 +60,15 @@ def cmd_sync(apply: bool, only: list[str] | None = None) -> int:
             print(f"ERROR {unknown}")
             return 2
     with config.only_harnesses(only):
-        return _locked_sync(apply)
+        return _locked_sync(apply, repair)
 
 
-def _locked_sync(apply: bool) -> int:
-    if not apply:
-        return _sync(False)
+def _locked_sync(apply: bool, repair: bool = False) -> int:
+    return _locked(lambda: _sync(True, repair)) if apply else _sync(False, repair)
+
+
+def _locked(run) -> int:
+    """run() while holding the settings home's apply.lock, so apply and uninstall never overlap."""
     lock = settings_home() / "apply.lock"
     lock.parent.mkdir(parents=True, exist_ok=True)
     with open(lock, "a") as f:
@@ -70,7 +76,7 @@ def _locked_sync(apply: bool) -> int:
             print(f"ERROR another brainrc apply is running (lock: {tilde(lock)})")
             print("\nNothing written. Let it finish, then re-run.")
             return 1
-        return _sync(True)
+        return run()
 
 
 def _try_lock(f) -> bool:
@@ -104,7 +110,27 @@ def _copy_hooks(overrides: Path, copy_root: Path) -> None:
     shutil.rmtree(old, ignore_errors=True)
 
 
-def _sync(apply: bool) -> int:
+def _old_roots(srcs, roots: list[Path]) -> tuple[list[Path], list[Path]]:
+    """apply --repair: (source roots apply recorded before, roots whose stale links may be pruned).
+
+    A recorded root is trusted: links into it are repaired, and stale ones pruned. A root inferred
+    from a broken link (an install from before the manifest) only adds pruning, and only when it no
+    longer exists and isn't ~, / or one of ~'s ancestors, so a live link of the user's is never
+    taken for brainrc's. The broken link itself is repaired as a moved item either way."""
+    manifest, warnings = checked_manifest()
+    for w in warnings:
+        print(f"WARN {w}")
+    trusted = [Path(r) for r in manifest["roots"] if Path(r) not in roots]
+    prune = list(trusted)
+    home = Path.home()
+    for link in plan(srcs)[0]:
+        if link.state(roots, trusted) == "repair" and (root := old_root(link_target(link.dest), link.source, roots)):
+            if not os.path.lexists(root) and root != home and root not in home.parents:
+                prune.append(root)
+    return trusted, list(dict.fromkeys(prune))
+
+
+def _sync(apply: bool, repair: bool = False) -> int:
     try:
         for w in check_config():
             print(f"WARN {w}")
@@ -190,15 +216,17 @@ def _sync(apply: bool) -> int:
             if not any(legacy_instructions().parent.iterdir()):
                 legacy_instructions().parent.rmdir()
 
-    links, stale, merges = plan(srcs)
-    conflicts, changed, changes = 0, 0, len(pending)
+    old, prune = _old_roots(srcs, roots) if repair else (None, None)
+    links, stale, merges = plan(srcs, old_roots=prune)
+    conflicts, changed, changes, repairable = 0, 0, len(pending), 0
     for link in links:
-        state = link.state(roots)
+        state = link.state(roots, old)
         if state == "ok":
             continue
         print(f"{state.upper():9} {link.harness:9} {tilde(link.dest)}")
         if state == "conflict":
             conflicts += 1
+            repairable += link.state(roots, []) == "repair"
             continue
         changes += 1
         if apply:
@@ -273,6 +301,9 @@ def _sync(apply: bool) -> int:
     if conflicts:
         print(f"\n{conflicts} conflict(s): existing files not managed by this repo. "
               "Move them into the repo (or delete them), then re-run.")
+        if repairable:
+            print(f"{repairable} of them are broken links to where an item used to be (a moved checkout?): "
+                  f"`{config.command('apply --repair')}` relinks them.")
     if changed:
         print(f"\n{changed} file(s) changed while apply ran, so they were left alone. "
               "Close Claude Code (it rewrites ~/.claude.json while running), then re-run.")
@@ -355,16 +386,42 @@ def _parser() -> argparse.ArgumentParser:
         return sub.add_parser(name, help=argparse.SUPPRESS if hidden else help,
                               description=description or help)
 
+    p = add("init", "first run: pick the harnesses to manage, and adopt their existing instruction "
+            "files", "Ask which installed harnesses brainrc should manage and write the answer to "
+            "harnesses.local.toml. A harness instructions file you wrote (~/.claude/CLAUDE.md, "
+            "~/.codex/AGENTS.md, ...) would be a CONFLICT for apply, so init copies its text into "
+            "rules/adopted-<harness>.local.md, which every harness loads, and moves the original "
+            "aside as <file>.bak-brainrc-<time>. It doesn't run apply.")
+    p.add_argument("--yes", "-y", action="store_true",
+                   help="ask nothing: manage every installed harness and adopt every instruction file")
+    p.add_argument("--harness", action="append", type=_harness_list, metavar="HARNESS",
+                   help="manage exactly these harnesses (repeat it, or separate names with commas); "
+                   "asks nothing")
+    p.add_argument("--no-adopt", action="store_true", help="leave instruction files where they are")
+    p.add_argument("--dry-run", action="store_true", help="print what init would do, write nothing")
+    repair_help = ("also relink broken links to where an item used to be: after moving the checkout, "
+                   "or a package upgrade to a new Python")
     only_help = ("only these harnesses (repeat it, or separate names with commas); the others "
                  "are left as they are")
     p = add("status", "show what apply would change (the default command; writes nothing)")
     p.add_argument("--only", action="append", type=_harness_list, metavar="HARNESS", help=only_help)
+    p.add_argument("--repair", action="store_true", help=repair_help)
     p = add("apply", "render rules and pack extensions, link items, merge settings and MCP servers",
             "Render rules and pack extensions to the settings home ($BRAINRC_HOME, default "
             "~/.config/brainrc), create or refresh the links in each harness, and merge hooks and "
             "MCP servers (mcp/servers.toml) into its settings files.")
     p.add_argument("--only", action="append", type=_harness_list, metavar="HARNESS", help=only_help)
+    p.add_argument("--repair", action="store_true", help=repair_help)
     add("update", "refetch packs named by `git` URL at their `ref`, then apply")
+    p = add("uninstall", "remove everything apply put into the harnesses",
+            "Remove the links brainrc made (broken ones too), its hooks in each settings file and "
+            "the MCP servers it added, then the files and directories that leaves empty. Your own "
+            "settings, hooks and servers stay, and an instructions file `init` moved aside is put "
+            "back. It works after the checkout is moved or deleted.")
+    p.add_argument("--dry-run", action="store_true", help="print what uninstall would remove, write nothing")
+    p.add_argument("--purge", action="store_true",
+                   help="also delete the settings home ($BRAINRC_HOME): local config, rendered files and "
+                   "fetched git packs")
     p = add("validate", "check frontmatter, cross-references, packs and tripwires (CI runs it)")
     p.add_argument("--pack", metavar="DIR", help="check core plus this pack only")
     add("doctor", "diagnose this machine's install (read-only); exits 1 on any problem, each "
@@ -398,11 +455,20 @@ def _dispatch(argv: list[str]) -> int:
     cmd = args.cmd or "status"
     if cmd == "migrate":
         return cmd_migrate(dry_run=args.dry_run)
-    if cmd in ("status", "apply", "update") and (code := refuse_unmigrated()):
+    if cmd in ("init", "status", "apply", "update", "uninstall") and (code := refuse_unmigrated()):
         return code
+    if cmd == "uninstall":
+        if args.dry_run:
+            return cmd_uninstall(dry_run=True, purge=args.purge)
+        if not settings_home().exists():  # nothing to lock against, and the lock would create it
+            return cmd_uninstall(purge=args.purge)
+        return _locked(lambda: cmd_uninstall(purge=args.purge))
+    if cmd == "init":
+        named = [n for names in args.harness or [] for n in names] if args.harness else None
+        return cmd_init(yes=args.yes, harnesses=named, adopt=not args.no_adopt, dry_run=args.dry_run)
     if cmd in ("status", "apply"):
         only = [n for names in getattr(args, "only", None) or [] for n in names]
-        return cmd_sync(apply=cmd == "apply", only=only or None)
+        return cmd_sync(apply=cmd == "apply", only=only or None, repair=args.repair)
     if cmd == "validate":
         return cmd_validate(args.pack) if args.pack else cmd_validate()
     if cmd == "plugin":

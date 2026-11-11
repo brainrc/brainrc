@@ -23,3 +23,7 @@ _Last changed by 125-argparse-cli._
 ### Sync only some harnesses
 `brainrc status` and `brainrc apply` SHALL take `--only <harness>` (repeatable or comma-separated) and SHALL then plan, link, prune and merge settings and MCP servers for those harnesses only, leaving every other harness and the shared hooks copy as they are; a name that isn't an enabled harness SHALL exit 2 and write nothing. (AC6, AC7)
 _Last changed by 125-argparse-cli._
+
+### First-run init
+`brainrc init` SHALL write the chosen harnesses to harnesses.local.toml (asking in a terminal, or from `--yes` or `--harness`), SHALL adopt each chosen harness's instructions file that apply would report as a CONFLICT by copying its text to `rules/adopted-<harness>.local.md` and moving the original aside, SHALL never delete a file or touch a link's target, and SHALL never run apply. (AC1, AC2, AC3, AC4, AC5, AC6, AC7)
+_Last changed by 127-brainrc-init._

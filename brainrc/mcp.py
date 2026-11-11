@@ -162,13 +162,24 @@ def mcp_plan(srcs: list[Source]) -> list[McpSync]:
     return syncs
 
 
-def mcp_file(name: str, h: dict) -> Path:
-    """The harness's MCP file: its `mcp` path, except OpenCode's opencode.jsonc when only that exists."""
+def mcp_files(name: str, h: dict) -> list[Path]:
+    """The files that may hold the harness's MCP servers: its `mcp` path, and for OpenCode the
+    opencode.jsonc beside an opencode.json (OpenCode reads both)."""
     dest = expand(h["mcp"])
     alt = dest.with_suffix(".jsonc")
-    if name == "opencode" and dest.suffix == ".json" and not dest.exists() and alt.is_file():
-        return alt
-    return dest
+    return [dest, alt] if name == "opencode" and dest.suffix == ".json" else [dest]
+
+
+def mcp_file(name: str, h: dict) -> Path:
+    """The MCP file apply writes: its `mcp` path, except OpenCode's opencode.jsonc when only that
+    exists, or when brainrc's servers are there and not in opencode.json."""
+    files = mcp_files(name, h)
+    if len(files) == 1 or not files[1].is_file():
+        return files[0]
+    owned = _owned()
+    if not files[0].exists() or (owned.get(str(files[1])) and not owned.get(str(files[0]))):
+        return files[1]
+    return files[0]
 
 
 def _owned_file() -> Path:

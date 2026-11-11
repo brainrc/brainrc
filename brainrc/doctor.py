@@ -39,7 +39,9 @@ from .opencode import agents_format, rendered_agents
 from .packs import needs_fetch
 from .plan import FragmentError, Link, invalid_fragments, link_target, moved_item, plan
 from .settings import _owned, settings_change
+from .manifest import checked_manifest
 from .mcp import check_servers, mcp_change, mcp_plan
+from .moved import left_behind
 from .validate import ROLES_FIX, check_roles_link, cmd_validate
 
 
@@ -312,6 +314,21 @@ def doctor_findings() -> list[Finding]:
     found += _home_findings()
     found += _plugin_findings()
     found += _double_install_findings(linked)
+    found += _moved_findings()
+    return found
+
+
+def _moved_findings() -> list[Finding]:
+    """A harness env var that is ignored, and brainrc links left in a dir a harness no longer reads."""
+    found: list[Finding] = [("WARN", f"{v} is set but not to an absolute path, so brainrc ignores it "
+                             "and uses the default dir", f"set {v} to an absolute path, or unset it")
+                            for v in config.ignored_vars()]
+    from .uninstall import _roots
+    for name, other, now, n in left_behind(_roots(checked_manifest()[0])):
+        found.append(("WARN", f"{name}: {n} of brainrc's links are still in {tilde(other)}, "
+                      f"but {name} reads {tilde(now)} now",
+                      f"{command('uninstall')} removes them with the rest; {command('apply')} "
+                      "then puts back the ones it reads now"))
     return found
 
 

@@ -93,8 +93,9 @@ class HarnessEnvCase(TempRepoCase):
         d.mkdir(parents=True, exist_ok=True)
         return d, mcp
 
-    def lifecycle(self, harness: str, value: str | None) -> tuple[Path, Path]:
-        """status, apply, status, doctor, uninstall for one harness; asserts each used d."""
+    def lifecycle(self, harness: str, value: str | None, doctor_warns: str = "") -> tuple[Path, Path]:
+        """status, apply, status, doctor, uninstall for one harness; asserts each used d, and that
+        doctor found nothing (or only the warning given)."""
         d, mcp = self.configure(harness, value)
         code, out = run("status", "--only", harness)
         self.assertEqual(code, 0, out)
@@ -109,7 +110,8 @@ class HarnessEnvCase(TempRepoCase):
         self.assertIn("Everything in sync.", out)
         code, out = quiet(brainrc.cmd_doctor)
         self.assertEqual(code, 0, out)
-        self.assertIn("No problems found.", out)
+        self.assertIn(f"WARN {doctor_warns}\n" if doctor_warns else "No problems found.", out)
+        self.assertNotIn("1 warning" if not doctor_warns else "2 warning", out)
         code, out = run("uninstall")
         self.assertEqual(code, 0, out)
         self.assertNotIn("ignored harness", out)
@@ -168,7 +170,8 @@ class EmptyTest(HarnessEnvCase):
 
 class RelativeTest(HarnessEnvCase):
     def test_a_relative_value_is_ignored(self):
-        d, _ = self.lifecycle("codex", "rel/codex")
+        d, _ = self.lifecycle("codex", "rel/codex", "CODEX_HOME is set but not to an absolute path, "
+                              "so brainrc ignores it and uses the default dir")
         self.assertEqual(d, self.home / ".codex")
 
 

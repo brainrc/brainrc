@@ -9,20 +9,23 @@ PUNCT = "{}[],:"
 LITERAL = re.compile(r"[^\s{}\[\],:/\"]+")
 
 
-def _tokens(text: str) -> list[tuple[str, int, int]]:
-    """(token, start, end) for strings, punctuation and literals; whitespace and comments skipped."""
-    out, i, n = [], 0, len(text)
+def _scan(text: str) -> tuple[list[tuple[str, int, int]], list[tuple[str, int, int]]]:
+    """(tokens, comments), each as (text, start, end). Tokens are strings, punctuation and literals."""
+    out, comments, i, n = [], [], 0, len(text)
     while i < n:
         c = text[i]
         if c.isspace():
             i += 1
         elif text.startswith("//", i):
             end = text.find("\n", i)
-            i = n if end == -1 else end
+            end = n if end == -1 else end
+            comments.append((text[i:end], i, end))
+            i = end
         elif text.startswith("/*", i):
             end = text.find("*/", i + 2)
             if end == -1:
                 raise ValueError("unterminated comment")
+            comments.append((text[i:end + 2], i, end + 2))
             i = end + 2
         elif c == '"':
             j = i + 1
@@ -40,7 +43,11 @@ def _tokens(text: str) -> list[tuple[str, int, int]]:
             i = m.end()
         else:
             raise ValueError(f"unexpected {c!r}")
-    return out
+    return out, comments
+
+
+def _tokens(text: str) -> list[tuple[str, int, int]]:
+    return _scan(text)[0]
 
 
 def loads(text: str):
@@ -76,8 +83,19 @@ def _members(toks) -> tuple[list[tuple[str, int, int, int]], int]:
     return members, k
 
 
-def set_key(text: str, key: str, value) -> str:
-    """text with the root object's `key` set to value (removed when value is None)."""
+def _cut_before(text: str, prev_end: int, key_start: int) -> int:
+    """Where removing a member that starts at key_start begins: its line's start (the newline
+    before it) when only indentation precedes it there, else the key itself, so a comment above it
+    or before it on its line stays; on a line shared with the previous member, right after that."""
+    gap = text[prev_end:key_start]
+    if not gap.strip() and "\n" not in gap:
+        return prev_end
+    nl = text.rfind("\n", prev_end, key_start)
+    return nl if nl != -1 and not text[nl + 1:key_start].strip() else key_start
+
+
+def _set_key(text: str, key: str, value) -> tuple[str, tuple[int, int]]:
+    """set_key's result, and the span of text it replaced (so comments in it may go)."""
     toks = _tokens(text)
     members, close = _members(toks)
     found = [m for m in members if m[0] == key]
@@ -90,20 +108,30 @@ def set_key(text: str, key: str, value) -> str:
     if found:
         _, k, vs, ve = found[-1]
         if value is not None:
-            return text[:toks[vs][1]] + rendered + text[toks[ve][2]:]
+            span = (toks[vs][1], toks[ve][2])
+            return text[:span[0]] + rendered + text[span[1]:], span
         prev, after = toks[k - 1], ve + 1
-        nl = text.rfind("\n", prev[2], toks[k][1])  # cut from the key's own line, so comments above stay
-        cut = nl if nl != -1 and text[nl + 1:toks[k][1]].strip() == "" else prev[2]
+        cut = _cut_before(text, prev[2], toks[k][1])
         if toks[after][0] == ",":
-            return text[:cut] + text[toks[after][2]:]
+            return text[:cut] + text[toks[after][2]:], (toks[k][1], toks[after][2])
         if prev[0] == ",":  # the last member: its comma goes too
-            return text[:prev[1]] + text[prev[2]:cut] + text[toks[ve][2]:]
-        return text[:cut] + text[toks[ve][2]:]
+            return text[:prev[1]] + text[prev[2]:cut] + text[toks[ve][2]:], (toks[k][1], toks[ve][2])
+        return text[:cut] + text[toks[ve][2]:], (toks[k][1], toks[ve][2])
     if value is None:
-        return text
-    last = toks[close - 1]
-    entry = f"\n{indent}{json.dumps(key)}: {rendered}"
-    if last[0] == "{":
-        return text[:last[2]] + entry + "\n" + text[toks[close][1]:]
-    sep = "" if last[0] == "," else ","
-    return text[:last[2]] + sep + entry + text[last[2]:]
+        return text, (0, 0)
+    last, end = toks[close - 1], toks[close][1]
+    line = text.rfind("\n", last[2], end) + 1  # the closing brace's own line, if it has one
+    at, entry = (line, "") if line and not text[line:end].strip() else (end, "\n")
+    entry += f"{indent}{json.dumps(key)}: {rendered}\n"
+    sep = "" if last[0] in "{," else ","
+    return text[:last[2]] + sep + text[last[2]:at].rstrip(" \t") + entry + text[at:], (0, 0)
+
+
+def set_key(text: str, key: str, value) -> str:
+    """text with the root object's `key` set to value (removed when value is None). Every comment
+    outside what it replaces stays; raises ValueError if one wouldn't."""
+    out, (start, end) = _set_key(text, key, value)
+    kept = [c[0] for c in _scan(text)[1] if not start <= c[1] < end]
+    if [c[0] for c in _scan(out)[1]] != kept:
+        raise ValueError("the edit would lose a comment")
+    return out

@@ -39,7 +39,9 @@ Each harness's own variable moves its paths: `$CLAUDE_CONFIG_DIR` for Claude Cod
 its `.claude.json`), `$CODEX_HOME` for Codex, and `$XDG_CONFIG_HOME/opencode` for OpenCode.
 `status`, `apply`, `doctor` and `uninstall` read the variable when it holds an absolute path and use
 the default above when it is unset, empty or relative, so run them with the same environment as
-the harness.
+the harness. If the variable changes between applies, `apply` and `status` warn that brainrc's
+links stay in the old dir, and `doctor` warns while they are there. `uninstall` also cleans each
+harness's default dir, so it removes them unless the old dir was another value of the variable.
 
 Skills, agents, commands, and hooks are **symlinked** from each harness back into this repo,
 so `git pull` updates them in every harness at once. To stay on a release instead of `main`,

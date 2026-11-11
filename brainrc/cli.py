@@ -40,6 +40,7 @@ from .tokens import cmd_tokens
 from .validate import cmd_validate, pack_errors
 from .doctor import cmd_doctor
 from .manifest import checked_manifest, updated_manifest, write_manifest
+from .moved import move_warnings
 from .migrate import cmd_migrate
 
 
@@ -286,8 +287,10 @@ def _sync(apply: bool, repair: bool = False) -> int:
         elif apply:
             record_owned(s, owned)  # e.g. adopt entries that already match after lost state
 
+    managed = {n: h for n, h in config.load_harnesses().items() if config.in_scope(n)}
+    for w in move_warnings(managed):
+        print(f"WARN {w}")
     if apply:
-        managed = {n: h for n, h in config.load_harnesses().items() if config.in_scope(n)}
         write_manifest(updated_manifest(managed, [s.root for s in srcs], config.harness_scope()))
     missing = {n: home for n, home in config.missing_harnesses().items() if config.in_scope(n)}
     if missing:
@@ -306,7 +309,7 @@ def _sync(apply: bool, repair: bool = False) -> int:
                   f"`{config.command('apply --repair')}` relinks them.")
     if changed:
         print(f"\n{changed} file(s) changed while apply ran, so they were left alone. "
-              "Close Claude Code (it rewrites ~/.claude.json while running), then re-run.")
+              f"Close Claude Code (it rewrites {tilde(config.claude_json())} while running), then re-run.")
     return 1 if conflicts or changed else 0
 
 

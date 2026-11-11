@@ -20,3 +20,16 @@ Delivery: one branch and one draft PR to main for the whole epic (build plan), c
 
 ## 2026-11-11T05:10:04Z · Deliver gate · auto-approved
 - gh:132, gh:133, gh:134 → draft PR #335 (base main), one commit each. Next: review by the owner's code-reviewer, then the owner merges.
+
+## 2026-11-11T05:45:00Z · Review round 1 (code-reviewer, review 5854206011) · fixed
+- A var changed between applies left links and hooks in the old dir unrecorded. `brainrc/moved.py`:
+  apply and status warn on a move, doctor warns while links remain; uninstall also cleans each
+  harness's default paths (`load_harnesses(defaults=True)`). Manifest format unchanged.
+- `jsonc.set_key` dropped comments when inserting into an object of only comments, or removing a key
+  whose line starts with one. Insert now goes before the closing brace's line, removal never crosses
+  a comment, and set_key refuses an edit that would lose a comment outside what it replaces.
+- The manifest trust check now widens per harness, by that harness's own vars only, and never to
+  /, ~ or an ancestor of ~.
+- Nits: messages name the resolved `.claude.json`; OpenCode keeps writing the `.jsonc` that holds
+  brainrc's servers once an `opencode.json` appears, and uninstall checks both. doctor warns on a
+  relative harness var.

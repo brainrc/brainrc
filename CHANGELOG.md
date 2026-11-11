@@ -12,6 +12,11 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.5.12 (2026-11-11)
+
+- Add open-source project files: SECURITY, GOVERNANCE, Code of Conduct (Contributor Covenant 2.1), CODEOWNERS, a PR template, and issue forms.
+- README links them and adds a Privacy statement (no telemetry; the only external commands are `git` to fetch packs and the opt-in `ccusage`).
+
 ## 0.5.11 (2026-11-10)
 
 - The CLI is built on argparse: `brainrc --help` and `--version` exit 0, every command has its own `--help`, and the maintainer commands `plugin` and `release` no longer show in the command list (they still run). A usage error goes to stderr with exit 2. `status` and `apply` take `--only <harness>` (repeatable, or comma-separated) to touch only those harnesses; the others keep their links, hooks and MCP servers as they are.

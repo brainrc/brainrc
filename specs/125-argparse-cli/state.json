@@ -6,7 +6,7 @@
     "id": "125",
     "title": "Rebuild the CLI on argparse",
     "url": "https://github.com/brainrc/brainrc/issues/125",
-    "pr": null,
+    "pr": "https://github.com/brainrc/brainrc/pull/267",
     "pr_draft": false
   },
   "slug": "125-argparse-cli",
@@ -19,7 +19,7 @@
   "auto": true,
   "oneshot": true,
   "campaign": "campaign-109-first-run-cli",
-  "stage": "deliver",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
@@ -105,7 +105,7 @@
     },
     "retries": 0,
     "interventions": 0,
-    "pr_opened_at": null
+    "pr_opened_at": "2026-11-10T17:39:32Z"
   },
   "living": [
     "cli-entry-points"

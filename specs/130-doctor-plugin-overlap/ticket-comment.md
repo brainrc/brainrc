@@ -1,0 +1,1 @@
+PR: <PR_URL>. `doctor` now warns when the brainrc plugin and brainrc's links are both installed in Claude Code or Cursor, and names which to remove in each. Codex and Antigravity plugins aren't checked yet, since where they install isn't verified.

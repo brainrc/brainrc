@@ -43,6 +43,7 @@ them into Claude Code, Codex CLI, OpenCode, Antigravity CLI, and Cursor:
 
 ```bash
 git clone https://github.com/brainrc/brainrc ~/brainrc && cd ~/brainrc
+python3 scripts/brainrc.py init     # pick harnesses, keep your own CLAUDE.md / AGENTS.md text
 python3 scripts/brainrc.py apply
 ```
 

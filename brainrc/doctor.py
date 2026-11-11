@@ -37,7 +37,7 @@ from .sources import (
 )
 from .opencode import agents_format, rendered_agents
 from .packs import needs_fetch
-from .plan import FragmentError, Link, invalid_fragments, link_target, plan
+from .plan import FragmentError, Link, invalid_fragments, link_target, moved_item, plan
 from .settings import _owned, settings_change
 from .mcp import check_servers, mcp_change, mcp_plan
 from .validate import ROLES_FIX, check_roles_link, cmd_validate
@@ -138,8 +138,9 @@ def _link_finding(link: Link, roots: list[Path]) -> Finding | None:
                 f"move it into the repo or a pack (or delete it), then {command('apply')}")
     target = link_target(link.dest)
     if not target.exists():
-        return ("FAIL", f"{link.harness}: {dest} is a broken link to {tilde(target)} (repo moved?)",
-                f"rm {shell_path(link.dest)} && {command('apply')}")
+        fix = command("apply --repair") if moved_item(target, link.source) else \
+            f"rm {shell_path(link.dest)} && {command('apply')}"
+        return ("FAIL", f"{link.harness}: {dest} is a broken link to {tilde(target)} (repo moved?)", fix)
     return ("FAIL", f"{link.harness}: {dest} links to {tilde(target)}, outside brainrc and its packs",
             f"move that into a pack (or delete the link), then {command('apply')}")
 
@@ -184,30 +185,69 @@ def _home_findings() -> list[Finding]:
 PLUGIN_LIST_MAX = 1024 * 1024  # bytes; a real installed_plugins.json is a few KB
 
 
+def _read_json(path: Path) -> object:
+    """path's JSON, or None when it is missing, unreadable, huge, too deeply nested, or not JSON."""
+    try:
+        if path.stat().st_size > PLUGIN_LIST_MAX:
+            raise ValueError("implausibly large")
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError, RecursionError, MemoryError):
+        return None
+
+
+def _claude_plugins() -> dict:
+    """Claude Code's installed plugins, keyed `<name>@<marketplace>` ({} when unreadable)."""
+    data = _read_json(Path.home() / ".claude" / "plugins" / "installed_plugins.json")
+    plugins = data.get("plugins") if isinstance(data, dict) else None
+    return plugins if isinstance(plugins, dict) else {}
+
+
 def _plugin_findings() -> list[Finding]:
     """WARN when the old `ai-config` plugin is installed in Claude Code or Cursor. Read-only."""
     found, home = [], Path.home()
     installed = home / ".claude" / "plugins" / "installed_plugins.json"
-    try:
-        if installed.stat().st_size > PLUGIN_LIST_MAX:
-            raise ValueError("implausibly large")
-        data = json.loads(installed.read_text(encoding="utf-8"))
-    except (OSError, ValueError, RecursionError, MemoryError):
-        data = None  # missing, unreadable, huge, too deeply nested, or not JSON
-    plugins = data.get("plugins") if isinstance(data, dict) else None
-    if isinstance(plugins, dict) and "ai-config@ai-config" in plugins:
+    if "ai-config@ai-config" in _claude_plugins():
         found.append(("WARN", f"the old plugin ai-config@ai-config is installed in Claude Code ({tilde(installed)})",
                       "run `/plugin uninstall ai-config@ai-config`, then `/plugin marketplace remove ai-config`, "
                       "then install brainrc@brainrc"))
     old = home / ".cursor" / "plugins" / "local" / "ai-config"
-    try:
-        has_old = old.is_symlink() or old.exists()
-    except OSError:  # e.g. the parent isn't searchable
-        has_old = False
-    if has_old:
+    if _exists(old):
         found.append(("WARN", f"{tilde(old)} is the old ai-config plugin for Cursor",
                       f"remove the link (or directory) at {tilde(old)}, "
                       "then link the repo as ~/.cursor/plugins/local/brainrc"))
+    return found
+
+
+def _exists(path: Path) -> bool:
+    try:
+        return path.is_symlink() or path.exists()
+    except OSError:  # e.g. the parent isn't searchable
+        return False
+
+
+def _double_install_findings(linked: set[str]) -> list[Finding]:
+    """WARN when the brainrc plugin and brainrc's own links are both installed in a harness:
+    together they load every skill and hook twice. `linked` names the harnesses with brainrc's links."""
+    found, home = [], Path.home()
+    if "claude" in linked:
+        enabled = _read_json(home / ".claude" / "settings.json")
+        enabled = enabled.get("enabledPlugins") if isinstance(enabled, dict) else None
+        enabled = enabled if isinstance(enabled, dict) else {}
+        keys = sorted(k for k in _claude_plugins()
+                      if isinstance(k, str) and k.split("@")[0] == "brainrc" and enabled.get(k) is not False)
+        if keys:
+            found.append(("WARN", f"Claude Code has both the plugin {keys[0]} and brainrc's links in ~/.claude, "
+                          "so every skill and hook loads twice",
+                          f"remove the plugin: `/plugin uninstall {keys[0]}` (the links also bring the rules and "
+                          "your packs). To keep the plugin instead, set `[claude] enabled = false` in "
+                          f"harnesses.local.toml and run `{command('apply')}`"))
+    plugin = home / ".cursor" / "plugins" / "local" / "brainrc"
+    if "cursor" in linked and _exists(plugin):
+        found.append(("WARN", f"Cursor has both the plugin at {tilde(plugin)} and brainrc's links in ~/.cursor, "
+                      "so every skill and hook loads twice",
+                      f"remove brainrc's links: set `[cursor] enabled = false` in harnesses.local.toml and run "
+                      f"`{command('apply')}` (the plugin also brings the rules, which Cursor gets no other way). "
+                      f"To keep the links instead, remove {tilde(plugin)}"))
     return found
 
 
@@ -232,9 +272,13 @@ def doctor_findings() -> list[Finding]:
 
     # A harness that isn't installed is neither planned nor checked: apply skips it too (#126).
     missing: dict[str, list[Link]] = {}
+    linked: set[str] = set()
     for link in links:
-        if link.state(roots) == "create":
+        state = link.state(roots)
+        if state == "create":
             missing.setdefault(link.harness, []).append(link)
+        elif state == "ok":
+            linked.add(link.harness)
         elif f := _link_finding(link, roots):
             found.append(f)
     for name, group in missing.items():  # a never-applied harness is one line, not dozens
@@ -266,6 +310,7 @@ def doctor_findings() -> list[Finding]:
     found += _mcp_findings(srcs)
     found += _home_findings()
     found += _plugin_findings()
+    found += _double_install_findings(linked)
     return found
 
 

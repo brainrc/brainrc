@@ -12,9 +12,18 @@ Details per harness: [harness support](formats.md#harness-support).
 ```bash
 git clone <this-repo> ~/brainrc
 cd ~/brainrc
+python3 scripts/brainrc.py init     # first run: pick harnesses, adopt your CLAUDE.md / AGENTS.md
 python3 scripts/brainrc.py status   # dry run: shows what would be linked
 python3 scripts/brainrc.py apply    # render rules + create symlinks
 ```
+
+`init` asks which installed harnesses to manage and writes the answer to `harnesses.local.toml`.
+If you already have an instructions file of your own (`~/.claude/CLAUDE.md`,
+`~/.codex/AGENTS.md`, ...), `apply` would report it as a `CONFLICT`, so `init` copies its text
+into `rules/adopted-<harness>.local.md` and moves the original aside as
+`<file>.bak-brainrc-<time>`. Adopted text is a local rule, so every harness loads it. `--yes`
+takes the defaults without asking, `--harness claude,codex` names the harnesses, `--no-adopt`
+leaves your files where they are, and `--dry-run` writes nothing. `init` never runs `apply`.
 
 `--help` lists the commands, and `<command> --help` shows one command's options. `status` and
 `apply` take `--only <harness>` (repeat it, or `--only claude,codex`) to touch only those
@@ -40,6 +49,7 @@ first, and the last 5 backups are kept).
 
 ```bash
 uv tool install git+https://github.com/brainrc/brainrc   # or: pipx install git+https://github.com/brainrc/brainrc
+brainrc init
 brainrc status
 brainrc apply
 ```
@@ -55,25 +65,26 @@ brainrc`) updates every harness. Guard hooks are the exception: `apply` copies t
 `$BRAINRC_HOME/hooks/core/` and links there, because the package path changes when an upgrade
 moves the tool to a new Python. Run `brainrc apply` after upgrading to refresh the copy. After an
 upgrade to a new Python, the other links (skills, agents) point at the old path and `apply`
-reports them as `CONFLICT`; `brainrc doctor` lists each broken link with the `rm` that clears it,
-then re-run `apply`. Local files go in `~/.config/brainrc/` (`$BRAINRC_HOME`):
+reports them as `CONFLICT`; `brainrc apply --repair` relinks them (it does the same after you
+move a checkout). Local files go in `~/.config/brainrc/` (`$BRAINRC_HOME`):
 `harnesses.local.toml`, `packs.local.toml`, and `rules/*.local.md`. Packs are local
 directories or git URLs that `brainrc` fetches ([packs](packs.md#enable-a-pack)).
 
 Upgrading from the legacy `~/.config/ai-config/` (or `$AICFG_HOME`)? 0.5.0 no longer reads them, and
-`status`, `apply` and `update` refuse (writing nothing) until you migrate. Run `brainrc migrate --dry-run` to see
+`init`, `status`, `apply` and `update` refuse (writing nothing) until you migrate. Run `brainrc migrate --dry-run` to see
 the move, then `brainrc migrate`: it moves the directory and re-runs `apply`. With the old `AICFG_HOME` set, set
 `BRAINRC_HOME` to the new location first.
 
 `plugin` needs a checkout. Contributors use the clone above.
 
 `brainrc` never overwrites a file it doesn't manage. Pre-existing files show up as
-`CONFLICT` for you to move into the repo or delete.
+`CONFLICT` for you to move into the repo or delete (`init` does that for instruction files).
 
 Something missing in a harness? `python3 scripts/brainrc.py doctor` checks the install without
 changing anything: stale rules, missing or broken links (after moving the repo, say), broken
 packs, and unmerged hooks. Each problem comes with its fix.
-[troubleshooting.md](troubleshooting.md) covers the rest, including how to uninstall.
+`apply --repair` relinks the links a moved checkout left broken, and `brainrc uninstall` takes out everything `apply` put in (`--dry-run` first to see it);
+[troubleshooting.md](troubleshooting.md#uninstall) has the details and covers the rest.
 
 ## Plugins (no clone)
 

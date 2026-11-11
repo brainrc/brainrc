@@ -73,7 +73,7 @@ class TicketGateTest(unittest.TestCase):
         self.assertRegex(self.gate, r"`--auto` alone never approves the Ticket gate")
         self.assertRegex(self.gate, r"`--dry-run` wins over every other flag")
         skill = (REPO / "skills/spec-agent/SKILL.md").read_text()
-        self.assertRegex(skill, r"(?s)Ticket gate\s+\(`/plan`\) still stops; only `--oneshot` approves it")
+        self.assertRegex(skill, r"(?s)Ticket gate\s+\(`/brainrc-plan`\) still stops; only `--oneshot` approves it")
 
     def test_local_only_and_tainted_create_nothing(self):
         self.assertRegex(self.gate, r"(?s)`delivery: local-only`.{0,40}call no `create` at all")

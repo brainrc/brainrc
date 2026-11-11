@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "local",
+    "ref": "local:specs/tickets/149-2-reserved-names.md",
+    "id": "149.2",
+    "title": "Reserved skill names check in validate",
+    "url": null,
+    "pr": null,
+    "pr_draft": false,
+    "parent": "gh:149"
+  },
+  "slug": "149-2-reserved-names",
+  "branch": "149-2-reserved-names",
+  "base": "149-1-namespaced-skills",
+  "worktree": "~/.brainrc-worktrees/brainrc/149-2-reserved-names",
+  "size": "small",
+  "mode": "inline",
+  "delivery": "normal",
+  "auto": true,
+  "oneshot": true,
+  "campaign": "specs/campaign-113-oss-readiness",
+  "stage": "deliver",
+  "gates": {
+    "spec": "approved",
+    "plan": "skipped",
+    "deliver": "pending"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/brainrc.py validate"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Reserved-name check",
+      "agent": "implementer",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "brainrc/validate.py",
+        "tests/test_reserved_names.py",
+        "changelog.d/149-2-reserved-names.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3"
+      ],
+      "review": "batch",
+      "started_at": "2026-11-03T13:39:44Z",
+      "finished_at": "2026-11-03T13:42:04Z",
+      "commit": "17bfcf7",
+      "red": "assertion"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-11-03T13:39:44Z",
+    "stage_started_at": {
+      "intake": "2026-11-03T13:39:44Z",
+      "spec": "2026-11-03T13:39:44Z",
+      "implement": "2026-11-03T13:39:44Z",
+      "verify": "2026-11-03T13:45:22Z",
+      "document": "2026-11-03T13:45:22Z",
+      "deliver": "2026-11-03T13:45:22Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-11-03T13:39:44Z",
+        "approved_at": "2026-11-03T13:39:44Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 1,
+      "first_pass": 1
+    },
+    "retries": 0,
+    "interventions": 0
+  },
+  "living": []
+}

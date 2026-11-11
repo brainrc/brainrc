@@ -74,6 +74,36 @@ def _check_references(src: Source, path: Path, agent_names: set[str], skill_name
     return errors
 
 
+DEPRECATED_ALIASES = {n: f"brainrc-{n}" for n in ("work", "review", "plan", "aws", "terraform")}
+ALIAS_REMOVED_IN = "0.6.0"
+# Harness built-in names a core skill must not take (a deprecated alias may, until removal).
+RESERVED_SKILL_NAMES = frozenset({"review", "plan", "init", "help", "status", "compact"})
+
+
+def _check_aliases(src: Source) -> list[str]:
+    errors = []
+    for old, new in DEPRECATED_ALIASES.items():
+        path = src.root / "skills" / old / "SKILL.md"
+        rel = src.rel(path.parent)
+        if not path.is_file():
+            errors.append(f"{rel}: deprecated alias for `{new}` is missing (keep it until {ALIAS_REMOVED_IN})")
+            continue
+        meta = frontmatter(path)
+        text = path.read_text()
+        if meta.get("disable-model-invocation") != "true":
+            errors.append(f"{rel}: deprecated alias must set `disable-model-invocation: true`")
+        if not meta.get("description", "").lower().startswith("deprecated"):
+            errors.append(f"{rel}: alias `description` must start with `Deprecated`")
+        if not (src.root / "skills" / new / "SKILL.md").is_file():
+            errors.append(f"{rel}: alias target `{new}` is missing")
+        body = text.split("\n---\n", 1)[-1]
+        if f"`{new}`" not in body:
+            errors.append(f"{rel}: alias body must name `{new}`")
+        if ALIAS_REMOVED_IN not in body:
+            errors.append(f"{rel}: alias body must name the removal release {ALIAS_REMOVED_IN}")
+    return errors
+
+
 def _validate_source(src: Source, agent_names: set[str], skill_names: set[str]) -> list[str]:
     errors = []
     if src.is_core:
@@ -101,6 +131,9 @@ def _validate_source(src: Source, agent_names: set[str], skill_names: set[str]) 
             errors += _check_references(src, md, agent_names, skill_names)
 
     if src.is_core:
+        errors += _check_aliases(src)
+        errors += [f"{src.rel(s)}: skill name `{s.name}` is reserved (a harness built-in); use a `brainrc-` name"
+                   for s in skills(src) if s.name in RESERVED_SKILL_NAMES and s.name not in DEPRECATED_ALIASES]
         errors += [f"{src.rel(r)}: missing `trigger` frontmatter (Antigravity drops the rule without it)"
                    for r in markdown_files("rules", src) if not frontmatter(r).get("trigger")]
         errors += [f"{src.rel(r)}: missing `alwaysApply: true` frontmatter (Cursor loads the rule only on request without it)"

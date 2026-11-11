@@ -45,9 +45,9 @@
       "depends_on": [
         "gh:147"
       ],
-      "status": "todo",
-      "slug": null,
-      "branch": null,
+      "status": "verified",
+      "slug": "148-readme-for-strangers",
+      "branch": "148-readme-for-strangers",
       "pr": null,
       "pr_draft": false,
       "base": null,
@@ -59,13 +59,58 @@
       "depends_on": [
         "gh:148"
       ],
-      "status": "todo",
-      "slug": null,
-      "branch": null,
+      "status": "split",
+      "slug": "149-namespace-core-skills",
+      "branch": "149-namespace-core-skills",
       "pr": null,
       "pr_draft": false,
       "base": null,
       "merged": false
+    },
+    {
+      "ref": "local:specs/tickets/149-1-namespaced-skills.md",
+      "order": 5,
+      "depends_on": [
+        "gh:148"
+      ],
+      "status": "verified",
+      "slug": "149-1-namespaced-skills",
+      "branch": "149-1-namespaced-skills",
+      "pr": null,
+      "pr_draft": false,
+      "base": null,
+      "merged": false,
+      "split_from": "gh:149"
+    },
+    {
+      "ref": "local:specs/tickets/149-2-reserved-names.md",
+      "order": 6,
+      "depends_on": [
+        "local:specs/tickets/149-1-namespaced-skills.md"
+      ],
+      "status": "verified",
+      "slug": "149-2-reserved-names",
+      "branch": "149-2-reserved-names",
+      "pr": null,
+      "pr_draft": false,
+      "base": null,
+      "merged": false,
+      "split_from": "gh:149"
+    },
+    {
+      "ref": "local:specs/tickets/149-3-docs-new-names.md",
+      "order": 7,
+      "depends_on": [
+        "local:specs/tickets/149-2-reserved-names.md"
+      ],
+      "status": "verified",
+      "slug": "149-3-docs-new-names",
+      "branch": "149-3-docs-new-names",
+      "pr": null,
+      "pr_draft": false,
+      "base": null,
+      "merged": false,
+      "split_from": "gh:149"
     }
   ]
 }

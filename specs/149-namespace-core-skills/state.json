@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:149",
+    "id": "149",
+    "title": "Namespace core skills",
+    "url": "https://github.com/brainrc/brainrc/issues/149",
+    "pr": null,
+    "pr_draft": false
+  },
+  "slug": "149-namespace-core-skills",
+  "branch": "149-namespace-core-skills",
+  "base": "148-readme-for-strangers",
+  "worktree": "~/.brainrc-worktrees/brainrc/149-namespace-core-skills",
+  "size": "large",
+  "mode": "subagent",
+  "delivery": "normal",
+  "auto": true,
+  "oneshot": true,
+  "campaign": "specs/campaign-113-oss-readiness",
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "skipped",
+    "deliver": "skipped"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": [
+      "python3 scripts/brainrc.py validate",
+      "python3 scripts/check_tutorial.py",
+      "python3 scripts/check_tutorial.py --readme"
+    ],
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-11-03T13:19:13Z",
+    "stage_started_at": {
+      "intake": "2026-11-03T13:19:13Z",
+      "spec": "2026-11-03T13:19:13Z"
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-11-03T13:21:05Z",
+        "approved_at": "2026-11-03T13:21:05Z"
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0
+  },
+  "split": [
+    "local:specs/tickets/149-1-namespaced-skills.md",
+    "local:specs/tickets/149-2-reserved-names.md",
+    "local:specs/tickets/149-3-docs-new-names.md"
+  ]
+}

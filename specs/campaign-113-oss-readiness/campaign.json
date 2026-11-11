@@ -59,13 +59,58 @@
       "depends_on": [
         "gh:148"
       ],
+      "status": "split",
+      "slug": "149-namespace-core-skills",
+      "branch": "149-namespace-core-skills",
+      "pr": null,
+      "pr_draft": false,
+      "base": null,
+      "merged": false
+    },
+    {
+      "ref": "local:specs/tickets/149-1-namespaced-skills.md",
+      "order": 5,
+      "depends_on": [
+        "gh:148"
+      ],
+      "status": "verified",
+      "slug": "149-1-namespaced-skills",
+      "branch": "149-1-namespaced-skills",
+      "pr": null,
+      "pr_draft": false,
+      "base": null,
+      "merged": false,
+      "split_from": "gh:149"
+    },
+    {
+      "ref": "local:specs/tickets/149-2-reserved-names.md",
+      "order": 6,
+      "depends_on": [
+        "local:specs/tickets/149-1-namespaced-skills.md"
+      ],
       "status": "todo",
       "slug": null,
       "branch": null,
       "pr": null,
       "pr_draft": false,
       "base": null,
-      "merged": false
+      "merged": false,
+      "split_from": "gh:149"
+    },
+    {
+      "ref": "local:specs/tickets/149-3-docs-new-names.md",
+      "order": 7,
+      "depends_on": [
+        "local:specs/tickets/149-2-reserved-names.md"
+      ],
+      "status": "todo",
+      "slug": null,
+      "branch": null,
+      "pr": null,
+      "pr_draft": false,
+      "base": null,
+      "merged": false,
+      "split_from": "gh:149"
     }
   ]
 }

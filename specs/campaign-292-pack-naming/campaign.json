@@ -12,11 +12,32 @@
     }
   },
   "members": [
-    {"ref": "gh:293", "order": 1, "depends_on": [], "status": "in_progress", "slug": "293-pack-naming-docs",
-     "branch": "claude/project-thread-atsed2", "pr": null},
-    {"ref": "gh:294", "order": 2, "depends_on": [], "status": "todo", "slug": "294-validate-naming",
-     "branch": "claude/project-thread-atsed2", "pr": null},
-    {"ref": "gh:295", "order": 3, "depends_on": [], "status": "todo", "slug": "295-brainrc-agents",
-     "branch": "claude/project-thread-atsed2", "pr": null}
+    {
+      "ref": "gh:293",
+      "order": 1,
+      "depends_on": [],
+      "status": "verified",
+      "slug": "293-pack-naming-docs",
+      "branch": "claude/project-thread-atsed2",
+      "pr": null
+    },
+    {
+      "ref": "gh:294",
+      "order": 2,
+      "depends_on": [],
+      "status": "verified",
+      "slug": "294-validate-naming",
+      "branch": "claude/project-thread-atsed2",
+      "pr": null
+    },
+    {
+      "ref": "gh:295",
+      "order": 3,
+      "depends_on": [],
+      "status": "todo",
+      "slug": "295-brainrc-agents",
+      "branch": "claude/project-thread-atsed2",
+      "pr": null
+    }
   ]
 }

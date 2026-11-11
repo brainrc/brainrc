@@ -77,6 +77,9 @@ A clear name is the cheapest trust signal a pack has. Every pack follows these s
 7. **Item names are prefix-scoped.** Every skill, agent, command and MCP server starts with the
    pack's prefix, so two packs' items can't collide.
 
+`validate` and `apply` refuse a pack that breaks one. The vendor names and the official IDs it
+checks are listed in `brainrc/naming.py`.
+
 A pack's ID is `<owner>/<pack>`, where the owner is the GitHub user or organization that
 publishes it. Official packs are owned by `brainrc`:
 
@@ -94,6 +97,7 @@ publishes it. Official packs are owned by `brainrc`:
 ```toml
 name = "acme"
 prefix = "acme-"          # default: "<name>-"
+id = "acme/acme-ai-pack"  # optional: the <owner>/<pack> ID it's published under (see Naming)
 requires_core = ">=0.4, <0.6"   # core versions this pack works with (see Compatibility)
 max_always_tokens = 800   # optional budget for rules + descriptions (see Context cost)
 
@@ -175,7 +179,7 @@ python3 core/scripts/brainrc.py validate --pack .
 ```
 
 This checks the core plus that pack only, whatever is in `packs.toml`: frontmatter,
-cross-references (pack files may reference core skills and agents), name prefixes and
+cross-references (pack files may reference core skills and agents), the [naming](#naming) rules,
 collisions, `pack.toml` extension references, `requires_core`, and tripwires.
 
 ## Packs and Claude Code plugins

@@ -1,6 +1,7 @@
 # Example pack: copy this directory to start your own (see README.md).
 name = "acme"
 prefix = "acme-"                  # skills, agents, and commands must start with this
+id = "acme/acme-ai-pack"          # optional: <owner>/<pack>; the prefix starts with the owner (docs/packs.md#naming)
 requires_core = ">=0.3, <0.6"     # core versions this pack works with (docs/packs.md#compatibility)
 max_always_tokens = 400          # rules + descriptions loaded every session (docs/packs.md#context-cost)
 

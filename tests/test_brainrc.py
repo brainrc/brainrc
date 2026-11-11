@@ -69,6 +69,9 @@ def set_core_version(repo: Path, version: str) -> None:
     (repo / "CHANGELOG.md").write_text(f"# Changelog\n\n## {version} (2026-01-01)\n\n- Change.\n")
 
 
+HARNESS_VARS = ("XDG_CONFIG_HOME", "CLAUDE_CONFIG_DIR", "CODEX_HOME")
+
+
 class TempRepoCase(unittest.TestCase):
     """Point brainrc at a throwaway copy of the repo and BRAINRC_HOME, so tests never read local
     config or write rendered files anywhere real."""
@@ -81,7 +84,8 @@ class TempRepoCase(unittest.TestCase):
         self.settings_home = Path(tempfile.mkdtemp()) / "brainrc"
         self.old_brainrc_home = os.environ.get("BRAINRC_HOME")
         os.environ["BRAINRC_HOME"] = str(self.settings_home)
-        self.old_xdg = os.environ.pop("XDG_CONFIG_HOME", None)  # CI runners set it
+        # CI runners set XDG_CONFIG_HOME; each of these moves a harness's paths (#110).
+        self.old_harness_env = {v: os.environ.pop(v) for v in HARNESS_VARS if v in os.environ}
 
     def tearDown(self):
         brainrc.config.REPO = self.old_repo
@@ -89,8 +93,7 @@ class TempRepoCase(unittest.TestCase):
             os.environ.pop("BRAINRC_HOME", None)
         else:
             os.environ["BRAINRC_HOME"] = self.old_brainrc_home
-        if self.old_xdg is not None:
-            os.environ["XDG_CONFIG_HOME"] = self.old_xdg
+        os.environ.update(self.old_harness_env)
         shutil.rmtree(self.settings_home.parent)
         shutil.rmtree(self.repo)
 
@@ -2122,7 +2125,7 @@ class ValidateTest(unittest.TestCase):
         try:
             copy_repo(tmp)
             toml = tmp / "harnesses.toml"
-            toml.write_text(toml.read_text().replace('hooks_dir = "~/.claude/hooks/brainrc"\n', ""))
+            toml.write_text(toml.read_text().replace('hooks_dir = "${CLAUDE_CONFIG_DIR:-~/.claude}/hooks/brainrc"\n', ""))
             old = brainrc.config.REPO
             brainrc.config.REPO = tmp
             try:

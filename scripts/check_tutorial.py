@@ -97,7 +97,7 @@ def run(parsed: dict[int, tuple[str, str]], expected: dict[int, list[str]]) -> b
         (home / ".claude").mkdir()  # apply only touches installed harnesses, so install one
         env = {**os.environ, "HOME": str(home), "USERPROFILE": str(home),
                "BRAINRC_HOME": str(home / ".config" / "brainrc")}
-        for k in ("XDG_CONFIG_HOME", "PYTHONPATH"):
+        for k in ("XDG_CONFIG_HOME", "CLAUDE_CONFIG_DIR", "CODEX_HOME", "PYTHONPATH"):
             env.pop(k, None)
         for n, (title, block) in parsed.items():
             name = f"step {n} {title}"

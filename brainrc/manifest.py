@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from .config import expand, harness_home, settings_home, tilde
+from .config import HARNESS_VARS, env_dir, expand, harness_home, settings_home, tilde
 
 VERSION = 1
 
@@ -36,8 +36,10 @@ PATH_KEYS = ("home", "skills", "agents", "commands", "plugin", "instructions", "
 
 
 def _inside_home(path: Path) -> bool:
-    """True if path is strictly inside the home directory (so never ~, / or one of ~'s ancestors)."""
-    return path.is_absolute() and Path.home() in path.parents
+    """True if path is strictly inside the home directory (so never ~, / or one of ~'s ancestors),
+    or inside a harness's config dir named by its env var now (e.g. CLAUDE_CONFIG_DIR=/opt/claude)."""
+    roots = [Path.home(), *(expand(env_dir(v, "~")) for v in HARNESS_VARS)]
+    return path.is_absolute() and any(r != Path("/") and r in path.parents for r in roots)
 
 
 def checked_manifest() -> tuple[dict, list[str]]:

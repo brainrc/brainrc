@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:134",
+    "id": "134",
+    "title": "Harness paths: read XDG_CONFIG_HOME for opencode",
+    "url": "https://github.com/brainrc/brainrc/issues/134",
+    "pr": null,
+    "pr_draft": true
+  },
+  "slug": "134-opencode-xdg",
+  "branch": "claude/project-thread-ojx8a7",
+  "base": "main",
+  "worktree": "~/brainrc",
+  "size": "standard",
+  "mode": "inline",
+  "delivery": "normal",
+  "auto": true,
+  "oneshot": false,
+  "campaign": "campaign-110-harness-paths",
+  "stage": "deliver",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "pending"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/brainrc.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "read XDG_CONFIG_HOME for opencode",
+      "agent": "engine",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "brainrc/jsonc.py",
+        "brainrc/mcp.py",
+        "brainrc/uninstall.py",
+        "harnesses.toml",
+        "tests/test_harness_env.py",
+        "docs/formats.md",
+        "docs/install.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5"
+      ],
+      "review": "batch",
+      "sha": null,
+      "red": "assertion"
+    }
+  ],
+  "blocked": null,
+  "metrics": {
+    "started_at": "2026-11-11T04:02:11Z",
+    "stage_started_at": {
+      "intake": "2026-11-11T04:02:11Z",
+      "spec": "2026-11-11T04:20:00Z",
+      "plan": "2026-11-11T04:20:00Z",
+      "implement": "2026-11-11T04:21:00Z",
+      "verify": "2026-11-11T04:54:26Z",
+      "document": "2026-11-11T04:56:00Z",
+      "deliver": null
+    },
+    "gates": {
+      "spec": {
+        "presented_at": "2026-11-11T04:20:00Z",
+        "approved_at": "2026-11-11T04:20:00Z"
+      },
+      "plan": {
+        "presented_at": "2026-11-11T04:20:00Z",
+        "approved_at": "2026-11-11T04:20:00Z"
+      },
+      "deliver": {
+        "presented_at": null,
+        "approved_at": null
+      }
+    },
+    "gate_rework": {
+      "spec": 0,
+      "plan": 0,
+      "deliver": 0
+    },
+    "reviews": {
+      "total": 0,
+      "first_pass": 0
+    },
+    "retries": 0,
+    "interventions": 0,
+    "pr_opened_at": null
+  },
+  "living": [
+    "aicfg-apply"
+  ],
+  "review_context": "shared"
+}

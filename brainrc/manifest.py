@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from .config import expand, harness_home, settings_home, tilde
+from .config import env_dir, expand, harness_home, harness_vars, settings_home, tilde
 
 VERSION = 1
 
@@ -35,20 +35,33 @@ def read_manifest() -> dict:
 PATH_KEYS = ("home", "skills", "agents", "commands", "plugin", "instructions", "hooks_dir", "settings", "mcp")
 
 
-def _inside_home(path: Path) -> bool:
-    """True if path is strictly inside the home directory (so never ~, / or one of ~'s ancestors)."""
-    return path.is_absolute() and Path.home() in path.parents
+def _too_broad(root: Path) -> bool:
+    """True for a path that is not absolute, or is /, ~ or one of ~'s ancestors."""
+    return not root.is_absolute() or root == Path.home() or root in Path.home().parents
+
+
+def _trusted_dirs(name: str) -> list[Path]:
+    """Where harness `name`'s entry may point: inside ~, or inside a dir one of its own env vars
+    names now (e.g. CLAUDE_CONFIG_DIR=/opt/claude for claude), unless that dir is too broad."""
+    named = [expand(d) for v in harness_vars(name) if (d := env_dir(v, ""))]
+    return [Path.home(), *(d for d in named if not _too_broad(d))]
+
+
+def _inside(path: Path, dirs: list[Path]) -> bool:
+    """True if path is strictly inside one of dirs (so never one of them, nor / or an ancestor)."""
+    return path.is_absolute() and any(d in path.parents for d in dirs)
 
 
 def checked_manifest() -> tuple[dict, list[str]]:
     """The manifest with what uninstall and repair must not trust left out, and a warning for each.
 
-    A harness entry is dropped when one of its paths is not inside ~, or its hooks_dir is the
-    harness home or one of its ancestors (its hook commands would then match the user's own). A
-    root is dropped when it is not absolute, or is /, ~ or one of ~'s ancestors."""
+    A harness entry is dropped when one of its paths is not inside ~ (or the dir its own env var
+    names, see _trusted_dirs), or its hooks_dir is the harness home or one of its ancestors (its
+    hook commands would then match the user's own). A root is dropped when it is too broad."""
     data = read_manifest()
     warnings, harnesses = [], {}
     for name, h in data["harnesses"].items():
+        trusted = _trusted_dirs(name)
         try:
             paths = {k: expand(h[k]) for k in PATH_KEYS if k in h}
             home = harness_home(h)
@@ -56,7 +69,7 @@ def checked_manifest() -> tuple[dict, list[str]]:
             paths, home = None, None
         bad = None if paths is not None else "a path that isn't a string"
         for key, path in (paths or {}).items():
-            if bad is None and not _inside_home(path):
+            if bad is None and not _inside(path, trusted):
                 bad = f"{key} = {h[key]!r} is not inside ~"
         hooks = (paths or {}).get("hooks_dir")
         if bad is None and hooks and home and (hooks == home or hooks in home.parents):
@@ -67,8 +80,7 @@ def checked_manifest() -> tuple[dict, list[str]]:
             harnesses[name] = h
     roots = []
     for r in data["roots"]:
-        root = Path(r)
-        if not root.is_absolute() or root == Path.home() or root in Path.home().parents:
+        if _too_broad(Path(r)):
             warnings.append(f"{tilde(manifest_file())}: ignored root {r!r}: too broad to trust")
         else:
             roots.append(r)

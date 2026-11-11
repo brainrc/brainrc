@@ -36,7 +36,7 @@ from .config import (
     tilde,
 )
 from .manifest import checked_manifest, manifest_file
-from .mcp import ADAPTERS, McpSync, _owned_file, _read_record, mcp_change, record_owned, write_mcp
+from .mcp import ADAPTERS, McpSync, _owned_file, _read_record, mcp_change, mcp_files, record_owned, write_mcp
 from .plan import SettingsMerge, _managed_target, link_target
 from .settings import FileChanged, read_current, settings_change, write_settings
 from .sources import sources
@@ -61,10 +61,12 @@ SETTINGS_HOME_ENTRIES = re.compile(
 
 
 def _harness_configs(manifest: dict, warnings: list[str]) -> list[tuple[str, dict]]:
-    """Every harness config to clean: what apply recorded, and what harnesses.toml says now."""
+    """Every harness config to clean: what apply recorded, what harnesses.toml says now, and its
+    default paths (an apply run without CLAUDE_CONFIG_DIR and the like put things there)."""
     configs = list(manifest["harnesses"].items())
     try:
         configs += list(load_harnesses(include_disabled=True).items())
+        configs += list(load_harnesses(include_disabled=True, defaults=True).items())
     except ConfigError as e:
         warnings.append(f"{e} (using the paths apply recorded in {tilde(manifest_file())})")
     return configs
@@ -142,7 +144,10 @@ def _settings_steps(name: str, h: dict, problems: list[str]) -> list[Step]:
 
 
 def _mcp_steps(name: str, h: dict, problems: list[str]) -> list[Step]:
-    dest = expand(h["mcp"])
+    return [s for dest in mcp_files(name, h) for s in _mcp_file_steps(name, dest, problems)]
+
+
+def _mcp_file_steps(name: str, dest: Path, problems: list[str]) -> list[Step]:
     if name not in ADAPTERS or not dest.is_file():
         return []
     m = McpSync(name, dest, {})
@@ -306,5 +311,5 @@ def cmd_uninstall(dry_run: bool = False, purge: bool = False) -> int:
             print(f"Your local config and packs are still in {tilde(settings_home())}; "
                   f"`{config.command('uninstall --purge')}` deletes them too.")
         if changed:
-            print("Close Claude Code (it rewrites ~/.claude.json while running), then re-run.")
+            print(f"Close Claude Code (it rewrites {tilde(config.claude_json())} while running), then re-run.")
     return 1 if problems or changed or failed else 0

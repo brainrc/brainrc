@@ -14,7 +14,7 @@ from test_brainrc import TempRepoCase, brainrc, quiet  # noqa: E402
 
 from brainrc.doctor import _double_install_findings, _plugin_findings, cmd_doctor  # noqa: E402
 
-HOME_VARS = ("HOME", "BRAINRC_HOME", "AICFG_HOME", "XDG_CONFIG_HOME")
+HOME_VARS = ("HOME", "BRAINRC_HOME", "AICFG_HOME", "XDG_CONFIG_HOME", "CLAUDE_CONFIG_DIR", "CODEX_HOME")
 
 
 class TestPluginFindings(unittest.TestCase):

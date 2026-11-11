@@ -12,7 +12,7 @@ from unittest import mock
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-HOME_VARS = ("HOME", "BRAINRC_HOME", "AICFG_HOME", "XDG_CONFIG_HOME", "PYTHONWARNINGS")
+HOME_VARS = ("HOME", "BRAINRC_HOME", "AICFG_HOME", "XDG_CONFIG_HOME", "CLAUDE_CONFIG_DIR", "CODEX_HOME", "PYTHONWARNINGS")
 
 
 class HomeCase(unittest.TestCase):

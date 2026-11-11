@@ -1,0 +1,67 @@
+{
+  "ref": "gh:110",
+  "shape": "playbook",
+  "batch_size": 3,
+  "playbook_version": 1,
+  "started_at": "2026-11-11T04:02:11Z",
+  "members": [
+    {
+      "ref": "gh:131",
+      "params": {
+        "harness": "brainrc home",
+        "env_var": "XDG_CONFIG_HOME",
+        "default": "~/.config/brainrc",
+        "config_file": "-"
+      },
+      "status": "delivered",
+      "slug": null,
+      "pr": "closed in the previous repository"
+    },
+    {
+      "ref": "gh:132",
+      "params": {
+        "harness": "claude",
+        "env_var": "CLAUDE_CONFIG_DIR",
+        "default": "~/.claude",
+        "config_file": "settings.json"
+      },
+      "status": "delivered",
+      "slug": "132-claude-config-dir",
+      "pr": "https://github.com/brainrc/brainrc/pull/335"
+    },
+    {
+      "ref": "gh:133",
+      "params": {
+        "harness": "codex",
+        "env_var": "CODEX_HOME",
+        "default": "~/.codex",
+        "config_file": "config.toml"
+      },
+      "status": "delivered",
+      "slug": "133-codex-home",
+      "pr": "https://github.com/brainrc/brainrc/pull/335"
+    },
+    {
+      "ref": "gh:134",
+      "params": {
+        "harness": "opencode",
+        "env_var": "XDG_CONFIG_HOME",
+        "default": "~/.config/opencode",
+        "config_file": "opencode.json / .jsonc"
+      },
+      "status": "delivered",
+      "slug": "134-opencode-xdg",
+      "pr": "https://github.com/brainrc/brainrc/pull/335"
+    }
+  ],
+  "gates": {
+    "campaign": {
+      "presented_at": "2026-11-11T04:20:00Z",
+      "approved_at": "2026-11-11T04:20:00Z"
+    },
+    "deliver": {
+      "presented_at": "2026-11-11T05:10:04Z",
+      "approved_at": "2026-11-11T05:10:04Z"
+    }
+  }
+}

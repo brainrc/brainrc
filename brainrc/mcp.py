@@ -12,6 +12,7 @@ import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 
+from . import jsonc
 from .config import ConfigError, expand, former_homes, in_scope, load_harnesses, settings_home
 from .settings import replace_file
 from .sources import Source
@@ -157,8 +158,28 @@ def mcp_plan(srcs: list[Source]) -> list[McpSync]:
             continue
         wanted = {n: s for n, s in servers.items()
                   if name in enabled and name in s.get("harnesses", [name])}
-        syncs.append(McpSync(name, expand(h["mcp"]), wanted))
+        syncs.append(McpSync(name, mcp_file(name, h), wanted))
     return syncs
+
+
+def mcp_files(name: str, h: dict) -> list[Path]:
+    """The files that may hold the harness's MCP servers: its `mcp` path, and for OpenCode the
+    opencode.jsonc beside an opencode.json (OpenCode reads both)."""
+    dest = expand(h["mcp"])
+    alt = dest.with_suffix(".jsonc")
+    return [dest, alt] if name == "opencode" and dest.suffix == ".json" else [dest]
+
+
+def mcp_file(name: str, h: dict) -> Path:
+    """The MCP file apply writes: its `mcp` path, except OpenCode's opencode.jsonc when only that
+    exists, or when brainrc's servers are there and not in opencode.json."""
+    files = mcp_files(name, h)
+    if len(files) == 1 or not files[1].is_file():
+        return files[0]
+    owned = _owned()
+    if not files[0].exists() or (owned.get(str(files[1])) and not owned.get(str(files[0]))):
+        return files[1]
+    return files[0]
 
 
 def _owned_file() -> Path:
@@ -232,7 +253,8 @@ def _codex_change(m: McpSync, text: str) -> tuple[str, list[str], list[str]]:
 
 
 def _json_change(m: McpSync, text: str) -> tuple[str, list[str], list[str]]:
-    data = json.loads(text) if text.strip() else {}
+    commented = m.dest.suffix == ".jsonc"
+    data = (jsonc.loads if commented else json.loads)(text) if text.strip() else {}
     if not isinstance(data, dict):
         raise ValueError("not a JSON object")
     key = ADAPTERS[m.harness]
@@ -254,7 +276,28 @@ def _json_change(m: McpSync, text: str) -> tuple[str, list[str], list[str]]:
         new[key] = servers
     else:
         new.pop(key, None)
+    if commented and text.strip():  # edit in place, so the user's comments stay
+        out = _jsonc_edit(text, key, data.get(key), servers)
+        if jsonc.loads(out) not in (new, {**new, key: {}}):
+            raise ValueError("the in-place edit didn't round-trip")
+        return out, conflicts, owned
     return json.dumps(new, indent=2) + "\n", conflicts, owned
+
+
+def _jsonc_edit(text: str, key: str, current, servers: dict) -> str:
+    """text with its `key` object holding servers: one server at a time, so the user's servers and
+    the comments on them are never rewritten. An emptied object goes, unless comments are in it."""
+    if not isinstance(current, dict):
+        return jsonc.set_key(text, key, servers or None)
+    for name in sorted(set(current) | set(servers)):
+        if current.get(name) != servers.get(name):
+            text = jsonc.set_key(text, (key, name), servers.get(name))
+    if not servers:
+        try:
+            text = jsonc.set_key(text, key, None, strict=True)
+        except ValueError:
+            pass  # a comment inside it: keep `"mcp": {}` with the comment
+    return text
 
 
 def mcp_change(m: McpSync) -> tuple[str, str | None, list[str], list[str]]:
@@ -263,7 +306,7 @@ def mcp_change(m: McpSync) -> tuple[str, str | None, list[str], list[str]]:
     text = m.dest.read_text() if m.dest.is_file() else ""
     try:
         new, conflicts, owned = (_codex_change if m.harness == "codex" else _json_change)(m, text)
-    except (ValueError, tomllib.TOMLDecodeError):
+    except (ValueError, IndexError, tomllib.TOMLDecodeError):
         return "invalid", None, [], []
     return ("ok" if new == text else "merge"), new, conflicts, owned
 

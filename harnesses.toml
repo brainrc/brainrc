@@ -20,35 +20,37 @@
 #   mcp          the harness's MCP config file; servers from mcp/servers.toml are merged in
 #                (claude, codex, opencode only; your own servers are never overwritten)
 #
-# Paths expand ~ and $ENV_VARS. Override per machine in harnesses.local.toml
-# (gitignored) — e.g. `[cursor] enabled = false`.
+# Paths expand ~ and $ENV_VARS. `${VAR:-default}` reads VAR when it holds an absolute path and
+# uses default when VAR is unset, empty or relative: that is how each harness's own variable
+# (CLAUDE_CONFIG_DIR, CODEX_HOME, XDG_CONFIG_HOME) moves its paths. Override per machine in
+# harnesses.local.toml (gitignored) — e.g. `[cursor] enabled = false`.
 
 [claude]
 enabled = true
-skills = "~/.claude/skills"
-agents = "~/.claude/agents"
-commands = "~/.claude/commands"
-instructions = "~/.claude/CLAUDE.md"
-hooks_dir = "~/.claude/hooks/brainrc"
-settings = "~/.claude/settings.json"
-mcp = "~/.claude.json"
+skills = "${CLAUDE_CONFIG_DIR:-~/.claude}/skills"
+agents = "${CLAUDE_CONFIG_DIR:-~/.claude}/agents"
+commands = "${CLAUDE_CONFIG_DIR:-~/.claude}/commands"
+instructions = "${CLAUDE_CONFIG_DIR:-~/.claude}/CLAUDE.md"
+hooks_dir = "${CLAUDE_CONFIG_DIR:-~/.claude}/hooks/brainrc"
+settings = "${CLAUDE_CONFIG_DIR:-~/.claude}/settings.json"
+mcp = "${CLAUDE_CONFIG_DIR:-~}/.claude.json"  # Claude Code keeps it inside CLAUDE_CONFIG_DIR when set
 
 [codex]
 enabled = true
-skills = "~/.codex/skills"
-commands = "~/.codex/prompts"
-instructions = "~/.codex/AGENTS.md"
-mcp = "~/.codex/config.toml"
+skills = "${CODEX_HOME:-~/.codex}/skills"
+commands = "${CODEX_HOME:-~/.codex}/prompts"
+instructions = "${CODEX_HOME:-~/.codex}/AGENTS.md"
+mcp = "${CODEX_HOME:-~/.codex}/config.toml"
 
 [opencode]
 enabled = true
-skills = "~/.config/opencode/skills"
-commands = "~/.config/opencode/command"
-agents = "~/.config/opencode/agents"
+skills = "${XDG_CONFIG_HOME:-~/.config}/opencode/skills"
+commands = "${XDG_CONFIG_HOME:-~/.config}/opencode/command"
+agents = "${XDG_CONFIG_HOME:-~/.config}/opencode/agents"
 agents_format = "opencode"
-plugin = "~/.config/opencode/plugins/brainrc-guard.js"
-instructions = "~/.config/opencode/AGENTS.md"
-mcp = "~/.config/opencode/opencode.json"
+plugin = "${XDG_CONFIG_HOME:-~/.config}/opencode/plugins/brainrc-guard.js"
+instructions = "${XDG_CONFIG_HOME:-~/.config}/opencode/AGENTS.md"
+mcp = "${XDG_CONFIG_HOME:-~/.config}/opencode/opencode.json"  # opencode.jsonc instead when only it exists
 
 [antigravity]
 enabled = true

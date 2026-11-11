@@ -203,11 +203,14 @@ def check_config() -> list[str]:
     return warnings
 
 
-def load_harnesses(include_disabled: bool = False, include_missing: bool = False) -> dict[str, dict]:
+def load_harnesses(include_disabled: bool = False, include_missing: bool = False,
+                   defaults: bool = False) -> dict[str, dict]:
     """Harnesses from harnesses.toml with the local file over it. By default only the ones brainrc
     manages: enabled, and installed (or enabled in harnesses.local.toml, which forces it).
-    include_missing keeps enabled ones that aren't installed; include_disabled keeps every one."""
-    config = _layered("harnesses")
+    include_missing keeps enabled ones that aren't installed; include_disabled keeps every one.
+    defaults: each `${VAR:-default}` path as its default, whatever the environment says."""
+    config = {n: {k: env_default(v, defaults) if k in PATH_KEYS and isinstance(v, str) else v
+                  for k, v in h.items()} for n, h in _layered("harnesses").items()}
     if include_disabled:
         return config
     enabled = {n: h for n, h in config.items() if h.get("enabled", True)}
@@ -293,6 +296,56 @@ def expand(path: str) -> Path:
 
 def tilde(path: Path) -> str:
     return str(path).replace(str(Path.home()), "~", 1)
+
+
+HARNESS_VARS = ("CLAUDE_CONFIG_DIR", "CODEX_HOME", "XDG_CONFIG_HOME")  # read by harnesses.toml (#110)
+
+
+ENV_DEFAULT = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*):-([^}]*)\}")
+
+
+def env_dir(var: str, default: str) -> str:
+    """$var when it holds an absolute path (after ~), else default; a path under ~ is written with ~,
+    so hook commands and the manifest stay portable. Unset, empty or relative: default (XDG's rule)."""
+    value = os.path.expanduser(os.environ.get(var, ""))
+    if not value or not os.path.isabs(value):
+        return default
+    value, home = os.path.normpath(value), str(Path.home())
+    if value == home or value.startswith(home.rstrip("/") + "/"):
+        return "~" + value[len(home.rstrip("/")):]
+    return value
+
+
+def env_default(path: str, defaults: bool = False) -> str:
+    """A harnesses.toml path with each `${VAR:-default}` resolved by env_dir (to its default when
+    `defaults`)."""
+    return ENV_DEFAULT.sub(lambda m: m[2] if defaults else env_dir(m[1], m[2]), path)
+
+
+def harness_vars(name: str) -> list[str]:
+    """The env vars that name's harnesses.toml paths read, e.g. ["CLAUDE_CONFIG_DIR"]."""
+    try:
+        h = _layered("harnesses").get(name, {})
+    except ConfigError:
+        return []
+    return sorted({m[1] for k, v in h.items() if k in PATH_KEYS and isinstance(v, str)
+                   for m in ENV_DEFAULT.finditer(v)})
+
+
+def ignored_vars() -> list[str]:
+    """The harness env vars that are set but not to an absolute path, so brainrc uses the default."""
+    return [v for v in HARNESS_VARS
+            if os.environ.get(v) and not os.path.isabs(os.path.expanduser(os.environ[v]))]
+
+
+def claude_json() -> Path:
+    """Claude Code's MCP file: .claude.json inside $CLAUDE_CONFIG_DIR, else ~/.claude.json."""
+    return expand(env_dir("CLAUDE_CONFIG_DIR", "~") + "/.claude.json")
+
+
+def claude_dir() -> Path:
+    """Claude Code's config dir: $CLAUDE_CONFIG_DIR, else ~/.claude."""
+    return expand(env_dir("CLAUDE_CONFIG_DIR", "~/.claude"))
 
 
 def _xdg_home() -> Path | None:

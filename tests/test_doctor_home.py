@@ -7,7 +7,7 @@ from unittest import mock
 
 from brainrc.doctor import _home_findings, cmd_doctor
 
-HOME_VARS = ("HOME", "BRAINRC_HOME", "AICFG_HOME", "XDG_CONFIG_HOME")
+HOME_VARS = ("HOME", "BRAINRC_HOME", "AICFG_HOME", "XDG_CONFIG_HOME", "CLAUDE_CONFIG_DIR", "CODEX_HOME")
 
 
 class TestHomeFindings(unittest.TestCase):

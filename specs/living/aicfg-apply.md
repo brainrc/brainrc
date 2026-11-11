@@ -81,3 +81,15 @@ _Last changed by 128-brainrc-uninstall._
 ### Repair links after a move
 `brainrc apply --repair` (and `status --repair`, which writes nothing) SHALL relink a link whose target is under a source root recorded in the manifest, or is missing and ends with the planned source's last two path parts, and SHALL prune links whose item is gone that point into a recorded root, or into a root inferred from a broken link that no longer exists and is not ~ or one of its ancestors; it SHALL ignore recorded roots that are ~, / or an ancestor of ~, and every other link it doesn't manage, the user's live links included, SHALL stay as it is. (AC1, AC2, AC3, AC4, AC5)
 _Last changed by 129-apply-repair._
+
+### Claude Code config dir from CLAUDE_CONFIG_DIR
+`brainrc` SHALL resolve every claude path in harnesses.toml from `CLAUDE_CONFIG_DIR` when it holds an absolute path, and from `~/.claude` when it is unset, empty or relative, for `status`, `apply`, `doctor` and `uninstall` alike. (AC1, AC2, AC3, AC4)
+_Last changed by 132-claude-config-dir._
+
+### Codex home from CODEX_HOME
+`brainrc` SHALL resolve every codex path in harnesses.toml from `CODEX_HOME` when it holds an absolute path, and from `~/.codex` when it is unset, empty or relative, for `status`, `apply`, `doctor` and `uninstall` alike. (AC1, AC2, AC3, AC4)
+_Last changed by 133-codex-home._
+
+### OpenCode config dir from XDG_CONFIG_HOME
+`brainrc` SHALL resolve every opencode path in harnesses.toml from `XDG_CONFIG_HOME` when it holds an absolute path, and from `~/.config/opencode` when it is unset, empty or relative, for `status`, `apply`, `doctor` and `uninstall` alike. (AC1, AC2, AC3, AC4, AC5)
+_Last changed by 134-opencode-xdg._

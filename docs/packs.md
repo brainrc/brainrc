@@ -57,7 +57,37 @@ acme-ai-pack/
 ```
 
 Skills, agents, commands, and MCP servers must start with the pack's `prefix`, and no name may
-exist in two sources. `apply` refuses to write anything if one does.
+exist in two sources. `apply` refuses to write anything if one does. The full rules are in
+[Naming](#naming).
+
+## Naming
+
+A clear name is the cheapest trust signal a pack has. Every pack follows these seven rules:
+
+1. **`brainrc-` and `brainrc/` are reserved for official packs.** No other pack's name, prefix
+   or ID starts with them.
+2. **A registry prefix starts with the owner's handle.** A pack published as `jdoe/k8s-tools`
+   uses a prefix such as `jdoe-` or `jdoe-k8s-`.
+3. **No vendor names without verification.** A pack's name, prefix and ID don't use a vendor's
+   name (`aws`, `github`, `openai` and the like) unless the vendor itself is verified as its owner.
+4. **No names one or two edits from an official name.** The official names are `brainrc` and
+   the IDs in the table below, so `brainrx-` and `brianrc/review` are refused.
+5. **ASCII lowercase letters, digits and hyphens only**, in names, prefixes, IDs and item names.
+6. **A prefix is 2 to 24 characters**, not counting its trailing hyphen.
+7. **Item names are prefix-scoped.** Every skill, agent, command and MCP server starts with the
+   pack's prefix, so two packs' items can't collide.
+
+A pack's ID is `<owner>/<pack>`, where the owner is the GitHub user or organization that
+publishes it. Official packs are owned by `brainrc`:
+
+| ID | What it holds | Issue |
+|---|---|---|
+| `brainrc/starter` | the small, measured base for the default profile | [#313](https://github.com/brainrc/brainrc/issues/313) |
+| `brainrc/review` | review, PR description, commit message and unslop | [#314](https://github.com/brainrc/brainrc/issues/314) |
+| `brainrc/go` | Go, built from today's `go-service` skill | [#315](https://github.com/brainrc/brainrc/issues/315) |
+| `brainrc/terraform-aws` | Terraform and AWS | [#316](https://github.com/brainrc/brainrc/issues/316) |
+| `brainrc/kubernetes` | Kubernetes, including GitOps | [#317](https://github.com/brainrc/brainrc/issues/317) |
+| `brainrc/security-baseline` | the default guard policy, secret protection and a sandbox profile | [#323](https://github.com/brainrc/brainrc/issues/323) |
 
 ## pack.toml
 

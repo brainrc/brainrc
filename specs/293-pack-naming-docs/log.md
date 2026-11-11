@@ -9,3 +9,6 @@ Two defaults recorded in spec.md (table source, prefix length counts no hyphen).
 
 ## engine · Plan gate · auto-approved
 One task.
+
+## engine · Deliver gate · auto-approved
+Draft PR #336 against main, one PR for the epic. No ticket comment or transition; merging is the owner's.

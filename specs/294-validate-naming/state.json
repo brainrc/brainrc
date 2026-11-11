@@ -6,7 +6,7 @@
     "id": "294",
     "title": "validate enforces naming",
     "url": "https://github.com/brainrc/brainrc/issues/294",
-    "pr": null,
+    "pr": "https://github.com/brainrc/brainrc/pull/336",
     "pr_draft": true
   },
   "slug": "294-validate-naming",
@@ -19,11 +19,11 @@
   "auto": true,
   "oneshot": false,
   "campaign": "campaign-292-pack-naming",
-  "stage": "verify",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": null
+    "deliver": "approved"
   },
   "domains": [
     "scripting"

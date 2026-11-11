@@ -12,3 +12,6 @@ One task.
 
 ## engine · document
 `living_specs.py apply`: added "Pack naming rules" to `specs/living/validate.md`.
+
+## engine · Deliver gate · auto-approved
+Draft PR #336 against main, one PR for the epic. No ticket comment or transition; merging is the owner's.

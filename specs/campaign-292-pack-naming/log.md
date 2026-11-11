@@ -19,3 +19,8 @@ Order gh:293 → gh:294 → gh:295. Size standard each. Delivery: one draft PR, 
   the agent aliases go in 0.7.0. 0.6.0 is also the release the five skill aliases from 0.5.14 promised to
   leave in; removing them is outside this epic, so they stay. Owner's call whether to remove them first.
 - The example packs now pin `<0.7` so they still validate after the release.
+
+## 2026-11-11T07:45:00Z · Deliver gate · auto-approved
+- gh:293, gh:294, gh:295 → draft PR #336 (base main), one commit each. CI green on every blocking cell;
+  the Windows cells fail on main too and don't gate. Next: review by the owner's code-reviewer, then
+  the owner merges.

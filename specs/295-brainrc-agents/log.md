@@ -13,3 +13,6 @@ One task. Names only: no role file's instructions change.
 ## engine · document
 `living_specs.py apply`: added "Namespaced core agents" to `specs/living/core-skill-names.md`.
 Always-loaded tokens: core 2865 / 3000 with the ten alias descriptions.
+
+## engine · Deliver gate · auto-approved
+Draft PR #336 against main, one PR for the epic. No ticket comment or transition; merging is the owner's.

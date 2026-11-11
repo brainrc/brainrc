@@ -6,7 +6,7 @@
     "id": "293",
     "title": "Document the pack naming guidelines",
     "url": "https://github.com/brainrc/brainrc/issues/293",
-    "pr": null,
+    "pr": "https://github.com/brainrc/brainrc/pull/336",
     "pr_draft": true
   },
   "slug": "293-pack-naming-docs",
@@ -19,11 +19,11 @@
   "auto": true,
   "oneshot": false,
   "campaign": "campaign-292-pack-naming",
-  "stage": "verify",
+  "stage": "done",
   "gates": {
     "spec": "approved",
     "plan": "approved",
-    "deliver": null
+    "deliver": "approved"
   },
   "domains": [
     "docs"

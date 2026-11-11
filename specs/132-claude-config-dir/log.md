@@ -9,5 +9,8 @@ Spec and plan instantiated from playbook v1. `living_specs.py check`: exit 0 (ar
 ## engine · Plan gate · auto-approved (campaign gate)
 One task.
 
+## code-reviewer · batch · done
+Inline (review_context: shared). No CRITICAL/HIGH. Checked that the var is resolved once in `load_harnesses()` and that no consumer re-expands it; that the manifest stores resolved strings.
+
 ## engine · verify
-See verify.md.
+903 tests OK (plain, and with the three vars set to temp dirs: nothing written there), validate OK (core, acme). See verify.md.

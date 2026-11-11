@@ -71,7 +71,8 @@ url = "https://docs.example.com/mcp"          # HTTP instead of `command`
 
 `apply` writes each server into the harness's own config: `~/.claude.json` (`mcpServers`),
 `~/.codex/config.toml` (a marked `[mcp_servers]` block), and `~/.config/opencode/opencode.json`
-(`mcp`). `env_from` becomes a reference the harness expands when it starts the server
+(`mcp`; `opencode.jsonc` when only that exists, edited in place so its comments stay). Each
+moves with its harness's variable ([install](install.md)). `env_from` becomes a reference the harness expands when it starts the server
 (`${NAME}`, `env_vars`, `{env:NAME}`), so no value is written anywhere; `validate` rejects an
 `env` table. Only servers brainrc wrote are replaced or removed (tracked in
 `$BRAINRC_HOME/mcp-owned.json`). A server you defined yourself under the same name is reported as a

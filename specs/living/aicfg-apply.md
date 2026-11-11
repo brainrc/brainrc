@@ -89,3 +89,7 @@ _Last changed by 132-claude-config-dir._
 ### Codex home from CODEX_HOME
 `brainrc` SHALL resolve every codex path in harnesses.toml from `CODEX_HOME` when it holds an absolute path, and from `~/.codex` when it is unset, empty or relative, for `status`, `apply`, `doctor` and `uninstall` alike. (AC1, AC2, AC3, AC4)
 _Last changed by 133-codex-home._
+
+### OpenCode config dir from XDG_CONFIG_HOME
+`brainrc` SHALL resolve every opencode path in harnesses.toml from `XDG_CONFIG_HOME` when it holds an absolute path, and from `~/.config/opencode` when it is unset, empty or relative, for `status`, `apply`, `doctor` and `uninstall` alike. (AC1, AC2, AC3, AC4, AC5)
+_Last changed by 134-opencode-xdg._

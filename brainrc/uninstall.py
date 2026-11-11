@@ -36,7 +36,7 @@ from .config import (
     tilde,
 )
 from .manifest import checked_manifest, manifest_file
-from .mcp import ADAPTERS, McpSync, _owned_file, _read_record, mcp_change, record_owned, write_mcp
+from .mcp import ADAPTERS, McpSync, _owned_file, _read_record, mcp_change, mcp_file, record_owned, write_mcp
 from .plan import SettingsMerge, _managed_target, link_target
 from .settings import FileChanged, read_current, settings_change, write_settings
 from .sources import sources
@@ -142,7 +142,7 @@ def _settings_steps(name: str, h: dict, problems: list[str]) -> list[Step]:
 
 
 def _mcp_steps(name: str, h: dict, problems: list[str]) -> list[Step]:
-    dest = expand(h["mcp"])
+    dest = mcp_file(name, h)
     if name not in ADAPTERS or not dest.is_file():
         return []
     m = McpSync(name, dest, {})

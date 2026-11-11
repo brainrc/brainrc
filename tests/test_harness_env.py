@@ -1,4 +1,5 @@
-"""Each harness's own env var moves its paths (#110): CLAUDE_CONFIG_DIR (#132), CODEX_HOME (#133). Set, they win; unset, empty or relative, the default does."""
+"""Each harness's own env var moves its paths (#110): CLAUDE_CONFIG_DIR (#132), CODEX_HOME (#133)
+and XDG_CONFIG_HOME for OpenCode (#134). Set, they win; unset, empty or relative, the default does."""
 import json
 import os
 import shutil
@@ -12,12 +13,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import TempRepoCase, brainrc, quiet  # noqa: E402
 from test_uninstall import run  # noqa: E402
 
-from brainrc import config  # noqa: E402
+from brainrc import config, jsonc  # noqa: E402
+from brainrc.mcp import McpSync, mcp_change, mcp_file  # noqa: E402
 
 # harness -> (env var, its default dir under ~, the dir under the var, MCP file relative to ~ / the var)
 HARNESSES = {
     "claude": ("CLAUDE_CONFIG_DIR", ".claude", "", ".claude.json", ".claude.json"),
     "codex": ("CODEX_HOME", ".codex", "", ".codex/config.toml", "config.toml"),
+    "opencode": ("XDG_CONFIG_HOME", ".config/opencode", "opencode", ".config/opencode/opencode.json",
+                 "opencode/opencode.json"),
 }
 
 
@@ -138,6 +142,10 @@ class SetTest(HarnessEnvCase):
         manifest = json.loads((self.settings_home / "harnesses.json").read_text())
         self.assertEqual(manifest["harnesses"]["codex"]["skills"], "~/alt/codex/skills")
 
+    def test_opencode_xdg_config_home(self):
+        d, mcp = self.lifecycle("opencode", str(self.elsewhere / "xdg"))
+        self.assertEqual(d, self.elsewhere / "xdg" / "opencode")
+        self.assertFalse((self.home / ".config" / "opencode").exists())
 
 
 class UnsetTest(HarnessEnvCase):
@@ -176,6 +184,90 @@ class DoctorPluginDirTest(HarnessEnvCase):
         (d / "settings.json").write_text(json.dumps({**settings, "enabledPlugins": {"brainrc@brainrc": False}}))
         code, out = quiet(brainrc.cmd_doctor)
         self.assertNotIn("both the plugin", out)  # read from $CLAUDE_CONFIG_DIR/settings.json
+
+
+JSONC = """{
+  // my settings
+  "$schema": "https://opencode.ai/config.json",
+  "theme": "dark", /* keep me */
+  "mcp": {
+    "mine": {"type": "local", "command": ["x"]}, // my server
+  },
+}
+"""
+
+
+class OpencodeJsoncTest(HarnessEnvCase):
+    def test_an_existing_jsonc_is_merged_and_keeps_comments(self):
+        d, _ = self.configure("opencode", None)
+        jc = d / "opencode.jsonc"
+        jc.write_text(JSONC)
+        code, out = run("apply", "--only", "opencode")
+        self.assertEqual(code, 0, out)
+        self.assertFalse((d / "opencode.json").exists())
+        text = jc.read_text()
+        self.assertIn("// my settings", text)
+        self.assertIn("/* keep me */", text)
+        data = jsonc.loads(text)
+        self.assertEqual(set(data["mcp"]), {"mine", "docs"})
+        self.assertEqual(data["theme"], "dark")
+        code, out = run("status", "--only", "opencode")
+        self.assertIn("Everything in sync.", out)
+        code, out = run("uninstall")
+        self.assertEqual(code, 0, out)
+        data = jsonc.loads(jc.read_text())
+        self.assertEqual(set(data["mcp"]), {"mine"})
+        self.assertIn("// my settings", jc.read_text())
+
+    def test_jsonc_under_xdg(self):
+        d, _ = self.configure("opencode", str(self.elsewhere / "xdg"))
+        (d / "opencode.jsonc").write_text("{}\n")
+        run("apply", "--only", "opencode")
+        self.assertIn("docs", jsonc.loads((d / "opencode.jsonc").read_text())["mcp"])
+        self.assertFalse((d / "opencode.json").exists())
+
+    def test_json_wins_when_both_exist(self):
+        d, _ = self.configure("opencode", None)
+        (d / "opencode.json").write_text("{}\n")
+        (d / "opencode.jsonc").write_text(JSONC)
+        self.assertEqual(mcp_file("opencode", {"mcp": str(d / "opencode.json")}), d / "opencode.json")
+
+    def test_only_opencode_looks_for_jsonc(self):
+        (self.home / ".claude.jsonc").write_text("{}")
+        self.assertEqual(mcp_file("claude", {"mcp": "~/.claude.json"}), self.home / ".claude.json")
+
+    def test_a_jsonc_it_cant_parse_is_left_alone(self):
+        d, _ = self.configure("opencode", None)
+        jc = d / "opencode.jsonc"
+        jc.write_text('{"mcp": {\n')
+        state, *_ = mcp_change(McpSync("opencode", jc, {"docs": {"url": "https://example.com/mcp"}}))
+        self.assertEqual(state, "invalid")
+
+
+class JsoncTest(unittest.TestCase):
+    def test_loads_comments_and_trailing_commas(self):
+        self.assertEqual(jsonc.loads(JSONC)["mcp"]["mine"]["command"], ["x"])
+        self.assertEqual(jsonc.loads('{"a": "// /* not comments */", "b": [1, 2,],}'),
+                         {"a": "// /* not comments */", "b": [1, 2]})
+
+    def test_set_replaces_adds_and_removes_one_key(self):
+        out = jsonc.set_key(JSONC, "mcp", {"x": {"type": "remote"}})
+        self.assertEqual(jsonc.loads(out)["mcp"], {"x": {"type": "remote"}})
+        self.assertIn("/* keep me */", out)
+        out = jsonc.set_key(out, "mcp", None)
+        self.assertNotIn("mcp", jsonc.loads(out))
+        self.assertIn("/* keep me */", out)
+        out = jsonc.set_key(out, "mcp", {"y": 1})
+        self.assertEqual(jsonc.loads(out)["mcp"], {"y": 1})
+        for text in ("{}", '{"a": 1}', '{"a": 1,}', '{\n  "mcp": 1\n}', '{"mcp": 1, "b": 2}'):
+            with self.subTest(text=text):
+                self.assertEqual(jsonc.loads(jsonc.set_key(text, "mcp", {"z": 1}))["mcp"], {"z": 1})
+                self.assertNotIn("mcp", jsonc.loads(jsonc.set_key(text, "mcp", None)))
+
+    def test_rejects_what_isnt_an_object(self):
+        for text in ("[]", '{"a" 1}', '{"a": 1', "/* open"):
+            with self.subTest(text=text), self.assertRaises((ValueError, IndexError)):
+                jsonc.set_key(text, "mcp", {"z": 1})
 
 
 if __name__ == "__main__":

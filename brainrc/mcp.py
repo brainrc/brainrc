@@ -12,6 +12,7 @@ import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 
+from . import jsonc
 from .config import ConfigError, expand, former_homes, in_scope, load_harnesses, settings_home
 from .settings import replace_file
 from .sources import Source
@@ -157,8 +158,17 @@ def mcp_plan(srcs: list[Source]) -> list[McpSync]:
             continue
         wanted = {n: s for n, s in servers.items()
                   if name in enabled and name in s.get("harnesses", [name])}
-        syncs.append(McpSync(name, expand(h["mcp"]), wanted))
+        syncs.append(McpSync(name, mcp_file(name, h), wanted))
     return syncs
+
+
+def mcp_file(name: str, h: dict) -> Path:
+    """The harness's MCP file: its `mcp` path, except OpenCode's opencode.jsonc when only that exists."""
+    dest = expand(h["mcp"])
+    alt = dest.with_suffix(".jsonc")
+    if name == "opencode" and dest.suffix == ".json" and not dest.exists() and alt.is_file():
+        return alt
+    return dest
 
 
 def _owned_file() -> Path:
@@ -232,7 +242,8 @@ def _codex_change(m: McpSync, text: str) -> tuple[str, list[str], list[str]]:
 
 
 def _json_change(m: McpSync, text: str) -> tuple[str, list[str], list[str]]:
-    data = json.loads(text) if text.strip() else {}
+    commented = m.dest.suffix == ".jsonc"
+    data = (jsonc.loads if commented else json.loads)(text) if text.strip() else {}
     if not isinstance(data, dict):
         raise ValueError("not a JSON object")
     key = ADAPTERS[m.harness]
@@ -254,6 +265,11 @@ def _json_change(m: McpSync, text: str) -> tuple[str, list[str], list[str]]:
         new[key] = servers
     else:
         new.pop(key, None)
+    if commented and text.strip():  # edit the one key in place, so the user's comments stay
+        out = jsonc.set_key(text, key, servers or None)
+        if jsonc.loads(out) != new:
+            raise ValueError("the in-place edit didn't round-trip")
+        return out, conflicts, owned
     return json.dumps(new, indent=2) + "\n", conflicts, owned
 
 
@@ -263,7 +279,7 @@ def mcp_change(m: McpSync) -> tuple[str, str | None, list[str], list[str]]:
     text = m.dest.read_text() if m.dest.is_file() else ""
     try:
         new, conflicts, owned = (_codex_change if m.harness == "codex" else _json_change)(m, text)
-    except (ValueError, tomllib.TOMLDecodeError):
+    except (ValueError, IndexError, tomllib.TOMLDecodeError):
         return "invalid", None, [], []
     return ("ok" if new == text else "merge"), new, conflicts, owned
 

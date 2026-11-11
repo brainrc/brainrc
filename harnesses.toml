@@ -44,13 +44,13 @@ mcp = "${CODEX_HOME:-~/.codex}/config.toml"
 
 [opencode]
 enabled = true
-skills = "~/.config/opencode/skills"
-commands = "~/.config/opencode/command"
-agents = "~/.config/opencode/agents"
+skills = "${XDG_CONFIG_HOME:-~/.config}/opencode/skills"
+commands = "${XDG_CONFIG_HOME:-~/.config}/opencode/command"
+agents = "${XDG_CONFIG_HOME:-~/.config}/opencode/agents"
 agents_format = "opencode"
-plugin = "~/.config/opencode/plugins/brainrc-guard.js"
-instructions = "~/.config/opencode/AGENTS.md"
-mcp = "~/.config/opencode/opencode.json"
+plugin = "${XDG_CONFIG_HOME:-~/.config}/opencode/plugins/brainrc-guard.js"
+instructions = "${XDG_CONFIG_HOME:-~/.config}/opencode/AGENTS.md"
+mcp = "${XDG_CONFIG_HOME:-~/.config}/opencode/opencode.json"  # opencode.jsonc instead when only it exists
 
 [antigravity]
 enabled = true

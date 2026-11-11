@@ -11,5 +11,6 @@ script="$tmp/tutorial.sh"
   awk '/^```bash$/{on=1; next} /^```$/{if(on){on=0; print ""}; next} on' "$core/docs/tutorial.md"
 } | sed "s#<this-repo>#$core#g" > "$script"
 echo "== $(grep -c '' "$script") lines extracted from docs/tutorial.md"
+mkdir -p "$tmp/home/.claude"  # apply only touches installed harnesses, so install one
 env -u XDG_CONFIG_HOME -u CLAUDE_CONFIG_DIR -u CODEX_HOME HOME="$tmp/home" bash "$script"  # each var moves a harness
 echo "== tutorial ran clean"

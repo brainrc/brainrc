@@ -13,7 +13,7 @@ from test_uninstall import run  # noqa: E402
 
 from brainrc import config, jsonc  # noqa: E402
 from brainrc.manifest import checked_manifest, manifest_file  # noqa: E402
-from brainrc.mcp import mcp_file  # noqa: E402
+from brainrc.mcp import McpSync, mcp_change, mcp_file  # noqa: E402
 
 
 class MovedTest(HarnessEnvCase):
@@ -114,6 +114,35 @@ class OpencodeTwoFilesTest(HarnessEnvCase):
         self.assertEqual(json.loads(js.read_text()), {"theme": "dark"})
 
 
+DB = ('{\n  "mcp": {\n    // my local db: keep disabled until the VPN is up\n'
+      '    "db": {"type": "local", "command": ["db-mcp"], "enabled": false}\n  }\n}\n')
+
+
+class ServerCommentsTest(HarnessEnvCase):
+    def test_comments_on_the_user_servers_survive_apply_and_uninstall(self):
+        d, _ = self.configure("opencode", None)
+        jc = d / "opencode.jsonc"
+        jc.write_text(DB)
+        code, out = run("apply", "--only", "opencode")
+        self.assertEqual(code, 0, out)
+        self.assertIn("// my local db", jc.read_text())
+        self.assertEqual(set(jsonc.loads(jc.read_text())["mcp"]), {"db", "docs"})
+        code, out = run("uninstall")
+        self.assertEqual(code, 0, out)
+        self.assertEqual(jc.read_text(), DB)
+
+    def test_an_emptied_mcp_object_with_a_comment_stays(self):
+        d, _ = self.configure("opencode", None)
+        jc = d / "opencode.jsonc"
+        jc.write_text('{\n  "mcp": {\n    // add servers here\n  }\n}\n')
+        run("apply", "--only", "opencode")
+        code, out = run("uninstall")
+        self.assertEqual(code, 0, out)
+        self.assertIn("// add servers here", jc.read_text())
+        self.assertEqual(jsonc.loads(jc.read_text()), {"mcp": {}})
+        self.assertEqual(mcp_change(McpSync("opencode", jc, {}))[0], "ok")  # stable: nothing left to undo
+
+
 class JsoncCommentsTest(unittest.TestCase):
     def check(self, text, value, want):
         out = jsonc.set_key(text, "mcp", value)
@@ -137,6 +166,16 @@ class JsoncCommentsTest(unittest.TestCase):
 
     def test_comments_inside_the_old_value_may_go(self):
         self.check('{\n  "mcp": {"x": 1 // gone\n  }\n}\n', {"y": 2}, {"mcp": {"y": 2}})
+
+    def test_a_nested_key(self):
+        out = jsonc.set_key(DB, ("mcp", "x"), {"a": 1})
+        self.assertIn("// my local db", out)
+        self.assertEqual(jsonc.set_key(out, ("mcp", "x"), None), DB)
+        self.assertEqual(jsonc.set_key('{"mcp": {"x": 1}}', ("mcp", "y"), 2), '{"mcp": {"x": 1,\n  "y": 2\n}}')
+
+    def test_no_space_left_after_a_comment(self):
+        out = jsonc.set_key('{\n  "a": 1,\n  /* x */ "mcp": {},\n  "b": 2\n}\n', "mcp", None)
+        self.assertIn("/* x */\n", out)
 
     def test_same_line_members(self):
         self.assertEqual(jsonc.set_key('{"a": 1, "mcp": {}, "b": 2}', "mcp", None), '{"a": 1, "b": 2}')

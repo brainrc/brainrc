@@ -276,12 +276,28 @@ def _json_change(m: McpSync, text: str) -> tuple[str, list[str], list[str]]:
         new[key] = servers
     else:
         new.pop(key, None)
-    if commented and text.strip():  # edit the one key in place, so the user's comments stay
-        out = jsonc.set_key(text, key, servers or None)
-        if jsonc.loads(out) != new:
+    if commented and text.strip():  # edit in place, so the user's comments stay
+        out = _jsonc_edit(text, key, data.get(key), servers)
+        if jsonc.loads(out) not in (new, {**new, key: {}}):
             raise ValueError("the in-place edit didn't round-trip")
         return out, conflicts, owned
     return json.dumps(new, indent=2) + "\n", conflicts, owned
+
+
+def _jsonc_edit(text: str, key: str, current, servers: dict) -> str:
+    """text with its `key` object holding servers: one server at a time, so the user's servers and
+    the comments on them are never rewritten. An emptied object goes, unless comments are in it."""
+    if not isinstance(current, dict):
+        return jsonc.set_key(text, key, servers or None)
+    for name in sorted(set(current) | set(servers)):
+        if current.get(name) != servers.get(name):
+            text = jsonc.set_key(text, (key, name), servers.get(name))
+    if not servers:
+        try:
+            text = jsonc.set_key(text, key, None, strict=True)
+        except ValueError:
+            pass  # a comment inside it: keep `"mcp": {}` with the comment
+    return text
 
 
 def mcp_change(m: McpSync) -> tuple[str, str | None, list[str], list[str]]:

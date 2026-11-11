@@ -33,3 +33,9 @@ Delivery: one branch and one draft PR to main for the whole epic (build plan), c
 - Nits: messages name the resolved `.claude.json`; OpenCode keeps writing the `.jsonc` that holds
   brainrc's servers once an `opencode.json` appears, and uninstall checks both. doctor warns on a
   relative harness var.
+
+## 2026-11-11T05:55:00Z · Review round 2 (review 5854327471) · fixed
+- A comment inside the `mcp` object (on a user's own server) was lost, since the whole value was
+  rewritten. `_jsonc_edit` now adds, replaces or removes one server at a time through
+  `jsonc.set_key(text, ("mcp", name), ...)`; an emptied `mcp` object stays when it holds a comment.
+- Cosmetic: no space is left after a comment that preceded a removed key.

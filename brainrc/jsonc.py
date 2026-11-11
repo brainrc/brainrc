@@ -58,12 +58,13 @@ def loads(text: str):
     return json.loads(" ".join(t[0] for t in kept))
 
 
-def _members(toks) -> tuple[list[tuple[str, int, int, int]], int]:
-    """The root object's members as (key, key token index, value start index, value end index),
-    and the index of its closing brace. Raises ValueError unless the root is an object."""
-    if not toks or toks[0][0] != "{":
+def _members(toks, open_: int = 0) -> tuple[list[tuple[str, int, int, int]], int]:
+    """The members of the object opening at token open_ (the root by default) as (key, key token
+    index, value start index, value end index), and the index of its closing brace. Raises
+    ValueError unless that is an object."""
+    if len(toks) <= open_ or toks[open_][0] != "{":
         raise ValueError("not a JSON object")
-    members, k = [], 1
+    members, k = [], open_ + 1
     while toks[k][0] != "}":
         if toks[k][0] == ",":
             k += 1
@@ -91,15 +92,27 @@ def _cut_before(text: str, prev_end: int, key_start: int) -> int:
     if not gap.strip() and "\n" not in gap:
         return prev_end
     nl = text.rfind("\n", prev_end, key_start)
-    return nl if nl != -1 and not text[nl + 1:key_start].strip() else key_start
+    if nl != -1 and not text[nl + 1:key_start].strip():
+        return nl
+    line = nl + 1 if nl != -1 else prev_end
+    return line + len(text[line:key_start].rstrip())  # after the comment before it, not its space
 
 
-def _set_key(text: str, key: str, value) -> tuple[str, tuple[int, int]]:
+def _set_key(text: str, path: tuple[str, ...], value) -> tuple[str, tuple[int, int]]:
     """set_key's result, and the span of text it replaced (so comments in it may go)."""
     toks = _tokens(text)
-    members, close = _members(toks)
+    open_ = 0
+    for part in path[:-1]:  # down to the object that holds the last key
+        found = [m for m in _members(toks, open_)[0] if m[0] == part]
+        if not found:
+            raise ValueError(f"no object at {part!r}")
+        open_ = found[-1][2]
+    key = path[-1]
+    members, close = _members(toks, open_)
     found = [m for m in members if m[0] == key]
-    indent = "  "
+    brace = toks[open_][1]
+    indent = text[text.rfind("\n", 0, brace) + 1:brace]
+    indent = indent[:len(indent) - len(indent.lstrip())] + "  "
     if members:
         first = toks[members[0][1]][1]
         lead = text[text.rfind("\n", 0, first) + 1:first]
@@ -123,14 +136,18 @@ def _set_key(text: str, key: str, value) -> tuple[str, tuple[int, int]]:
     line = text.rfind("\n", last[2], end) + 1  # the closing brace's own line, if it has one
     at, entry = (line, "") if line and not text[line:end].strip() else (end, "\n")
     entry += f"{indent}{json.dumps(key)}: {rendered}\n"
+    if at == end:  # the brace shares a line with the last member: it moves to its own line
+        entry += indent[:-2]
     sep = "" if last[0] in "{," else ","
     return text[:last[2]] + sep + text[last[2]:at].rstrip(" \t") + entry + text[at:], (0, 0)
 
 
-def set_key(text: str, key: str, value) -> str:
-    """text with the root object's `key` set to value (removed when value is None). Every comment
-    outside what it replaces stays; raises ValueError if one wouldn't."""
-    out, (start, end) = _set_key(text, key, value)
+def set_key(text: str, key: str | tuple[str, ...], value, strict: bool = False) -> str:
+    """text with the root object's `key` set to value (removed when value is None); a tuple of
+    keys names a key in a nested object, e.g. ("mcp", "docs"). Every comment outside what it
+    replaces stays (every comment at all when strict); raises ValueError if one wouldn't."""
+    out, (start, end) = _set_key(text, (key,) if isinstance(key, str) else tuple(key), value)
+    start, end = (0, 0) if strict else (start, end)
     kept = [c[0] for c in _scan(text)[1] if not start <= c[1] < end]
     if [c[0] for c in _scan(out)[1]] != kept:
         raise ValueError("the edit would lose a comment")

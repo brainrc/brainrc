@@ -12,6 +12,13 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.5.15 (2026-11-11)
+
+- Claude Code's paths follow `CLAUDE_CONFIG_DIR` when it holds an absolute path, `.claude.json` included, for `status`, `apply`, `doctor` and `uninstall`; unset, empty or relative, `~/.claude` as before. `harnesses.toml` paths take `${VAR:-default}` for this (#132).
+- Codex's paths follow `CODEX_HOME` the same way, `config.toml` included; default `~/.codex` (#133).
+- OpenCode's paths follow `XDG_CONFIG_HOME` (`$XDG_CONFIG_HOME/opencode`); default `~/.config/opencode`. MCP servers go into an existing `opencode.jsonc` when there is no `opencode.json` (or brainrc's servers are already there), edited in place one server at a time so the comments in it stay; `uninstall` checks both files (#134).
+- When a harness's variable changes between applies, `apply` and `status` warn that brainrc's links and hooks stay in the old dir, `doctor` warns while they are there, and `uninstall` also cleans each harness's default dir. `doctor` warns when one of the three variables is set to a relative path, which brainrc ignores.
+
 ## 0.5.14 (2026-11-11)
 
 - CI: `validate` now runs on ubuntu, macOS and Windows across Python 3.11, 3.12 and 3.13 (fail-fast off). Windows cells are reported but non-blocking, since Windows is unsupported natively. Gitleaks runs once, in the ubuntu 3.12 cell.

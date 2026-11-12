@@ -85,8 +85,8 @@ ALLOW = [
     ("docs/troubleshooting.md", r"moving-from-ai-config|Moving from ai-config", "E: link to the migration section"),
     ("docs/troubleshooting.md", r"AICFG_HOME|ai-config@ai-config", "E: old env var and plugin id"),
     ("docs/troubleshooting.md", r"bak-aicfg", "E: old backup names"),
-    ("packs/gatework/skills/spec-agent/SKILL.md", OLD_LINE, "E: old-name fallbacks"),
-    ("packs/gatework/skills/spec-agent/SKILL.md", r"ai-config:<role>", "E: old role names, checked by test_plugin_docs"),
+    ("packs/gatework/skills/brainrc-gatework/SKILL.md", OLD_LINE, "E: old-name fallbacks"),
+    ("packs/gatework/skills/brainrc-gatework/SKILL.md", r"ai-config:<role>", "E: old role names, checked by test_plugin_docs"),
     # F. The allowlist test itself.
     ("tests/test_old_names.py", r".*", "F: this table"),
 ]

@@ -32,7 +32,7 @@ flowchart LR
 |---|---|---|---|
 | install | `brainrc validate` | every source, `VERSION`, `CHANGELOG.md` | nothing |
 | install | render rules | `rules/*.md` from core, then each pack, then `*.local.md` | `$BRAINRC_HOME/instructions.md` (default `~/.config/brainrc/`) |
-| install | render extensions | each enabled pack's `pack.toml` | `$BRAINRC_HOME/extensions.md` (and, deprecated, `skills/spec-agent/references/extensions.md`) |
+| install | render extensions | each enabled pack's `pack.toml`, through Gatework's validator plugin | `$BRAINRC_HOME/extensions.md` (only while Gatework is enabled) |
 | install | link and merge | `harnesses.toml`, `overrides/<harness>/` | symlinks in each harness dir, hook entries in its settings file |
 | run | every session | the instructions file, skill descriptions | nothing |
 | run | `/brainrc-work <ticket>` | `extensions.md`, the connector, agents, domain skills | `specs/<slug>/` in your project, commits on a feature branch |
@@ -53,6 +53,6 @@ per stage: `config`, `sources`, `opencode`, `plan`, `settings`, `plugin`, `token
 - **Skill**: instructions a tool loads on demand, triggered by its description ([format](formats.md#skills-skillsnameskillmd)).
 - **Domain skill**: a skill for one stack (Terraform, Kubernetes, ...) that spec-agent loads only when the ticket touches it ([list](spec-agent.md#domain-skills-skills)).
 - **Agent**: one role in a spec-agent run, such as analyst or verifier ([roles](spec-agent.md#roles-agents)).
-- **Connector**: the skill spec-agent uses to read and update a ticket system ([contract](../packs/gatework/skills/spec-agent/references/connectors.md)).
+- **Connector**: the skill spec-agent uses to read and update a ticket system ([contract](../packs/gatework/skills/brainrc-gatework/references/connectors.md)).
 - **Gate**: a stop where you approve the spec, the plan, or delivery ([spec-agent](spec-agent.md)).
 - **`requires_core`**: the core versions a pack supports ([compatibility](packs.md#compatibility)).

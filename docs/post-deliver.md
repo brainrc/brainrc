@@ -1,7 +1,7 @@
 # Post-deliver: following a PR to merge (design)
 
 Status: **all five build steps are built** (see
-[`references/watch.md`](../packs/gatework/skills/spec-agent/references/watch.md)). A run used to end at the Deliver gate: push, PR, ticket
+[`references/watch.md`](../packs/gatework/skills/brainrc-gatework/references/watch.md)). A run used to end at the Deliver gate: push, PR, ticket
 update, retro, `stage: done`, and whatever came next was fixed by hand. This page designs the
 stage that closes that loop. Build order is at the end.
 

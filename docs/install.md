@@ -169,7 +169,7 @@ Then install `brainrc@brainrc` as above. `doctor` warns until the old plugin is 
 ## Platforms
 
 macOS and Linux. Everything installs by symlink, and spec-agent reads its role files through
-the `skills/spec-agent/roles` symlink, so the checkout needs symlinks too. On Windows, use WSL,
+the `packs/gatework/skills/brainrc-gatework/roles` symlink, so the checkout needs symlinks too. On Windows, use WSL,
 or turn on Developer Mode and run `git config --global core.symlinks true` before cloning.
 `validate` and `doctor` report a checkout without symlinks, with the fix.
 

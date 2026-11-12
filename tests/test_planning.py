@@ -40,14 +40,14 @@ class PlanCommandTest(unittest.TestCase):
             self.assertIn(flag, meta["argument-hint"])
 
     def test_report_template_has_the_sections(self):
-        text = (REPO / "packs/gatework/skills/spec-agent/templates/plan-report.md").read_text()
+        text = (REPO / "packs/gatework/skills/brainrc-gatework/templates/plan-report.md").read_text()
         for heading in ("## Candidates", "## Needs evidence", "## Flagged content", "## Sources"):
             self.assertIn(heading, text)
 
 
 class TicketGateTest(unittest.TestCase):
     def setUp(self):
-        text = (REPO / "packs/gatework/skills/spec-agent/references/planning.md").read_text()
+        text = (REPO / "packs/gatework/skills/brainrc-gatework/references/planning.md").read_text()
         self.gate = text.split("## Ticket gate", 1)[1]
 
     def test_gate_lists_each_ticket_as_an_outward_action(self):
@@ -72,7 +72,7 @@ class TicketGateTest(unittest.TestCase):
     def test_auto_alone_never_approves_and_dry_run_wins(self):
         self.assertRegex(self.gate, r"`--auto` alone never approves the Ticket gate")
         self.assertRegex(self.gate, r"`--dry-run` wins over every other flag")
-        skill = (REPO / "packs/gatework/skills/spec-agent/SKILL.md").read_text()
+        skill = (REPO / "packs/gatework/skills/brainrc-gatework/SKILL.md").read_text()
         self.assertRegex(skill, r"(?s)Ticket gate\s+\(`/brainrc-plan`\) still stops; only `--oneshot` approves it")
 
     def test_local_only_and_tainted_create_nothing(self):
@@ -81,7 +81,7 @@ class TicketGateTest(unittest.TestCase):
         self.assertIn("skip candidates already in `created`", self.gate)
 
     def test_guardrails_names_the_ticket_gate(self):
-        text = (REPO / "packs/gatework/skills/spec-agent/references/guardrails.md").read_text()
+        text = (REPO / "packs/gatework/skills/brainrc-gatework/references/guardrails.md").read_text()
         self.assertRegex(text, r"Gate reached \(Spec, Plan, Deliver, Ticket\)")
         self.assertRegex(text, r"`--auto` alone never approves it")
 

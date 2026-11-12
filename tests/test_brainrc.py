@@ -463,7 +463,7 @@ class SyncFakeHomeTest(TempRepoCase):
         self.assertIn("CONFLICT", out)
         self.assertEqual((self.home / ".codex/AGENTS.md").read_text(), "mine\n")
 
-        skill = self.home / ".claude/skills/spec-agent"
+        skill = self.home / ".claude/skills/brainrc-gatework"
         self.assertTrue(skill.is_symlink())
         self.assertTrue((skill / "roles" / "brainrc-implementer.md").is_file())
         self.assertTrue((self.home / ".claude/hooks/brainrc/guard_outward.py").is_file())
@@ -811,7 +811,7 @@ class DoctorTest(TempRepoCase):
         self.doctor(0)
 
     def test_broken_roles_link(self):
-        roles = self.repo / "packs/gatework/skills/spec-agent/roles"
+        roles = self.repo / "packs/gatework/skills/brainrc-gatework/roles"
         roles.unlink()
         roles.write_text("../../agents")
         findings = self.doctor(1)
@@ -917,12 +917,12 @@ class UnslopSplitTest(unittest.TestCase):
 class RolesLinkTest(TempRepoCase):
     def setUp(self):
         super().setUp()
-        self.roles = self.repo / "packs/gatework/skills/spec-agent/roles"
+        self.roles = self.repo / "packs/gatework/skills/brainrc-gatework/roles"
 
     def assert_validate_fails(self):
         code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1, out)
-        self.assertIn("skills/spec-agent/roles", out)
+        self.assertIn("skills/brainrc-gatework/roles", out)
         self.assertIn("Platforms", out)
 
     def test_repo_link_passes(self):
@@ -1427,7 +1427,7 @@ class InstalledModeTest(TempRepoCase):
         self.pkg = Path(tempfile.mkdtemp()) / "brainrc"
         self.core = self.pkg / "_core"
         copy_repo(self.core)
-        roles = self.core / "packs/gatework/skills/spec-agent/roles"
+        roles = self.core / "packs/gatework/skills/brainrc-gatework/roles"
         roles.unlink()
         shutil.copytree(self.core / "packs/gatework/agents", roles)  # wheels copy the link's files
         brainrc.config.REPO = self.core
@@ -2073,7 +2073,7 @@ class ConnectorCheckTest(TempRepoCase):
             text = (Path(__file__).resolve().parent.parent / "packs/gatework/skills" / name / "SKILL.md").read_text()
             self.assertRegex(text, r"(?m)^## create\b", name)
             self.assertRegex(text, r"Implements the ticket connector interface:.*`create`", name)
-        contract = (Path(__file__).resolve().parent.parent / "packs/gatework/skills/spec-agent/references/connectors.md").read_text()
+        contract = (Path(__file__).resolve().parent.parent / "packs/gatework/skills/brainrc-gatework/references/connectors.md").read_text()
         self.assertRegex(contract, r"\| `create` \| no \| outward \| after an approved Ticket gate \|")
 
     def test_a_connector_without_create_still_validates(self):
@@ -2152,7 +2152,7 @@ class ValidateTest(unittest.TestCase):
         tmp = Path(tempfile.mkdtemp())
         try:
             copy_repo(tmp)
-            skill = tmp / "packs/gatework/skills/spec-agent/SKILL.md"
+            skill = tmp / "packs/gatework/skills/brainrc-gatework/SKILL.md"
             skill.write_text(skill.read_text() + "\n[agent: ghost] [x](missing.md) the `nope` skill\n")
             (tmp / "packs/gatework/agents/verifier.md").write_text(
                 (tmp / "packs/gatework/agents/verifier.md").read_text().replace("model: haiku", "model: gpt-9"))
@@ -2184,7 +2184,7 @@ class LocalTripwireTest(TempRepoCase):
         self.addCleanup(patcher.stop)
         super().setUp()
         set_core_version(self.repo, "1.2.3")
-        self.doc = self.repo / "packs/gatework/skills/spec-agent/references/campaign.md"
+        self.doc = self.repo / "packs/gatework/skills/brainrc-gatework/references/campaign.md"
 
     def write_terms(self, text: str) -> None:
         (self.repo / "tripwires.local.toml").write_text(text)
@@ -2203,17 +2203,17 @@ class LocalTripwireTest(TempRepoCase):
         self.write_terms('terms = ["initech"]\n')
         code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1, out)
-        self.assertIn(f'skills/spec-agent/references/campaign.md:{len(lines) + 1}: local tripwire: '
+        self.assertIn(f'skills/brainrc-gatework/references/campaign.md:{len(lines) + 1}: local tripwire: '
                       f'contains "initech" (tripwires.local.toml)', out)
 
     def test_any_file_type_and_file_names_are_checked(self):
         (self.repo / "packs/gatework/agents/notes.py").write_text("# initech helper\n")
-        (self.repo / "packs/gatework/skills/spec-agent/initech-notes.txt").write_text("plain\n")
+        (self.repo / "packs/gatework/skills/brainrc-gatework/initech-notes.txt").write_text("plain\n")
         self.write_terms('terms = ["Initech"]\n')
         code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1, out)
         self.assertIn('agents/notes.py:1: local tripwire: contains "Initech"', out)
-        self.assertIn('skills/spec-agent/initech-notes.txt: local tripwire: the file name contains "Initech"', out)
+        self.assertIn('skills/brainrc-gatework/initech-notes.txt: local tripwire: the file name contains "Initech"', out)
 
     def test_a_term_found_nowhere_passes(self):
         self.write_terms('terms = ["Initech", "Globex"]\n')
@@ -2260,14 +2260,14 @@ class LocalTripwireTest(TempRepoCase):
     def test_a_link_is_checked_by_its_target_path_not_followed(self):
         outside = self.repo.parent / "outside.md"
         outside.write_text("initech\n")  # not committed, so not checked
-        (self.repo / "packs/gatework/skills/spec-agent/outside.txt").symlink_to(outside)
+        (self.repo / "packs/gatework/skills/brainrc-gatework/outside.txt").symlink_to(outside)
         self.write_terms('terms = ["initech"]\n')
         code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 0, out)
-        (self.repo / "packs/gatework/skills/spec-agent/ref.txt").symlink_to("../initech/ref.txt")  # broken, but committed as is
+        (self.repo / "packs/gatework/skills/brainrc-gatework/ref.txt").symlink_to("../initech/ref.txt")  # broken, but committed as is
         code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1, out)
-        self.assertIn('skills/spec-agent/ref.txt: local tripwire: the link target contains "initech"', out)
+        self.assertIn('skills/brainrc-gatework/ref.txt: local tripwire: the link target contains "initech"', out)
 
     def test_the_file_must_never_be_tracked(self):
         self.git("init", "-q")

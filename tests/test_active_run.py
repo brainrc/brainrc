@@ -1,4 +1,4 @@
-"""Tests for skills/spec-agent/scripts/active_run.py: write and read the active-run pointer that
+"""Tests for skills/brainrc-gatework/scripts/active_run.py: write and read the active-run pointer that
 external tools use to locate the current spec-agent run."""
 import os
 import shutil
@@ -8,7 +8,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-SCRIPT = Path(__file__).resolve().parent.parent / "packs/gatework/skills/spec-agent/scripts/active_run.py"
+SCRIPT = Path(__file__).resolve().parent.parent / "packs/gatework/skills/brainrc-gatework/scripts/active_run.py"
 
 
 class ActiveRunTest(unittest.TestCase):

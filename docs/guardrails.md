@@ -5,7 +5,7 @@ Layered, so no single layer has to be perfect.
 | Layer | Where | Enforced by | Covers |
 |---|---|---|---|
 | Rules | `rules/30-guardrails.md`, `40-security.md` | model instructions, every tool | approvals, untrusted input, secrets |
-| Workflow | `skills/spec-agent/references/guardrails.md` | engine | gates, stop conditions, retry budget, scope fence, environment targets |
+| Workflow | `packs/gatework/skills/brainrc-gatework/references/guardrails.md` | engine | gates, stop conditions, retry budget, scope fence, environment targets |
 | Role scoping | `agents/*.md` `tools:` | Claude Code / OpenCode | reviewers and planners can't edit code |
 | Hooks | `overrides/claude/hooks/` | Claude Code harness | prompts/blocks regardless of what the model decides |
 | Repo | `.pre-commit-config.yaml`, CI | git / GitHub | gitleaks, validation, no home paths |

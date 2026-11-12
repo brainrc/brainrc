@@ -169,6 +169,19 @@ class GateworkPackTest(unittest.TestCase):
         meta = brainrc.load_pack(pack, "gatework").meta
         self.assertEqual((meta["id"], meta["validator"]), ("brainrc/gatework", "validator.py"))
 
+    def test_spec_agent_is_a_deprecated_alias_for_one_minor_release(self):
+        skills = self.ROOT / "packs/gatework/skills"
+        alias = brainrc.frontmatter(skills / "spec-agent/SKILL.md")
+        self.assertEqual(brainrc.frontmatter(skills / "brainrc-gatework/SKILL.md")["name"], "brainrc-gatework")
+        self.assertEqual(alias["description"], "Deprecated, use brainrc-gatework (removed in 0.8.0)")
+        self.assertEqual(alias["disable-model-invocation"], "true")
+        self.assertIn("`brainrc-gatework` skill", (skills / "spec-agent/SKILL.md").read_text())
+        for name in ("brainrc-work", "brainrc-plan", "spec-approve", "spec-resume"):
+            with self.subTest(skill=name):
+                text = (skills / name / "SKILL.md").read_text()
+                self.assertIn("`brainrc-gatework` skill", text)
+                self.assertNotIn("`spec-agent` skill", text)
+
     def test_core_holds_no_spec_agent_knowledge(self):
         for name in ("EXTENSION_KEYS", "ROLES_LINK", "REQUIRED_CONNECTOR_OPS", "extensions_file"):
             with self.subTest(name=name):

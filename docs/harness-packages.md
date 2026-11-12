@@ -40,7 +40,7 @@ here): `codex-rs/core-plugins/`, `codex-rs/hooks/`, `codex-rs/agent-roles/`.
 - Reads `.claude-plugin/marketplace.json` and `.claude-plugin/plugin.json` as well as its own
   `.codex-plugin/`. **Verified** with Codex 0.161.0: `codex plugin marketplace add <repo>` and
   `codex plugin add brainrc@brainrc` install our plugin unchanged. The install copy **drops
-  symlinks** (`skills/spec-agent/roles`), so spec-agent falls back to `../../agents/`.
+  symlinks** (`packs/gatework/skills/brainrc-gatework/roles`), so spec-agent falls back to `../../agents/`.
 - Skills: native, `~/.agents/skills` (`~/.codex/skills` deprecated). Custom prompts are deprecated
   for skills; a plugin's `commands/` become skills, **except any that use `$ARGUMENTS`** (verified:
   all five of ours were skipped). Core now ships them as user-invoked skills, which Codex installs.

@@ -135,5 +135,5 @@ Then validate it in the pack's own CI on every push, against core's latest `main
   intake context skill, a ticket connector, Deliver checks, rules, commands, and tripwires.
 - [docs/packs.md](packs.md) is the full pack reference.
 - To add a domain skill to core for everyone instead, put it in `skills/<stack>/`, add a row
-  to the Domains table in `skills/spec-agent/SKILL.md`, and follow the repo's
+  to the Domains table in `packs/gatework/skills/brainrc-gatework/SKILL.md`, and follow the repo's
   [AGENTS.md](../AGENTS.md) rules.

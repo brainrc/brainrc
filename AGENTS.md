@@ -21,7 +21,7 @@ These rules apply to human contributors too. Setup and PR workflow: [CONTRIBUTIN
   harness-neutral (no tool-specific syntax like `@imports`).
 - Domain skills (`skills/<stack>/`) follow: Validate (offline commands) / Conventions /
   Review checklist / Never without approval. Register new ones in the Domains table of
-  `skills/spec-agent/SKILL.md`.
+  `packs/gatework/skills/brainrc-gatework/SKILL.md`.
 - Agents: frontmatter `model` is `haiku|sonnet|opus|inherit`; keep `tools` least-privilege.
 - Keep the `brainrc/` package (run as `scripts/brainrc.py`) and hooks stdlib-only (Python 3.11+);
   `hatchling` in `pyproject.toml` is build-time only. New guard patterns need tests

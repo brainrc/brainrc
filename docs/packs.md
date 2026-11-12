@@ -129,7 +129,7 @@ With no packs enabled, the file says so and spec-agent runs as before.
 
 A pack has at most one `[extensions.ticket]`: one connector and the refs it handles. A team
 with two ticket systems splits them into two packs. The connector, core or the pack's own,
-must follow the [connector contract](../packs/gatework/skills/spec-agent/references/connectors.md), which
+must follow the [connector contract](../packs/gatework/skills/brainrc-gatework/references/connectors.md), which
 `validate` checks.
 
 ## Rules

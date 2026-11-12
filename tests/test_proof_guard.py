@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-_spec = importlib.util.spec_from_file_location("proof_guard", REPO / "packs/gatework/skills/spec-agent/scripts/proof_guard.py")
+_spec = importlib.util.spec_from_file_location("proof_guard", REPO / "packs/gatework/skills/brainrc-gatework/scripts/proof_guard.py")
 pg = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(pg)
 ENV = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}

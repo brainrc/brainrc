@@ -4,9 +4,9 @@
 
 | Technique | Where | Why it saves |
 |---|---|---|
-| Size-based execution mode | `spec-agent/references/efficiency.md` | trivial/small tickets run inline: no subagent spawn overhead |
+| Size-based execution mode | `brainrc-gatework/references/efficiency.md` | trivial/small tickets run inline: no subagent spawn overhead |
 | Implementer writes its own tests by default | `agents/brainrc-implementer.md` | one agent run per task instead of two |
-| Batched review, parallel reviewers | `spec-agent/SKILL.md` | one review pass per branch; concurrent read-only reviewers |
+| Batched review, parallel reviewers | `brainrc-gatework/SKILL.md` | one review pass per branch; concurrent read-only reviewers |
 | Per-agent model tiers | `model:` in `agents/*.md` | routine roles (verify, docs) on the cheapest tier; budgets stop a cheap model from using more tokens than it saves (the k9s trial verifier: 45k tokens, 18 tool calls before its budget was added) |
 | Paths, not contents, in dispatch | `references/handoff.md` | subagents load only what they need |
 | Handoff blocks ≤ ~150 words; engine reads only the newest | `references/handoff.md` | main thread stays small across long runs |

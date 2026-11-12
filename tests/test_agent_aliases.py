@@ -39,7 +39,7 @@ class ShippedTreeTest(unittest.TestCase):
                 self.assertTrue(text.endswith(target), "a subagent can't find another file, so it carries the instructions")
 
     def test_spec_agent_dispatches_the_new_names(self):
-        text = (ROOT / "packs/gatework/skills/spec-agent/SKILL.md").read_text()
+        text = (ROOT / "packs/gatework/skills/brainrc-gatework/SKILL.md").read_text()
         for n in OLD:
             with self.subTest(agent=n):
                 self.assertIn(f"[roles/brainrc-{n}.md](roles/brainrc-{n}.md)", text)

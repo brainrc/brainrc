@@ -51,7 +51,7 @@ class NamespacedSkillsTest(unittest.TestCase):
                 self.assertIn("$ARGUMENTS", body(ROOT, f"brainrc-{n}"))
 
     def test_work_body_is_unchanged(self):
-        self.assertIn("Use the `spec-agent` skill to work on this item end to end:",
+        self.assertIn("Use the `brainrc-gatework` skill to work on this item end to end:",
                       body(ROOT, "brainrc-work"))
 
     def test_knowledge_skills_keep_trigger_description_and_stay_auto_triggerable(self):

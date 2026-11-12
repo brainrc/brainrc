@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -294,17 +295,109 @@ def render_extensions(srcs: list[Source]) -> str:
 
 
 def frontmatter(path: Path) -> dict[str, str]:
+    """The `key: value` lines of a file's `---` frontmatter, every value a string ({} when there is
+    no frontmatter or it never ends). A YAML subset: plain scalars (a ` #` comment is dropped),
+    single- and double-quoted scalars, plain scalars continued on indented lines, and `|` and `>`
+    block scalars with their chomping (`-`, `+`) and indentation indicators. Flow values such as
+    `[a, b]` stay as written."""
     lines = path.read_text().splitlines()
     if not lines or lines[0].strip() != "---":
         return {}
-    meta = {}
-    for line in lines[1:]:
+    meta: dict[str, str] = {}
+    i = 1
+    while i < len(lines):
+        line = lines[i]
         if line.strip() == "---":
             return meta
-        if ":" in line and not line.startswith((" ", "\t")):
-            key, _, value = line.partition(":")
-            meta[key.strip()] = value.split(" #", 1)[0].strip()
+        i += 1
+        m = FM_KEY.match(line)
+        if not m:
+            continue
+        key, value = m[1], m[2].strip()
+        if block := FM_BLOCK.fullmatch(value.split(" #", 1)[0].strip()):
+            body, i = _block_lines(lines, i, int(block[2] or block[4] or 0))
+            meta[key] = _block_scalar(body, block[1] == "|", block[3] or block[5] or "")
+        elif value[:1] in "'\"" and value:
+            meta[key] = _quoted(value)
+        else:
+            value = value.split(" #", 1)[0].strip()
+            while value and i < len(lines) and lines[i][:1] in (" ", "\t") and lines[i].strip() \
+                    and not lines[i].lstrip().startswith("#"):
+                value = f"{value} {lines[i].split(' #', 1)[0].strip()}".strip()
+                i += 1
+            meta[key] = value
     return {}  # unterminated frontmatter
+
+
+FM_KEY = re.compile(r"^([^\s#][^:]*?):(?:\s+(.*)|$)")
+FM_BLOCK = re.compile(r"([|>])(?:([1-9])?([+-])?|([+-])([1-9]))")
+FM_ESCAPES = {"n": "\n", "t": "\t", '"': '"', "\\": "\\", "/": "/", "0": "\0", "r": "\r"}
+
+
+def _block_lines(lines: list[str], i: int, indent: int) -> tuple[list[str], int]:
+    """The lines of a block scalar starting at lines[i], without their indentation, and the index
+    after it. indent is the indentation indicator, or 0 to take it from the first non-blank line."""
+    body = []
+    while i < len(lines) and lines[i].rstrip() != "---":
+        line = lines[i]
+        if line.strip():
+            width = len(line) - len(line.lstrip(" "))
+            indent = indent or width
+            if width < indent or not indent:
+                break
+        body.append(line[indent:] if line.strip() else "")
+        i += 1
+    return body, i
+
+
+def _block_scalar(body: list[str], literal: bool, chomp: str) -> str:
+    """YAML's `|` (keep newlines) or `>` (fold lines into spaces; blank and more-indented lines
+    keep theirs), then chomping: clip one final newline, `-` strip it, `+` keep every one."""
+    content = body
+    while content and not content[-1]:
+        content = content[:-1]
+    trailing = len(body) - len(content)
+    if literal:
+        text = "\n".join(content)
+    else:
+        text, prev, prev_more = "", None, False  # prev_more: the last non-blank line was more-indented
+        for line in content:
+            more = line[:1] in (" ", "\t")
+            if prev is None:
+                text = line
+            elif not line:
+                text += "\n"
+            elif not prev:
+                text += ("\n" if more or prev_more else "") + line
+            else:
+                text += ("\n" if more or prev_more else " ") + line
+            prev, prev_more = line, more if line else prev_more
+    if not content or chomp == "-":
+        return text
+    return text + "\n" * (1 + trailing if chomp == "+" else 1)
+
+
+def _quoted(value: str) -> str:
+    """A single- or double-quoted scalar on one line ('' is a quote inside single quotes); anything
+    after the closing quote (a comment) is dropped. An unclosed quote keeps the value as written."""
+    quote, out, i = value[0], [], 1
+    while i < len(value):
+        c = value[i]
+        if quote == "'" and c == "'":
+            if value[i + 1:i + 2] == "'":
+                out.append("'")
+                i += 2
+                continue
+            return "".join(out)
+        if quote == '"' and c == "\\" and i + 1 < len(value):
+            out.append(FM_ESCAPES.get(value[i + 1], "\\" + value[i + 1]))
+            i += 2
+            continue
+        if quote == '"' and c == '"':
+            return "".join(out)
+        out.append(c)
+        i += 1
+    return value
 
 
 def _markdown_under(root: Path) -> list[Path]:

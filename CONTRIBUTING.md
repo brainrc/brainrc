@@ -61,6 +61,10 @@ A tag without a release gets one on the next run, or when you run the workflow b
 protected, add GitHub Actions to the rule's bypass list so the workflow can push its release
 commit and tag.
 
+Gatework, the default pack, is released the same way from
+[brainrc/gatework](https://github.com/brainrc/gatework). To ship a new Gatework release with
+core, bump `ref` under `[gatework]` in `packs.toml` to its tag, in a PR with its own fragment.
+
 Before merging a PR whose fragment says `bump: minor` (or one that changes spec-agent's roles,
 references, or templates), run the sandbox evals in Claude Code and grade them
 ([evals](docs/evals.md)). Record the run in [docs/e2e-runs.md](docs/e2e-runs.md). Unit tests

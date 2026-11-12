@@ -1,13 +1,11 @@
 {
   "name": "brainrc",
   "version": "0.7.0",
-  "description": "Skills, agents, commands, and guard hooks for spec-driven work: spec-agent takes a ticket to a reviewed PR through approval gates.",
+  "description": "Guard hooks for AI coding harnesses. Gatework, the spec-driven skills and agents, is its own plugin: brainrc/gatework.",
   "author": {
     "name": "brainrc contributors"
   },
   "license": "MIT",
-  "skills": "./packs/gatework/skills/",
-  "agents": "./packs/gatework/agents/",
   "rules": "./rules/",
   "hooks": "./.cursor-plugin/hooks.json"
 }

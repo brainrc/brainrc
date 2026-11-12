@@ -1,7 +1,7 @@
 """Validator plugins (#172): checks and renders a pack ships as its own Python.
 
 pack.toml `validator = "<file>.py"` names a module in the pack's root. It is the pack's code running
-inside brainrc, so core loads it only for a bundled pack, for the pack `validate --pack` checks,
+inside brainrc, so core loads it only for a default pack, for the pack `validate --pack` checks,
 and for a pack whose packs.toml entry sets `run_validator = true`. Every name is optional:
 
   NAMESPACE          its table under any pack's [extensions] (default: the pack's name)
@@ -28,8 +28,9 @@ _LOADED: dict[tuple[str, int], ModuleType] = {}
 
 
 def trusted(src: Source) -> bool:
-    """A bundled pack, the pack `validate --pack` checks (no packs.toml key), or one the user opted in."""
-    if src.bundled or not src.key:
+    """A default pack (core's packs.toml names it), the pack `validate --pack` checks (no packs.toml
+    key), or one the user opted in."""
+    if src.default or not src.key:
         return True
     return bool(_layered("packs").get(src.key, {}).get("run_validator"))
 

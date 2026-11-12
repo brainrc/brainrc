@@ -18,6 +18,19 @@ sys.modules["check_tutorial"] = check_tutorial
 spec.loader.exec_module(check_tutorial)
 
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from test_brainrc import default_pack_env  # noqa: E402
+
+
+def setUpModule():
+    """The tutorial's `apply` fetches the default pack: serve it from the offline stand-in."""
+    env = default_pack_env()
+    old = {k: os.environ.get(k) for k in env}
+    os.environ.update(env)
+    unittest.addModuleCleanup(lambda: [os.environ.pop(k, None) if v is None else os.environ.__setitem__(k, v)
+                                       for k, v in old.items()])
+
+
 def run_main(args: list[str]) -> tuple[int, str]:
     out = io.StringIO()
     with contextlib.redirect_stdout(out):

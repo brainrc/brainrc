@@ -135,7 +135,7 @@ class OnlyTest(TempRepoCase):
 
     def test_other_harnesses_keep_their_links_and_hooks(self):
         quiet(brainrc.cmd_sync, True)
-        (self.repo / "packs/gatework/skills/spec-agent").rename(self.repo / "packs/gatework/skills/spec-agent-moved")
+        shutil.rmtree(self.repo / "packs/gatework/skills/spec-agent")
         code, out, _ = run("apply", "--only", "codex")
         self.assertEqual(code, 0, out)
         self.assertFalse((self.home / ".codex/skills/spec-agent").is_symlink())  # pruned in codex
@@ -164,6 +164,8 @@ class OnlyInstalledTest(TempRepoCase):
         self.pkg = Path(tempfile.mkdtemp()) / "brainrc"
         copy_repo(self.pkg / "_core")
         brainrc.config.REPO = self.pkg / "_core"
+        pack = self.pkg / "_core/packs/gatework"  # a relative path is read beside packs.local.toml
+        (self.pkg / "_core/packs.toml").write_text(f'[gatework]\npath = "{pack}"\n')
         self.home = Path(tempfile.mkdtemp())
         self.old_home = os.environ["HOME"]
         os.environ["HOME"] = str(self.home)

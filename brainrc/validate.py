@@ -28,7 +28,7 @@ from .config import (
 from .sources import (
     Source,
     _markdown_under,
-    bundled_sources,
+    default_sources,
     check_changelog,
     check_packs,
     collisions,
@@ -104,7 +104,7 @@ def _validate_source(src: Source, agent_names: set[str], skill_names: set[str], 
         for md in _markdown_under(s):
             errors += _check_references(src, md, agent_names, skill_names)
 
-    if src.is_core or src.bundled:
+    if src.is_core or src.default:
         errors += [f"{src.rel(s)}: skill name `{s.name}` is reserved (a harness built-in); use a `brainrc-` name"
                    for s in skills(src) if s.name in RESERVED_SKILL_NAMES]
     if src.is_core:
@@ -258,7 +258,7 @@ def pack_errors(srcs: list[Source]) -> list[tuple[Source, list[str]]]:
     skill_names = {p.name for s in srcs for p in skills(s)}
     plugins = validators(srcs)
     found = [(src, _validate_source(src, agent_names, skill_names, plugins)) for src in srcs
-             if not src.is_core and not src.bundled]  # a bundled pack is checked with core, in CI
+             if not src.is_core]
     return [(src, errors) for src, errors in found if errors]
 
 
@@ -269,7 +269,10 @@ def cmd_validate(pack: str | None = None, key: str = "") -> int:
         config_warnings = check_config()
         if pack:
             root = expand(pack).resolve()
-            srcs = [Source("core", config.REPO), *bundled_sources(skip=root), load_pack(root, key or None)]
+            checked = load_pack(root, key or None)
+            defaults, missing = default_sources(skip=checked.name)
+            srcs = [Source("core", config.REPO), *defaults, checked]
+            config_warnings += missing
         else:
             srcs = sources()
         plugins = validators(srcs)

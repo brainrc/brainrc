@@ -12,6 +12,8 @@ from unittest import mock
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO / "tests"))
+from test_brainrc import default_pack_env  # noqa: E402
 HOME_VARS = ("HOME", "BRAINRC_HOME", "AICFG_HOME", "XDG_CONFIG_HOME", "CLAUDE_CONFIG_DIR", "CODEX_HOME", "PYTHONWARNINGS")
 
 
@@ -27,6 +29,7 @@ class HomeCase(unittest.TestCase):
 
     def run_cli(self, *args, home=None, **env_vars):
         env = {k: v for k, v in os.environ.items() if k not in HOME_VARS}
+        env.update(default_pack_env())  # the default pack comes from a local stand-in, not GitHub
         env["HOME"] = str(home or self.home)
         env.update(env_vars)
         return subprocess.run(
@@ -235,6 +238,7 @@ class HomeFunctionsTest(unittest.TestCase):
         self.home.mkdir()
         self.old = self.home / ".config" / "ai-config"
         env = {k: v for k, v in os.environ.items() if k not in HOME_VARS}
+        env.update(default_pack_env())  # the default pack comes from a local stand-in, not GitHub
         env["HOME"] = str(self.home)
         patcher = mock.patch.dict(os.environ, env, clear=True)
         patcher.start()

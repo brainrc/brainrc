@@ -86,7 +86,7 @@ publishes it. Official packs are owned by `brainrc`:
 
 | ID | What it holds | Issue |
 |---|---|---|
-| `brainrc/gatework` | the default pack: spec-agent, its roles, ticket connectors and domain skills ([packs/gatework](../packs/gatework/README.md)) | [#172](https://github.com/brainrc/brainrc/issues/172) |
+| `brainrc/gatework` | the default pack: spec-agent, its roles, ticket connectors and domain skills ([brainrc/gatework](https://github.com/brainrc/gatework)) | [#172](https://github.com/brainrc/brainrc/issues/172) |
 | `brainrc/starter` | the small, measured base for the default profile | [#313](https://github.com/brainrc/brainrc/issues/313) |
 | `brainrc/review` | review, PR description, commit message and unslop | [#314](https://github.com/brainrc/brainrc/issues/314) |
 | `brainrc/go` | Go, built from today's `brainrc-go-service` skill | [#315](https://github.com/brainrc/brainrc/issues/315) |
@@ -140,7 +140,7 @@ The forms from before 0.7.0, the same keys directly under `[extensions]` or unde
 
 A pack has at most one `[extensions.ticket]`: one connector and the refs it handles. A team
 with two ticket systems splits them into two packs. The connector, core or the pack's own,
-must follow the [connector contract](../packs/gatework/skills/brainrc-gatework/references/connectors.md), which
+must follow the [connector contract](https://github.com/brainrc/gatework/blob/main/skills/brainrc-gatework/references/connectors.md), which
 `validate` checks.
 
 ## Validator plugins
@@ -158,22 +158,36 @@ Python module in the pack. Each name in it is optional:
 | `doctor(me)` | `(FAIL or WARN, what, fix)` findings for `doctor` |
 | `render_extensions(tables)` | the text of `$BRAINRC_HOME/extensions.md` |
 
-A validator is the pack's code running inside `brainrc`, so core runs it only for a bundled pack,
-for the pack `validate --pack` checks, and for a pack whose entry in `packs.local.toml` sets
+A validator is the pack's code running inside `brainrc`, so core runs it only for a default pack
+(core's `packs.toml` pins it, or your own `packs.local.toml` points it elsewhere), for the pack
+`validate --pack` checks, and for a pack whose entry in `packs.local.toml` sets
 `run_validator = true`. Otherwise `validate` warns that the pack ships one. Gatework's
-[validator.py](../packs/gatework/validator.py) is the reference.
+[validator.py](https://github.com/brainrc/gatework/blob/main/validator.py) is the reference.
 
-## Bundled packs
+## Default packs
 
-A bundled pack ships inside core under `packs/<name>/` and is listed in the shipped `packs.toml`
-with `bundled = true`. Gatework is the only one: spec-agent (the `brainrc-gatework` skill), its roles,
-the ticket connectors and the domain skills. Their names before 0.7.0 (`spec-agent`, `spec-status`,
-`ticket-github`, `kubernetes` and the rest, listed in `brainrc/naming.py`) are deprecated aliases
-until 0.8.0, and the only names naming rule 7 lets it keep without its prefix. It is
-on by default; `[gatework]` with `enabled = false` in `packs.local.toml` turns it off (`brainrc
-init` asks), and core then installs its rules and guard hooks and nothing else. A bundled pack is
-always core's version, so it has no `requires_core` check, and `validate` checks it with core.
-Its folder is self-contained, so it can move to its own repo unchanged.
+A default pack is a table in core's shipped `packs.toml`: core turns it on unless
+`packs.local.toml` says otherwise. Gatework is the only one: spec-agent (the `brainrc-gatework`
+skill), its roles, the ticket connectors and the domain skills. It lives in
+[brainrc/gatework](https://github.com/brainrc/gatework), and `packs.toml` pins it by `git` and a
+release tag `ref`, so `apply` fetches it like any git pack (`update` refetches). Before 0.7.1 it
+shipped inside core as `packs/gatework`.
+
+Its names before 0.7.0 (`spec-agent`, `spec-status`, `ticket-github`, `kubernetes` and the rest,
+listed in `brainrc/naming.py`) are deprecated aliases until 0.8.0, and the only names naming rule
+7 lets it keep without its prefix. `[gatework]` with `enabled = false` in `packs.local.toml` turns
+it off (`brainrc init` asks), and core then installs its rules and guard hooks and nothing else.
+To try another version, set only `ref` there; to work on a clone, set `path`, which replaces the
+shipped `git` and `ref`:
+
+```toml
+[gatework]
+path = "~/src/gatework"
+```
+
+`validate --pack` checks a pack against core and the default packs on disk, so a pack that
+extends Gatework is checked against it once `apply` has fetched it; until then `validate` warns
+that it isn't fetched yet.
 
 ## Rules
 
@@ -219,11 +233,15 @@ paths = ["*.md"]                              # default; fnmatch against the pat
 
 ```bash
 git clone <core-repo> core
+# A pack that extends Gatework or uses its skills and agents checks against it too:
+git clone --depth 1 https://github.com/brainrc/gatework gatework
+printf '[gatework]\npath = "%s/gatework"\n' "$PWD" > core/packs.local.toml
 python3 core/scripts/brainrc.py validate --pack .
 ```
 
-This checks the core plus that pack only, whatever is in `packs.toml`: frontmatter,
-cross-references (pack files may reference core skills and agents), the [naming](#naming) rules,
+This checks the core, the default packs on disk and that pack, whatever else is in `packs.toml`:
+frontmatter, cross-references (pack files may reference core's and Gatework's skills and agents),
+the [naming](#naming) rules,
 collisions, `pack.toml` extension references, `requires_core`, and tripwires.
 
 ## Packs and Claude Code plugins

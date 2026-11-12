@@ -88,7 +88,7 @@ def _doctor_sources() -> tuple[list[Source], list[Source], list[Finding]]:
             found += [("FAIL", e, fix) for e in errors]
             continue
         with contextlib.redirect_stdout(io.StringIO()):
-            failed = not src.bundled and cmd_validate(str(root), src.key)  # a bundled pack is checked with core
+            failed = cmd_validate(str(root), src.key)
         if failed:
             found.append(("FAIL", f"pack {src.name}: validate --pack fails",
                           command(f"validate --pack {shell_path(root)}")))

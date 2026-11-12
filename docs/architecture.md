@@ -6,7 +6,8 @@ tool reads. At run time, the tool loads those files, and spec-agent drives a tic
 ```mermaid
 flowchart LR
   subgraph sources["Source repos"]
-    core["core: this repo<br/>skills, agents, commands,<br/>rules, overrides, VERSION"]
+    core["core: this repo<br/>rules, overrides, VERSION"]
+    gatework["Gatework, the default pack<br/>(brainrc/gatework, fetched)"]
     packs["packs<br/>(packs.local.toml)"]
     local["*.local.* files<br/>(this machine only)"]
   end
@@ -19,6 +20,7 @@ flowchart LR
     roles["agents (brainrc-analyst … brainrc-verifier)<br/>domain skills · connector"]
   end
   core --> apply
+  gatework --> apply
   packs --> apply
   local --> apply
   apply --> files
@@ -50,9 +52,10 @@ per stage: `config`, `sources`, `opencode`, `plan`, `settings`, `plugin`, `token
 - **Harness**: an AI coding tool brainrc syncs into: Claude Code, Codex, OpenCode, Antigravity CLI, Cursor ([support](formats.md#harness-support)).
 - **Core**: this repo. Generic content only, versioned by `VERSION` ([CHANGELOG](../CHANGELOG.md)).
 - **Pack**: a separate repo layered on core for content that can't live here ([packs](packs.md)).
+- **Default pack**: a pack core's `packs.toml` turns on: Gatework, which holds spec-agent, its agents and the domain skills ([packs](packs.md#default-packs)).
 - **Skill**: instructions a tool loads on demand, triggered by its description ([format](formats.md#skills-skillsnameskillmd)).
 - **Domain skill**: a skill for one stack (Terraform, Kubernetes, ...) that spec-agent loads only when the ticket touches it ([list](spec-agent.md#domain-skills-skills)).
 - **Agent**: one role in a spec-agent run, such as analyst or verifier ([roles](spec-agent.md#roles-agents)).
-- **Connector**: the skill spec-agent uses to read and update a ticket system ([contract](../packs/gatework/skills/brainrc-gatework/references/connectors.md)).
+- **Connector**: the skill spec-agent uses to read and update a ticket system ([contract](https://github.com/brainrc/gatework/blob/main/skills/brainrc-gatework/references/connectors.md)).
 - **Gate**: a stop where you approve the spec, the plan, or delivery ([spec-agent](spec-agent.md)).
 - **`requires_core`**: the core versions a pack supports ([compatibility](packs.md#compatibility)).

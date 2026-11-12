@@ -99,7 +99,8 @@ class ExcludeTest(ProfileCase):
         self.local('profile = "minimal"\nexclude = ["skills/*"]\n')
         code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 0, out)
-        self.assertIn("49 skills", out)
+        # every skill of the default pack (tests/fixtures/default-pack), though all are excluded
+        self.assertIn("8 skills", out)
 
 
 class ProfileConfigTest(ProfileCase):

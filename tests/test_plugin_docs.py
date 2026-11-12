@@ -1,11 +1,11 @@
-"""The install docs and spec-agent use the brainrc plugin names (AC4 to AC6)."""
+"""The install docs use the brainrc plugin names (AC4 to AC6). Gatework checks its own role names."""
 import re
 import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DOCS = ["README.md", "docs/install.md", "docs/troubleshooting.md", "docs/spec-agent.md",
-        "docs/harness-packages.md", "packs/gatework/skills/brainrc-gatework/SKILL.md"]
+        "docs/harness-packages.md"]
 OLD = re.compile(r"ai-config@ai-config|ai-config:<|/ai-config:work|plugins/local/ai-config|\"name\": \"ai-config\"")
 
 
@@ -22,7 +22,8 @@ class PluginDocsTest(unittest.TestCase):
     def test_install_commands_use_new_names(self):
         install = text("docs/install.md")
         for want in ("/plugin install brainrc@brainrc", "codex plugin add brainrc@brainrc",
-                     "~/.cursor/plugins/local/brainrc", "/brainrc:brainrc-work", "brainrc:<name>"):
+                     "~/.cursor/plugins/local/brainrc", "/gatework:brainrc-work", "gatework@gatework",
+                     "agy plugin install https://github.com/brainrc/gatework"):
             self.assertIn(want, install)
         self.assertIn("/plugin install brainrc@brainrc", text("README.md"))
 
@@ -31,8 +32,6 @@ class PluginDocsTest(unittest.TestCase):
             if rel == "docs/troubleshooting.md":
                 continue
             body = without_move_note(rel) if rel == "docs/install.md" else text(rel)
-            if rel == "packs/gatework/skills/brainrc-gatework/SKILL.md":
-                body = body.replace("`ai-config:<role>`", "")
             self.assertIsNone(OLD.search(body), rel)
 
     def test_move_note(self):
@@ -47,7 +46,3 @@ class PluginDocsTest(unittest.TestCase):
         self.assertIn("brainrc@brainrc", t)
         self.assertIn("doctor", t)
         self.assertIn("Moving from ai-config", t)
-
-    def test_spec_agent_role_lookup_order(self):
-        s = text("packs/gatework/skills/brainrc-gatework/SKILL.md")
-        self.assertLess(s.index("brainrc:<role>"), s.index("ai-config:<role>"))

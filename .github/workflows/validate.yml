@@ -37,6 +37,13 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: python3 scripts/brainrc.py validate
+      # Gatework, the default pack, lives in brainrc/gatework at the tag packs.toml pins. apply
+      # fetches it (no harness is installed here, so it writes nothing else); then core, Gatework
+      # and the example pack are checked together.
+      - name: Fetch Gatework and validate it with core
+        run: |
+          python3 scripts/brainrc.py apply
+          python3 scripts/brainrc.py validate
       - name: Validate example pack
         run: python3 scripts/brainrc.py validate --pack examples/pack-acme
       - run: python3 -m unittest discover -s tests -v

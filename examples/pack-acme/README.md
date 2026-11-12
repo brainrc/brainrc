@@ -28,6 +28,8 @@ and a tripwire. Format reference: [docs/packs.md](../../docs/packs.md).
 
    ```bash
    git clone <core-repo> core
+   git clone --depth 1 https://github.com/brainrc/gatework gatework   # the pack this one extends
+   printf '[gatework]\npath = "%s/gatework"\n' "$PWD" > core/packs.local.toml
    python3 core/scripts/brainrc.py validate --pack .
    ```
 

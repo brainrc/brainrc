@@ -1,0 +1,7 @@
+name = "gatework"
+prefix = "brainrc-"
+id = "brainrc/gatework"
+description = "a stand-in for Gatework in core's tests"
+requires_core = ">=0"
+max_always_tokens = 3000
+validator = "validator.py"

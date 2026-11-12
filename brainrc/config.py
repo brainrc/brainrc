@@ -104,9 +104,12 @@ PATH_KEYS = ("home", "skills", "agents", "agents_format", "commands", "plugin", 
 # Known keys of each table in <name>.toml / <name>.local.toml, and the type each must have.
 LAYERED_KEYS = {
     "harnesses": {"enabled": bool, **dict.fromkeys(PATH_KEYS, str)},
-    "packs": {"enabled": bool, "path": str, "git": str, "ref": str, "bundled": bool,
-              "run_validator": bool},
+    "packs": {"enabled": bool, "path": str, "git": str, "ref": str, "run_validator": bool,
+              "description": str},
 }
+
+
+PACK_ORIGIN_KEYS = {"path", "git"}  # where a pack comes from: exactly one per pack
 
 
 TOML_POSITION = re.compile(r" \(at (?:line (\d+), column \d+|end of document)\)$")
@@ -179,7 +182,11 @@ def _layered(name: str, warnings: list[str] | None = None) -> dict[str, dict]:
         if warnings is not None:
             warnings += found
         for key, overrides in data.items():
-            config.setdefault(key, {}).update(overrides)
+            table = config.setdefault(key, {})
+            if name == "packs" and PACK_ORIGIN_KEYS & overrides.keys():
+                for k in (*PACK_ORIGIN_KEYS, "ref"):  # a local `path` or `git` replaces a default pack's
+                    table.pop(k, None)
+            table.update(overrides)
     return config
 
 

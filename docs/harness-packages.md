@@ -9,7 +9,7 @@ consumer accounts on 2026-06-18; [Antigravity CLI](#antigravity-cli) replaced it
 
 | Harness | Package and install | Rules without a clone | Hooks | Agents | Packs |
 |---|---|---|---|---|---|
-| Claude Code | `.claude-plugin/` ([shipped](install.md#claude-code)); `/plugin install` | `SessionStart` hook output (10,000-char cap) | yes: allow, ask, deny | yes, as `brainrc:<name>` | plugin `dependencies` with semver ranges |
+| Claude Code | `.claude-plugin/` ([shipped](install.md#claude-code)); `/plugin install` | `SessionStart` hook output (10,000-char cap) | yes: allow, ask, deny | yes, as `<plugin>:<name>` (`gatework:brainrc-work`) | plugin `dependencies` with semver ranges |
 | Codex | `.codex-plugin/` **or `.claude-plugin/`** (verified); `codex plugin marketplace add owner/repo` | no plugin route: `~/.codex/AGENTS.md` or config `developer_instructions` | yes: `PreToolUse`, `SessionStart` | TOML roles in config; not shippable in a plugin | separate plugin; no dependencies found |
 | Antigravity CLI | root `plugin.json` ([shipped](install.md#antigravity-cli), unverified); `agy plugin install <git url>` | plugin `rules/*.md` with `trigger:` frontmatter | yes: `PreToolUse` ask or deny; no known "no opinion" reply | markdown, `agents/` | separate plugin; no dependencies found |
 | OpenCode | JS plugin (npm or `~/.config/opencode/plugins/`): hooks and tools only | `instructions[]` config or `AGENTS.md` | blocks by throwing; no ask | markdown files with a different frontmatter | `plugin[]`, `instructions[]`, `skills.paths` |
@@ -39,11 +39,11 @@ here): `codex-rs/core-plugins/`, `codex-rs/hooks/`, `codex-rs/agent-roles/`.
 
 - Reads `.claude-plugin/marketplace.json` and `.claude-plugin/plugin.json` as well as its own
   `.codex-plugin/`. **Verified** with Codex 0.161.0: `codex plugin marketplace add <repo>` and
-  `codex plugin add brainrc@brainrc` install our plugin unchanged. The install copy **drops
-  symlinks** (`packs/gatework/skills/brainrc-gatework/roles`), so spec-agent falls back to `../../agents/`.
-- Skills come from the manifest's `skills` field when it has one, and only from there, so it names
-  `./packs/gatework/skills/` as one string, the form Codex's docs give. Not yet run with a real Codex
-  since the skills moved there in 0.7.0.
+  `codex plugin add brainrc@brainrc` install our plugin unchanged. Gatework's plugin
+  (brainrc/gatework) works the same way. The install copy **drops symlinks**
+  (`skills/brainrc-gatework/roles`), so spec-agent falls back to `../../agents/`.
+- Skills come from the manifest's `skills` field when it has one, and only from there, so Gatework's names
+  `./skills/` as one string, the form Codex's docs give. Core's own plugin has no skills.
 - Skills: native, `~/.agents/skills` (`~/.codex/skills` deprecated). Custom prompts are deprecated
   for skills; a plugin's `commands/` become skills, **except any that use `$ARGUMENTS`** (verified:
   all five of ours were skipped). Core now ships them as user-invoked skills, which Codex installs.

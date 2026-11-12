@@ -12,6 +12,13 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.6.1 (2026-11-12)
+
+- The deprecated agent aliases (`analyst`, `verifier` and the rest) now carry their `brainrc-` target's instructions instead of pointing at its file, which a subagent can't locate, so a pack's `reviewer = "infra-reviewer"` still runs the real reviewer until 0.7.0. `validate` fails when an alias's instructions drift from its target's.
+- docs/troubleshooting.md lists the new pack naming errors in place of the old prefix message.
+- The tutorial, the `pack.toml` example in docs/packs.md and the example packs pin `requires_core = ">=0.6, <0.7"`. The tutorial's old `<0.6` pin failed `scripts/check_tutorial.py` once core reached 0.6.0, and the example packs use `brainrc-infra-reviewer`, which 0.5 lacks.
+- The deprecated skill aliases `work`, `review`, `plan`, `aws` and `terraform` are removed, as announced for 0.6.0: use `/brainrc-work`, `/brainrc-review`, `/brainrc-plan`, `brainrc-aws` and `brainrc-terraform`. The next `brainrc apply` prunes their links. A pack that names an old skill fails `validate` until it uses the `brainrc-` name, and `validate` now refuses a core skill named `review` or `plan` like the other built-in names.
+
 ## 0.6.0 (2026-11-12)
 
 - **[pack contract]** Pack naming rules, in [docs/packs.md](docs/packs.md#naming): `brainrc-` and `brainrc/` are reserved for official packs, a registry prefix starts with the owner's handle, no vendor names without verification, no names one or two edits from an official name, ASCII lowercase letters, digits and hyphens only, a prefix is 2 to 24 characters, and item names are prefix-scoped. The page lists the official pack IDs (#293).

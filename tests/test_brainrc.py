@@ -2510,6 +2510,10 @@ class PackApplyCheckTest(TempRepoCase):
         self.skill("deploy")
         self.assert_refused("acme:skills/deploy: pack skills must start with `acme-`")
 
+    def test_a_pack_that_breaks_a_naming_rule_is_refused(self):
+        (self.pack / "pack.toml").write_text('name = "acme"\nprefix = "aws-"\nrequires_core = ">=0.1"\n')
+        self.assert_refused("acme:pack.toml: `prefix` `aws-` uses the vendor name `aws`")
+
     def test_any_pack_validate_error_is_refused(self):
         self.skill("acme-deploy", description="")
         self.assert_refused("acme:skills/acme-deploy/SKILL.md: missing `description`")

@@ -25,7 +25,7 @@ class ShippedTreeTest(unittest.TestCase):
                 self.assertTrue(f.stem.startswith("brainrc-") or f.stem in OLD)
                 self.assertEqual(meta(ROOT, f.stem).get("name"), f.stem)
 
-    def test_each_alias_is_a_short_stub_that_runs_as_its_target(self):
+    def test_each_alias_runs_as_its_target(self):
         for n in OLD:
             with self.subTest(agent=n):
                 new, alias = meta(ROOT, f"brainrc-{n}"), meta(ROOT, n)
@@ -35,7 +35,8 @@ class ShippedTreeTest(unittest.TestCase):
                 self.assertLessEqual(len(alias["description"]), 80, "always-loaded token budget")
                 self.assertIn(f"`brainrc-{n}`", text)
                 self.assertIn(naming.AGENT_ALIAS_REMOVED_IN, text)
-                self.assertLess(len(text.splitlines()), 12, "an alias is a short stub")
+                target = (ROOT / f"agents/brainrc-{n}.md").read_text().split("\n---\n", 1)[1]
+                self.assertTrue(text.endswith(target), "a subagent can't find another file, so it carries the instructions")
 
     def test_spec_agent_dispatches_the_new_names(self):
         text = (ROOT / "skills/spec-agent/SKILL.md").read_text()
@@ -74,6 +75,13 @@ class AliasNearMissTest(TempRepoCase):
         self.assertEqual(code, 1, out)
         self.assertIn("alias body must name the removal release", out)
         self.assertIn("alias body must name `brainrc-analyst`", out)
+
+    def test_alias_whose_instructions_drift_from_its_target_fails(self):
+        path = self.repo / "agents/brainrc-verifier.md"
+        path.write_text(path.read_text() + "\nOne more rule.\n")
+        code, out = self.validate()
+        self.assertEqual(code, 1, out)
+        self.assertIn("agents/verifier.md: alias body must end with `brainrc-verifier`'s instructions", out)
 
     def test_alias_without_a_deprecated_description_fails(self):
         path = self.repo / "agents/analyst.md"

@@ -67,7 +67,8 @@ Errors stop the command before it writes anything; warnings don't.
 | ``pack name `acme` is used by both [work] and [acme]`` | Two packs share one `name`. Change `name` in one `pack.toml`, or set `enabled = false` for one in `packs.local.toml`. `core` is taken. |
 | ``skill `acme-deploy` is defined in both acme and acme2`` | Rename one. Each pack's items carry its own `prefix`. |
 | ``acme:skills/x: pack skills must start with `acme-` `` | Rename the item to start with the pack's `prefix`. |
-| ``acme:pack.toml: `prefix` must be lowercase-hyphenated and end with '-'`` | Fix `prefix` in `pack.toml`, e.g. `acme-`. |
+| ``acme:pack.toml: `prefix` must be ASCII lowercase letters, digits and hyphens, ending with '-'`` | Fix `prefix` in `pack.toml`, e.g. `acme-`. |
+| ``acme:pack.toml: `prefix` `aws-` uses the vendor name `aws` ``, ``... reserved for official packs``, ``... one or two edits from the official name `brainrc` `` | Rename the pack or its prefix to follow the [naming rules](packs.md#naming). |
 | ``acme:pack.toml: requires_core `>=2.0` is not satisfied by core 1.2.3`` | Update core (`git pull`) or the pack, or set `enabled = false` for it in `packs.local.toml`. |
 | `pack acme: no pack.toml at ...` | Fix the pack's `path` in `packs.local.toml`. |
 

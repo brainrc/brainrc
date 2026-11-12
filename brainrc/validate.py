@@ -9,6 +9,7 @@ import subprocess
 from pathlib import Path
 
 from .mcp import check_servers
+from .naming import check_core_agents, check_pack_names
 from . import config
 from .config import (
     ConfigError,
@@ -132,6 +133,7 @@ def _validate_source(src: Source, agent_names: set[str], skill_names: set[str]) 
 
     if src.is_core:
         errors += _check_aliases(src)
+        errors += check_core_agents(src)
         errors += [f"{src.rel(s)}: skill name `{s.name}` is reserved (a harness built-in); use a `brainrc-` name"
                    for s in skills(src) if s.name in RESERVED_SKILL_NAMES and s.name not in DEPRECATED_ALIASES]
         errors += [f"{src.rel(r)}: missing `trigger` frontmatter (Antigravity drops the rule without it)"
@@ -180,10 +182,7 @@ def _validate_source(src: Source, agent_names: set[str], skill_names: set[str]) 
 def _validate_pack(src: Source, agent_names: set[str], skill_names: set[str]) -> list[str]:
     where = f"{src.name}:pack.toml"
     errors = []
-    if not SKILL_NAME.match(src.name):
-        errors.append(f"{where}: `name` must be lowercase-hyphenated")
-    if not src.prefix.endswith("-") or not SKILL_NAME.match(src.prefix[:-1]):
-        errors.append(f"{where}: `prefix` must be lowercase-hyphenated and end with '-'")
+    errors += check_pack_names(src)
     for kind in KINDS:
         for p in items(src, kind):
             if not item_name(p).startswith(src.prefix):

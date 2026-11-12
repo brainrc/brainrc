@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:293",
+    "id": "293",
+    "title": "Document the pack naming guidelines",
+    "url": "https://github.com/brainrc/brainrc/issues/293",
+    "pr": "https://github.com/brainrc/brainrc/pull/336",
+    "pr_draft": true
+  },
+  "slug": "293-pack-naming-docs",
+  "branch": "claude/project-thread-atsed2",
+  "base": "main",
+  "worktree": "~/brainrc",
+  "size": "standard",
+  "mode": "inline",
+  "delivery": "normal",
+  "auto": true,
+  "oneshot": false,
+  "campaign": "campaign-292-pack-naming",
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [
+    "docs"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/brainrc.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Document the pack naming guidelines",
+      "agent": "engine",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "docs/packs.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2"
+      ],
+      "review": "batch"
+    }
+  ],
+  "blocked": null
+}

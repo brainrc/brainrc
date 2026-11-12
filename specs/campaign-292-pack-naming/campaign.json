@@ -1,0 +1,47 @@
+{
+  "ref": "gh:292",
+  "shape": "ordered",
+  "dependency_source": "none",
+  "started_at": "2026-11-11T06:40:00Z",
+  "delivery": "sequential",
+  "auto": true,
+  "gates": {
+    "campaign": {
+      "presented_at": "2026-11-11T06:45:00Z",
+      "approved_at": "2026-11-11T06:45:00Z"
+    },
+    "deliver": {
+      "presented_at": "2026-11-11T07:45:00Z",
+      "approved_at": "2026-11-11T07:45:00Z"
+    }
+  },
+  "members": [
+    {
+      "ref": "gh:293",
+      "order": 1,
+      "depends_on": [],
+      "status": "delivered",
+      "slug": "293-pack-naming-docs",
+      "branch": "claude/project-thread-atsed2",
+      "pr": "https://github.com/brainrc/brainrc/pull/336"
+    },
+    {
+      "ref": "gh:294",
+      "order": 2,
+      "depends_on": [],
+      "status": "delivered",
+      "slug": "294-validate-naming",
+      "branch": "claude/project-thread-atsed2",
+      "pr": "https://github.com/brainrc/brainrc/pull/336"
+    },
+    {
+      "ref": "gh:295",
+      "order": 3,
+      "depends_on": [],
+      "status": "delivered",
+      "slug": "295-brainrc-agents",
+      "branch": "claude/project-thread-atsed2",
+      "pr": "https://github.com/brainrc/brainrc/pull/336"
+    }
+  ]
+}

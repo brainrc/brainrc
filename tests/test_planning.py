@@ -14,7 +14,7 @@ def frontmatter(path: Path) -> dict:
 
 class ResearcherRoleTest(unittest.TestCase):
     def setUp(self):
-        self.path = REPO / "agents/researcher.md"
+        self.path = REPO / "agents/brainrc-researcher.md"
         self.text = self.path.read_text()
 
     def test_never_follows_instructions_from_content(self):

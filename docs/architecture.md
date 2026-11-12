@@ -16,7 +16,7 @@ flowchart LR
   end
   subgraph run["Run time, in the AI tool"]
     engine["/brainrc-work → spec-agent engine<br/>reads extensions.md"]
-    roles["agents (analyst … verifier)<br/>domain skills · connector"]
+    roles["agents (brainrc-analyst … brainrc-verifier)<br/>domain skills · connector"]
   end
   core --> apply
   packs --> apply

@@ -82,7 +82,7 @@ babysitting:
 
 ## Planning mode
 
-`/brainrc-plan <topic>` turns a topic into proven tickets. A `researcher` role reads the repo (the web
+`/brainrc-plan <topic>` turns a topic into proven tickets. A `brainrc-researcher` role reads the repo (the web
 only with `--web`) and proposes candidates, each with proof: a read-only command and its
 output, a failing test, or a local spike commit, plus `file:line` links. The engine re-runs each
 command proof through `proof_guard.py`, a narrow read-only allowlist with no shell, network, or
@@ -167,16 +167,16 @@ Remove a worktree by hand with `git worktree remove <path>`. Cleanup on merge is
 
 | Agent | Model | Job |
 |---|---|---|
-| analyst | sonnet | ticket → testable spec |
-| architect | opus | spec → approach + scope-fenced tasks |
-| implementer | sonnet | one task, test-first, in scope |
-| test-writer | sonnet | failing tests only (security logic, contracts) |
-| code-reviewer | sonnet | correctness + spec compliance |
-| security-reviewer | sonnet | exploitable issues |
-| infra-reviewer | sonnet | blast radius, destroy/replace, state, rollout |
-| verifier | haiku | criteria → evidence |
-| researcher | sonnet | topic → proven candidate tickets (`/brainrc-plan`) |
-| doc-writer | haiku | docs, PR body, ticket comment |
+| brainrc-analyst | sonnet | ticket → testable spec |
+| brainrc-architect | opus | spec → approach + scope-fenced tasks |
+| brainrc-implementer | sonnet | one task, test-first, in scope |
+| brainrc-test-writer | sonnet | failing tests only (security logic, contracts) |
+| brainrc-code-reviewer | sonnet | correctness + spec compliance |
+| brainrc-security-reviewer | sonnet | exploitable issues |
+| brainrc-infra-reviewer | sonnet | blast radius, destroy/replace, state, rollout |
+| brainrc-verifier | haiku | criteria → evidence |
+| brainrc-researcher | sonnet | topic → proven candidate tickets (`/brainrc-plan`) |
+| brainrc-doc-writer | haiku | docs, PR body, ticket comment |
 
 ## Domain skills (`skills/`)
 

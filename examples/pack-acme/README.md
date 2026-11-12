@@ -7,8 +7,10 @@ and a tripwire. Format reference: [docs/packs.md](../../docs/packs.md).
 ## Start your own
 
 1. Copy this directory into a new repo: `cp -R examples/pack-acme ~/src/<name>-ai-pack`.
-2. Rename `acme` everywhere: `name` and `prefix` in `pack.toml`, the skill and command names
-   (directories, files, and frontmatter `name`), and the text.
+2. Rename `acme` everywhere: `name`, `prefix` and `id` in `pack.toml`, the skill and command
+   names (directories, files, and frontmatter `name`), and the text. Pick names that follow the
+   [naming rules](../../docs/packs.md#naming); set `id` to your GitHub handle and the repo name,
+   or drop it.
 3. Set `requires_core` to the core version you tested against (see `VERSION` in core).
 4. Enable it on your machine in core's `packs.local.toml`, then check and apply:
 

@@ -464,7 +464,7 @@ class SyncFakeHomeTest(TempRepoCase):
 
         skill = self.home / ".claude/skills/spec-agent"
         self.assertTrue(skill.is_symlink())
-        self.assertTrue((skill / "roles" / "implementer.md").is_file())
+        self.assertTrue((skill / "roles" / "brainrc-implementer.md").is_file())
         self.assertTrue((self.home / ".claude/hooks/brainrc/guard_outward.py").is_file())
 
         merged = json.loads(settings.read_text())
@@ -486,7 +486,7 @@ requires_core = ">=1.0, <2"
 [[extensions.domains]]
 files = "`deploy/*.yaml`"
 skills = ["acme-deploy"]
-reviewer = "infra-reviewer"
+reviewer = "brainrc-infra-reviewer"
 
 [[extensions.intake_context]]
 skill = "acme-context"
@@ -569,7 +569,7 @@ class PackSyncTest(TempRepoCase):
         self.assertIn('python3 "$HOME/.claude/hooks/brainrc-acme/guard_acme.py"', commands)
 
         ext = brainrc.extensions_file().read_text()
-        for expected in ("| `deploy/*.yaml` | acme-deploy | infra-reviewer | acme |",
+        for expected in ("| `deploy/*.yaml` | acme-deploy | brainrc-infra-reviewer | acme |",
                          "- `acme-context` (acme): every ticket", '"connector": "ticket-github"',
                          "- (acme) Deploy plan reviewed"):
             self.assertIn(expected, ext)
@@ -2537,11 +2537,12 @@ class AgentFrontmatterTest(TempRepoCase):
     """Agent `model` and `tools` names validate accepts."""
 
     def agent(self, model: str, tools: str) -> tuple[int, str]:
-        path = self.repo / "agents/verifier.md"
-        text = path.read_text()
-        head, sep, body = text.partition("\n---\n")
-        lines = [l for l in head.splitlines() if not l.startswith(("model:", "tools:"))]
-        path.write_text("\n".join(lines + [f"model: {model}", f"tools: {tools}"]) + sep + body)
+        for name in ("brainrc-verifier", "verifier"):  # the deprecated alias must match its target
+            path = self.repo / f"agents/{name}.md"
+            text = path.read_text()
+            head, sep, body = text.partition("\n---\n")
+            lines = [l for l in head.splitlines() if not l.startswith(("model:", "tools:"))]
+            path.write_text("\n".join(lines + [f"model: {model}", f"tools: {tools}"]) + sep + body)
         return quiet(brainrc.cmd_validate)
 
     def test_full_claude_model_id_is_accepted(self):

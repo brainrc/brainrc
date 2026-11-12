@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "ticket": {
+    "source": "github",
+    "ref": "gh:294",
+    "id": "294",
+    "title": "validate enforces naming",
+    "url": "https://github.com/brainrc/brainrc/issues/294",
+    "pr": "https://github.com/brainrc/brainrc/pull/336",
+    "pr_draft": true
+  },
+  "slug": "294-validate-naming",
+  "branch": "claude/project-thread-atsed2",
+  "base": "main",
+  "worktree": "~/brainrc",
+  "size": "standard",
+  "mode": "inline",
+  "delivery": "normal",
+  "auto": true,
+  "oneshot": false,
+  "campaign": "campaign-292-pack-naming",
+  "stage": "done",
+  "gates": {
+    "spec": "approved",
+    "plan": "approved",
+    "deliver": "approved"
+  },
+  "domains": [
+    "scripting"
+  ],
+  "targets": {},
+  "commands": {
+    "test": "python3 -m unittest discover -s tests",
+    "lint": null,
+    "build": null,
+    "validate": "python3 scripts/brainrc.py validate",
+    "plan": null,
+    "baseline_failures": []
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "naming checks, wired into validate, near-miss tests",
+      "agent": "engine",
+      "status": "done",
+      "attempts": 1,
+      "files": [
+        "brainrc/naming.py",
+        "brainrc/validate.py",
+        "tests/test_pack_naming.py",
+        "docs/packs.md",
+        "examples/pack-acme/pack.toml",
+        "examples/pack-acme/README.md"
+      ],
+      "criteria": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC6",
+        "AC7"
+      ],
+      "review": "batch",
+      "red": "assertion"
+    }
+  ],
+  "blocked": null
+}

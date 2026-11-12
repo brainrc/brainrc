@@ -20,7 +20,7 @@ class ReservedNamesTest(TempRepoCase):
         self.assertEqual(code, 0, out)
 
     def test_reserved_core_skill_fails_naming_it(self):
-        for name in ("init", "help", "status", "compact"):
+        for name in ("review", "plan", "init", "help", "status", "compact"):
             with self.subTest(name=name):
                 self.add_core_skill(name)
                 try:
@@ -31,16 +31,6 @@ class ReservedNamesTest(TempRepoCase):
                 finally:
                     (self.repo / "skills" / name / "SKILL.md").unlink()
                     (self.repo / "skills" / name).rmdir()
-
-    def test_declared_aliases_are_exempt(self):
-        for name in ("review", "plan"):
-            with self.subTest(name=name):
-                self.assertIn(name, brainrc.validate.RESERVED_SKILL_NAMES)
-                self.assertTrue((self.repo / "skills" / name / "SKILL.md").is_file())
-        code, out = quiet(brainrc.cmd_validate)
-        self.assertEqual(code, 0, out)
-        self.assertNotIn("reserved", out)
-
 
 class ReservedNamesPackTest(TempRepoCase):
     def setUp(self):

@@ -8,7 +8,7 @@ from pathlib import Path
 from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from test_brainrc import brainrc, quiet  # noqa: E402
+from test_brainrc import TempRepoCase, brainrc, quiet  # noqa: E402
 from brainrc import naming  # noqa: E402
 from brainrc.sources import Source  # noqa: E402
 
@@ -147,10 +147,11 @@ class PrefixLengthTest(NamingCase):
         self.assert_passes(name="acme", prefix="a" * 24 + "-")
 
 
-class ValidateTest(unittest.TestCase):
-    """Rules 1 to 7 through `validate --pack`, and the shipped tree."""
+class ValidateTest(TempRepoCase):
+    """Rules 1 to 7 through `validate --pack`, and the shipped tree (core from a temp copy, so no local config)."""
 
     def setUp(self):
+        super().setUp()
         self.pack = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, self.pack)
         shutil.copytree(ROOT / "examples/pack-acme", self.pack, dirs_exist_ok=True)

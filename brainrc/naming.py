@@ -102,7 +102,7 @@ AGENT_ALIAS_REMOVED_IN = "0.7.0"
 
 
 def check_core_agents(src: Source) -> list[str]:
-    """Every core agent is `brainrc-*` or a declared alias that runs as its target until removal."""
+    """Every core agent is `brainrc-*` or a declared alias that runs exactly as its target until removal."""
     errors = [f"{src.rel(f)}: core agent names start with `brainrc-`"
               for f in markdown_files("agents", src)
               if not f.stem.startswith("brainrc-") and f.stem not in AGENT_ALIASES]
@@ -121,6 +121,9 @@ def check_core_agents(src: Source) -> list[str]:
         errors += [f"{rel}: alias `{key}` must match `{new}` so it runs with the same access"
                    for key in ("tools", "model") if meta.get(key) != want.get(key)]
         body = path.read_text().split("\n---\n", 1)[-1]
+        # A subagent can't tell where its own file is, so the alias carries its target's instructions.
+        if not body.endswith(target.read_text().split("\n---\n", 1)[-1]):
+            errors.append(f"{rel}: alias body must end with `{new}`'s instructions, unchanged")
         if f"`{new}`" not in body:
             errors.append(f"{rel}: alias body must name `{new}`")
         if AGENT_ALIAS_REMOVED_IN not in body:

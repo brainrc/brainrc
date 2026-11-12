@@ -34,7 +34,7 @@ class ResearcherRoleTest(unittest.TestCase):
 
 class PlanCommandTest(unittest.TestCase):
     def test_plan_is_user_invoked_with_the_flags(self):
-        meta = frontmatter(REPO / "skills/plan/SKILL.md")
+        meta = frontmatter(REPO / "skills/brainrc-plan/SKILL.md")
         self.assertEqual(meta["disable-model-invocation"], "true")
         for flag in ("--web", "--dry-run", "--oneshot"):
             self.assertIn(flag, meta["argument-hint"])

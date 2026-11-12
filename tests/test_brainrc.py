@@ -246,7 +246,7 @@ class SyncFakeHomeTest(TempRepoCase):
         quiet(brainrc.cmd_sync, True)
         skills_dir = self.home / ".claude/skills"
         (skills_dir / "spec-agent").unlink()
-        (skills_dir / "spec-agent").symlink_to(self.repo / "skills/terraform")  # points at wrong skill
+        (skills_dir / "spec-agent").symlink_to(self.repo / "skills/brainrc-terraform")  # points at wrong skill
         (skills_dir / "gone").symlink_to(self.repo / "skills/gone")  # removed from the repo
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0)
@@ -756,7 +756,7 @@ class DoctorTest(TempRepoCase):
 
     def test_link_to_the_wrong_item(self):
         (self.skills / "spec-agent").unlink()
-        (self.skills / "spec-agent").symlink_to(self.repo / "skills/terraform")
+        (self.skills / "spec-agent").symlink_to(self.repo / "skills/brainrc-terraform")
         self.assert_one_fail("spec-agent", "apply")
 
     def test_stale_link(self):
@@ -847,7 +847,7 @@ class BudgetTest(TempRepoCase):
         self.assertIn("rules/30-guardrails.md", labels)
         self.assertIn("skills/spec-agent", labels)
         self.assertIn("agents/verifier.md", labels)
-        self.assertIn("skills/work", labels)
+        self.assertIn("skills/brainrc-work", labels)
         self.assertEqual(total, sum(n for n, _ in items))
 
     def test_core_over_budget_fails_naming_the_biggest_items(self):
@@ -1275,10 +1275,10 @@ class CrashRegressionTest(TempRepoCase):
         super().tearDown()
 
     def test_dangling_markdown_link_in_a_skill_is_reported(self):
-        (self.repo / "skills/terraform/gone.md").symlink_to(self.repo / "nowhere.md")
+        (self.repo / "skills/brainrc-terraform/gone.md").symlink_to(self.repo / "nowhere.md")
         code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1, out)
-        self.assertIn("skills/terraform/gone.md: dangling symlink", out)
+        self.assertIn("skills/brainrc-terraform/gone.md: dangling symlink", out)
         code, out = quiet(brainrc.cmd_tokens)
         self.assertEqual(code, 0, out)
 
@@ -2509,6 +2509,10 @@ class PackApplyCheckTest(TempRepoCase):
     def test_unprefixed_skill_is_refused(self):
         self.skill("deploy")
         self.assert_refused("acme:skills/deploy: pack skills must start with `acme-`")
+
+    def test_a_pack_that_breaks_a_naming_rule_is_refused(self):
+        (self.pack / "pack.toml").write_text('name = "acme"\nprefix = "aws-"\nrequires_core = ">=0.1"\n')
+        self.assert_refused("acme:pack.toml: `prefix` `aws-` uses the vendor name `aws`")
 
     def test_any_pack_validate_error_is_refused(self):
         self.skill("acme-deploy", description="")

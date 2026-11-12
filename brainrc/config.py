@@ -24,9 +24,6 @@ def find_core(pkg: Path) -> Path:
 REPO = find_core(Path(__file__).resolve().parent)
 
 
-ROLES_LINK = Path("skills/spec-agent/roles")  # a symlink to ../../agents; a wheel holds copies
-
-
 def installed() -> bool:
     """True when running from an installed package, whose files must never be written."""
     return REPO.name == "_core"
@@ -74,16 +71,7 @@ MODEL_ID = re.compile(r"^claude-[a-z0-9][a-z0-9.-]*$")  # a full model ID, e.g. 
 SKILL_NAME = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 
 
-EXTENSION_KEYS = {"domains", "intake_context", "ticket", "deliver_checks"}
-
-
 KINDS = ("skills", "agents", "commands")
-
-
-REQUIRED_CONNECTOR_OPS = ("fetch", "comment", "transition", "link_pr")  # references/connectors.md
-
-
-H2 = re.compile(r"^## +(.+)$", re.M)
 
 
 CORE_VERSION = re.compile(r"^([0-9]+)\.([0-9]+)\.([0-9]+)$")
@@ -116,7 +104,8 @@ PATH_KEYS = ("home", "skills", "agents", "agents_format", "commands", "plugin", 
 # Known keys of each table in <name>.toml / <name>.local.toml, and the type each must have.
 LAYERED_KEYS = {
     "harnesses": {"enabled": bool, **dict.fromkeys(PATH_KEYS, str)},
-    "packs": {"enabled": bool, "path": str, "git": str, "ref": str},
+    "packs": {"enabled": bool, "path": str, "git": str, "ref": str, "bundled": bool,
+              "run_validator": bool},
 }
 
 
@@ -200,7 +189,37 @@ def check_config() -> list[str]:
     warnings: list[str] = []
     for name in LAYERED_KEYS:
         _layered(name, warnings)
+    install_profile(warnings)
     return warnings
+
+
+PROFILE_FILE = "brainrc.local.toml"
+# What each profile installs besides the rules (#173). full is everything, and the default.
+PROFILES = {"minimal": frozenset(), "recommended": frozenset({"items", "hooks"}),
+            "full": frozenset({"items", "hooks", "mcp"})}
+
+
+def install_profile(warnings: list[str] | None = None) -> tuple[str, list[str]]:
+    """(profile, exclude patterns) from this machine's brainrc.local.toml: what apply installs."""
+    path = local_dir() / PROFILE_FILE
+    data = _read_toml(path)
+    text = path.read_text() if data else ""
+    profile, exclude = data.get("profile", "full"), data.get("exclude", [])
+    if profile not in PROFILES:
+        raise ConfigError(f"{tilde(path)}:{line_of(text, 'profile')}: `profile` must be one of "
+                          f"{', '.join(PROFILES)}")
+    if not isinstance(exclude, list) or not all(isinstance(e, str) and e for e in exclude):
+        raise ConfigError(f"{tilde(path)}:{line_of(text, 'exclude')}: `exclude` must be a list of "
+                          "paths or patterns, e.g. [\"skills/brainrc-aws\"]")
+    if warnings is not None:
+        warnings += [f"{tilde(path)}:{line_of(text, k)}: unknown key `{k}`"
+                     for k in data if k not in ("profile", "exclude")]
+    return profile, exclude
+
+
+def installs(part: str) -> bool:
+    """True if this machine's profile installs part: items (skills, agents, commands), hooks, mcp."""
+    return part in PROFILES[install_profile()[0]]
 
 
 def load_harnesses(include_disabled: bool = False, include_missing: bool = False,
@@ -396,6 +415,11 @@ def settings_home() -> Path:
     return new_home()
 
 
+def legacy_extensions() -> Path:
+    """The in-repo copy of the rendered extensions before the split (0.7.0); apply removes it."""
+    return REPO / "skills" / "spec-agent" / "references" / "extensions.md"
+
+
 def legacy_instructions() -> Path:
     """Where rules were rendered before 0.3.16; apply removes it and re-points links."""
     return REPO / "dist" / "instructions.md"
@@ -411,11 +435,6 @@ def rendered_agents_dir() -> Path:
 
 def home_extensions_file() -> Path:
     return settings_home() / "extensions.md"
-
-
-def extensions_file() -> Path:
-    """Deprecated in-repo copy of the rendered extensions, still written for packs that read it."""
-    return REPO / "skills" / "spec-agent" / "references" / "extensions.md"
 
 
 def hooks_copy_root() -> Path:

@@ -1,4 +1,4 @@
-"""Tests for skills/spec-agent/scripts/living_specs.py: apply a spec's requirement delta to the
+"""Tests for skills/brainrc-gatework/scripts/living_specs.py: apply a spec's requirement delta to the
 per-area truth files in specs/living/."""
 import shutil
 import subprocess
@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-SCRIPT = Path(__file__).resolve().parent.parent / "skills/spec-agent/scripts/living_specs.py"
+SCRIPT = Path(__file__).resolve().parent.parent / "packs/gatework/skills/brainrc-gatework/scripts/living_specs.py"
 
 RUN1 = """# Spec: shout
 

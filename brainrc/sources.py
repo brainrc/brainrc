@@ -1,8 +1,9 @@
 """Sources (core and packs), their items, and the rule and extension renders."""
 from __future__ import annotations
 
-import json
+import fnmatch
 import os
+import re
 import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -18,11 +19,15 @@ from .config import (
     ConfigError,
     KINDS,
     _layered,
+    _read_toml,
     expand,
     line_of,
     tilde,
     toml_error,
 )
+
+
+BUNDLED = "packs"  # packs that ship inside core, as packs/<key>/ (the default pack, gatework)
 
 
 @dataclass
@@ -36,6 +41,13 @@ class Source:
     @property
     def is_core(self) -> bool:
         return self.name == "core"
+
+    @property
+    def bundled(self) -> bool:
+        """A pack that ships inside core (packs/<name>/, named in core's own packs.toml): always the
+        same version as core. A pack of the user's that happens to sit under packs/ is not one."""
+        return (not self.is_core and self.root.parent == config.REPO / BUNDLED
+                and self.root.name in shipped_bundled())
 
     def rel(self, path: Path) -> str:
         rel = str(path.relative_to(self.root))
@@ -127,7 +139,7 @@ def pack_compat(src: Source, core: tuple[int, ...]) -> tuple[list[str], list[str
 
 def check_packs(srcs: list[Source]) -> tuple[list[str], list[str]]:
     """(errors, warnings) for every pack in srcs. Reads VERSION only when there are packs."""
-    packs = [s for s in srcs if not s.is_core]
+    packs = [s for s in srcs if not s.is_core and not s.bundled]
     if not packs:
         return [], []
     core = core_version()
@@ -139,9 +151,18 @@ def check_packs(srcs: list[Source]) -> tuple[list[str], list[str]]:
     return errors, warnings
 
 
+def shipped_bundled() -> set[str]:
+    """The packs core's own packs.toml bundles (packs.local.toml can't add one)."""
+    return {k for k, v in _read_toml(config.REPO / "packs.toml").items() if isinstance(v, dict) and v.get("bundled")}
+
+
 def _pack_root(cfg: dict, key: str) -> Path:
-    if ("path" in cfg) == ("git" in cfg):
-        raise ConfigError(f"packs.toml [{key}]: set `path` or `git` (one of them)")
+    if sum(("path" in cfg, "git" in cfg, bool(cfg.get("bundled")))) != 1:
+        raise ConfigError(f"packs.toml [{key}]: set `path`, `git` or `bundled = true` (one of them)")
+    if cfg.get("bundled") and key not in shipped_bundled():
+        raise ConfigError(f"packs.local.toml [{key}]: `bundled` is only for the packs core ships; use `path`")
+    if cfg.get("bundled"):
+        return config.REPO / BUNDLED / key  # read-only when installed, like the rest of core
     if "git" in cfg:
         return config.settings_home() / "packs" / key  # fetched by brainrc (brainrc/packs.py)
     root = expand(str(cfg["path"]))
@@ -163,6 +184,19 @@ def sources(include_disabled: bool = False) -> list[Source]:
     return found
 
 
+def bundled_sources(skip: Path | None = None) -> list[Source]:
+    """The bundled packs the shipped packs.toml enables, whatever packs.local.toml says: what
+    `validate --pack` checks a pack against, since a pack may use the default pack's skills and
+    agents. skip: a root to leave out (the pack being validated)."""
+    found = []
+    for key, cfg in _read_toml(config.REPO / "packs.toml").items():
+        if isinstance(cfg, dict) and cfg.get("bundled") and cfg.get("enabled", True):
+            root = _pack_root(cfg, key)
+            if skip is None or root.resolve() != skip.resolve():
+                found.append(load_pack(root, key))
+    return found
+
+
 def skills(src: Source | None = None) -> list[Path]:
     folder = (src.root if src else config.REPO) / "skills"
     if not folder.is_dir():
@@ -179,6 +213,21 @@ def markdown_files(folder: str, src: Source | None = None) -> list[Path]:
 
 def items(src: Source, kind: str) -> list[Path]:
     return skills(src) if kind == "skills" else markdown_files(kind, src)
+
+
+def installed_items(src: Source, kind: str) -> list[Path]:
+    """items(src, kind) that this machine installs: none under the minimal profile, and never one
+    that brainrc.local.toml `exclude` matches. A pattern matches the item's path in its source
+    (`skills/brainrc-aws`) or that path after the pack's name (`gatework:skills/brainrc-aws`)."""
+    if not config.installs("items"):
+        return []
+    _, exclude = config.install_profile()
+    found = []
+    for p in items(src, kind):
+        rel = str(p.relative_to(src.root))
+        if not any(fnmatch.fnmatchcase(r, pat.rstrip("/")) for pat in exclude for r in (rel, f"{src.name}:{rel}")):
+            found.append(p)
+    return found
 
 
 def item_name(path: Path) -> str:
@@ -249,68 +298,117 @@ def render_instructions(srcs: list[Source] | None = None) -> str:
     return "\n\n".join(parts) + "\n"
 
 
-def render_extensions(srcs: list[Source]) -> str:
-    """The pack extension points spec-agent reads at intake, plan, and deliver."""
-    packs = [s for s in srcs if not s.is_core]
-    out = ["<!-- GENERATED by brainrc from each pack's pack.toml. Edit the pack, not this file. -->",
-           "", "# Pack extensions", ""]
-    if not packs:
-        out.append("No packs enabled. Use only the built-in tables in SKILL.md.")
-        return "\n".join(out) + "\n"
-    out.append("Enabled packs: " + ", ".join(f"`{p.name}`" for p in packs) + ".")
-    ext = {p.name: p.meta.get("extensions", {}) for p in packs}
-
-    rows = [(p, d) for p, e in ext.items() for d in e.get("domains", [])]
-    if rows:
-        out += ["", "## Domains", "",
-                "Extra rows for the Domains table. When both match, use the pack row's skills in",
-                "addition to the built-in row's.", "",
-                "| Files | Skills | Extra reviewer | Pack |", "|---|---|---|---|"]
-        for pack, d in rows:
-            out.append(f"| {d.get('files', '')} | {', '.join(d.get('skills', []))} | "
-                       f"{d.get('reviewer', '—')} | {pack} |")
-
-    intake = [(p, i) for p, e in ext.items() for i in e.get("intake_context", [])]
-    if intake:
-        out += ["", "## Intake context", "",
-                "After writing `ticket.md` and before sizing, run each skill below and append its",
-                "summary to `ticket.md` under `## Context` (outside the untrusted-content fence).", ""]
-        out += [f"- `{i['skill']}` ({p}): {i.get('when', 'every ticket')}" for p, i in intake]
-
-    tickets = [(p, e["ticket"]) for p, e in ext.items() if "ticket" in e]
-    if tickets:
-        out += ["", "## Ticket connectors", "",
-                "Use the named connector for refs that match `refs`, passing it this config.", ""]
-        for pack, t in tickets:
-            out += [f"### {pack}", "", "```json", json.dumps(t, indent=2, sort_keys=True), "```", ""]
-
-    checks = [(p, c) for p, e in ext.items() for c in e.get("deliver_checks", [])]
-    if checks:
-        out += ["", "## Deliver checks", "",
-                "List these in the Deliver gate, each marked done, not applicable, or not run.",
-                "Never mark a check done that did not run.", ""]
-        out += [f"- ({p}) {c}" for p, c in checks]
-    return "\n".join(out).rstrip() + "\n"
-
-
 def frontmatter(path: Path) -> dict[str, str]:
+    """The `key: value` lines of a file's `---` frontmatter, every value a string ({} when there is
+    no frontmatter or it never ends). A YAML subset: plain scalars (a ` #` comment is dropped),
+    single- and double-quoted scalars, plain scalars continued on indented lines, and `|` and `>`
+    block scalars with their chomping (`-`, `+`) and indentation indicators. Flow values such as
+    `[a, b]` stay as written."""
     lines = path.read_text().splitlines()
     if not lines or lines[0].strip() != "---":
         return {}
-    meta = {}
-    for line in lines[1:]:
+    meta: dict[str, str] = {}
+    i = 1
+    while i < len(lines):
+        line = lines[i]
         if line.strip() == "---":
             return meta
-        if ":" in line and not line.startswith((" ", "\t")):
-            key, _, value = line.partition(":")
-            meta[key.strip()] = value.split(" #", 1)[0].strip()
+        i += 1
+        m = FM_KEY.match(line)
+        if not m:
+            continue
+        key, value = m[1], m[2].strip()
+        if block := FM_BLOCK.fullmatch(value.split(" #", 1)[0].strip()):
+            body, i = _block_lines(lines, i, int(block[2] or block[4] or 0))
+            meta[key] = _block_scalar(body, block[1] == "|", block[3] or block[5] or "")
+        elif value[:1] in "'\"" and value:
+            meta[key] = _quoted(value)
+        else:
+            value = value.split(" #", 1)[0].strip()
+            while value and i < len(lines) and lines[i][:1] in (" ", "\t") and lines[i].strip() \
+                    and not lines[i].lstrip().startswith("#"):
+                value = f"{value} {lines[i].split(' #', 1)[0].strip()}".strip()
+                i += 1
+            meta[key] = value
     return {}  # unterminated frontmatter
+
+
+FM_KEY = re.compile(r"^([^\s#][^:]*?):(?:\s+(.*)|$)")
+FM_BLOCK = re.compile(r"([|>])(?:([1-9])?([+-])?|([+-])([1-9]))")
+FM_ESCAPES = {"n": "\n", "t": "\t", '"': '"', "\\": "\\", "/": "/", "0": "\0", "r": "\r"}
+
+
+def _block_lines(lines: list[str], i: int, indent: int) -> tuple[list[str], int]:
+    """The lines of a block scalar starting at lines[i], without their indentation, and the index
+    after it. indent is the indentation indicator, or 0 to take it from the first non-blank line."""
+    body = []
+    while i < len(lines) and lines[i].rstrip() != "---":
+        line = lines[i]
+        if line.strip():
+            width = len(line) - len(line.lstrip(" "))
+            indent = indent or width
+            if width < indent or not indent:
+                break
+        body.append(line[indent:] if line.strip() else "")
+        i += 1
+    return body, i
+
+
+def _block_scalar(body: list[str], literal: bool, chomp: str) -> str:
+    """YAML's `|` (keep newlines) or `>` (fold lines into spaces; blank and more-indented lines
+    keep theirs), then chomping: clip one final newline, `-` strip it, `+` keep every one."""
+    content = body
+    while content and not content[-1]:
+        content = content[:-1]
+    trailing = len(body) - len(content)
+    if literal:
+        text = "\n".join(content)
+    else:
+        text, prev, prev_more = "", None, False  # prev_more: the last non-blank line was more-indented
+        for line in content:
+            more = line[:1] in (" ", "\t")
+            if prev is None:
+                text = line
+            elif not line:
+                text += "\n"
+            elif not prev:
+                text += ("\n" if more or prev_more else "") + line
+            else:
+                text += ("\n" if more or prev_more else " ") + line
+            prev, prev_more = line, more if line else prev_more
+    if not content or chomp == "-":
+        return text
+    return text + "\n" * (1 + trailing if chomp == "+" else 1)
+
+
+def _quoted(value: str) -> str:
+    """A single- or double-quoted scalar on one line ('' is a quote inside single quotes); anything
+    after the closing quote (a comment) is dropped. An unclosed quote keeps the value as written."""
+    quote, out, i = value[0], [], 1
+    while i < len(value):
+        c = value[i]
+        if quote == "'" and c == "'":
+            if value[i + 1:i + 2] == "'":
+                out.append("'")
+                i += 2
+                continue
+            return "".join(out)
+        if quote == '"' and c == "\\" and i + 1 < len(value):
+            out.append(FM_ESCAPES.get(value[i + 1], "\\" + value[i + 1]))
+            i += 2
+            continue
+        if quote == '"' and c == '"':
+            return "".join(out)
+        out.append(c)
+        i += 1
+    return value
 
 
 def _markdown_under(root: Path) -> list[Path]:
     found = []
     for dirpath, dirs, files in os.walk(root):  # does not follow symlinked dirs (skills/*/roles)
-        dirs[:] = [d for d in dirs if Path(dirpath, d) != config.REPO / config.ROLES_LINK]  # copies, when installed
+        if config.installed():  # a wheel holds copies where a checkout has links (a skill's roles/)
+            dirs[:] = [d for d in dirs if d != "roles"]
         found += [Path(dirpath) / f for f in files  # a dangling link is validate's own finding
                   if f.endswith(".md") and (Path(dirpath) / f).is_file()]
     return sorted(found)

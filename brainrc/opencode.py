@@ -4,7 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from .config import ConfigError, load_harnesses, rendered_agents_dir
-from .sources import Source, frontmatter, markdown_files
+from .sources import Source, frontmatter, installed_items
 
 
 AGENT_FORMATS = ("claude", "opencode")  # harnesses.toml `agents_format`; claude links agents as written
@@ -47,4 +47,4 @@ def rendered_agents(srcs: list[Source]) -> dict[Path, str]:
     if not any(agents_format(h) == "opencode" for h in load_harnesses().values()):
         return {}
     return {rendered_agents_dir() / f.name: opencode_agent(f)
-            for src in srcs for f in markdown_files("agents", src)}
+            for src in srcs for f in installed_items(src, "agents")}

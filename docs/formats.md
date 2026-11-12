@@ -33,7 +33,7 @@ model: sonnet             # optional: haiku | sonnet | opus | inherit, or a full
 System prompt...
 ```
 
-spec-agent reads these files through `skills/spec-agent/roles`, a symlink to `../../agents`.
+spec-agent reads these files through `packs/gatework/skills/brainrc-gatework/roles`, a symlink to `../../agents`.
 Keep it a symlink: `validate` fails otherwise ([Platforms](install.md#platforms)).
 
 ## Commands: `commands/<name>.md`

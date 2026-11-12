@@ -1,4 +1,4 @@
-"""Tests for skills/spec-agent/scripts/worktree_fence.py: before a wave task lands, every changed
+"""Tests for skills/brainrc-gatework/scripts/worktree_fence.py: before a wave task lands, every changed
 path must be inside the task's worktree fence and the main tree must be unchanged."""
 import shutil
 import subprocess
@@ -7,11 +7,11 @@ import tempfile
 import unittest
 from pathlib import Path
 
-SCRIPT = Path(__file__).resolve().parent.parent / "skills/spec-agent/scripts/worktree_fence.py"
+SCRIPT = Path(__file__).resolve().parent.parent / "packs/gatework/skills/brainrc-gatework/scripts/worktree_fence.py"
 
 
 def git(cwd: Path, *args: str) -> None:
-    subprocess.run(["git", *args], cwd=cwd, check=True, capture_output=True)
+    subprocess.run(["git", "-c", "maintenance.auto=false", *args], cwd=cwd, check=True, capture_output=True)
 
 
 class WorktreeFenceTest(unittest.TestCase):

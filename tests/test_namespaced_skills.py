@@ -24,12 +24,12 @@ TRIGGER_STARTS = {  # the original auto-trigger descriptions, which move to the 
 
 
 def meta(root, name):
-    path = Path(root) / "skills" / name / "SKILL.md"
+    path = Path(root) / "packs/gatework/skills" / name / "SKILL.md"
     return brainrc.frontmatter(path) if path.is_file() else {}
 
 
 def body(root, name):
-    path = Path(root) / "skills" / name / "SKILL.md"
+    path = Path(root) / "packs/gatework/skills" / name / "SKILL.md"
     return path.read_text().split("\n---\n", 1)[-1] if path.is_file() else ""
 
 
@@ -39,7 +39,7 @@ class NamespacedSkillsTest(unittest.TestCase):
     def test_namespaced_skills_exist_with_matching_name(self):
         for n in NAMES:
             with self.subTest(skill=n):
-                self.assertTrue((ROOT / f"skills/brainrc-{n}/SKILL.md").is_file(), f"skills/brainrc-{n} missing")
+                self.assertTrue((ROOT / f"packs/gatework/skills/brainrc-{n}/SKILL.md").is_file(), f"skills/brainrc-{n} missing")
                 self.assertEqual(meta(ROOT, f"brainrc-{n}").get("name"), f"brainrc-{n}")
 
     def test_user_invoked_skills_keep_hint_and_flag(self):
@@ -51,7 +51,7 @@ class NamespacedSkillsTest(unittest.TestCase):
                 self.assertIn("$ARGUMENTS", body(ROOT, f"brainrc-{n}"))
 
     def test_work_body_is_unchanged(self):
-        self.assertIn("Use the `spec-agent` skill to work on this item end to end:",
+        self.assertIn("Use the `brainrc-gatework` skill to work on this item end to end:",
                       body(ROOT, "brainrc-work"))
 
     def test_knowledge_skills_keep_trigger_description_and_stay_auto_triggerable(self):
@@ -69,7 +69,7 @@ class RemovedAliasesTest(unittest.TestCase):
     def test_old_names_are_gone(self):
         for n in NAMES:
             with self.subTest(skill=n):
-                self.assertFalse((ROOT / "skills" / n).exists(), f"skills/{n} should be removed")
+                self.assertFalse((ROOT / "packs/gatework/skills" / n).exists(), f"skills/{n} should be removed")
 
     def test_alias_check_is_gone(self):
         self.assertFalse(hasattr(brainrc.validate, "DEPRECATED_ALIASES"))

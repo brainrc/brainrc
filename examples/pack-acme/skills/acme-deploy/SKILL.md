@@ -5,7 +5,7 @@ description: Acme deploy manifests and service charts. Validation, conventions, 
 
 # acme-deploy
 
-Builds on the core `kubernetes` skill. Load both.
+Builds on Gatework's `brainrc-kubernetes` skill. Load both.
 
 ## Validate (offline)
 ```bash

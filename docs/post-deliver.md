@@ -1,7 +1,7 @@
 # Post-deliver: following a PR to merge (design)
 
 Status: **all five build steps are built** (see
-[`references/watch.md`](../skills/spec-agent/references/watch.md)). A run used to end at the Deliver gate: push, PR, ticket
+[`references/watch.md`](../packs/gatework/skills/brainrc-gatework/references/watch.md)). A run used to end at the Deliver gate: push, PR, ticket
 update, retro, `stage: done`, and whatever came next was fixed by hand. This page designs the
 stage that closes that loop. Build order is at the end.
 
@@ -28,14 +28,14 @@ babysitting PRs the run didn't open.
 `stage` gains `watch` between `deliver` and `done`. The run enters it after the PR opens
 (`delivery: normal` only; `local-only` runs go straight to `done`).
 
-**How it wakes up.** Pull-based, so it works in every harness: `/spec-resume` (or `/brainrc-work` on the
+**How it wakes up.** Pull-based, so it works in every harness: `/brainrc-gatework-resume` (or `/brainrc-work` on the
 same ref) at `stage: watch` fetches the PR's state through the ticket connector and handles
 whatever changed since `watch.checked_at`. A harness with PR event subscriptions (Claude Code
 on the web) can call the same step on each event; that's an optional trigger, not a
 requirement. No daemon and no polling loop in the engine.
 
 **Connector contract.** One new optional operation, `pr_status`: CI check results on the head
-commit, review threads (unresolved, with author and body, and an optional `id`), and merge state. `ticket-github`
+commit, review threads (unresolved, with author and body, and an optional `id`), and merge state. `brainrc-ticket-github`
 implements it with two read-only calls: `gh pr view <n> --json statusCheckRollup,headRefOid,state,updatedAt`
 (checks, head SHA, state, updated_at) and `gh api graphql` `reviewThreads` (unresolved only, via
 `isResolved`); see its `## pr_status` section for the queries and mapping.
@@ -110,7 +110,7 @@ reviewer role or checklist.
    across runs and projects: gate rework, first-pass review rate, retries, interventions, time
    per stage. It needs no new state, gives a baseline today, and is the place the `watch`
    numbers will land. Without it, the new fields would be written and never read. **Done.**
-2. `pr_status` in the connector contract and `ticket-github`; `validate` accepts it as optional. **Done.**
+2. `pr_status` in the connector contract and `brainrc-ticket-github`; `validate` accepts it as optional. **Done.**
 3. `watch` stage for CI failures and the Push gate. **Done.**
 4. Review comments. **Done.**
 5. Post-merge verify and the retro's After delivery section; add them to the rollup. **Done.**

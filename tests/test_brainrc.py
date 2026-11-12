@@ -18,7 +18,7 @@ import brainrc  # noqa: E402  (the package at the repo root)
 
 FOREIGN = {"hooks": [{"type": "command", "command": "node /opt/other/hook.js"}]}
 OURS_OLD = {"matcher": "Bash", "hooks": [{"type": "command", "command": "python3 ~/.claude/hooks/ai-config/old.py"}]}
-SOURCES = ("skills", "agents", "overrides", "rules")  # core ships no commands/ (packs may)
+SOURCES = ("packs", "overrides", "rules")  # core ships no skills, agents or commands: the gatework pack does
 FRAGMENT = REPO / "overrides/claude/settings.fragment.json"
 
 
@@ -45,6 +45,7 @@ def copy_repo(dest: Path) -> None:
         shutil.copytree(REPO / name, dest / name, symlinks=True,
                         ignore=shutil.ignore_patterns("*.local.md", "__pycache__"))
     shutil.copy2(REPO / "harnesses.toml", dest / "harnesses.toml")
+    shutil.copy2(REPO / "packs.toml", dest / "packs.toml")
     shutil.copy2(REPO / "VERSION", dest / "VERSION")
     shutil.copy2(REPO / "CHANGELOG.md", dest / "CHANGELOG.md")
 
@@ -239,20 +240,20 @@ class SyncFakeHomeTest(TempRepoCase):
         quiet(brainrc.cmd_sync, True)
         link = self.home / ".claude/skills/spec-agent"
         link.unlink()
-        link.symlink_to(os.path.relpath(self.repo / "skills/spec-agent", link.parent))
-        self.assertEqual(brainrc.Link("claude", link, self.repo / "skills/spec-agent").state(), "ok")
+        link.symlink_to(os.path.relpath(self.repo / "packs/gatework/skills/spec-agent", link.parent))
+        self.assertEqual(brainrc.Link("claude", link, self.repo / "packs/gatework/skills/spec-agent").state(), "ok")
 
     def test_updates_moved_links_and_prunes_dangling(self):
         quiet(brainrc.cmd_sync, True)
         skills_dir = self.home / ".claude/skills"
         (skills_dir / "spec-agent").unlink()
-        (skills_dir / "spec-agent").symlink_to(self.repo / "skills/brainrc-terraform")  # points at wrong skill
-        (skills_dir / "gone").symlink_to(self.repo / "skills/gone")  # removed from the repo
+        (skills_dir / "spec-agent").symlink_to(self.repo / "packs/gatework/skills/brainrc-terraform")  # points at wrong skill
+        (skills_dir / "gone").symlink_to(self.repo / "packs/gatework/skills/gone")  # removed from the repo
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0)
         self.assertIn("UPDATE", out)
         self.assertIn("PRUNE", out)
-        self.assertEqual(brainrc.link_target(skills_dir / "spec-agent"), self.repo / "skills/spec-agent")
+        self.assertEqual(brainrc.link_target(skills_dir / "spec-agent"), self.repo / "packs/gatework/skills/spec-agent")
         self.assertFalse((skills_dir / "gone").is_symlink())
 
     def test_invalid_settings_json_is_a_conflict(self):
@@ -462,7 +463,7 @@ class SyncFakeHomeTest(TempRepoCase):
         self.assertIn("CONFLICT", out)
         self.assertEqual((self.home / ".codex/AGENTS.md").read_text(), "mine\n")
 
-        skill = self.home / ".claude/skills/spec-agent"
+        skill = self.home / ".claude/skills/brainrc-gatework"
         self.assertTrue(skill.is_symlink())
         self.assertTrue((skill / "roles" / "brainrc-implementer.md").is_file())
         self.assertTrue((self.home / ".claude/hooks/brainrc/guard_outward.py").is_file())
@@ -483,25 +484,31 @@ name = "acme"
 prefix = "acme-"
 requires_core = ">=1.0, <2"
 
-[[extensions.domains]]
+[extensions.gatework]
+deliver_checks = ["Deploy plan reviewed"]
+
+[[extensions.gatework.domains]]
 files = "`deploy/*.yaml`"
 skills = ["acme-deploy"]
 reviewer = "brainrc-infra-reviewer"
 
-[[extensions.intake_context]]
+[[extensions.gatework.intake_context]]
 skill = "acme-context"
 when = "every ticket"
 
-[extensions.ticket]
-connector = "ticket-github"
+[extensions.gatework.ticket]
+connector = "brainrc-ticket-github"
 refs = ["gh:*"]
 draft = true
-
-[extensions]
-deliver_checks = ["Deploy plan reviewed"]
 '''
 PACK_FRAGMENT = {"hooks": {"PreToolUse": [{"matcher": "Bash", "hooks": [
     {"type": "command", "command": 'python3 "{{hooks_dir}}/guard_acme.py"'}]}]}}
+
+
+def roles_error():
+    """Gatework's own roles-link check, through its validator plugin."""
+    src = brainrc.load_pack(brainrc.config.REPO / "packs/gatework", "gatework")
+    return brainrc.plugins.load(src).roles_error(src)
 
 
 def make_pack(root: Path, pack_toml: str = PACK_TOML) -> Path:
@@ -568,9 +575,9 @@ class PackSyncTest(TempRepoCase):
         self.assertIn(claude_guard("$HOME/.claude/hooks/brainrc", "guard_outward.py"), commands)
         self.assertIn('python3 "$HOME/.claude/hooks/brainrc-acme/guard_acme.py"', commands)
 
-        ext = brainrc.extensions_file().read_text()
+        ext = brainrc.config.home_extensions_file().read_text()
         for expected in ("| `deploy/*.yaml` | acme-deploy | brainrc-infra-reviewer | acme |",
-                         "- `acme-context` (acme): every ticket", '"connector": "ticket-github"',
+                         "- `acme-context` (acme): every ticket", '"connector": "brainrc-ticket-github"',
                          "- (acme) Deploy plan reviewed"):
             self.assertIn(expected, ext)
 
@@ -590,7 +597,7 @@ class PackSyncTest(TempRepoCase):
         self.assertFalse(any("guard_acme" in c for c in commands))
         self.assertTrue(any("guard_outward" in c for c in commands))
         self.assertNotIn("- Acme rule.", brainrc.rendered_instructions().read_text())
-        self.assertIn("No packs enabled", brainrc.extensions_file().read_text())
+        self.assertIn("No packs enabled", brainrc.config.home_extensions_file().read_text())
 
     def test_disabling_harness_prunes_its_links(self):
         quiet(brainrc.cmd_sync, True)
@@ -606,7 +613,7 @@ class PackSyncTest(TempRepoCase):
         (clash / "SKILL.md").write_text("---\nname: spec-agent\ndescription: Clash.\n---\n")
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 1)
-        self.assertIn("skill `spec-agent` is defined in both core and acme", out)
+        self.assertIn("skill `spec-agent` is defined in both gatework and acme", out)
         self.assertEqual(home_files(self.home), [])
 
     def test_missing_pack_is_an_error(self):
@@ -756,11 +763,11 @@ class DoctorTest(TempRepoCase):
 
     def test_link_to_the_wrong_item(self):
         (self.skills / "spec-agent").unlink()
-        (self.skills / "spec-agent").symlink_to(self.repo / "skills/brainrc-terraform")
+        (self.skills / "spec-agent").symlink_to(self.repo / "packs/gatework/skills/brainrc-terraform")
         self.assert_one_fail("spec-agent", "apply")
 
     def test_stale_link(self):
-        (self.skills / "gone").symlink_to(self.repo / "skills/gone")
+        (self.skills / "gone").symlink_to(self.repo / "packs/gatework/skills/gone")
         self.assert_one_fail("gone", "apply")
 
     def test_broken_link_after_moving_the_repo(self):
@@ -804,7 +811,7 @@ class DoctorTest(TempRepoCase):
         self.doctor(0)
 
     def test_broken_roles_link(self):
-        roles = self.repo / "skills/spec-agent/roles"
+        roles = self.repo / "packs/gatework/skills/brainrc-gatework/roles"
         roles.unlink()
         roles.write_text("../../agents")
         findings = self.doctor(1)
@@ -837,17 +844,19 @@ class BudgetTest(TempRepoCase):
 
     def test_core_is_within_budget_with_no_warnings(self):
         total, items = brainrc.always_tokens(self.core)
-        self.assertGreater(total, 1000)
+        self.assertGreater(total, 500)  # rules only: the skills and agents are the gatework pack's
         self.assertLessEqual(total, brainrc.tokens.CORE_ALWAYS_BUDGET)
         self.assertEqual(self.check(), ([], []))
 
     def test_always_tokens_counts_rules_and_descriptions(self):
         total, items = brainrc.always_tokens(self.core)
+        self.assertIn("rules/30-guardrails.md", [label for _, label in items])
+        self.assertEqual(total, sum(n for n, _ in items))
+        total, items = brainrc.always_tokens(brainrc.load_pack(self.repo / "packs/gatework", "gatework"))
         labels = [label for _, label in items]
-        self.assertIn("rules/30-guardrails.md", labels)
-        self.assertIn("skills/spec-agent", labels)
-        self.assertIn("agents/verifier.md", labels)
-        self.assertIn("skills/brainrc-work", labels)
+        self.assertIn("gatework:skills/spec-agent", labels)
+        self.assertIn("gatework:agents/verifier.md", labels)
+        self.assertIn("gatework:skills/brainrc-work", labels)
         self.assertEqual(total, sum(n for n, _ in items))
 
     def test_core_over_budget_fails_naming_the_biggest_items(self):
@@ -888,7 +897,7 @@ class BudgetTest(TempRepoCase):
 
 
 class UnslopSplitTest(unittest.TestCase):
-    SKILL = REPO / "skills/unslop"
+    SKILL = REPO / "packs/gatework/skills/brainrc-unslop"
 
     def test_no_rule_line_was_lost(self):
         text = "\n".join(p.read_text() for p in sorted(self.SKILL.rglob("*.md")))
@@ -908,17 +917,17 @@ class UnslopSplitTest(unittest.TestCase):
 class RolesLinkTest(TempRepoCase):
     def setUp(self):
         super().setUp()
-        self.roles = self.repo / "skills/spec-agent/roles"
+        self.roles = self.repo / "packs/gatework/skills/brainrc-gatework/roles"
 
     def assert_validate_fails(self):
         code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1, out)
-        self.assertIn("skills/spec-agent/roles", out)
+        self.assertIn("skills/brainrc-gatework/roles", out)
         self.assertIn("Platforms", out)
 
     def test_repo_link_passes(self):
         self.assertTrue(self.roles.is_symlink())
-        self.assertIsNone(brainrc.check_roles_link())
+        self.assertIsNone(roles_error())
 
     def test_plain_file_from_a_checkout_without_symlinks_fails(self):
         self.roles.unlink()
@@ -944,8 +953,9 @@ class PluginTest(TempRepoCase):
         self.assertIn(claude_guard("${CLAUDE_PLUGIN_ROOT}/overrides/claude/hooks", "guard_outward.py"), commands)
         self.assertNotIn("{{hooks_dir}}", json.dumps(plugin))
 
-    def test_antigravity_manifest_is_the_name_only(self):
-        self.assertEqual(json.loads(brainrc.plugin_manifests()["plugin.json"]), {"name": "brainrc"})
+    def test_antigravity_manifest_is_the_name_and_the_skills_path(self):
+        self.assertEqual(json.loads(brainrc.plugin_manifests()["plugin.json"]),
+                         {"name": "brainrc", "skills": "packs/gatework/skills"})
 
     def test_marketplace_lists_the_repo_as_the_plugin(self):
         market = self.manifest("marketplace.json")
@@ -1021,11 +1031,14 @@ class SettingsHomeTest(TempRepoCase):
             self.assertEqual(brainrc.settings_home(), self.home / ".config/brainrc")
 
     def test_apply_renders_into_settings_home(self):
+        old = self.repo / "skills/spec-agent/references/extensions.md"  # the copy apply wrote before the split
+        old.parent.mkdir(parents=True)
+        old.write_text("stale\n")
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertTrue((self.settings_home / "instructions.md").is_file())
         self.assertTrue((self.settings_home / "extensions.md").is_file())
-        self.assertTrue(brainrc.extensions_file().is_file())  # deprecated in-repo copy, kept for packs
+        self.assertFalse((self.repo / "skills").exists())
         self.assertEqual(brainrc.link_target(self.home / ".claude/CLAUDE.md"), self.settings_home / "instructions.md")
         self.assertFalse((self.repo / "dist/instructions.md").exists())
 
@@ -1064,7 +1077,7 @@ class UserInvokedSkillTest(unittest.TestCase):
         self.assertFalse((REPO / "commands").exists())
 
     def test_skills_taking_arguments_are_user_invoked(self):
-        for skill in sorted((REPO / "skills").glob("*/SKILL.md")):
+        for skill in sorted((REPO / "packs/gatework/skills").glob("*/SKILL.md")):
             if "$ARGUMENTS" not in skill.read_text():
                 continue
             with self.subTest(skill=skill.parent.name):
@@ -1208,7 +1221,7 @@ class OpenCodeAgentTest(TempRepoCase):
         super().tearDown()
 
     def write_agent(self, name: str, meta: str) -> Path:
-        path = self.repo / "agents" / f"{name}.md"
+        path = self.repo / "packs/gatework/agents" / f"{name}.md"
         path.write_text(f"---\nname: {name}\ndescription: Fixture agent.\n{meta}---\n\n## Role\nBody.\n")
         return path
 
@@ -1234,12 +1247,12 @@ class OpenCodeAgentTest(TempRepoCase):
         link = self.agents / "analyst.md"
         self.assertEqual(brainrc.link_target(link), self.renders / "analyst.md")
         self.assertIn("mode: subagent", link.read_text())
-        self.assertEqual(brainrc.link_target(self.home / ".claude/agents/analyst.md"), self.repo / "agents/analyst.md")
+        self.assertEqual(brainrc.link_target(self.home / ".claude/agents/analyst.md"), self.repo / "packs/gatework/agents/analyst.md")
         self.assertEqual(brainrc.doctor_findings(), [])
 
     def test_removed_agent_is_pruned(self):
         quiet(brainrc.cmd_sync, True)
-        (self.repo / "agents/verifier.md").unlink()
+        (self.repo / "packs/gatework/agents/verifier.md").unlink()
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertFalse((self.agents / "verifier.md").is_symlink())
@@ -1275,7 +1288,7 @@ class CrashRegressionTest(TempRepoCase):
         super().tearDown()
 
     def test_dangling_markdown_link_in_a_skill_is_reported(self):
-        (self.repo / "skills/brainrc-terraform/gone.md").symlink_to(self.repo / "nowhere.md")
+        (self.repo / "packs/gatework/skills/brainrc-terraform/gone.md").symlink_to(self.repo / "nowhere.md")
         code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1, out)
         self.assertIn("skills/brainrc-terraform/gone.md: dangling symlink", out)
@@ -1415,9 +1428,9 @@ class InstalledModeTest(TempRepoCase):
         self.pkg = Path(tempfile.mkdtemp()) / "brainrc"
         self.core = self.pkg / "_core"
         copy_repo(self.core)
-        roles = self.core / "skills/spec-agent/roles"
+        roles = self.core / "packs/gatework/skills/brainrc-gatework/roles"
         roles.unlink()
-        shutil.copytree(self.core / "agents", roles)  # wheels copy the link's files
+        shutil.copytree(self.core / "packs/gatework/agents", roles)  # wheels copy the link's files
         brainrc.config.REPO = self.core
         self.home = Path(tempfile.mkdtemp())
         self.old_home = os.environ["HOME"]
@@ -1450,13 +1463,12 @@ class InstalledModeTest(TempRepoCase):
         self.assertIn("- My local rule.", brainrc.render_instructions())
 
     def test_apply_never_writes_inside_the_package(self):
-        (self.core / "skills/spec-agent/references/extensions.md").unlink(missing_ok=True)
         before = self.files()
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertEqual(self.files(), before)
         self.assertTrue((self.settings_home / "extensions.md").is_file())
-        self.assertEqual(brainrc.link_target(self.home / ".claude/skills/spec-agent"), self.core / "skills/spec-agent")
+        self.assertEqual(brainrc.link_target(self.home / ".claude/skills/spec-agent"), self.core / "packs/gatework/skills/spec-agent")
         self.assertEqual(brainrc.doctor_findings(), [])
 
     def copy_root(self) -> Path:
@@ -1543,7 +1555,7 @@ class InstalledModeTest(TempRepoCase):
         self.assertIn("checkout", out)
 
     def test_copied_roles_are_fine_when_installed(self):
-        self.assertIsNone(brainrc.check_roles_link())
+        self.assertIsNone(roles_error())
 
     def test_tokens_match_a_checkout(self):
         _, installed = quiet(brainrc.cmd_tokens)
@@ -1553,7 +1565,7 @@ class InstalledModeTest(TempRepoCase):
 
 
 def git(*args, cwd=None):
-    subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@example.com", *args],
+    subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@example.com", "-c", "maintenance.auto=false", *args],
                    cwd=cwd, check=True, capture_output=True)
 
 
@@ -1641,7 +1653,7 @@ class GitPackTest(TempRepoCase):
         self.use(git=self.url, path="somewhere")
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 1, out)
-        self.assertIn("`path` or `git`", out)
+        self.assertIn("`path`, `git`", out)
 
     def test_url_that_looks_like_an_option_is_refused(self):
         self.use(git="--upload-pack=touch x")
@@ -1900,7 +1912,7 @@ class CursorPluginTest(TempRepoCase):
         set_core_version(self.repo, "1.2.3")
         plugin = self.manifest()
         self.assertEqual((plugin["name"], plugin["version"], plugin["license"]), ("brainrc", "1.2.3", "MIT"))
-        self.assertEqual((plugin["skills"], plugin["agents"], plugin["rules"]), ("./skills/", "./agents/", "./rules/"))
+        self.assertEqual((plugin["skills"], plugin["agents"], plugin["rules"]), ("./packs/gatework/skills/", "./packs/gatework/agents/", "./rules/"))
         self.assertEqual(plugin["hooks"], "./.cursor-plugin/hooks.json")
         hooks = json.loads(brainrc.plugin_manifests()[".cursor-plugin/hooks.json"])
         self.assertEqual(hooks["version"], 1)
@@ -1938,11 +1950,11 @@ class PackValidateTest(TempRepoCase):
     def test_valid_pack(self):
         code, out = quiet(brainrc.cmd_validate, str(self.pack))
         self.assertEqual(code, 0, out)
-        self.assertIn("(packs: acme)", out)
+        self.assertIn("(packs: gatework, acme)", out)
 
     def test_catches_pack_errors(self):
         (self.pack / "pack.toml").write_text(PACK_TOML.replace('skills = ["acme-deploy"]', 'skills = ["nope"]')
-                                             .replace('connector = "ticket-github"', 'connector = "ticket-ghost"'))
+                                             .replace('connector = "brainrc-ticket-github"', 'connector = "ticket-ghost"'))
         (self.pack / "skills/unprefixed").mkdir()
         (self.pack / "skills/unprefixed/SKILL.md").write_text("---\nname: unprefixed\ndescription: x\n---\n")
         (self.pack / "tripwires.toml").write_text(
@@ -2051,46 +2063,46 @@ class ConnectorCheckTest(TempRepoCase):
         code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 0, out)
 
-    def test_core_connector_missing_an_operation_fails(self):
-        write_skill(self.repo, "ticket-x", "## fetch\n\n## comment\n\n## transition\n")
+    def test_default_pack_connector_missing_an_operation_fails(self):
+        write_skill(self.repo / "packs/gatework", "brainrc-ticket-x", "## fetch\n\n## comment\n\n## transition\n")
         code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1)
-        self.assertIn("skills/ticket-x/SKILL.md: connector missing `##` sections for link_pr", out)
+        self.assertIn("skills/brainrc-ticket-x/SKILL.md: connector missing `##` sections for link_pr", out)
 
     def test_core_local_and_github_connectors_document_create(self):
-        for name in ("ticket-local", "ticket-github"):
-            text = (Path(__file__).resolve().parent.parent / "skills" / name / "SKILL.md").read_text()
+        for name in ("brainrc-ticket-local", "brainrc-ticket-github"):
+            text = (Path(__file__).resolve().parent.parent / "packs/gatework/skills" / name / "SKILL.md").read_text()
             self.assertRegex(text, r"(?m)^## create\b", name)
             self.assertRegex(text, r"Implements the ticket connector interface:.*`create`", name)
-        contract = (Path(__file__).resolve().parent.parent / "skills/spec-agent/references/connectors.md").read_text()
+        contract = (Path(__file__).resolve().parent.parent / "packs/gatework/skills/brainrc-gatework/references/connectors.md").read_text()
         self.assertRegex(contract, r"\| `create` \| no \| outward \| after an approved Ticket gate \|")
 
     def test_a_connector_without_create_still_validates(self):
-        write_skill(self.repo, "ticket-w", "## fetch\n\n## comment / transition / link_pr\n")
+        write_skill(self.repo / "packs/gatework", "brainrc-ticket-w", "## fetch\n\n## comment / transition / link_pr\n")
         code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 0, out)
 
     def test_one_heading_may_name_several_operations(self):
-        write_skill(self.repo, "ticket-y", "## fetch (read-only)\n\n## comment / transition / link_pr\n")
+        write_skill(self.repo / "packs/gatework", "brainrc-ticket-y", "## fetch (read-only)\n\n## comment / transition / link_pr\n")
         code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 0, out)
 
     def test_pr_status_is_optional_for_connectors(self):
-        write_skill(self.repo, "ticket-with", "## fetch\n\n## comment / transition / link_pr\n\n## pr_status\n")
-        write_skill(self.repo, "ticket-without", "## fetch\n\n## comment / transition / link_pr\n")
+        write_skill(self.repo / "packs/gatework", "brainrc-ticket-with", "## fetch\n\n## comment / transition / link_pr\n\n## pr_status\n")
+        write_skill(self.repo / "packs/gatework", "brainrc-ticket-without", "## fetch\n\n## comment / transition / link_pr\n")
         code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 0, out)
         self.assertNotIn("pr_status", out)
 
     def test_pr_status_does_not_replace_required_operations(self):
-        write_skill(self.repo, "ticket-z", "## fetch\n\n## comment / transition\n\n## pr_status\n")
+        write_skill(self.repo / "packs/gatework", "brainrc-ticket-z", "## fetch\n\n## comment / transition\n\n## pr_status\n")
         code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1)
-        self.assertIn("skills/ticket-z/SKILL.md: connector missing `##` sections for link_pr", out)
+        self.assertIn("skills/brainrc-ticket-z/SKILL.md: connector missing `##` sections for link_pr", out)
 
     def test_pack_connector_missing_operations_fails(self):
         pack = make_pack(Path(tempfile.mkdtemp()).resolve() / "acme-pack",
-                         PACK_TOML.replace('connector = "ticket-github"', 'connector = "acme-tickets"'))
+                         PACK_TOML.replace('connector = "brainrc-ticket-github"', 'connector = "acme-tickets"'))
         self.addCleanup(shutil.rmtree, pack.parent)
         write_skill(pack, "acme-tickets", "## fetch\n")
         code, out = quiet(brainrc.cmd_validate, str(pack))
@@ -2106,13 +2118,13 @@ class ExamplePackTest(unittest.TestCase):
         code, out = quiet(brainrc.cmd_validate, str(REPO / "examples/pack-acme"))
         self.assertEqual(code, 0, out)
         self.assertNotIn("WARN", out)
-        self.assertIn("(packs: acme)", out)
+        self.assertIn("(packs: gatework, acme)", out)
 
     def test_homelab_pack_is_valid_without_warnings(self):
         code, out = quiet(brainrc.cmd_validate, str(REPO / "examples/pack-homelab"))
         self.assertEqual(code, 0, out)
         self.assertNotIn("WARN", out)
-        self.assertIn("(packs: homelab)", out)
+        self.assertIn("(packs: gatework, homelab)", out)
 
 
 class ValidateTest(unittest.TestCase):
@@ -2141,10 +2153,10 @@ class ValidateTest(unittest.TestCase):
         tmp = Path(tempfile.mkdtemp())
         try:
             copy_repo(tmp)
-            skill = tmp / "skills/spec-agent/SKILL.md"
+            skill = tmp / "packs/gatework/skills/brainrc-gatework/SKILL.md"
             skill.write_text(skill.read_text() + "\n[agent: ghost] [x](missing.md) the `nope` skill\n")
-            (tmp / "agents/verifier.md").write_text(
-                (tmp / "agents/verifier.md").read_text().replace("model: haiku", "model: gpt-9"))
+            (tmp / "packs/gatework/agents/verifier.md").write_text(
+                (tmp / "packs/gatework/agents/verifier.md").read_text().replace("model: haiku", "model: gpt-9"))
             old = brainrc.config.REPO
             brainrc.config.REPO = tmp
             try:
@@ -2173,13 +2185,13 @@ class LocalTripwireTest(TempRepoCase):
         self.addCleanup(patcher.stop)
         super().setUp()
         set_core_version(self.repo, "1.2.3")
-        self.doc = self.repo / "skills/spec-agent/references/campaign.md"
+        self.doc = self.repo / "packs/gatework/skills/brainrc-gatework/references/campaign.md"
 
     def write_terms(self, text: str) -> None:
         (self.repo / "tripwires.local.toml").write_text(text)
 
     def git(self, *args: str) -> None:
-        subprocess.run(["git", "-C", str(self.repo), *args], check=True, capture_output=True)
+        subprocess.run(["git", "-c", "maintenance.auto=false", "-C", str(self.repo), *args], check=True, capture_output=True)
 
     def test_without_the_file_validate_passes(self):
         self.doc.write_text(self.doc.read_text() + "\nWorked on this at Initech.\n")
@@ -2192,17 +2204,17 @@ class LocalTripwireTest(TempRepoCase):
         self.write_terms('terms = ["initech"]\n')
         code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1, out)
-        self.assertIn(f'skills/spec-agent/references/campaign.md:{len(lines) + 1}: local tripwire: '
+        self.assertIn(f'skills/brainrc-gatework/references/campaign.md:{len(lines) + 1}: local tripwire: '
                       f'contains "initech" (tripwires.local.toml)', out)
 
     def test_any_file_type_and_file_names_are_checked(self):
-        (self.repo / "agents/notes.py").write_text("# initech helper\n")
-        (self.repo / "skills/spec-agent/initech-notes.txt").write_text("plain\n")
+        (self.repo / "packs/gatework/agents/notes.py").write_text("# initech helper\n")
+        (self.repo / "packs/gatework/skills/brainrc-gatework/initech-notes.txt").write_text("plain\n")
         self.write_terms('terms = ["Initech"]\n')
         code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1, out)
         self.assertIn('agents/notes.py:1: local tripwire: contains "Initech"', out)
-        self.assertIn('skills/spec-agent/initech-notes.txt: local tripwire: the file name contains "Initech"', out)
+        self.assertIn('skills/brainrc-gatework/initech-notes.txt: local tripwire: the file name contains "Initech"', out)
 
     def test_a_term_found_nowhere_passes(self):
         self.write_terms('terms = ["Initech", "Globex"]\n')
@@ -2241,7 +2253,7 @@ class LocalTripwireTest(TempRepoCase):
         self.assertIn('untracked-initech.md:1: local tripwire: contains "initech"', out)
 
     def test_binary_files_are_skipped(self):
-        (self.repo / "agents/blob.bin").write_bytes(b"\0\1\2" + b"x" * 100 + b"initech")
+        (self.repo / "packs/gatework/agents/blob.bin").write_bytes(b"\0\1\2" + b"x" * 100 + b"initech")
         self.write_terms('terms = ["initech"]\n')
         code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 0, out)
@@ -2249,14 +2261,14 @@ class LocalTripwireTest(TempRepoCase):
     def test_a_link_is_checked_by_its_target_path_not_followed(self):
         outside = self.repo.parent / "outside.md"
         outside.write_text("initech\n")  # not committed, so not checked
-        (self.repo / "skills/spec-agent/outside.txt").symlink_to(outside)
+        (self.repo / "packs/gatework/skills/brainrc-gatework/outside.txt").symlink_to(outside)
         self.write_terms('terms = ["initech"]\n')
         code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 0, out)
-        (self.repo / "skills/spec-agent/ref.txt").symlink_to("../initech/ref.txt")  # broken, but committed as is
+        (self.repo / "packs/gatework/skills/brainrc-gatework/ref.txt").symlink_to("../initech/ref.txt")  # broken, but committed as is
         code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1, out)
-        self.assertIn('skills/spec-agent/ref.txt: local tripwire: the link target contains "initech"', out)
+        self.assertIn('skills/brainrc-gatework/ref.txt: local tripwire: the link target contains "initech"', out)
 
     def test_the_file_must_never_be_tracked(self):
         self.git("init", "-q")
@@ -2542,7 +2554,7 @@ class AgentFrontmatterTest(TempRepoCase):
 
     def agent(self, model: str, tools: str) -> tuple[int, str]:
         for name in ("brainrc-verifier", "verifier"):  # the deprecated alias must match its target
-            path = self.repo / f"agents/{name}.md"
+            path = self.repo / f"packs/gatework/agents/{name}.md"
             text = path.read_text()
             head, sep, body = text.partition("\n---\n")
             lines = [l for l in head.splitlines() if not l.startswith(("model:", "tools:"))]
@@ -2622,7 +2634,7 @@ class PyprojectTest(unittest.TestCase):
         for src, dest in include.items():
             self.assertTrue((REPO / src).exists(), src)
             self.assertTrue(dest.startswith("brainrc/_core/"), dest)
-        for needed in ("skills", "agents", "rules", "harnesses.toml", "VERSION", "CHANGELOG.md"):
+        for needed in ("packs", "rules", "harnesses.toml", "VERSION", "CHANGELOG.md"):
             self.assertIn(needed, include)
 
 

@@ -5,7 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DOCS = ["README.md", "docs/install.md", "docs/troubleshooting.md", "docs/spec-agent.md",
-        "docs/harness-packages.md", "skills/spec-agent/SKILL.md"]
+        "docs/harness-packages.md", "packs/gatework/skills/brainrc-gatework/SKILL.md"]
 OLD = re.compile(r"ai-config@ai-config|ai-config:<|/ai-config:work|plugins/local/ai-config|\"name\": \"ai-config\"")
 
 
@@ -31,7 +31,7 @@ class PluginDocsTest(unittest.TestCase):
             if rel == "docs/troubleshooting.md":
                 continue
             body = without_move_note(rel) if rel == "docs/install.md" else text(rel)
-            if rel == "skills/spec-agent/SKILL.md":
+            if rel == "packs/gatework/skills/brainrc-gatework/SKILL.md":
                 body = body.replace("`ai-config:<role>`", "")
             self.assertIsNone(OLD.search(body), rel)
 
@@ -49,5 +49,5 @@ class PluginDocsTest(unittest.TestCase):
         self.assertIn("Moving from ai-config", t)
 
     def test_spec_agent_role_lookup_order(self):
-        s = text("skills/spec-agent/SKILL.md")
+        s = text("packs/gatework/skills/brainrc-gatework/SKILL.md")
         self.assertLess(s.index("brainrc:<role>"), s.index("ai-config:<role>"))

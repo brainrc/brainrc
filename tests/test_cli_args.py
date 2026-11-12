@@ -135,7 +135,7 @@ class OnlyTest(TempRepoCase):
 
     def test_other_harnesses_keep_their_links_and_hooks(self):
         quiet(brainrc.cmd_sync, True)
-        (self.repo / "skills/spec-agent").rename(self.repo / "skills/spec-agent-moved")
+        (self.repo / "packs/gatework/skills/spec-agent").rename(self.repo / "packs/gatework/skills/spec-agent-moved")
         code, out, _ = run("apply", "--only", "codex")
         self.assertEqual(code, 0, out)
         self.assertFalse((self.home / ".codex/skills/spec-agent").is_symlink())  # pruned in codex

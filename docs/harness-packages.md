@@ -40,7 +40,10 @@ here): `codex-rs/core-plugins/`, `codex-rs/hooks/`, `codex-rs/agent-roles/`.
 - Reads `.claude-plugin/marketplace.json` and `.claude-plugin/plugin.json` as well as its own
   `.codex-plugin/`. **Verified** with Codex 0.161.0: `codex plugin marketplace add <repo>` and
   `codex plugin add brainrc@brainrc` install our plugin unchanged. The install copy **drops
-  symlinks** (`skills/spec-agent/roles`), so spec-agent falls back to `../../agents/`.
+  symlinks** (`packs/gatework/skills/brainrc-gatework/roles`), so spec-agent falls back to `../../agents/`.
+- Skills come from the manifest's `skills` field when it has one, and only from there, so it names
+  `./packs/gatework/skills/` as one string, the form Codex's docs give. Not yet run with a real Codex
+  since the skills moved there in 0.7.0.
 - Skills: native, `~/.agents/skills` (`~/.codex/skills` deprecated). Custom prompts are deprecated
   for skills; a plugin's `commands/` become skills, **except any that use `$ARGUMENTS`** (verified:
   all five of ours were skipped). Core now ships them as user-invoked skills, which Codex installs.
@@ -57,8 +60,9 @@ CHANGELOG and issues (#403, #1053, #1059), and plugins that record tested behavi
 [CoalHearth v2.8.0](https://github.com/TheColliery/CoalHearth/releases/tag/v2.8.0) on agy 1.3.1).
 Nothing here was run against a real `agy`.
 
-- A plugin is a folder with `plugin.json` (`name` only; extra keys may be rejected), plus optional
-  `skills/`, `agents/`, `rules/`, `hooks.json`, and `mcp_config.json`. `agy plugin install <git
+- A plugin is a folder with `plugin.json` (its schema requires `name` and rejects unknown keys; a
+  `skills` path or list adds skill folders to `skills/`, and nothing names other folders), plus
+  optional `skills/`, `agents/`, `rules/`, `hooks.json`, and `mcp_config.json`. `agy plugin install <git
   url>` needs `plugin.json` at the repo root. No `commands/`: skills are the slash commands.
   Install may copy only the folders it recognises (#403).
 - Rules: `rules/*.md` load only with frontmatter naming a `trigger` (`always_on`,

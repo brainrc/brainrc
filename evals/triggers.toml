@@ -5,75 +5,75 @@
 
 [[case]]
 prompt = "Add a /healthz handler to our Go HTTP service and a table-driven test for it."
-expect = ["go-service"]
-forbid = ["brainrc-terraform", "kubernetes"]
+expect = ["brainrc-go-service"]
+forbid = ["brainrc-terraform", "brainrc-kubernetes"]
 
 [[case]]
 prompt = "Write a Bash script that rotates log files older than seven days."
-expect = ["scripting"]
-forbid = ["go-service"]
+expect = ["brainrc-scripting"]
+forbid = ["brainrc-go-service"]
 
 [[case]]
 prompt = "Add an S3 bucket with versioning to our Terraform root module and show the plan."
 expect = ["brainrc-terraform"]
-forbid = ["kubernetes"]
+forbid = ["brainrc-kubernetes"]
 
 [[case]]
 prompt = "Bump the memory limit in the Helm chart values for the api deployment."
-expect = ["kubernetes"]
+expect = ["brainrc-kubernetes"]
 forbid = ["brainrc-terraform"]
 
 [[case]]
 prompt = "Check which IAM permissions our Lambda role actually needs and tighten its policy."
 expect = ["brainrc-aws"]
-forbid = ["containers"]
+forbid = ["brainrc-containers"]
 
 [[case]]
 prompt = "Speed up our Python unit tests by sharing one fixture across the module."
 expect = []
-forbid = ["brainrc-aws", "db-migrations"]
+forbid = ["brainrc-aws", "brainrc-db-migrations"]
 
 [[case]]
 prompt = "The Argo CD Application for billing is out of sync. Fix the Kustomization overlay in the config repo."
-expect = ["gitops"]
-forbid = ["ci-pipelines"]
+expect = ["brainrc-gitops"]
+forbid = ["brainrc-ci-pipelines"]
 
 [[case]]
 prompt = "Add a --json output flag to our Go CLI."
-expect = ["go-service"]
-forbid = ["gitops", "observability"]
+expect = ["brainrc-go-service"]
+forbid = ["brainrc-gitops", "brainrc-observability"]
 
 [[case]]
 prompt = "Our GitHub Actions workflow interpolates the PR title into a run step. Make it safe."
-expect = ["ci-pipelines"]
-forbid = ["kubernetes"]
+expect = ["brainrc-ci-pipelines"]
+forbid = ["brainrc-kubernetes"]
 
 [[case]]
 prompt = "Shrink the Docker image for the worker with a multi-stage Dockerfile."
-expect = ["containers"]
-forbid = ["ci-pipelines"]
+expect = ["brainrc-containers"]
+forbid = ["brainrc-ci-pipelines"]
 
 [[case]]
 prompt = "Rename a variable across this TypeScript React component."
 expect = []
-forbid = ["containers", "ci-pipelines", "scripting"]
+forbid = ["brainrc-containers", "brainrc-ci-pipelines", "brainrc-scripting"]
 
 [[case]]
 prompt = "Add a NOT NULL column with a backfill to the orders table without locking it."
-expect = ["db-migrations"]
-forbid = ["observability"]
+expect = ["brainrc-db-migrations"]
+forbid = ["brainrc-observability"]
 
 [[case]]
 prompt = "Add a Prometheus alert for p99 latency over 500ms with a runbook link."
-expect = ["observability"]
-forbid = ["db-migrations"]
+expect = ["brainrc-observability"]
+forbid = ["brainrc-db-migrations"]
 
 [[case]]
 prompt = "Write a Terraform module for an RDS Postgres instance."
 expect = ["brainrc-terraform"]
-forbid = ["db-migrations", "go-service"]
+forbid = ["brainrc-db-migrations", "brainrc-go-service"]
 
 [[case]]
 prompt = "Explain in the README how our team names git branches."
 expect = []
-forbid = ["brainrc-terraform", "brainrc-aws", "kubernetes", "gitops", "observability"]
+forbid = ["brainrc-terraform", "brainrc-aws", "brainrc-kubernetes", "brainrc-gitops", "brainrc-observability"]

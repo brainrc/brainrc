@@ -24,16 +24,17 @@ You should see a line starting with `OK:` that counts skills, agents, and comman
 
 A pack needs a `pack.toml`. The `prefix` keeps your names apart from core's, `requires_core`
 says which core versions you tested against (copy the range from core's `VERSION`), and the
-`[[extensions.domains]]` row tells spec-agent which files load your skill.
+`[[extensions.gatework.domains]]` row tells spec-agent (in the default Gatework pack) which files
+load your skill.
 
 ```bash
 mkdir -p ~/src/myteam-ai-pack/skills/myteam-protobuf
 cat > ~/src/myteam-ai-pack/pack.toml <<'EOF'
 name = "myteam"
 prefix = "myteam-"
-requires_core = ">=0.6, <0.7"
+requires_core = ">=0.6, <0.8"
 
-[[extensions.domains]]
+[[extensions.gatework.domains]]
 files = "`*.proto`, `buf.yaml`"
 skills = ["myteam-protobuf"]
 EOF
@@ -78,7 +79,8 @@ EOF
 python3 scripts/brainrc.py validate --pack ~/src/myteam-ai-pack
 ```
 
-You should see `OK:` with `(packs: myteam)` at the end. A common mistake is a skill without
+You should see `OK:` with `(packs: gatework, myteam)` at the end: core, the default pack it
+ships, and yours. A common mistake is a skill without
 the prefix. `validate` then names it, for example
 ``myteam:skills/protobuf: pack skills must start with `myteam-` ``.
 
@@ -133,6 +135,6 @@ Then validate it in the pack's own CI on every push, against core's latest `main
 - [examples/pack-acme](../examples/pack-acme/README.md) shows every other pack feature: an
   intake context skill, a ticket connector, Deliver checks, rules, commands, and tripwires.
 - [docs/packs.md](packs.md) is the full pack reference.
-- To add a domain skill to core for everyone instead, put it in `skills/<stack>/`, add a row
-  to the Domains table in `skills/spec-agent/SKILL.md`, and follow the repo's
+- To add a domain skill to core for everyone instead, put it in `packs/gatework/skills/<stack>/`, add a row
+  to the Domains table in `packs/gatework/skills/brainrc-gatework/SKILL.md`, and follow the repo's
   [AGENTS.md](../AGENTS.md) rules.

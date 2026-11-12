@@ -21,7 +21,7 @@ STEPS = (1, 2, 3, 4, 5)
 # Documented output each step must print, besides exiting 0.
 EXPECTED = {
     1: [r"(?m)^OK:"],
-    4: [r"(?m)^OK:", re.escape("(packs: myteam)")],
+    4: [r"(?m)^OK:", re.escape("(packs: gatework, myteam)")],
     5: [re.escape("Everything in sync.")],
 }
 # Stable lines only (the sample transcript in the README drifts): see brainrc/cli.py `status`.

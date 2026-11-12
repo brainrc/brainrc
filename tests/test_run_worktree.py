@@ -1,4 +1,4 @@
-"""Tests for skills/spec-agent/scripts/run_worktree.py: open the per-run git worktree outside the
+"""Tests for skills/brainrc-gatework/scripts/run_worktree.py: open the per-run git worktree outside the
 main checkout (create, reuse, recreate, refuse)."""
 import os
 import shutil
@@ -8,8 +8,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-SCRIPT = Path(__file__).resolve().parent.parent / "skills/spec-agent/scripts/run_worktree.py"
-GIT = ["git", "-c", "user.name=t", "-c", "user.email=t@example.com"]
+SCRIPT = Path(__file__).resolve().parent.parent / "packs/gatework/skills/brainrc-gatework/scripts/run_worktree.py"
+GIT = ["git", "-c", "user.name=t", "-c", "user.email=t@example.com", "-c", "maintenance.auto=false"]
 
 
 

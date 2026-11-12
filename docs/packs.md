@@ -45,7 +45,8 @@ Same as this repo. Every folder is optional.
 
 ```
 acme-ai-pack/
-  pack.toml              name, prefix, spec-agent extensions
+  pack.toml              name, prefix, extensions for other packs (see Extensions)
+  validator.py           optional checks and renders of its own (see Validator plugins)
   skills/acme-*/         linked next to the core skills
   agents/acme-*.md       linked next to the core agents
   commands/acme-*.md
@@ -85,9 +86,10 @@ publishes it. Official packs are owned by `brainrc`:
 
 | ID | What it holds | Issue |
 |---|---|---|
+| `brainrc/gatework` | the default pack: spec-agent, its roles, ticket connectors and domain skills ([packs/gatework](../packs/gatework/README.md)) | [#172](https://github.com/brainrc/brainrc/issues/172) |
 | `brainrc/starter` | the small, measured base for the default profile | [#313](https://github.com/brainrc/brainrc/issues/313) |
 | `brainrc/review` | review, PR description, commit message and unslop | [#314](https://github.com/brainrc/brainrc/issues/314) |
-| `brainrc/go` | Go, built from today's `go-service` skill | [#315](https://github.com/brainrc/brainrc/issues/315) |
+| `brainrc/go` | Go, built from today's `brainrc-go-service` skill | [#315](https://github.com/brainrc/brainrc/issues/315) |
 | `brainrc/terraform-aws` | Terraform and AWS | [#316](https://github.com/brainrc/brainrc/issues/316) |
 | `brainrc/kubernetes` | Kubernetes, including GitOps | [#317](https://github.com/brainrc/brainrc/issues/317) |
 | `brainrc/security-baseline` | the default guard policy, secret protection and a sandbox profile | [#323](https://github.com/brainrc/brainrc/issues/323) |
@@ -98,38 +100,80 @@ publishes it. Official packs are owned by `brainrc`:
 name = "acme"
 prefix = "acme-"          # default: "<name>-"
 id = "acme/acme-ai-pack"  # optional: the <owner>/<pack> ID it's published under (see Naming)
-requires_core = ">=0.6, <0.7"   # core versions this pack works with (see Compatibility)
+requires_core = ">=0.7, <0.8"   # core versions this pack works with (see Compatibility)
 max_always_tokens = 800   # optional budget for rules + descriptions (see Context cost)
 
-[[extensions.domains]]    # extra rows for spec-agent's Domains table
+[extensions.gatework]      # what the gatework pack (spec-agent) reads; see Extensions
+deliver_checks = [        # listed in the Deliver gate as done / not applicable / not run
+  "Deploy plan reviewed by the owning team",
+]
+
+[[extensions.gatework.domains]]   # extra rows for spec-agent's Domains table
 files = "`deploy/*.yaml`, `charts/acme-*`"
 skills = ["acme-deploy"]
 reviewer = "brainrc-infra-reviewer"
 
-[[extensions.intake_context]]   # skills spec-agent runs after fetching the ticket
+[[extensions.gatework.intake_context]]   # skills spec-agent runs after fetching the ticket
 skill = "acme-context"
 when = "every ticket"
 
-[extensions.ticket]       # a connector for this pack's ticket refs, with its config
-connector = "ticket-jira"
+[extensions.gatework.ticket]   # a connector for this pack's ticket refs, with its config
+connector = "brainrc-ticket-jira"
 refs = ["ACME-*"]
 host = "acme.example.net"
-
-[extensions]
-deliver_checks = [        # listed in the Deliver gate as done / not applicable / not run
-  "Deploy plan reviewed by the owning team",
-]
 ```
 
-`apply` renders every enabled pack's extensions into `$BRAINRC_HOME/extensions.md` (default
-`~/.config/brainrc/extensions.md`). spec-agent reads it at intake. The old copy at
-`skills/spec-agent/references/extensions.md` is still written but deprecated: read the new path.
-With no packs enabled, the file says so and spec-agent runs as before.
+## Extensions
+
+`[extensions.<namespace>]` is a table another pack reads; core passes it through untouched. The
+pack that owns the namespace checks it with its [validator plugin](#validator-plugins), and
+`validate` warns about a table no enabled pack reads. Gatework, the default pack, owns
+`[extensions.gatework]` above. `apply` renders every enabled pack's table into
+`$BRAINRC_HOME/extensions.md` (default `~/.config/brainrc/extensions.md`), which spec-agent reads
+at intake. With no other packs enabled, the file says so and spec-agent runs as before; with
+Gatework disabled, there is no file.
+
+The forms from before 0.7.0, the same keys directly under `[extensions]` or under
+`[extensions.spec-agent]`, still work and warn until 0.8.0: move them under
+`[extensions.gatework]`. `apply` no longer writes the old copy at
+`skills/spec-agent/references/extensions.md`, and removes it.
 
 A pack has at most one `[extensions.ticket]`: one connector and the refs it handles. A team
 with two ticket systems splits them into two packs. The connector, core or the pack's own,
-must follow the [connector contract](../skills/spec-agent/references/connectors.md), which
+must follow the [connector contract](../packs/gatework/skills/brainrc-gatework/references/connectors.md), which
 `validate` checks.
+
+## Validator plugins
+
+A pack can check what only it understands: `validator = "validator.py"` in `pack.toml` names a
+Python module in the pack. Each name in it is optional:
+
+| Name | What core does with it |
+|---|---|
+| `NAMESPACE` | the `[extensions.<namespace>]` table it owns (default: the pack's name) |
+| `LEGACY_KEYS`, `LEGACY_NAMESPACES`, `REMOVED_IN` | older extension forms it still reads; `validate` warns until `REMOVED_IN` |
+| `check_extensions(table, where, skill_names, agent_names)` | errors in one pack's table, before `apply` writes anything |
+| `warn_extensions(table, where)` | warnings for one pack's table, from `validate` |
+| `check(me, sources)` | errors across every source, from `validate` |
+| `doctor(me)` | `(FAIL or WARN, what, fix)` findings for `doctor` |
+| `render_extensions(tables)` | the text of `$BRAINRC_HOME/extensions.md` |
+
+A validator is the pack's code running inside `brainrc`, so core runs it only for a bundled pack,
+for the pack `validate --pack` checks, and for a pack whose entry in `packs.local.toml` sets
+`run_validator = true`. Otherwise `validate` warns that the pack ships one. Gatework's
+[validator.py](../packs/gatework/validator.py) is the reference.
+
+## Bundled packs
+
+A bundled pack ships inside core under `packs/<name>/` and is listed in the shipped `packs.toml`
+with `bundled = true`. Gatework is the only one: spec-agent (the `brainrc-gatework` skill), its roles,
+the ticket connectors and the domain skills. Their names before 0.7.0 (`spec-agent`, `spec-status`,
+`ticket-github`, `kubernetes` and the rest, listed in `brainrc/naming.py`) are deprecated aliases
+until 0.8.0, and the only names naming rule 7 lets it keep without its prefix. It is
+on by default; `[gatework]` with `enabled = false` in `packs.local.toml` turns it off (`brainrc
+init` asks), and core then installs its rules and guard hooks and nothing else. A bundled pack is
+always core's version, so it has no `requires_core` check, and `validate` checks it with core.
+Its folder is self-contained, so it can move to its own repo unchanged.
 
 ## Rules
 
@@ -186,7 +230,7 @@ collisions, `pack.toml` extension references, `requires_core`, and tripwires.
 
 Core also ships as a Claude Code plugin (README, Install). Packs stay `brainrc` packs: a plugin
 could carry a pack's skills, agents, and hooks, but not its rules or its spec-agent extensions
-(domains, ticket connector, Deliver checks), which `brainrc apply` renders into core. Revisit if
+(domains, ticket connector, Deliver checks), which `brainrc apply` renders for Gatework. Revisit if
 plugins gain a way to extend another plugin.
 
 ## Context cost

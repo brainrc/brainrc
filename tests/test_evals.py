@@ -28,7 +28,10 @@ def quiet(fn, *args, **kwargs):
 
 
 def git(cwd: Path, *args: str) -> str:
-    return subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@example.com", *args],
+    # maintenance.auto=false: a commit can start a detached `git maintenance`, whose lock file
+    # comes and goes while tearDown removes the repo (seen on macOS CI)
+    return subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@example.com",
+                           "-c", "maintenance.auto=false", *args],
                           cwd=cwd, check=True, capture_output=True, text=True).stdout
 
 
@@ -545,12 +548,12 @@ class SandboxSetupTest(unittest.TestCase):
 FAKE_MODEL = """import sys, json
 sys.stdin.read()
 print("Sure, here you go:")
-print(json.dumps({"1": ["terraform", "aws"], "2": ["go-service"]}))
+print(json.dumps({"1": ["terraform", "aws"], "2": ["brainrc-go-service"]}))
 """
 
 CASES = [
-    {"id": "1", "prompt": "Fix this terraform plan", "expect": ["terraform"], "forbid": ["go-service"]},
-    {"id": "2", "prompt": "Rename a Go function", "expect": ["go-service"], "forbid": ["terraform"]},
+    {"id": "1", "prompt": "Fix this terraform plan", "expect": ["terraform"], "forbid": ["brainrc-go-service"]},
+    {"id": "2", "prompt": "Rename a Go function", "expect": ["brainrc-go-service"], "forbid": ["terraform"]},
 ]
 
 
@@ -562,7 +565,7 @@ class TriggerTest(unittest.TestCase):
         shutil.rmtree(self.tmp)
 
     def test_scoring(self):
-        results = evals.score(CASES, {"1": ["terraform"], "2": ["terraform", "go-service"]})
+        results = evals.score(CASES, {"1": ["terraform"], "2": ["terraform", "brainrc-go-service"]})
         self.assertEqual([ok for _, ok, _ in results], [True, False])
 
     def test_prompt_lists_skills_and_cases(self):
@@ -578,7 +581,7 @@ class TriggerTest(unittest.TestCase):
         model.write_text(FAKE_MODEL)
         cases = self.tmp / "triggers.toml"
         cases.write_text('[[case]]\nprompt = "Fix this terraform plan"\nexpect = ["terraform"]\n'
-                         '[[case]]\nprompt = "Rename a Go function"\nexpect = ["go-service"]\nforbid = ["terraform"]\n')
+                         '[[case]]\nprompt = "Rename a Go function"\nexpect = ["brainrc-go-service"]\nforbid = ["terraform"]\n')
         code, out = quiet(evals.cmd_triggers, cmd=f"python3 {model}", files=[cases])
         self.assertEqual(code, 0, out)
         self.assertIn("2 passed, 0 failed", out)
@@ -593,7 +596,7 @@ class TriggerTest(unittest.TestCase):
 
 
 def domain_skills() -> set[str]:
-    text = (REPO / "skills/spec-agent/SKILL.md").read_text()
+    text = (REPO / "packs/gatework/skills/brainrc-gatework/SKILL.md").read_text()
     table = text.split("## Domains", 1)[1].split("\n## ", 1)[0]
     return set(re.findall(r"\[([a-z0-9-]+)\]\(\.\./\1/SKILL\.md\)", table))
 

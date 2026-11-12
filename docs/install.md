@@ -122,7 +122,7 @@ codex plugin marketplace add brainrc/brainrc
 codex plugin add brainrc@brainrc
 ```
 
-Codex gets the skills (`brainrc-work`, `brainrc-review`, `spec-*`, and the rest) and the agent files spec-agent
+Codex gets the skills (`brainrc-work`, `brainrc-review`, `brainrc-gatework-*`, and the rest) and the agent files spec-agent
 reads. Rules don't come with a Codex plugin: run `brainrc`, or copy `rules/*.md` into
 `~/.codex/AGENTS.md`. Whether Codex runs the plugin's guard hooks is not yet verified
 ([harness packages](harness-packages.md#codex)).
@@ -135,8 +135,10 @@ Antigravity CLI (`agy`) installs the repo as a plugin from the root `plugin.json
 agy plugin install https://github.com/brainrc/brainrc
 ```
 
-It gets the skills, the agent files, and the rules: each `rules/*.md` carries
-`trigger: always_on`, which Antigravity needs to load it. Guard hooks aren't included yet, so use
+It gets the rules: each `rules/*.md` carries `trigger: always_on`, which Antigravity needs to
+load it, and the skills, from `packs/gatework/skills` (the `skills` path in `plugin.json`).
+Antigravity has no manifest path for agents, so the role files reach it only as files the
+`brainrc-gatework` skill reads. Guard hooks aren't included yet, so use
 agy's own permission settings. This install was built from Antigravity's public docs and issues
 and hasn't been run end to end
 ([harness packages](harness-packages.md#antigravity-cli)).
@@ -169,7 +171,7 @@ Then install `brainrc@brainrc` as above. `doctor` warns until the old plugin is 
 ## Platforms
 
 macOS and Linux. Everything installs by symlink, and spec-agent reads its role files through
-the `skills/spec-agent/roles` symlink, so the checkout needs symlinks too. On Windows, use WSL,
+the `packs/gatework/skills/brainrc-gatework/roles` symlink, so the checkout needs symlinks too. On Windows, use WSL,
 or turn on Developer Mode and run `git config --global core.symlinks true` before cloning.
 `validate` and `doctor` report a checkout without symlinks, with the fix.
 
@@ -178,8 +180,22 @@ or turn on Developer Mode and run `git config --global core.symlinks true` befor
 | File | Purpose |
 |---|---|
 | `harnesses.local.toml` | Disable a harness (`[cursor]` / `enabled = false`), manage one that isn't detected (`enabled = true`), or change paths |
-| `packs.local.toml` | Layer extra repos on top: skills, agents, rules, hooks, spec-agent extensions ([packs.md](packs.md)) |
+| `packs.local.toml` | Layer extra repos on top: skills, agents, rules, hooks, spec-agent extensions ([packs.md](packs.md)); `[gatework]` `enabled = false` drops the default pack |
+| `brainrc.local.toml` | What this machine installs: `profile` and `exclude` (below) |
 | `rules/*.local.md` | Private rules appended after the shared ones |
+
+`brainrc.local.toml` picks a profile (`brainrc init --profile <name>` writes it) and drops items
+by path:
+
+```toml
+profile = "recommended"   # minimal: rules only; recommended: plus skills, agents, commands
+                          # and hooks; full (the default): plus MCP servers
+exclude = ["skills/brainrc-aws", "gatework:agents/brainrc-infra-*"]   # fnmatch, per source
+```
+
+A pattern matches an item's path in its source (`skills/brainrc-aws`), or that path after the
+pack's name (`gatework:skills/brainrc-aws`). `apply` prunes what a profile or pattern drops;
+`validate` still checks everything.
 
 Content that must never live in this repo (an employer's facts and skills, for example) goes
 in a **pack**: a separate repo with the same layout. See [packs.md](packs.md).
@@ -190,13 +206,13 @@ in a **pack**: a separate repo with the same layout. See [packs.md](packs.md).
 ```
 rules/          Global instructions, as ordered markdown fragments (00-core.md, 10-git.md, ...).
                 Concatenated into CLAUDE.md / AGENTS.md.
-skills/<name>/  Agent Skills: spec-agent engine, ticket connectors, domain skills (terraform, aws, ...).
-agents/         Agent roles (brainrc-analyst … brainrc-verifier; the old names are aliases until 0.7.0).
-commands/       Optional, for packs: slash commands. Core's (/brainrc-work, /brainrc-review, /spec-*) are skills.
+packs/gatework/ Gatework, the default pack: its skills/ (the brainrc-gatework engine, ticket
+                connectors, domain skills), agents/ (brainrc-analyst … brainrc-verifier) and validator.py.
+commands/       Optional, for packs: slash commands. Gatework's (/brainrc-work, /brainrc-review, /brainrc-gatework-*) are skills.
 mcp/            Canonical MCP server registry. Env var names only, never secret values.
 overrides/      Harness-specific config (Claude guard hooks + settings fragment).
 harnesses.toml  Where each harness reads each content type.
-packs.toml      Extra source repos ("packs") layered on top; usually set in packs.local.toml.
+packs.toml      The bundled Gatework pack; extra source repos ("packs") go in packs.local.toml.
 VERSION         Core version that packs pin with `requires_core`; changes in CHANGELOG.md.
 changelog.d/    One fragment per unreleased change; folded into CHANGELOG.md on release.
 brainrc/        The brainrc package: sync, validate, doctor, plugin, tokens (Python 3.11+, stdlib only).

@@ -16,8 +16,8 @@ from . import config
 from .config import (
     ConfigError,
     check_config,
-    extensions_file,
     home_extensions_file,
+    legacy_extensions,
     legacy_instructions,
     rendered_agents_dir,
     rendered_instructions,
@@ -25,7 +25,7 @@ from .config import (
     tilde,
 )
 from .sources import (
-    check_packs, collisions, core_version, duplicate_packs, render_extensions, render_instructions, sources,
+    check_packs, collisions, core_version, duplicate_packs, render_instructions, sources,
 )
 from .init import cmd_init
 from .uninstall import cmd_uninstall
@@ -35,6 +35,7 @@ from .plan import hooks_copy_current, invalid_fragments, link_target, old_root, 
 from .mcp import check_servers, mcp_change, mcp_plan, record_owned, write_mcp
 from .settings import FileChanged, read_current, settings_change, write_settings
 from .plugin import cmd_plugin
+from .plugins import render_extensions
 from .release import cmd_release, cmd_release_notes
 from .tokens import cmd_tokens
 from .validate import cmd_validate, pack_errors
@@ -176,7 +177,12 @@ def _sync(apply: bool, repair: bool = False) -> int:
             print(f"ERROR {e}")
         print("\nNothing written. Update the pack or core (see CHANGELOG.md), or disable the pack.")
         return 1
-    bad_packs = pack_errors(srcs)
+    try:
+        bad_packs = pack_errors(srcs)
+        extensions = render_extensions(srcs)
+    except ConfigError as e:  # a pack's validator that won't load or run
+        print(f"ERROR {e}\n\nNothing written. Fix the pack's validator, or disable the pack.")
+        return 1
     if bad_packs:
         for _, errors in bad_packs:
             for e in errors:
@@ -201,10 +207,10 @@ def _sync(apply: bool, repair: bool = False) -> int:
         rendered = rendered_instructions()
         rendered.parent.mkdir(parents=True, exist_ok=True)
         rendered.write_text(render_instructions(srcs))
-        extensions = render_extensions(srcs)
-        home_extensions_file().write_text(extensions)
-        if extensions_file().parent.is_dir() and not config.installed():
-            extensions_file().write_text(extensions)
+        if extensions is not None:
+            home_extensions_file().write_text(extensions)
+        elif home_extensions_file().is_file():  # no enabled pack reads it any more
+            home_extensions_file().unlink()
         for path, text in agents.items():
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(text)
@@ -212,6 +218,11 @@ def _sync(apply: bool, repair: bool = False) -> int:
             for old in rendered_agents_dir().glob("*.md"):
                 if old not in agents:
                     old.unlink()
+        if not config.installed() and legacy_extensions().is_file():  # left behind by the move to packs/
+            legacy_extensions().unlink()
+            for d in legacy_extensions().parents[:3]:  # references/, spec-agent/, skills/, if now empty
+                if d.is_dir() and not any(d.iterdir()):
+                    d.rmdir()
         if not config.installed() and legacy_instructions().is_file():
             legacy_instructions().unlink()
             if not any(legacy_instructions().parent.iterdir()):
@@ -401,6 +412,9 @@ def _parser() -> argparse.ArgumentParser:
                    help="manage exactly these harnesses (repeat it, or separate names with commas); "
                    "asks nothing")
     p.add_argument("--no-adopt", action="store_true", help="leave instruction files where they are")
+    p.add_argument("--profile", choices=("minimal", "recommended", "full"),
+                   help="what this machine installs, in brainrc.local.toml: minimal is rules only, "
+                   "recommended adds skills, agents, commands and hooks, full adds MCP servers")
     p.add_argument("--dry-run", action="store_true", help="print what init would do, write nothing")
     repair_help = ("also relink broken links to where an item used to be: after moving the checkout, "
                    "or a package upgrade to a new Python")
@@ -468,7 +482,8 @@ def _dispatch(argv: list[str]) -> int:
         return _locked(lambda: cmd_uninstall(purge=args.purge))
     if cmd == "init":
         named = [n for names in args.harness or [] for n in names] if args.harness else None
-        return cmd_init(yes=args.yes, harnesses=named, adopt=not args.no_adopt, dry_run=args.dry_run)
+        return cmd_init(yes=args.yes, harnesses=named, adopt=not args.no_adopt, dry_run=args.dry_run,
+                        profile=args.profile)
     if cmd in ("status", "apply"):
         only = [n for names in getattr(args, "only", None) or [] for n in names]
         return cmd_sync(apply=cmd == "apply", only=only or None, repair=args.repair)

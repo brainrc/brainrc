@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-_spec = importlib.util.spec_from_file_location("proof_guard", REPO / "skills/spec-agent/scripts/proof_guard.py")
+_spec = importlib.util.spec_from_file_location("proof_guard", REPO / "packs/gatework/skills/brainrc-gatework/scripts/proof_guard.py")
 pg = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(pg)
 ENV = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
@@ -21,7 +21,7 @@ class GuardCase(unittest.TestCase):
         (self.root / ".env").write_text("KEY=dummy\n")
         (self.root / ".env.example").write_text("KEY=\n")
         (self.root / "link").symlink_to("/etc/hostname")
-        git = ["git", "-c", "user.name=t", "-c", "user.email=t@example.com", "-C", str(self.root)]
+        git = ["git", "-c", "user.name=t", "-c", "user.email=t@example.com", "-c", "maintenance.auto=false", "-C", str(self.root)]
         for args in (["init", "-q"], ["add", "-A"], ["commit", "-q", "-m", "init"]):
             subprocess.run(git + args, check=True, capture_output=True, env=ENV)
 

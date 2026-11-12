@@ -5,7 +5,7 @@ import json
 
 from . import config
 from .config import ConfigError
-from .sources import core_version
+from .sources import bundled_sources, core_version, markdown_files
 from .plan import FragmentError, render_fragment
 
 
@@ -30,10 +30,15 @@ def plugin_manifests() -> dict[str, str]:
     (Codex reads them too), Cursor's plugin, and Antigravity's root plugin.json. The repo root is
     the plugin."""
     version = ".".join(map(str, core_version()))
+    packs = bundled_sources()  # core ships no skills or agents: the plugin carries the default pack's
+    skill_dirs = [f"./{p.root.relative_to(config.REPO).as_posix()}/skills/" for p in packs]
+    agent_files = [f"./{f.relative_to(config.REPO).as_posix()}" for p in packs for f in markdown_files("agents", p)]
     hooks_dir = "${CLAUDE_PLUGIN_ROOT}/overrides/claude/hooks"
     hooks = render_fragment(config.REPO / "overrides" / "claude" / "settings.fragment.json", hooks_dir)["hooks"]
+    # One path as a string: the form Codex documents for the `skills` of a manifest it reads here.
     plugin = {"name": PLUGIN_NAME, "version": version, "description": PLUGIN_DESCRIPTION,
-              "author": PLUGIN_AUTHOR, "license": "MIT", "hooks": hooks}
+              "author": PLUGIN_AUTHOR, "license": "MIT", "skills": _one(skill_dirs), "agents": agent_files,
+              "hooks": hooks}
     market = {"name": PLUGIN_NAME, "owner": PLUGIN_AUTHOR, "description": PLUGIN_DESCRIPTION,
               "plugins": [{"name": PLUGIN_NAME, "source": ".", "description": PLUGIN_DESCRIPTION,
                            "version": version}]}
@@ -42,12 +47,21 @@ def plugin_manifests() -> dict[str, str]:
     cursor_hooks = render_fragment(config.REPO / "overrides" / "cursor" / "settings.fragment.json",
                                    "${CURSOR_PLUGIN_ROOT}/overrides/cursor/hooks")
     cursor = {"name": PLUGIN_NAME, "version": version, "description": PLUGIN_DESCRIPTION,
-              "author": PLUGIN_AUTHOR, "license": "MIT", "skills": "./skills/", "agents": "./agents/",
+              "author": PLUGIN_AUTHOR, "license": "MIT", "skills": _one(skill_dirs),
+              "agents": _one([f"./{p.root.relative_to(config.REPO).as_posix()}/agents/" for p in packs]),
               "rules": "./rules/", "hooks": f"./{CURSOR_PLUGIN_DIR}/hooks.json"}  # a file, as Cursor's own plugins do
     manifests[f"{CURSOR_PLUGIN_DIR}/plugin.json"] = json.dumps(cursor, indent=2) + "\n"
     manifests[f"{CURSOR_PLUGIN_DIR}/hooks.json"] = json.dumps(cursor_hooks, indent=2) + "\n"
-    manifests["plugin.json"] = json.dumps({"name": PLUGIN_NAME}, indent=2) + "\n"  # Antigravity
+    # Antigravity loads `skills/` at the root plus the `skills` paths, relative to the root and
+    # without "./"; its schema has no other path key and rejects unknown ones.
+    agy = {"name": PLUGIN_NAME, "skills": _one([d.removeprefix("./").rstrip("/") for d in skill_dirs])}
+    manifests["plugin.json"] = json.dumps(agy, indent=2) + "\n"
     return manifests
+
+
+def _one(paths: list[str]) -> str | list[str]:
+    """One path as a string, as Cursor's own plugins and Codex's docs give it."""
+    return paths[0] if len(paths) == 1 else paths
 
 
 def check_plugin() -> list[str]:

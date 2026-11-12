@@ -10,9 +10,9 @@ These rules apply to human contributors too. Setup and PR workflow: [CONTRIBUTIN
   details. That content belongs in a pack (`docs/packs.md`); examples here use "acme".
   List your own such terms in `tripwires.local.toml` (`terms = ["..."]`, gitignored):
   `validate` and the pre-commit hook then fail on any tracked file that contains one.
-- Skills: `skills/<name>/SKILL.md` with frontmatter `name` (must equal the directory
+- Skills: `skills/<name>/SKILL.md` (core's are in the bundled pack, `packs/gatework/`) with frontmatter `name` (must equal the directory
   name) and `description` (what it does and *when* to use it).
-- Agents: `agents/<name>.md` with frontmatter `name` (must equal the file stem),
+- Agents: `agents/<name>.md` (also in `packs/gatework/`) with frontmatter `name` (must equal the file stem),
   `description`, and optional `tools`.
 - Commands (packs only): `commands/<name>.md` with frontmatter `description`; use `$ARGUMENTS`.
   Core ships slash commands as skills with `disable-model-invocation: true` and `argument-hint`.
@@ -21,7 +21,7 @@ These rules apply to human contributors too. Setup and PR workflow: [CONTRIBUTIN
   harness-neutral (no tool-specific syntax like `@imports`).
 - Domain skills (`skills/<stack>/`) follow: Validate (offline commands) / Conventions /
   Review checklist / Never without approval. Register new ones in the Domains table of
-  `skills/spec-agent/SKILL.md`.
+  `packs/gatework/skills/brainrc-gatework/SKILL.md`.
 - Agents: frontmatter `model` is `haiku|sonnet|opus|inherit`; keep `tools` least-privilege.
 - Keep the `brainrc/` package (run as `scripts/brainrc.py`) and hooks stdlib-only (Python 3.11+);
   `hatchling` in `pyproject.toml` is build-time only. New guard patterns need tests

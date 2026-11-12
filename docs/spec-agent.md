@@ -6,7 +6,8 @@ skill with a team of small, reusable agents. You approve at three gates. Everyth
 on its own.
 
 spec-agent is the engine of Gatework, brainrc's default pack ([packs.md](packs.md#bundled-packs)):
-the `brainrc-gatework` skill, with `spec-agent` kept as a deprecated alias until 0.8.0.
+the `brainrc-gatework` skill. Its old names (`spec-agent`, `/spec-status`, `ticket-github` and the
+other unprefixed skills) are deprecated aliases until 0.8.0.
 
 > **Best effort outside Claude Code.** The design assumes each role starts with a fresh context
 > and that hooks enforce the guardrails. That is fully true only in Claude Code. OpenCode runs
@@ -23,7 +24,7 @@ the `brainrc-gatework` skill, with `spec-agent` kept as a deprecated alias until
   verifier ─► doc-writer ─► ⛔ DELIVER ─► push · PR · ticket update ─► retro ─► watch
 ```
 
-**`watch`** (normal delivery, connector with `pr_status`) runs on `/spec-resume`, never in a
+**`watch`** (normal delivery, connector with `pr_status`) runs on `/brainrc-gatework-resume`, never in a
 loop. It reads the PR's checks; a red check caused by this diff becomes a fix task `C<n>`, run
 through the usual implement and review loop, then a **Push gate** (diff stat, commits, the
 failing check) before anything is pushed. External failures are only noted. Unresolved review threads are handled once each: a small
@@ -37,9 +38,9 @@ no git remote, `SPEC_PR_STATUS_FIXTURE` names a `pr_status` fixture file read in
 | Command | Does |
 |---|---|
 | `/brainrc-work <gh:42 \| issue URL \| local:path.md \| free text> [--local] [--auto] [--oneshot]` | Start, or resume if a spec for it exists. `--local`: drafts only, never push/PR/comment. `--auto`: no gate stops, ends with a draft PR ([Auto mode](#auto-mode)). `--oneshot`: like `--auto`, safer defaults, ready PRs ([Oneshot mode](#oneshot-mode)) |
-| `/spec-status [ref]` | Stage, gates, tasks, blocker, next action |
-| `/spec-approve [notes]` | Approve the pending gate |
-| `/spec-resume [ref]` | Continue an interrupted run (any tool) |
+| `/brainrc-gatework-status [ref]` | Stage, gates, tasks, blocker, next action |
+| `/brainrc-gatework-approve [notes]` | Approve the pending gate |
+| `/brainrc-gatework-resume [ref]` | Continue an interrupted run (any tool) |
 
 These are user-invoked skills (`skills/brainrc-work/` and so on), so every harness that reads skills
 gets them. In the Claude Code plugin they're `/brainrc:brainrc-work`; in Codex, call the skill by name.
@@ -121,7 +122,7 @@ Two shapes, detected from the template check plus the children's depends-on link
 - **ordered**: different or dependent children, built in dependency order. Dependencies come from
   the connector (`api`, then `body`, then `frontmatter`; else epic order). Each child gets its own
   Spec and Plan gates. One Deliver gate covers all children and picks the delivery: `sequential`
-  (only the first PR opens; resuming with `/brainrc-work --campaign` or `/spec-resume` opens the next after
+  (only the first PR opens; resuming with `/brainrc-work --campaign` or `/brainrc-gatework-resume` opens the next after
   its predecessor merges) or `stacked` (all PRs open at once, each based on the previous child's
   branch). Either way a child PR merges only with base `main`: on resume after its predecessor
   merges, `main` is merged into its branch and a stacked PR is retargeted to `main`.
@@ -158,7 +159,7 @@ and every branch worktree's `specs/` when the file is absent or names a missing 
 Each run works in its own git worktree at `<repo parent>/.brainrc-worktrees/<repo-name>/<slug>`,
 outside the repo and not under `$TMPDIR`. Your checkout is never touched, so you can keep
 working in it. A run refuses to start or resume when your checkout is on the run's branch; switch away
-first. The path is `state.worktree`, and `/spec-status` lists it for every run. `/spec-resume`
+first. The path is `state.worktree`, and `/brainrc-gatework-status` lists it for every run. `/brainrc-gatework-resume`
 continues there and recreates a missing worktree from `state.branch`; if the branch is gone it
 stops and says so.
 
@@ -183,9 +184,9 @@ Remove a worktree by hand with `git worktree remove <path>`. Cleanup on merge is
 
 ## Domain skills (`skills/`)
 
-Loaded only when the work touches their files: `go-service`, `brainrc-terraform` (incl. Terragrunt,
-Atlantis, Spacelift), `brainrc-aws`, `kubernetes` (Helm, Kustomize), `gitops` (Argo CD, Flux),
-`ci-pipelines` (GitHub Actions), `containers`, `db-migrations`, `observability`, `scripting`
+Loaded only when the work touches their files: `brainrc-go-service`, `brainrc-terraform` (incl. Terragrunt,
+Atlantis, Spacelift), `brainrc-aws`, `brainrc-kubernetes` (Helm, Kustomize), `brainrc-gitops` (Argo CD, Flux),
+`brainrc-ci-pipelines` (GitHub Actions), `brainrc-containers`, `brainrc-db-migrations`, `brainrc-observability`, `brainrc-scripting`
 (Python, Bash). Each holds offline validation commands, conventions, a review checklist,
 and what never to run without approval.
 
@@ -213,7 +214,7 @@ implementer's handoffs, and the verifier re-runs every command it cites,
 so the reasoning that produced the change can't argue for it. That narrows what a reviewer
 reads; it doesn't make the context fresh, because the session still contains the earlier roles.
 For standard and large runs the engine stops before batched review and recommends
-`/spec-resume` in a new session. That is the only way to get an independent review there.
+`/brainrc-gatework-resume` in a new session. That is the only way to get an independent review there.
 
 ## Extending
 
@@ -224,7 +225,7 @@ For standard and large runs the engine stops before batched review and recommend
 - **Ticket connector:** add `skills/ticket-<system>/SKILL.md` implementing `fetch`, `comment`,
   `transition`, `link_pr` per the
   [connector contract](../packs/gatework/skills/brainrc-gatework/references/connectors.md). `validate` checks the
-  headings. Existing ones: `ticket-local`, `ticket-github`, `ticket-jira`.
+  headings. Existing ones: `brainrc-ticket-local`, `brainrc-ticket-github`, `brainrc-ticket-jira`.
   Optional: `pr_status` (read-only; without it `watch` skips).
 
 `python3 scripts/brainrc.py validate` checks that every agent, skill, and link referenced exists.

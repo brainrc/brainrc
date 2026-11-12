@@ -23,9 +23,9 @@ reviewer = "brainrc-infra-reviewer"
 skill = "acme-context"
 when = "every ticket"
 
-# Ticket connector for ACME-* refs, with its config (keys: the ticket-jira skill, § Config).
+# Ticket connector for ACME-* refs, with its config (keys: the brainrc-ticket-jira skill, § Config).
 [extensions.gatework.ticket]
-connector = "ticket-jira"
+connector = "brainrc-ticket-jira"
 refs = ["ACME-*"]
 host = "acme.example.net"
 review_status = "In Review"

@@ -95,7 +95,17 @@ class ExtensionsTest(SplitCase):
         self.assertEqual(code, 0, out)
         self.assertIn("[extensions.spec-agent] is deprecated", out)
         quiet(brainrc.cmd_sync, True)
-        self.assertIn('"connector": "ticket-github"', (self.settings_home / "extensions.md").read_text())
+        self.assertIn('"connector": "brainrc-ticket-github"', (self.settings_home / "extensions.md").read_text())
+
+    def test_a_deprecated_skill_name_warns_and_renders_as_its_new_name(self):
+        self.acme(PACK_TOML.replace('"brainrc-ticket-github"', '"ticket-github"'))
+        code, out = quiet(brainrc.cmd_validate)
+        self.assertEqual(code, 0, out)
+        self.assertIn("acme:pack.toml: `ticket-github` is deprecated; name `brainrc-ticket-github`", out)
+        quiet(brainrc.cmd_sync, True)
+        ext = (self.settings_home / "extensions.md").read_text()
+        self.assertIn('"connector": "brainrc-ticket-github"', ext)
+        self.assertNotIn('"ticket-github"', ext)
 
     def test_errors_in_the_gatework_table_come_from_its_plugin(self):
         self.acme(PACK_TOML.replace('skills = ["acme-deploy"]', 'skills = ["acme-nope"]'))
@@ -178,6 +188,31 @@ class PluginTrustTest(SplitCase):
         self.assertIn("`validator` must name a .py file in the pack", out)
 
 
+class SkillAliasTest(SplitCase):
+    def skill(self, name: str) -> Path:
+        return self.repo / "packs/gatework/skills" / name / "SKILL.md"
+
+    def test_an_alias_stays_a_stub_the_model_cant_pick(self):
+        stub = self.skill("kubernetes")
+        stub.write_text(stub.read_text().replace("disable-model-invocation: true\n", ""))
+        code, out = quiet(brainrc.cmd_validate)
+        self.assertEqual(code, 1, out)
+        self.assertIn("skills/kubernetes/SKILL.md: alias needs `disable-model-invocation: true`", out)
+
+    def test_an_alias_is_kept_until_its_removal_release(self):
+        shutil.rmtree(self.skill("runbook").parent)
+        code, out = quiet(brainrc.cmd_validate)
+        self.assertEqual(code, 1, out)
+        self.assertIn("deprecated alias for `brainrc-runbook` is missing (keep it until 0.8.0)", out)
+
+    def test_a_command_alias_passes_its_arguments_on(self):
+        stub = self.skill("spec-approve")
+        stub.write_text(stub.read_text().replace("Arguments: $ARGUMENTS\n", ""))
+        code, out = quiet(brainrc.cmd_validate)
+        self.assertEqual(code, 1, out)
+        self.assertIn("skills/spec-approve/SKILL.md: alias body must pass on `$ARGUMENTS`", out)
+
+
 class GateworkPackTest(unittest.TestCase):
     ROOT = Path(__file__).resolve().parent.parent
 
@@ -197,7 +232,12 @@ class GateworkPackTest(unittest.TestCase):
         self.assertEqual(alias["description"], "Deprecated, use brainrc-gatework (removed in 0.8.0)")
         self.assertEqual(alias["disable-model-invocation"], "true")
         self.assertIn("`brainrc-gatework` skill", (skills / "spec-agent/SKILL.md").read_text())
-        for name in ("brainrc-work", "brainrc-plan", "spec-approve", "spec-resume"):
+        for old, new in brainrc.naming.SKILL_ALIASES.items():
+            with self.subTest(alias=old):
+                meta = brainrc.frontmatter(skills / old / "SKILL.md")
+                self.assertEqual(meta["description"], f"Deprecated, use {new} (removed in 0.8.0)")
+                self.assertEqual(brainrc.frontmatter(skills / new / "SKILL.md")["name"], new)
+        for name in ("brainrc-work", "brainrc-plan", "brainrc-gatework-approve", "brainrc-gatework-resume"):
             with self.subTest(skill=name):
                 text = (skills / name / "SKILL.md").read_text()
                 self.assertIn("`brainrc-gatework` skill", text)

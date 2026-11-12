@@ -101,14 +101,20 @@ AGENT_ALIASES = {n: f"brainrc-{n}" for n in (
 AGENT_ALIAS_REMOVED_IN = "0.8.0"  # was 0.7.0; kept one more minor release with the spec-agent alias (#172)
 
 
-# Items core shipped before the split (#172). Rule 7 lets them keep their names inside the official
-# pack that took them over, until each is renamed or moves to its own official pack (#313-#317).
-SPLIT_NAMES = {"brainrc/gatework": frozenset({
-    "ci-pipelines", "commit-message", "containers", "db-migrations", "doc-types", "gitops",
-    "go-service", "kubernetes", "observability", "pr-description", "project-commands", "runbook",
-    "scripting", "security-checklist", "spec-agent", "spec-approve", "spec-resume", "spec-status",
-    "ticket-github", "ticket-jira", "ticket-local", "unslop", *AGENT_ALIASES,
-})}
+# Gatework's skills core shipped without a prefix moved under `brainrc-` (#172); the old names stay
+# as deprecated aliases until the agent aliases go.
+SKILL_ALIASES = {"spec-agent": "brainrc-gatework",
+                 **{f"spec-{n}": f"brainrc-gatework-{n}" for n in ("approve", "resume", "status")},
+                 **{n: f"brainrc-{n}" for n in (
+                     "ci-pipelines", "commit-message", "containers", "db-migrations", "doc-types", "gitops",
+                     "go-service", "kubernetes", "observability", "pr-description", "project-commands",
+                     "runbook", "scripting", "security-checklist", "ticket-github", "ticket-jira",
+                     "ticket-local", "unslop")}}
+ALIAS_REMOVED_IN = AGENT_ALIAS_REMOVED_IN
+
+
+# Rule 7 lets an official pack keep these unprefixed names: the deprecated aliases, until 0.8.0.
+SPLIT_NAMES = {"brainrc/gatework": frozenset({*SKILL_ALIASES, *AGENT_ALIASES})}
 
 
 def unprefixed_ok(src: Source, name: str) -> bool:

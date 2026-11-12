@@ -497,7 +497,7 @@ skill = "acme-context"
 when = "every ticket"
 
 [extensions.gatework.ticket]
-connector = "ticket-github"
+connector = "brainrc-ticket-github"
 refs = ["gh:*"]
 draft = true
 '''
@@ -577,7 +577,7 @@ class PackSyncTest(TempRepoCase):
 
         ext = brainrc.config.home_extensions_file().read_text()
         for expected in ("| `deploy/*.yaml` | acme-deploy | brainrc-infra-reviewer | acme |",
-                         "- `acme-context` (acme): every ticket", '"connector": "ticket-github"',
+                         "- `acme-context` (acme): every ticket", '"connector": "brainrc-ticket-github"',
                          "- (acme) Deploy plan reviewed"):
             self.assertIn(expected, ext)
 
@@ -897,7 +897,7 @@ class BudgetTest(TempRepoCase):
 
 
 class UnslopSplitTest(unittest.TestCase):
-    SKILL = REPO / "packs/gatework/skills/unslop"
+    SKILL = REPO / "packs/gatework/skills/brainrc-unslop"
 
     def test_no_rule_line_was_lost(self):
         text = "\n".join(p.read_text() for p in sorted(self.SKILL.rglob("*.md")))
@@ -1954,7 +1954,7 @@ class PackValidateTest(TempRepoCase):
 
     def test_catches_pack_errors(self):
         (self.pack / "pack.toml").write_text(PACK_TOML.replace('skills = ["acme-deploy"]', 'skills = ["nope"]')
-                                             .replace('connector = "ticket-github"', 'connector = "ticket-ghost"'))
+                                             .replace('connector = "brainrc-ticket-github"', 'connector = "ticket-ghost"'))
         (self.pack / "skills/unprefixed").mkdir()
         (self.pack / "skills/unprefixed/SKILL.md").write_text("---\nname: unprefixed\ndescription: x\n---\n")
         (self.pack / "tripwires.toml").write_text(
@@ -2070,7 +2070,7 @@ class ConnectorCheckTest(TempRepoCase):
         self.assertIn("skills/brainrc-ticket-x/SKILL.md: connector missing `##` sections for link_pr", out)
 
     def test_core_local_and_github_connectors_document_create(self):
-        for name in ("ticket-local", "ticket-github"):
+        for name in ("brainrc-ticket-local", "brainrc-ticket-github"):
             text = (Path(__file__).resolve().parent.parent / "packs/gatework/skills" / name / "SKILL.md").read_text()
             self.assertRegex(text, r"(?m)^## create\b", name)
             self.assertRegex(text, r"Implements the ticket connector interface:.*`create`", name)
@@ -2102,7 +2102,7 @@ class ConnectorCheckTest(TempRepoCase):
 
     def test_pack_connector_missing_operations_fails(self):
         pack = make_pack(Path(tempfile.mkdtemp()).resolve() / "acme-pack",
-                         PACK_TOML.replace('connector = "ticket-github"', 'connector = "acme-tickets"'))
+                         PACK_TOML.replace('connector = "brainrc-ticket-github"', 'connector = "acme-tickets"'))
         self.addCleanup(shutil.rmtree, pack.parent)
         write_skill(pack, "acme-tickets", "## fetch\n")
         code, out = quiet(brainrc.cmd_validate, str(pack))

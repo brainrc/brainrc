@@ -99,7 +99,7 @@ class ExcludeTest(ProfileCase):
         self.local('profile = "minimal"\nexclude = ["skills/*"]\n')
         code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 0, out)
-        self.assertIn("28 skills", out)
+        self.assertIn("49 skills", out)
 
 
 class ProfileConfigTest(ProfileCase):

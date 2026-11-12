@@ -78,7 +78,7 @@ Keep the fact, drop the dressing.
 - Don't overcorrect. Forced casualness is worse than the slop it replaced.
 The reader is a reviewer deciding whether to approve, or an engineer running `git log` during an
 incident. Both want the reason, not a retelling of the diff.
-**Never touch:** the commit subject line (the commit-message skill owns it), trailers
+**Never touch:** the commit subject line (the brainrc-commit-message skill owns it), trailers
 (`Co-Authored-By:`, `Refs:`, `Closes #12`), ticket keys, links, SHAs, branch names, pasted
 plan or test output, PR template headings and checkboxes, review-request mentions.
 56. **Lead with the change, then the reason.**

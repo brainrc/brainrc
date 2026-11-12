@@ -8,6 +8,7 @@ and for a pack whose packs.toml entry sets `run_validator = true`. Every name is
   LEGACY_KEYS        top-level [extensions] keys it still reads, with a warning until REMOVED_IN
   LEGACY_NAMESPACES  older table names it still reads, the same way
   check_extensions(table, where, skill_names, agent_names) -> errors in one pack's table
+  warn_extensions(table, where) -> warnings for one pack's table (deprecated names, say)
   check(me, srcs)    -> errors across every source (validate); `me` is the plugin's own pack
   doctor(me)         -> [(FAIL | WARN, what is wrong, how to fix it)]
   render_extensions(tables) -> the text apply writes to $BRAINRC_HOME/extensions.md, from
@@ -110,6 +111,8 @@ def extension_warnings(srcs: list[Source], plugins: list[tuple[Source, ModuleTyp
                                 f"(read until {until})")
             else:
                 warnings.append(f"{where}: no enabled pack reads [extensions] `{key}`")
+        warnings += [w for me, mod in plugins if hasattr(mod, "warn_extensions")
+                     for w in _call(me, mod, "warn_extensions", table(src, me, mod), where)]
         if src.meta.get("validator") and not src.is_core and not trusted(src):
             warnings.append(f"{where}: ships a validator that brainrc doesn't run; set "
                             f"`run_validator = true` for [{src.key}] in packs.local.toml if you trust it")

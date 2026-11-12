@@ -89,7 +89,7 @@ publishes it. Official packs are owned by `brainrc`:
 | `brainrc/gatework` | the default pack: spec-agent, its roles, ticket connectors and domain skills ([packs/gatework](../packs/gatework/README.md)) | [#172](https://github.com/brainrc/brainrc/issues/172) |
 | `brainrc/starter` | the small, measured base for the default profile | [#313](https://github.com/brainrc/brainrc/issues/313) |
 | `brainrc/review` | review, PR description, commit message and unslop | [#314](https://github.com/brainrc/brainrc/issues/314) |
-| `brainrc/go` | Go, built from today's `go-service` skill | [#315](https://github.com/brainrc/brainrc/issues/315) |
+| `brainrc/go` | Go, built from today's `brainrc-go-service` skill | [#315](https://github.com/brainrc/brainrc/issues/315) |
 | `brainrc/terraform-aws` | Terraform and AWS | [#316](https://github.com/brainrc/brainrc/issues/316) |
 | `brainrc/kubernetes` | Kubernetes, including GitOps | [#317](https://github.com/brainrc/brainrc/issues/317) |
 | `brainrc/security-baseline` | the default guard policy, secret protection and a sandbox profile | [#323](https://github.com/brainrc/brainrc/issues/323) |
@@ -118,7 +118,7 @@ skill = "acme-context"
 when = "every ticket"
 
 [extensions.gatework.ticket]   # a connector for this pack's ticket refs, with its config
-connector = "ticket-jira"
+connector = "brainrc-ticket-jira"
 refs = ["ACME-*"]
 host = "acme.example.net"
 ```
@@ -153,6 +153,7 @@ Python module in the pack. Each name in it is optional:
 | `NAMESPACE` | the `[extensions.<namespace>]` table it owns (default: the pack's name) |
 | `LEGACY_KEYS`, `LEGACY_NAMESPACES`, `REMOVED_IN` | older extension forms it still reads; `validate` warns until `REMOVED_IN` |
 | `check_extensions(table, where, skill_names, agent_names)` | errors in one pack's table, before `apply` writes anything |
+| `warn_extensions(table, where)` | warnings for one pack's table, from `validate` |
 | `check(me, sources)` | errors across every source, from `validate` |
 | `doctor(me)` | `(FAIL or WARN, what, fix)` findings for `doctor` |
 | `render_extensions(tables)` | the text of `$BRAINRC_HOME/extensions.md` |
@@ -165,8 +166,10 @@ for the pack `validate --pack` checks, and for a pack whose entry in `packs.loca
 ## Bundled packs
 
 A bundled pack ships inside core under `packs/<name>/` and is listed in the shipped `packs.toml`
-with `bundled = true`. Gatework is the only one: spec-agent (the `brainrc-gatework` skill; `spec-agent`
-is a deprecated alias until 0.8.0), its roles, the ticket connectors and the domain skills. It is
+with `bundled = true`. Gatework is the only one: spec-agent (the `brainrc-gatework` skill), its roles,
+the ticket connectors and the domain skills. Their names before 0.7.0 (`spec-agent`, `spec-status`,
+`ticket-github`, `kubernetes` and the rest, listed in `brainrc/naming.py`) are deprecated aliases
+until 0.8.0, and the only names naming rule 7 lets it keep without its prefix. It is
 on by default; `[gatework]` with `enabled = false` in `packs.local.toml` turns it off (`brainrc
 init` asks), and core then installs its rules and guard hooks and nothing else. A bundled pack is
 always core's version, so it has no `requires_core` check, and `validate` checks it with core.

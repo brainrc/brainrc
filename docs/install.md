@@ -122,7 +122,7 @@ codex plugin marketplace add brainrc/brainrc
 codex plugin add brainrc@brainrc
 ```
 
-Codex gets the skills (`brainrc-work`, `brainrc-review`, `spec-*`, and the rest) and the agent files spec-agent
+Codex gets the skills (`brainrc-work`, `brainrc-review`, `brainrc-gatework-*`, and the rest) and the agent files spec-agent
 reads. Rules don't come with a Codex plugin: run `brainrc`, or copy `rules/*.md` into
 `~/.codex/AGENTS.md`. Whether Codex runs the plugin's guard hooks is not yet verified
 ([harness packages](harness-packages.md#codex)).
@@ -208,7 +208,7 @@ rules/          Global instructions, as ordered markdown fragments (00-core.md, 
                 Concatenated into CLAUDE.md / AGENTS.md.
 packs/gatework/ Gatework, the default pack: its skills/ (the brainrc-gatework engine, ticket
                 connectors, domain skills), agents/ (brainrc-analyst … brainrc-verifier) and validator.py.
-commands/       Optional, for packs: slash commands. Core's (/brainrc-work, /brainrc-review, /spec-*) are skills.
+commands/       Optional, for packs: slash commands. Gatework's (/brainrc-work, /brainrc-review, /brainrc-gatework-*) are skills.
 mcp/            Canonical MCP server registry. Env var names only, never secret values.
 overrides/      Harness-specific config (Claude guard hooks + settings fragment).
 harnesses.toml  Where each harness reads each content type.

@@ -56,5 +56,5 @@ Then, in your AI tool, from `/tmp/spec-sandbox`:
 
 `pr_status/` holds offline snapshots of the connector's `pr_status` return shape (red CI, review comment, review comment with an embedded instruction, merged) for evals that need PR state, plus `red-ci.unit-tests.log`, the red check's log; `tests/test_evals.py` checks them. The path is relative to the sandbox copy, and the engine honors `SPEC_PR_STATUS_FIXTURE` only when the project has no git remote (the copy has none).
 
-There is no remote, so Deliver skips the PR and records the branch (see the ticket-local skill).
+There is no remote, so Deliver skips the PR and records the branch (see the brainrc-ticket-local skill).
 Check `specs/<slug>/` afterwards: `state.json`, `log.md`, `verify.md`, and `retro.md`.

@@ -28,7 +28,10 @@ def quiet(fn, *args, **kwargs):
 
 
 def git(cwd: Path, *args: str) -> str:
-    return subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@example.com", *args],
+    # maintenance.auto=false: a commit can start a detached `git maintenance`, whose lock file
+    # comes and goes while tearDown removes the repo (seen on macOS CI)
+    return subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@example.com",
+                           "-c", "maintenance.auto=false", *args],
                           cwd=cwd, check=True, capture_output=True, text=True).stdout
 
 

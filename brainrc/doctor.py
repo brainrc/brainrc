@@ -18,7 +18,6 @@ from .config import (
     check_config,
     command,
     expand,
-    extensions_file,
     home_extensions_file,
     load_harnesses,
     rendered_instructions,
@@ -32,7 +31,6 @@ from .sources import (
     duplicate_packs,
     load_pack,
     pack_compat,
-    render_extensions,
     render_instructions,
 )
 from .opencode import agents_format, rendered_agents
@@ -42,7 +40,8 @@ from .settings import _owned, settings_change
 from .manifest import checked_manifest
 from .mcp import check_servers, mcp_change, mcp_plan
 from .moved import left_behind
-from .validate import ROLES_FIX, check_roles_link, cmd_validate
+from .plugins import plugin_findings, render_extensions, validators
+from .validate import cmd_validate
 
 
 
@@ -102,10 +101,9 @@ def _doctor_sources() -> tuple[list[Source], list[Source], list[Finding]]:
 
 def _render_findings(srcs: list[Source]) -> list[Finding]:
     found = []
-    targets = [(rendered_instructions(), lambda: render_instructions(srcs)),
-               (home_extensions_file(), lambda: render_extensions(srcs))]
-    if extensions_file().parent.is_dir() and not config.installed():
-        targets.append((extensions_file(), lambda: render_extensions(srcs)))
+    targets = [(rendered_instructions(), lambda: render_instructions(srcs))]
+    if (extensions := render_extensions(srcs)) is not None:
+        targets.append((home_extensions_file(), lambda: extensions))
     targets += [(path, lambda text=text: text) for path, text in rendered_agents(srcs).items()]
     for path, render in targets:
         rel = tilde(path) if not path.is_relative_to(config.REPO) else str(path.relative_to(config.REPO))
@@ -262,8 +260,10 @@ def doctor_findings() -> list[Finding]:
         return [("FAIL", str(e), "fix that line in the file named")]
     srcs, every_src, found = _doctor_sources()
     found += [("WARN", w, "fix the name, or delete it if it isn't needed") for w in warnings]
-    if roles := check_roles_link():
-        found.append(("FAIL", roles, ROLES_FIX))
+    try:
+        found += plugin_findings(validators(srcs))
+    except ConfigError as e:
+        found.append(("FAIL", str(e), "fix the pack's validator, or disable the pack in packs.local.toml"))
     try:
         for h in load_harnesses().values():
             agents_format(h)

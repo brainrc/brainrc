@@ -9,19 +9,16 @@ import subprocess
 from pathlib import Path
 
 from .mcp import check_servers
-from .naming import check_core_agents, check_pack_names, unprefixed_ok
+from .naming import check_pack_names, unprefixed_ok
+from .plugins import extension_errors, extension_warnings, plugin_errors, validators
 from . import config
 from .config import (
     ConfigError,
-    EXTENSION_KEYS,
-    H2,
     HOOKS_DIR_PLACEHOLDER,
     KINDS,
     KNOWN_MODELS,
     KNOWN_TOOLS,
     MODEL_ID,
-    ROLES_LINK,
-    REQUIRED_CONNECTOR_OPS,
     SKILL_NAME,
     _read_toml,
     check_config,
@@ -56,8 +53,6 @@ FENCE = re.compile(r"^(```|~~~).*?^\1", re.S | re.M)
 MD_LINK = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
 
 
-CONNECTOR = re.compile(r"^(brainrc-)?ticket-")
-
 
 AGENT_TAG = re.compile(r"\[agent:\s*([a-z0-9-]+)\]")
 
@@ -83,7 +78,7 @@ def _check_references(src: Source, path: Path, agent_names: set[str], skill_name
 RESERVED_SKILL_NAMES = frozenset({"review", "plan", "init", "help", "status", "compact"})
 
 
-def _validate_source(src: Source, agent_names: set[str], skill_names: set[str]) -> list[str]:
+def _validate_source(src: Source, agent_names: set[str], skill_names: set[str], plugins=()) -> list[str]:
     errors = []
     if src.is_core:
         errors += [f"overrides/{name}/plugin.js: missing, but harnesses.toml [{name}] sets `plugin`"
@@ -112,8 +107,6 @@ def _validate_source(src: Source, agent_names: set[str], skill_names: set[str]) 
     if src.is_core or src.bundled:
         errors += [f"{src.rel(s)}: skill name `{s.name}` is reserved (a harness built-in); use a `brainrc-` name"
                    for s in skills(src) if s.name in RESERVED_SKILL_NAMES]
-    if src.meta.get("id") == "brainrc/gatework":
-        errors += check_core_agents(src)
     if src.is_core:
         errors += [f"{src.rel(r)}: missing `trigger` frontmatter (Antigravity drops the rule without it)"
                    for r in markdown_files("rules", src) if not frontmatter(r).get("trigger")]
@@ -151,40 +144,20 @@ def _validate_source(src: Source, agent_names: set[str], skill_names: set[str]) 
                           f"[{fragment.parent.name}] has no hooks_dir")
 
     if not src.is_core:
-        errors += _validate_pack(src, agent_names, skill_names)
+        errors += _validate_pack(src)
+        errors += extension_errors(src, list(plugins), skill_names, agent_names)
     errors += _check_tripwires(src)
     if src.is_core:
         errors += _check_local_tripwires(src)
     return errors
 
 
-def _validate_pack(src: Source, agent_names: set[str], skill_names: set[str]) -> list[str]:
-    where = f"{src.name}:pack.toml"
-    errors = []
-    errors += check_pack_names(src)
+def _validate_pack(src: Source) -> list[str]:
+    errors = check_pack_names(src)
     for kind in KINDS:
         for p in items(src, kind):
             if not item_name(p).startswith(src.prefix) and not unprefixed_ok(src, item_name(p)):
                 errors.append(f"{src.rel(p)}: pack {kind} must start with `{src.prefix}`")
-    ext = src.meta.get("extensions", {})
-    errors += [f"{where}: unknown extension `{k}`" for k in sorted(set(ext) - EXTENSION_KEYS)]
-    for d in ext.get("domains", []):
-        if not d.get("files") or not d.get("skills"):
-            errors.append(f"{where}: each extensions.domains entry needs `files` and `skills`")
-        errors += [f"{where}: domains names unknown skill `{s}`" for s in d.get("skills", []) if s not in skill_names]
-        if d.get("reviewer") and d["reviewer"] not in agent_names:
-            errors.append(f"{where}: domains names unknown reviewer `{d['reviewer']}`")
-    for i in ext.get("intake_context", []):
-        if i.get("skill") not in skill_names:
-            errors.append(f"{where}: intake_context names unknown skill `{i.get('skill')}`")
-    ticket = ext.get("ticket")
-    if ticket is not None:
-        if ticket.get("connector") not in skill_names:
-            errors.append(f"{where}: ticket.connector names unknown skill `{ticket.get('connector')}`")
-        if not ticket.get("refs"):
-            errors.append(f"{where}: ticket needs `refs` (the ticket refs it handles, e.g. \"PROJ-*\")")
-    if not all(isinstance(c, str) for c in ext.get("deliver_checks", [])):
-        errors.append(f"{where}: deliver_checks must be a list of strings")
     return errors
 
 
@@ -278,47 +251,13 @@ def _check_local_tripwires(src: Source) -> list[str]:
 
 
 
-ROLES_FIX = ("enable symlinks (docs/install.md, Platforms), then restore it with "
-             "`git checkout -- skills/spec-agent/roles`")
-
-
-def check_roles_link() -> str | None:
-    """spec-agent reads its role files through roles/ -> ../../agents. A checkout without symlink
-    support writes a plain file instead, and every role link breaks."""
-    path = config.REPO / ROLES_LINK
-    if config.installed():
-        return None  # a wheel stores the link's files as copies
-    if not path.is_symlink() and not path.exists():
-        return None  # not this repo's layout (e.g. a pack)
-    if path.is_symlink() and os.readlink(path) == "../../agents":
-        return None
-    found = f"a link to {os.readlink(path)}" if path.is_symlink() else "a plain file"
-    return f"{ROLES_LINK} must be a symlink to ../../agents but is {found} (cloned without symlink support?)"
-
-
-def check_connectors(srcs: list[Source]) -> list[str]:
-    """Core `ticket-*` skills and pack `[extensions.ticket]` connectors need a `##` heading naming
-    each required operation. One heading may name several (`## comment / transition / link_pr`)."""
-    found = {s.name: (src, s) for src in srcs for s in skills(src)}
-    names = {n for n, (src, _) in found.items() if src.name == "gatework" and CONNECTOR.match(n)}
-    names |= {src.meta.get("extensions", {}).get("ticket", {}).get("connector") for src in srcs}
-    errors = []
-    for name in sorted(n for n in names if n in found):
-        src, skill = found[name]
-        headings = " ".join(H2.findall((skill / "SKILL.md").read_text()))
-        missing = [op for op in REQUIRED_CONNECTOR_OPS if not re.search(rf"\b{op}\b", headings)]
-        if missing:
-            errors.append(f"{src.rel(skill)}/SKILL.md: connector missing `##` sections for "
-                          f"{', '.join(missing)} (see skills/spec-agent/references/connectors.md)")
-    return errors
-
-
 def pack_errors(srcs: list[Source]) -> list[tuple[Source, list[str]]]:
     """(pack, errors) for each pack whose own files fail what validate --pack checks; apply runs
     it before linking."""
     agent_names = {f.stem for s in srcs for f in markdown_files("agents", s)}
     skill_names = {p.name for s in srcs for p in skills(s)}
-    found = [(src, _validate_source(src, agent_names, skill_names)) for src in srcs
+    plugins = validators(srcs)
+    found = [(src, _validate_source(src, agent_names, skill_names, plugins)) for src in srcs
              if not src.is_core and not src.bundled]  # a bundled pack is checked with core, in CI
     return [(src, errors) for src, errors in found if errors]
 
@@ -331,19 +270,18 @@ def cmd_validate(pack: str | None = None) -> int:
             srcs = [Source("core", config.REPO), *bundled_sources(skip=root), load_pack(root)]
         else:
             srcs = sources()
+        plugins = validators(srcs)
     except ConfigError as e:
         print(f"ERROR {e}")
         return 1
     agent_names = {f.stem for s in srcs for f in markdown_files("agents", s)}
     skill_names = {p.name for s in srcs for p in skills(s)}
     errors = duplicate_packs(srcs) + collisions(srcs)
-    if roles := check_roles_link():
-        errors.append(f"{roles}; {ROLES_FIX}")
     for src in srcs:
-        errors += _validate_source(src, agent_names, skill_names)
-    errors += check_connectors(srcs)
+        errors += _validate_source(src, agent_names, skill_names, plugins)
+    errors += plugin_errors(srcs, plugins)
     errors += check_servers(srcs)
-    warnings = config_warnings
+    warnings = config_warnings + extension_warnings(srcs, plugins)
     try:
         errors += check_changelog(core_version())
         compat_errors, compat_warnings = check_packs(srcs)

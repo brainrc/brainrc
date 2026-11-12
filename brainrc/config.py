@@ -24,9 +24,6 @@ def find_core(pkg: Path) -> Path:
 REPO = find_core(Path(__file__).resolve().parent)
 
 
-ROLES_LINK = Path("packs/gatework/skills/spec-agent/roles")  # a symlink to ../../agents; a wheel holds copies
-
-
 def installed() -> bool:
     """True when running from an installed package, whose files must never be written."""
     return REPO.name == "_core"
@@ -74,16 +71,7 @@ MODEL_ID = re.compile(r"^claude-[a-z0-9][a-z0-9.-]*$")  # a full model ID, e.g. 
 SKILL_NAME = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 
 
-EXTENSION_KEYS = {"domains", "intake_context", "ticket", "deliver_checks"}
-
-
 KINDS = ("skills", "agents", "commands")
-
-
-REQUIRED_CONNECTOR_OPS = ("fetch", "comment", "transition", "link_pr")  # references/connectors.md
-
-
-H2 = re.compile(r"^## +(.+)$", re.M)
 
 
 CORE_VERSION = re.compile(r"^([0-9]+)\.([0-9]+)\.([0-9]+)$")
@@ -116,7 +104,8 @@ PATH_KEYS = ("home", "skills", "agents", "agents_format", "commands", "plugin", 
 # Known keys of each table in <name>.toml / <name>.local.toml, and the type each must have.
 LAYERED_KEYS = {
     "harnesses": {"enabled": bool, **dict.fromkeys(PATH_KEYS, str)},
-    "packs": {"enabled": bool, "path": str, "git": str, "ref": str, "bundled": bool},
+    "packs": {"enabled": bool, "path": str, "git": str, "ref": str, "bundled": bool,
+              "run_validator": bool},
 }
 
 
@@ -396,6 +385,11 @@ def settings_home() -> Path:
     return new_home()
 
 
+def legacy_extensions() -> Path:
+    """The in-repo copy of the rendered extensions before the split (0.7.0); apply removes it."""
+    return REPO / "skills" / "spec-agent" / "references" / "extensions.md"
+
+
 def legacy_instructions() -> Path:
     """Where rules were rendered before 0.3.16; apply removes it and re-points links."""
     return REPO / "dist" / "instructions.md"
@@ -411,11 +405,6 @@ def rendered_agents_dir() -> Path:
 
 def home_extensions_file() -> Path:
     return settings_home() / "extensions.md"
-
-
-def extensions_file() -> Path:
-    """Deprecated in-repo copy of the rendered extensions, still written for packs that read it."""
-    return REPO / "packs" / "gatework" / "skills" / "spec-agent" / "references" / "extensions.md"
 
 
 def hooks_copy_root() -> Path:

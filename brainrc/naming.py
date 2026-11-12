@@ -5,7 +5,7 @@ import re
 
 from .config import ConfigError, KINDS
 from .mcp import REGISTRY, _registry
-from .sources import Source, frontmatter, item_name, items, markdown_files
+from .sources import Source, item_name, items
 
 NAME = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")  # rule 5; use fullmatch (`$` would allow a newline)
 PACK_ID = re.compile(r"([a-z0-9]+(?:-[a-z0-9]+)*)/([a-z0-9]+(?:-[a-z0-9]+)*)")
@@ -115,33 +115,3 @@ def unprefixed_ok(src: Source, name: str) -> bool:
     """True for an item an official pack may keep without its prefix (SPLIT_NAMES)."""
     pack_id = src.meta.get("id")
     return pack_id in OFFICIAL_PACK_IDS and name in SPLIT_NAMES.get(pack_id, frozenset())
-
-
-def check_core_agents(src: Source) -> list[str]:
-    """Every core agent is `brainrc-*` or a declared alias that runs exactly as its target until removal."""
-    errors = [f"{src.rel(f)}: core agent names start with `brainrc-`"
-              for f in markdown_files("agents", src)
-              if not f.stem.startswith("brainrc-") and f.stem not in AGENT_ALIASES]
-    for old, new in AGENT_ALIASES.items():
-        path, target = src.root / "agents" / f"{old}.md", src.root / "agents" / f"{new}.md"
-        rel = src.rel(path)
-        if not path.is_file():
-            errors.append(f"{rel}: deprecated alias for `{new}` is missing (keep it until {AGENT_ALIAS_REMOVED_IN})")
-            continue
-        if not target.is_file():
-            errors.append(f"{rel}: alias target `{new}` is missing")
-            continue
-        meta, want = frontmatter(path), frontmatter(target)
-        if not meta.get("description", "").lower().startswith("deprecated"):
-            errors.append(f"{rel}: alias `description` must start with `Deprecated`")
-        errors += [f"{rel}: alias `{key}` must match `{new}` so it runs with the same access"
-                   for key in ("tools", "model") if meta.get(key) != want.get(key)]
-        body = path.read_text().split("\n---\n", 1)[-1]
-        # A subagent can't tell where its own file is, so the alias carries its target's instructions.
-        if not body.endswith(target.read_text().split("\n---\n", 1)[-1]):
-            errors.append(f"{rel}: alias body must end with `{new}`'s instructions, unchanged")
-        if f"`{new}`" not in body:
-            errors.append(f"{rel}: alias body must name `{new}`")
-        if AGENT_ALIAS_REMOVED_IN not in body:
-            errors.append(f"{rel}: alias body must name the removal release {AGENT_ALIAS_REMOVED_IN}")
-    return errors

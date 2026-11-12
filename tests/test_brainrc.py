@@ -484,25 +484,31 @@ name = "acme"
 prefix = "acme-"
 requires_core = ">=1.0, <2"
 
-[[extensions.domains]]
+[extensions.gatework]
+deliver_checks = ["Deploy plan reviewed"]
+
+[[extensions.gatework.domains]]
 files = "`deploy/*.yaml`"
 skills = ["acme-deploy"]
 reviewer = "brainrc-infra-reviewer"
 
-[[extensions.intake_context]]
+[[extensions.gatework.intake_context]]
 skill = "acme-context"
 when = "every ticket"
 
-[extensions.ticket]
+[extensions.gatework.ticket]
 connector = "ticket-github"
 refs = ["gh:*"]
 draft = true
-
-[extensions]
-deliver_checks = ["Deploy plan reviewed"]
 '''
 PACK_FRAGMENT = {"hooks": {"PreToolUse": [{"matcher": "Bash", "hooks": [
     {"type": "command", "command": 'python3 "{{hooks_dir}}/guard_acme.py"'}]}]}}
+
+
+def roles_error():
+    """Gatework's own roles-link check, through its validator plugin."""
+    src = brainrc.load_pack(brainrc.config.REPO / "packs/gatework", "gatework")
+    return brainrc.plugins.load(src).roles_error(src)
 
 
 def make_pack(root: Path, pack_toml: str = PACK_TOML) -> Path:
@@ -569,7 +575,7 @@ class PackSyncTest(TempRepoCase):
         self.assertIn(claude_guard("$HOME/.claude/hooks/brainrc", "guard_outward.py"), commands)
         self.assertIn('python3 "$HOME/.claude/hooks/brainrc-acme/guard_acme.py"', commands)
 
-        ext = brainrc.extensions_file().read_text()
+        ext = brainrc.config.home_extensions_file().read_text()
         for expected in ("| `deploy/*.yaml` | acme-deploy | brainrc-infra-reviewer | acme |",
                          "- `acme-context` (acme): every ticket", '"connector": "ticket-github"',
                          "- (acme) Deploy plan reviewed"):
@@ -591,7 +597,7 @@ class PackSyncTest(TempRepoCase):
         self.assertFalse(any("guard_acme" in c for c in commands))
         self.assertTrue(any("guard_outward" in c for c in commands))
         self.assertNotIn("- Acme rule.", brainrc.rendered_instructions().read_text())
-        self.assertIn("No packs enabled", brainrc.extensions_file().read_text())
+        self.assertIn("No packs enabled", brainrc.config.home_extensions_file().read_text())
 
     def test_disabling_harness_prunes_its_links(self):
         quiet(brainrc.cmd_sync, True)
@@ -921,7 +927,7 @@ class RolesLinkTest(TempRepoCase):
 
     def test_repo_link_passes(self):
         self.assertTrue(self.roles.is_symlink())
-        self.assertIsNone(brainrc.check_roles_link())
+        self.assertIsNone(roles_error())
 
     def test_plain_file_from_a_checkout_without_symlinks_fails(self):
         self.roles.unlink()
@@ -1024,11 +1030,14 @@ class SettingsHomeTest(TempRepoCase):
             self.assertEqual(brainrc.settings_home(), self.home / ".config/brainrc")
 
     def test_apply_renders_into_settings_home(self):
+        old = self.repo / "skills/spec-agent/references/extensions.md"  # the copy apply wrote before the split
+        old.parent.mkdir(parents=True)
+        old.write_text("stale\n")
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertTrue((self.settings_home / "instructions.md").is_file())
         self.assertTrue((self.settings_home / "extensions.md").is_file())
-        self.assertTrue(brainrc.extensions_file().is_file())  # deprecated in-repo copy, kept for packs
+        self.assertFalse((self.repo / "skills").exists())
         self.assertEqual(brainrc.link_target(self.home / ".claude/CLAUDE.md"), self.settings_home / "instructions.md")
         self.assertFalse((self.repo / "dist/instructions.md").exists())
 
@@ -1453,7 +1462,6 @@ class InstalledModeTest(TempRepoCase):
         self.assertIn("- My local rule.", brainrc.render_instructions())
 
     def test_apply_never_writes_inside_the_package(self):
-        (self.core / "packs/gatework/skills/spec-agent/references/extensions.md").unlink(missing_ok=True)
         before = self.files()
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
@@ -1546,7 +1554,7 @@ class InstalledModeTest(TempRepoCase):
         self.assertIn("checkout", out)
 
     def test_copied_roles_are_fine_when_installed(self):
-        self.assertIsNone(brainrc.check_roles_link())
+        self.assertIsNone(roles_error())
 
     def test_tokens_match_a_checkout(self):
         _, installed = quiet(brainrc.cmd_tokens)

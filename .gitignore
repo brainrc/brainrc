@@ -1,6 +1,7 @@
 # Generated
 dist/
-packs/gatework/skills/spec-agent/references/extensions.md
+# the in-repo extensions render before 0.7.0; apply removes it
+skills/spec-agent/references/extensions.md
 
 # Per-machine, never shared
 *.local.toml

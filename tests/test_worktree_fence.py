@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-SCRIPT = Path(__file__).resolve().parent.parent / "skills/spec-agent/scripts/worktree_fence.py"
+SCRIPT = Path(__file__).resolve().parent.parent / "packs/gatework/skills/spec-agent/scripts/worktree_fence.py"
 
 
 def git(cwd: Path, *args: str) -> None:

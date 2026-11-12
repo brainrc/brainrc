@@ -57,7 +57,7 @@ class RepairTest(TempRepoCase):
         self.assertIn("REPAIR", out)
         self.assertNotIn("CONFLICT", out)
         self.assertEqual(self.links_into(old), [])
-        self.assertEqual(os.readlink(self.skill), str(self.repo / "skills/spec-agent"))
+        self.assertEqual(os.readlink(self.skill), str(self.repo / "packs/gatework/skills/spec-agent"))
         self.assertTrue((self.home / ".claude/hooks/brainrc").resolve().is_dir())
         code, out = run("status")
         self.assertEqual(code, 0, out)
@@ -67,7 +67,7 @@ class RepairTest(TempRepoCase):
     def test_an_item_gone_from_the_moved_checkout_is_pruned(self):
         quiet(brainrc.cmd_sync, True)
         self.move_checkout()
-        shutil.move(str(self.repo / "skills/spec-agent"), str(self.repo / "skills/spec-agent-renamed"))
+        shutil.move(str(self.repo / "packs/gatework/skills/spec-agent"), str(self.repo / "packs/gatework/skills/spec-agent-renamed"))
         code, out = run("apply", "--repair")
         self.assertEqual(code, 0, out)
         self.assertIn("PRUNE", out)
@@ -78,7 +78,7 @@ class RepairTest(TempRepoCase):
         quiet(brainrc.cmd_sync, True)
         (self.settings_home / "harnesses.json").unlink()  # an install from before the manifest
         self.move_checkout()
-        shutil.move(str(self.repo / "skills/spec-agent"), str(self.repo / "skills/spec-agent-renamed"))
+        shutil.move(str(self.repo / "packs/gatework/skills/spec-agent"), str(self.repo / "packs/gatework/skills/spec-agent-renamed"))
         code, out = run("apply", "--repair")
         self.assertEqual(code, 0, out)
         self.assertFalse(os.path.lexists(self.skill))  # pruned: its old root was inferred
@@ -138,7 +138,7 @@ class RepairTest(TempRepoCase):
         self.assertEqual(code, 0, out)
         self.assertNotIn("PRUNE", out)
         self.assertEqual(os.readlink(mine), str(notes))
-        self.assertEqual(os.readlink(self.skill), str(self.repo / "skills/spec-agent"))
+        self.assertEqual(os.readlink(self.skill), str(self.repo / "packs/gatework/skills/spec-agent"))
 
     def test_a_shallow_broken_link_never_makes_home_a_root(self):
         quiet(brainrc.cmd_sync, True)
@@ -162,7 +162,8 @@ class RepairTest(TempRepoCase):
         code, out = run("status", "--repair")
         self.assertEqual(code, 0, out)
         self.assertIn("ignored root", out)
-        (trusted, _), _ = quiet(brainrc.cli._old_roots, brainrc.sources(), [self.repo])
+        srcs = brainrc.sources()
+        (trusted, _), _ = quiet(brainrc.cli._old_roots, srcs, [s.root for s in srcs])
         self.assertEqual(trusted, [])
 
 

@@ -9,7 +9,7 @@ import subprocess
 from pathlib import Path
 
 from .mcp import check_servers
-from .naming import check_core_agents, check_pack_names
+from .naming import check_core_agents, check_pack_names, unprefixed_ok
 from . import config
 from .config import (
     ConfigError,
@@ -31,6 +31,7 @@ from .config import (
 from .sources import (
     Source,
     _markdown_under,
+    bundled_sources,
     check_changelog,
     check_packs,
     collisions,
@@ -53,6 +54,9 @@ FENCE = re.compile(r"^(```|~~~).*?^\1", re.S | re.M)
 
 
 MD_LINK = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
+
+
+CONNECTOR = re.compile(r"^(brainrc-)?ticket-")
 
 
 AGENT_TAG = re.compile(r"\[agent:\s*([a-z0-9-]+)\]")
@@ -105,10 +109,12 @@ def _validate_source(src: Source, agent_names: set[str], skill_names: set[str]) 
         for md in _markdown_under(s):
             errors += _check_references(src, md, agent_names, skill_names)
 
-    if src.is_core:
-        errors += check_core_agents(src)
+    if src.is_core or src.bundled:
         errors += [f"{src.rel(s)}: skill name `{s.name}` is reserved (a harness built-in); use a `brainrc-` name"
                    for s in skills(src) if s.name in RESERVED_SKILL_NAMES]
+    if src.meta.get("id") == "brainrc/gatework":
+        errors += check_core_agents(src)
+    if src.is_core:
         errors += [f"{src.rel(r)}: missing `trigger` frontmatter (Antigravity drops the rule without it)"
                    for r in markdown_files("rules", src) if not frontmatter(r).get("trigger")]
         errors += [f"{src.rel(r)}: missing `alwaysApply: true` frontmatter (Cursor loads the rule only on request without it)"
@@ -158,7 +164,7 @@ def _validate_pack(src: Source, agent_names: set[str], skill_names: set[str]) ->
     errors += check_pack_names(src)
     for kind in KINDS:
         for p in items(src, kind):
-            if not item_name(p).startswith(src.prefix):
+            if not item_name(p).startswith(src.prefix) and not unprefixed_ok(src, item_name(p)):
                 errors.append(f"{src.rel(p)}: pack {kind} must start with `{src.prefix}`")
     ext = src.meta.get("extensions", {})
     errors += [f"{where}: unknown extension `{k}`" for k in sorted(set(ext) - EXTENSION_KEYS)]
@@ -294,7 +300,7 @@ def check_connectors(srcs: list[Source]) -> list[str]:
     """Core `ticket-*` skills and pack `[extensions.ticket]` connectors need a `##` heading naming
     each required operation. One heading may name several (`## comment / transition / link_pr`)."""
     found = {s.name: (src, s) for src in srcs for s in skills(src)}
-    names = {n for n, (src, _) in found.items() if src.is_core and n.startswith("ticket-")}
+    names = {n for n, (src, _) in found.items() if src.name == "gatework" and CONNECTOR.match(n)}
     names |= {src.meta.get("extensions", {}).get("ticket", {}).get("connector") for src in srcs}
     errors = []
     for name in sorted(n for n in names if n in found):
@@ -312,14 +318,19 @@ def pack_errors(srcs: list[Source]) -> list[tuple[Source, list[str]]]:
     it before linking."""
     agent_names = {f.stem for s in srcs for f in markdown_files("agents", s)}
     skill_names = {p.name for s in srcs for p in skills(s)}
-    found = [(src, _validate_source(src, agent_names, skill_names)) for src in srcs if not src.is_core]
+    found = [(src, _validate_source(src, agent_names, skill_names)) for src in srcs
+             if not src.is_core and not src.bundled]  # a bundled pack is checked with core, in CI
     return [(src, errors) for src, errors in found if errors]
 
 
 def cmd_validate(pack: str | None = None) -> int:
     try:
         config_warnings = check_config()
-        srcs = [Source("core", config.REPO), load_pack(expand(pack).resolve())] if pack else sources()
+        if pack:
+            root = expand(pack).resolve()
+            srcs = [Source("core", config.REPO), *bundled_sources(skip=root), load_pack(root)]
+        else:
+            srcs = sources()
     except ConfigError as e:
         print(f"ERROR {e}")
         return 1

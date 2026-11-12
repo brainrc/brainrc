@@ -53,6 +53,6 @@ per stage: `config`, `sources`, `opencode`, `plan`, `settings`, `plugin`, `token
 - **Skill**: instructions a tool loads on demand, triggered by its description ([format](formats.md#skills-skillsnameskillmd)).
 - **Domain skill**: a skill for one stack (Terraform, Kubernetes, ...) that spec-agent loads only when the ticket touches it ([list](spec-agent.md#domain-skills-skills)).
 - **Agent**: one role in a spec-agent run, such as analyst or verifier ([roles](spec-agent.md#roles-agents)).
-- **Connector**: the skill spec-agent uses to read and update a ticket system ([contract](../skills/spec-agent/references/connectors.md)).
+- **Connector**: the skill spec-agent uses to read and update a ticket system ([contract](../packs/gatework/skills/spec-agent/references/connectors.md)).
 - **Gate**: a stop where you approve the spec, the plan, or delivery ([spec-agent](spec-agent.md)).
 - **`requires_core`**: the core versions a pack supports ([compatibility](packs.md#compatibility)).

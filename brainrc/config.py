@@ -24,7 +24,7 @@ def find_core(pkg: Path) -> Path:
 REPO = find_core(Path(__file__).resolve().parent)
 
 
-ROLES_LINK = Path("skills/spec-agent/roles")  # a symlink to ../../agents; a wheel holds copies
+ROLES_LINK = Path("packs/gatework/skills/spec-agent/roles")  # a symlink to ../../agents; a wheel holds copies
 
 
 def installed() -> bool:
@@ -116,7 +116,7 @@ PATH_KEYS = ("home", "skills", "agents", "agents_format", "commands", "plugin", 
 # Known keys of each table in <name>.toml / <name>.local.toml, and the type each must have.
 LAYERED_KEYS = {
     "harnesses": {"enabled": bool, **dict.fromkeys(PATH_KEYS, str)},
-    "packs": {"enabled": bool, "path": str, "git": str, "ref": str},
+    "packs": {"enabled": bool, "path": str, "git": str, "ref": str, "bundled": bool},
 }
 
 
@@ -415,7 +415,7 @@ def home_extensions_file() -> Path:
 
 def extensions_file() -> Path:
     """Deprecated in-repo copy of the rendered extensions, still written for packs that read it."""
-    return REPO / "skills" / "spec-agent" / "references" / "extensions.md"
+    return REPO / "packs" / "gatework" / "skills" / "spec-agent" / "references" / "extensions.md"
 
 
 def hooks_copy_root() -> Path:

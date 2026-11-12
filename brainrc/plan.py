@@ -55,8 +55,9 @@ def moved_item(target: Path, source: Path) -> bool:
 
 
 def old_root(target: Path, source: Path, roots: list[Path]) -> Path | None:
-    """The source root a repaired link's target was under: target minus source's path in its root."""
-    for root in roots:
+    """The source root a repaired link's target was under: target minus source's path in its root.
+    The deepest root wins, so a bundled pack (packs/<name> inside core) maps to its own old root."""
+    for root in sorted(roots, key=lambda r: len(r.parts), reverse=True):
         if source.is_relative_to(root):
             depth = len(source.relative_to(root).parts)
             return target.parents[depth - 1] if len(target.parts) > depth else None

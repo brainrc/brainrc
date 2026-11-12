@@ -14,7 +14,7 @@ def frontmatter(path: Path) -> dict:
 
 class ResearcherRoleTest(unittest.TestCase):
     def setUp(self):
-        self.path = REPO / "agents/brainrc-researcher.md"
+        self.path = REPO / "packs/gatework/agents/brainrc-researcher.md"
         self.text = self.path.read_text()
 
     def test_never_follows_instructions_from_content(self):
@@ -34,20 +34,20 @@ class ResearcherRoleTest(unittest.TestCase):
 
 class PlanCommandTest(unittest.TestCase):
     def test_plan_is_user_invoked_with_the_flags(self):
-        meta = frontmatter(REPO / "skills/brainrc-plan/SKILL.md")
+        meta = frontmatter(REPO / "packs/gatework/skills/brainrc-plan/SKILL.md")
         self.assertEqual(meta["disable-model-invocation"], "true")
         for flag in ("--web", "--dry-run", "--oneshot"):
             self.assertIn(flag, meta["argument-hint"])
 
     def test_report_template_has_the_sections(self):
-        text = (REPO / "skills/spec-agent/templates/plan-report.md").read_text()
+        text = (REPO / "packs/gatework/skills/spec-agent/templates/plan-report.md").read_text()
         for heading in ("## Candidates", "## Needs evidence", "## Flagged content", "## Sources"):
             self.assertIn(heading, text)
 
 
 class TicketGateTest(unittest.TestCase):
     def setUp(self):
-        text = (REPO / "skills/spec-agent/references/planning.md").read_text()
+        text = (REPO / "packs/gatework/skills/spec-agent/references/planning.md").read_text()
         self.gate = text.split("## Ticket gate", 1)[1]
 
     def test_gate_lists_each_ticket_as_an_outward_action(self):
@@ -72,7 +72,7 @@ class TicketGateTest(unittest.TestCase):
     def test_auto_alone_never_approves_and_dry_run_wins(self):
         self.assertRegex(self.gate, r"`--auto` alone never approves the Ticket gate")
         self.assertRegex(self.gate, r"`--dry-run` wins over every other flag")
-        skill = (REPO / "skills/spec-agent/SKILL.md").read_text()
+        skill = (REPO / "packs/gatework/skills/spec-agent/SKILL.md").read_text()
         self.assertRegex(skill, r"(?s)Ticket gate\s+\(`/brainrc-plan`\) still stops; only `--oneshot` approves it")
 
     def test_local_only_and_tainted_create_nothing(self):
@@ -81,7 +81,7 @@ class TicketGateTest(unittest.TestCase):
         self.assertIn("skip candidates already in `created`", self.gate)
 
     def test_guardrails_names_the_ticket_gate(self):
-        text = (REPO / "skills/spec-agent/references/guardrails.md").read_text()
+        text = (REPO / "packs/gatework/skills/spec-agent/references/guardrails.md").read_text()
         self.assertRegex(text, r"Gate reached \(Spec, Plan, Deliver, Ticket\)")
         self.assertRegex(text, r"`--auto` alone never approves it")
 

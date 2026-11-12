@@ -1,6 +1,6 @@
 # Generated
 dist/
-skills/spec-agent/references/extensions.md
+packs/gatework/skills/spec-agent/references/extensions.md
 
 # Per-machine, never shared
 *.local.toml

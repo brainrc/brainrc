@@ -78,7 +78,8 @@ EOF
 python3 scripts/brainrc.py validate --pack ~/src/myteam-ai-pack
 ```
 
-You should see `OK:` with `(packs: myteam)` at the end. A common mistake is a skill without
+You should see `OK:` with `(packs: gatework, myteam)` at the end: core, the default pack it
+ships, and yours. A common mistake is a skill without
 the prefix. `validate` then names it, for example
 ``myteam:skills/protobuf: pack skills must start with `myteam-` ``.
 

@@ -13,7 +13,7 @@ OFFICIAL = "brainrc"
 # The official pack IDs, as listed in docs/packs.md § Naming.
 OFFICIAL_PACK_IDS = frozenset({
     "brainrc/starter", "brainrc/review", "brainrc/go", "brainrc/terraform-aws",
-    "brainrc/kubernetes", "brainrc/security-baseline",
+    "brainrc/kubernetes", "brainrc/security-baseline", "brainrc/gatework",
 })
 # Rule 3: names only a verified vendor's own packs may use.
 VENDOR_NAMES = frozenset({
@@ -99,6 +99,22 @@ AGENT_ALIASES = {n: f"brainrc-{n}" for n in (
     "analyst", "architect", "code-reviewer", "doc-writer", "implementer", "infra-reviewer",
     "researcher", "security-reviewer", "test-writer", "verifier")}
 AGENT_ALIAS_REMOVED_IN = "0.7.0"
+
+
+# Items core shipped before the split (#172). Rule 7 lets them keep their names inside the official
+# pack that took them over, until each is renamed or moves to its own official pack (#313-#317).
+SPLIT_NAMES = {"brainrc/gatework": frozenset({
+    "ci-pipelines", "commit-message", "containers", "db-migrations", "doc-types", "gitops",
+    "go-service", "kubernetes", "observability", "pr-description", "project-commands", "runbook",
+    "scripting", "security-checklist", "spec-agent", "spec-approve", "spec-resume", "spec-status",
+    "ticket-github", "ticket-jira", "ticket-local", "unslop", *AGENT_ALIASES,
+})}
+
+
+def unprefixed_ok(src: Source, name: str) -> bool:
+    """True for an item an official pack may keep without its prefix (SPLIT_NAMES)."""
+    pack_id = src.meta.get("id")
+    return pack_id in OFFICIAL_PACK_IDS and name in SPLIT_NAMES.get(pack_id, frozenset())
 
 
 def check_core_agents(src: Source) -> list[str]:

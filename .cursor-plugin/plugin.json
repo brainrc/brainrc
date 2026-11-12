@@ -6,8 +6,8 @@
     "name": "brainrc contributors"
   },
   "license": "MIT",
-  "skills": "./skills/",
-  "agents": "./agents/",
+  "skills": "./packs/gatework/skills/",
+  "agents": "./packs/gatework/agents/",
   "rules": "./rules/",
   "hooks": "./.cursor-plugin/hooks.json"
 }

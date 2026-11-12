@@ -8,7 +8,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-SCRIPT = Path(__file__).resolve().parent.parent / "skills/spec-agent/scripts/run_worktree.py"
+SCRIPT = Path(__file__).resolve().parent.parent / "packs/gatework/skills/spec-agent/scripts/run_worktree.py"
 GIT = ["git", "-c", "user.name=t", "-c", "user.email=t@example.com"]
 
 

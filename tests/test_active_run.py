@@ -8,7 +8,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-SCRIPT = Path(__file__).resolve().parent.parent / "skills/spec-agent/scripts/active_run.py"
+SCRIPT = Path(__file__).resolve().parent.parent / "packs/gatework/skills/spec-agent/scripts/active_run.py"
 
 
 class ActiveRunTest(unittest.TestCase):

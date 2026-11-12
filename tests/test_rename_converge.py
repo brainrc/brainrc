@@ -172,9 +172,9 @@ class InstalledOldLinkTest(OldInstallCase):
         self.pkg = Path(tempfile.mkdtemp()) / "brainrc"
         self.core = self.pkg / "_core"
         shutil.copytree(self.repo, self.core, symlinks=True)
-        roles = self.core / "skills/spec-agent/roles"
+        roles = self.core / "packs/gatework/skills/spec-agent/roles"
         roles.unlink()
-        shutil.copytree(self.core / "agents", roles)
+        shutil.copytree(self.core / "packs/gatework/agents", roles)
         brainrc.config.REPO = self.core
 
     def tearDown(self):

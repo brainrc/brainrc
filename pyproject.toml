@@ -25,8 +25,7 @@ pattern = "(?P<version>\\S+)"
 packages = ["brainrc"]
 
 [tool.hatch.build.targets.wheel.force-include]
-"skills" = "brainrc/_core/skills"
-"agents" = "brainrc/_core/agents"
+"packs" = "brainrc/_core/packs"
 "rules" = "brainrc/_core/rules"
 "overrides" = "brainrc/_core/overrides"
 "mcp" = "brainrc/_core/mcp"

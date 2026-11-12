@@ -111,7 +111,7 @@ class InstalledHarnessTest(TempRepoCase):
         self.assertEqual(list(m["harnesses"]), ["claude"])
         self.assertEqual(m["harnesses"]["claude"]["skills"], "~/.claude/skills")
         self.assertNotIn("enabled", m["harnesses"]["claude"])
-        self.assertEqual(m["roots"], [str(self.repo)])
+        self.assertEqual(m["roots"], [str(self.repo), str(self.repo / "packs/gatework")])
 
     def test_manifest_follows_full_applies_and_keeps_entries_outside_only(self):
         (self.home / ".codex").mkdir()
@@ -131,7 +131,8 @@ class InstalledHarnessTest(TempRepoCase):
         self.addCleanup(shutil.rmtree, moved.parent)
         brainrc.config.REPO = moved
         quiet(brainrc.cmd_sync, True)
-        self.assertEqual(self.manifest()["roots"], [str(moved), str(self.repo)])
+        self.assertEqual(self.manifest()["roots"], [str(moved), str(moved / "packs/gatework"),
+                                                   str(self.repo), str(self.repo / "packs/gatework")])
 
     def test_an_unreadable_manifest_is_rewritten(self):
         self.settings_home.mkdir(parents=True)

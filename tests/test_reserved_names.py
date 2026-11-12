@@ -11,7 +11,7 @@ from test_brainrc import TempRepoCase, brainrc, make_pack, quiet, set_core_versi
 
 class ReservedNamesTest(TempRepoCase):
     def add_core_skill(self, name):
-        d = self.repo / "skills" / name
+        d = self.repo / "packs/gatework/skills" / name
         d.mkdir()
         (d / "SKILL.md").write_text(f"---\nname: {name}\ndescription: A test skill.\n---\nBody.\n")
 
@@ -29,8 +29,8 @@ class ReservedNamesTest(TempRepoCase):
                     self.assertIn(f"skills/{name}", out)
                     self.assertIn("reserved", out)
                 finally:
-                    (self.repo / "skills" / name / "SKILL.md").unlink()
-                    (self.repo / "skills" / name).rmdir()
+                    (self.repo / "packs/gatework/skills" / name / "SKILL.md").unlink()
+                    (self.repo / "packs/gatework/skills" / name).rmdir()
 
 class ReservedNamesPackTest(TempRepoCase):
     def setUp(self):
@@ -55,7 +55,7 @@ class ReservedNamesPackTest(TempRepoCase):
         self.add_pack_skill("spec-agent")
         code, out = quiet(brainrc.cmd_validate, str(self.pack))
         self.assertEqual(code, 1, out)
-        self.assertIn("skill `spec-agent` is defined in both core and acme", out)
+        self.assertIn("skill `spec-agent` is defined in both gatework and acme", out)
 
 
 if __name__ == "__main__":

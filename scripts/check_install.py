@@ -58,7 +58,7 @@ def checks(work: str, env: dict[str, str], scripts: dict[str, str]) -> None:
            f"exit {r.returncode}, stdout {r.stdout!r}, expected 'brainrc {version}'")
 
     core = Path(brainrc.__file__).parent / "_core"
-    needed = ["skills", "agents", "rules", "harnesses.toml", "VERSION", "CHANGELOG.md"]
+    needed = ["packs/gatework/skills", "packs/gatework/agents", "packs/gatework/pack.toml", "rules", "harnesses.toml", "VERSION", "CHANGELOG.md"]
     absent = [n for n in needed if not (core / n).exists()]
     from brainrc import config
     r = sh("brainrc", "validate")

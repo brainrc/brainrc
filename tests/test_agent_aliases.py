@@ -14,13 +14,13 @@ OLD = ("analyst", "architect", "code-reviewer", "doc-writer", "implementer", "in
 
 
 def meta(root, name):
-    return brainrc.frontmatter(Path(root) / "agents" / f"{name}.md")
+    return brainrc.frontmatter(Path(root) / "packs/gatework/agents" / f"{name}.md")
 
 
 class ShippedTreeTest(unittest.TestCase):
     def test_every_core_agent_is_prefixed_or_a_declared_alias(self):
         self.assertEqual(set(naming.AGENT_ALIASES), set(OLD))
-        for f in (ROOT / "agents").glob("*.md"):
+        for f in (ROOT / "packs/gatework/agents").glob("*.md"):
             with self.subTest(agent=f.stem):
                 self.assertTrue(f.stem.startswith("brainrc-") or f.stem in OLD)
                 self.assertEqual(meta(ROOT, f.stem).get("name"), f.stem)
@@ -29,17 +29,17 @@ class ShippedTreeTest(unittest.TestCase):
         for n in OLD:
             with self.subTest(agent=n):
                 new, alias = meta(ROOT, f"brainrc-{n}"), meta(ROOT, n)
-                text = (ROOT / f"agents/{n}.md").read_text()
+                text = (ROOT / f"packs/gatework/agents/{n}.md").read_text()
                 self.assertEqual((alias.get("tools"), alias.get("model")), (new.get("tools"), new.get("model")))
                 self.assertTrue(alias["description"].startswith("Deprecated"), alias["description"])
                 self.assertLessEqual(len(alias["description"]), 80, "always-loaded token budget")
                 self.assertIn(f"`brainrc-{n}`", text)
                 self.assertIn(naming.AGENT_ALIAS_REMOVED_IN, text)
-                target = (ROOT / f"agents/brainrc-{n}.md").read_text().split("\n---\n", 1)[1]
+                target = (ROOT / f"packs/gatework/agents/brainrc-{n}.md").read_text().split("\n---\n", 1)[1]
                 self.assertTrue(text.endswith(target), "a subagent can't find another file, so it carries the instructions")
 
     def test_spec_agent_dispatches_the_new_names(self):
-        text = (ROOT / "skills/spec-agent/SKILL.md").read_text()
+        text = (ROOT / "packs/gatework/skills/spec-agent/SKILL.md").read_text()
         for n in OLD:
             with self.subTest(agent=n):
                 self.assertIn(f"[roles/brainrc-{n}.md](roles/brainrc-{n}.md)", text)
@@ -55,20 +55,20 @@ class AliasNearMissTest(TempRepoCase):
         self.assertEqual(code, 0, out)
 
     def test_missing_alias_fails(self):
-        (self.repo / "agents/verifier.md").unlink()
+        (self.repo / "packs/gatework/agents/verifier.md").unlink()
         code, out = self.validate()
         self.assertEqual(code, 1, out)
         self.assertIn("agents/verifier.md: deprecated alias for `brainrc-verifier` is missing", out)
 
     def test_alias_with_other_tools_fails(self):
-        path = self.repo / "agents/code-reviewer.md"
+        path = self.repo / "packs/gatework/agents/code-reviewer.md"
         path.write_text(path.read_text().replace("tools: Read, Grep, Glob, Bash", "tools: Read, Grep, Glob, Bash, Edit"))
         code, out = self.validate()
         self.assertEqual(code, 1, out)
         self.assertIn("alias `tools` must match `brainrc-code-reviewer`", out)
 
     def test_alias_without_its_removal_release_or_target_name_fails(self):
-        path = self.repo / "agents/analyst.md"
+        path = self.repo / "packs/gatework/agents/analyst.md"
         path.write_text(path.read_text().replace(naming.AGENT_ALIAS_REMOVED_IN, "later")
                         .replace("`brainrc-analyst`", "the new agent"))
         code, out = self.validate()
@@ -77,14 +77,14 @@ class AliasNearMissTest(TempRepoCase):
         self.assertIn("alias body must name `brainrc-analyst`", out)
 
     def test_alias_whose_instructions_drift_from_its_target_fails(self):
-        path = self.repo / "agents/brainrc-verifier.md"
+        path = self.repo / "packs/gatework/agents/brainrc-verifier.md"
         path.write_text(path.read_text() + "\nOne more rule.\n")
         code, out = self.validate()
         self.assertEqual(code, 1, out)
         self.assertIn("agents/verifier.md: alias body must end with `brainrc-verifier`'s instructions", out)
 
     def test_alias_without_a_deprecated_description_fails(self):
-        path = self.repo / "agents/analyst.md"
+        path = self.repo / "packs/gatework/agents/analyst.md"
         path.write_text(path.read_text().replace("description: Deprecated, use", "description: Use"))
         code, out = self.validate()
         self.assertEqual(code, 1, out)
@@ -92,12 +92,12 @@ class AliasNearMissTest(TempRepoCase):
 
     def test_unprefixed_new_core_agent_fails_and_prefixed_passes(self):
         body = "---\nname: {0}\ndescription: A test agent.\n---\nBody.\n"
-        (self.repo / "agents/planner.md").write_text(body.format("planner"))
+        (self.repo / "packs/gatework/agents/planner.md").write_text(body.format("planner"))
         code, out = self.validate()
         self.assertEqual(code, 1, out)
         self.assertIn("agents/planner.md: core agent names start with `brainrc-`", out)
-        (self.repo / "agents/planner.md").unlink()
-        (self.repo / "agents/brainrc-planner.md").write_text(body.format("brainrc-planner"))
+        (self.repo / "packs/gatework/agents/planner.md").unlink()
+        (self.repo / "packs/gatework/agents/brainrc-planner.md").write_text(body.format("brainrc-planner"))
         code, out = self.validate()
         self.assertEqual(code, 0, out)
 

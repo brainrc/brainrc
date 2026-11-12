@@ -85,6 +85,7 @@ publishes it. Official packs are owned by `brainrc`:
 
 | ID | What it holds | Issue |
 |---|---|---|
+| `brainrc/gatework` | the default pack: spec-agent, its roles, ticket connectors and domain skills ([packs/gatework](../packs/gatework/README.md)) | [#172](https://github.com/brainrc/brainrc/issues/172) |
 | `brainrc/starter` | the small, measured base for the default profile | [#313](https://github.com/brainrc/brainrc/issues/313) |
 | `brainrc/review` | review, PR description, commit message and unslop | [#314](https://github.com/brainrc/brainrc/issues/314) |
 | `brainrc/go` | Go, built from today's `go-service` skill | [#315](https://github.com/brainrc/brainrc/issues/315) |
@@ -128,7 +129,7 @@ With no packs enabled, the file says so and spec-agent runs as before.
 
 A pack has at most one `[extensions.ticket]`: one connector and the refs it handles. A team
 with two ticket systems splits them into two packs. The connector, core or the pack's own,
-must follow the [connector contract](../skills/spec-agent/references/connectors.md), which
+must follow the [connector contract](../packs/gatework/skills/spec-agent/references/connectors.md), which
 `validate` checks.
 
 ## Rules

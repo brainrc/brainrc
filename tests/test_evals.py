@@ -593,7 +593,7 @@ class TriggerTest(unittest.TestCase):
 
 
 def domain_skills() -> set[str]:
-    text = (REPO / "skills/spec-agent/SKILL.md").read_text()
+    text = (REPO / "packs/gatework/skills/spec-agent/SKILL.md").read_text()
     table = text.split("## Domains", 1)[1].split("\n## ", 1)[0]
     return set(re.findall(r"\[([a-z0-9-]+)\]\(\.\./\1/SKILL\.md\)", table))
 

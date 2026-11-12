@@ -6,6 +6,31 @@
     "name": "brainrc contributors"
   },
   "license": "MIT",
+  "skills": [
+    "./packs/gatework/skills/"
+  ],
+  "agents": [
+    "./packs/gatework/agents/analyst.md",
+    "./packs/gatework/agents/architect.md",
+    "./packs/gatework/agents/brainrc-analyst.md",
+    "./packs/gatework/agents/brainrc-architect.md",
+    "./packs/gatework/agents/brainrc-code-reviewer.md",
+    "./packs/gatework/agents/brainrc-doc-writer.md",
+    "./packs/gatework/agents/brainrc-implementer.md",
+    "./packs/gatework/agents/brainrc-infra-reviewer.md",
+    "./packs/gatework/agents/brainrc-researcher.md",
+    "./packs/gatework/agents/brainrc-security-reviewer.md",
+    "./packs/gatework/agents/brainrc-test-writer.md",
+    "./packs/gatework/agents/brainrc-verifier.md",
+    "./packs/gatework/agents/code-reviewer.md",
+    "./packs/gatework/agents/doc-writer.md",
+    "./packs/gatework/agents/implementer.md",
+    "./packs/gatework/agents/infra-reviewer.md",
+    "./packs/gatework/agents/researcher.md",
+    "./packs/gatework/agents/security-reviewer.md",
+    "./packs/gatework/agents/test-writer.md",
+    "./packs/gatework/agents/verifier.md"
+  ],
   "hooks": {
     "PreToolUse": [
       {

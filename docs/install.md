@@ -136,8 +136,9 @@ agy plugin install https://github.com/brainrc/brainrc
 ```
 
 It gets the rules: each `rules/*.md` carries `trigger: always_on`, which Antigravity needs to
-load it. Since 0.7.0 the skills and agent files live under `packs/gatework/`, and whether
-Antigravity reads them from there is unverified. Guard hooks aren't included yet, so use
+load it, and the skills, from `packs/gatework/skills` (the `skills` path in `plugin.json`).
+Antigravity has no manifest path for agents, so the role files reach it only as files the
+`brainrc-gatework` skill reads. Guard hooks aren't included yet, so use
 agy's own permission settings. This install was built from Antigravity's public docs and issues
 and hasn't been run end to end
 ([harness packages](harness-packages.md#antigravity-cli)).

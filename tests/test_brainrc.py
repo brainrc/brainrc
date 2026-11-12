@@ -953,8 +953,9 @@ class PluginTest(TempRepoCase):
         self.assertIn(claude_guard("${CLAUDE_PLUGIN_ROOT}/overrides/claude/hooks", "guard_outward.py"), commands)
         self.assertNotIn("{{hooks_dir}}", json.dumps(plugin))
 
-    def test_antigravity_manifest_is_the_name_only(self):
-        self.assertEqual(json.loads(brainrc.plugin_manifests()["plugin.json"]), {"name": "brainrc"})
+    def test_antigravity_manifest_is_the_name_and_the_skills_path(self):
+        self.assertEqual(json.loads(brainrc.plugin_manifests()["plugin.json"]),
+                         {"name": "brainrc", "skills": "packs/gatework/skills"})
 
     def test_marketplace_lists_the_repo_as_the_plugin(self):
         market = self.manifest("marketplace.json")

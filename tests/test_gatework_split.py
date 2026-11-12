@@ -1,4 +1,5 @@
 """The syncer split from spec-agent (#172): Gatework as a bundled pack with its own validator plugin."""
+import json
 import os
 import shutil
 import sys
@@ -208,6 +209,47 @@ class GateworkPackTest(unittest.TestCase):
                 self.assertFalse(hasattr(brainrc.config, name))
         for name in ("check_connectors", "check_roles_link"):
             self.assertFalse(hasattr(brainrc.validate, name))
+
+
+class PluginInstallTest(unittest.TestCase):
+    """Codex (through .claude-plugin/) and Antigravity (root plugin.json) find Gatework's skills."""
+    ROOT = Path(__file__).resolve().parent.parent
+
+    def setUp(self):
+        # Codex's install copy drops symlinks; copy the repo the same way.
+        self.tmp = Path(tempfile.mkdtemp())
+        self.copy = self.tmp / "plugin"
+        ignore = shutil.ignore_patterns(".git", "__pycache__")
+        shutil.copytree(self.ROOT, self.copy, symlinks=True, ignore=ignore)
+        for link in [p for p in self.copy.rglob("*") if p.is_symlink()]:
+            link.unlink()
+        self.expected = {p.parent.name for p in (self.ROOT / "packs/gatework/skills").glob("*/SKILL.md")}
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp)
+
+    def found(self, paths) -> set[str]:
+        paths = [paths] if isinstance(paths, str) else paths
+        return {s.parent.name for d in paths for s in (self.copy / d).glob("*/SKILL.md")}
+
+    def test_codex_reads_one_skills_dir_from_the_claude_manifest(self):
+        manifest = json.loads((self.copy / ".claude-plugin/plugin.json").read_text())
+        self.assertIsInstance(manifest["skills"], str)  # the form Codex documents
+        self.assertTrue(manifest["skills"].startswith("./"))
+        self.assertEqual(self.found(manifest["skills"]), self.expected)
+
+    def test_antigravity_reads_skills_paths_from_the_root_manifest(self):
+        manifest = json.loads((self.copy / "plugin.json").read_text())
+        self.assertLessEqual(set(manifest), {"name", "skills"})  # its schema rejects other keys
+        self.assertFalse(manifest["skills"].startswith(("/", "./", "..")))
+        self.assertEqual(self.found(["skills", manifest["skills"]]), self.expected)
+
+    def test_the_engine_finds_its_roles_without_the_roles_link(self):
+        engine = self.copy / "packs/gatework/skills/brainrc-gatework"
+        self.assertFalse((engine / "roles").exists())
+        self.assertIn("../../agents/<role>.md", (engine / "SKILL.md").read_text())
+        for role in (self.ROOT / "packs/gatework/agents").glob("brainrc-*.md"):
+            self.assertTrue((engine / "../../agents" / role.name).is_file(), role.name)
 
 
 if __name__ == "__main__":

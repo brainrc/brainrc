@@ -6,9 +6,7 @@
     "name": "brainrc contributors"
   },
   "license": "MIT",
-  "skills": [
-    "./packs/gatework/skills/"
-  ],
+  "skills": "./packs/gatework/skills/",
   "agents": [
     "./packs/gatework/agents/analyst.md",
     "./packs/gatework/agents/architect.md",

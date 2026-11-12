@@ -26,6 +26,8 @@ packages = ["brainrc"]
 
 [tool.hatch.build.targets.wheel.force-include]
 "packs" = "brainrc/_core/packs"
+# roles/ links to ../../agents inside packs/, which the walk above skips: copy it explicitly
+"packs/gatework/agents" = "brainrc/_core/packs/gatework/skills/brainrc-gatework/roles"
 "rules" = "brainrc/_core/rules"
 "overrides" = "brainrc/_core/overrides"
 "mcp" = "brainrc/_core/mcp"

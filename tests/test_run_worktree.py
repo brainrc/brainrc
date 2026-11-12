@@ -9,7 +9,7 @@ import unittest
 from pathlib import Path
 
 SCRIPT = Path(__file__).resolve().parent.parent / "packs/gatework/skills/brainrc-gatework/scripts/run_worktree.py"
-GIT = ["git", "-c", "user.name=t", "-c", "user.email=t@example.com"]
+GIT = ["git", "-c", "user.name=t", "-c", "user.email=t@example.com", "-c", "maintenance.auto=false"]
 
 
 

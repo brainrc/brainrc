@@ -11,7 +11,7 @@ SCRIPT = Path(__file__).resolve().parent.parent / "packs/gatework/skills/brainrc
 
 
 def git(cwd: Path, *args: str) -> None:
-    subprocess.run(["git", *args], cwd=cwd, check=True, capture_output=True)
+    subprocess.run(["git", "-c", "maintenance.auto=false", *args], cwd=cwd, check=True, capture_output=True)
 
 
 class WorktreeFenceTest(unittest.TestCase):

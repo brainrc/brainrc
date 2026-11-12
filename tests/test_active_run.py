@@ -227,7 +227,7 @@ class ActiveRunTest(unittest.TestCase):
 
     def git(self, *args, cwd: Path) -> None:
         subprocess.run(
-            ["git", "-c", "user.name=t", "-c", "user.email=t@example.com", *args],
+            ["git", "-c", "user.name=t", "-c", "user.email=t@example.com", "-c", "maintenance.auto=false", *args],
             cwd=cwd, env=self.env(None), check=True, capture_output=True,
         )
 

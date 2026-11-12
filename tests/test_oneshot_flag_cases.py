@@ -96,7 +96,7 @@ class OneshotFlagCaseTest(unittest.TestCase):
         (self.project / "requirements.txt").write_text("colorama\n")
         git = evals._git
         git(self.project, "add", "-A")
-        git(self.project, "-c", "user.name=t", "-c", "user.email=t@example.com", "commit", "-qm", "dep")
+        git(self.project, "-c", "user.name=t", "-c", "user.email=t@example.com", "-c", "maintenance.auto=false", "commit", "-qm", "dep")
         self.assert_breaks(n, lambda s: None, "requirements.txt")
 
     def test_callouts_case_fails_when_a_decision_or_the_test_is_missing(self):

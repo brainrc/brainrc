@@ -1565,7 +1565,7 @@ class InstalledModeTest(TempRepoCase):
 
 
 def git(*args, cwd=None):
-    subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@example.com", *args],
+    subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@example.com", "-c", "maintenance.auto=false", *args],
                    cwd=cwd, check=True, capture_output=True)
 
 
@@ -2191,7 +2191,7 @@ class LocalTripwireTest(TempRepoCase):
         (self.repo / "tripwires.local.toml").write_text(text)
 
     def git(self, *args: str) -> None:
-        subprocess.run(["git", "-C", str(self.repo), *args], check=True, capture_output=True)
+        subprocess.run(["git", "-c", "maintenance.auto=false", "-C", str(self.repo), *args], check=True, capture_output=True)
 
     def test_without_the_file_validate_passes(self):
         self.doc.write_text(self.doc.read_text() + "\nWorked on this at Initech.\n")

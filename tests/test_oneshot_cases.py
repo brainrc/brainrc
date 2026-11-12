@@ -33,7 +33,7 @@ BODY = """[blocked] local:tickets/{ticket}: {phrase}
 
 
 def git(cwd: Path, *args: str) -> str:
-    return subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@example.com", *args],
+    return subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@example.com", "-c", "maintenance.auto=false", *args],
                           cwd=cwd, check=True, capture_output=True, text=True).stdout
 
 

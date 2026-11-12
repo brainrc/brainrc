@@ -21,7 +21,7 @@ class GuardCase(unittest.TestCase):
         (self.root / ".env").write_text("KEY=dummy\n")
         (self.root / ".env.example").write_text("KEY=\n")
         (self.root / "link").symlink_to("/etc/hostname")
-        git = ["git", "-c", "user.name=t", "-c", "user.email=t@example.com", "-C", str(self.root)]
+        git = ["git", "-c", "user.name=t", "-c", "user.email=t@example.com", "-c", "maintenance.auto=false", "-C", str(self.root)]
         for args in (["init", "-q"], ["add", "-A"], ["commit", "-q", "-m", "init"]):
             subprocess.run(git + args, check=True, capture_output=True, env=ENV)
 

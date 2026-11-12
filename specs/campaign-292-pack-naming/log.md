@@ -24,3 +24,9 @@ Order gh:293 → gh:294 → gh:295. Size standard each. Delivery: one draft PR, 
 - gh:293, gh:294, gh:295 → draft PR #336 (base main), one commit each. CI green on every blocking cell;
   the Windows cells fail on main too and don't gate. Next: review by the owner's code-reviewer, then
   the owner merges.
+
+## 2026-11-12T00:00:00Z · skill aliases removed
+- The owner said to remove the five skill aliases due in 0.6.0. Done in #337 with the review fixes:
+  the stubs, validate's alias check and the reserved-name exemption are gone, and the living spec
+  core-skill-names drops the requirement (specs/292-remove-skill-aliases). `bump: patch` stays, since
+  the removal was announced and the aliases were never pack contract.

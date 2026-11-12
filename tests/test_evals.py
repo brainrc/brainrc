@@ -12,6 +12,7 @@ import tempfile
 import tomllib
 import unittest
 from pathlib import Path
+from unittest import mock
 
 REPO = Path(__file__).resolve().parent.parent
 spec = importlib.util.spec_from_file_location("evals", REPO / "scripts" / "evals.py")
@@ -589,28 +590,14 @@ class TriggerTest(unittest.TestCase):
     def test_no_flags_prints_the_prompt(self):
         cases = self.tmp / "triggers.toml"
         cases.write_text('[[case]]\nprompt = "Fix this terraform plan"\nexpect = ["terraform"]\n')
-        code, out = quiet(evals.cmd_triggers, files=[cases])
+        with mock.patch.object(evals, "load_skills", lambda: {"terraform": "Terraform things."}):
+            code, out = quiet(evals.cmd_triggers, files=[cases])
         self.assertEqual(code, 0)
         self.assertIn("Fix this terraform plan", out)
         self.assertIn("terraform:", out)
 
 
-def domain_skills() -> set[str]:
-    text = (REPO / "packs/gatework/skills/brainrc-gatework/SKILL.md").read_text()
-    table = text.split("## Domains", 1)[1].split("\n## ", 1)[0]
-    return set(re.findall(r"\[([a-z0-9-]+)\]\(\.\./\1/SKILL\.md\)", table))
-
-
 class CaseFileTest(unittest.TestCase):
-    def test_every_domain_skill_has_a_positive_and_a_negative_trigger(self):
-        cases = tomllib.loads((REPO / "evals/triggers.toml").read_text())["case"]
-        skills = domain_skills()
-        self.assertGreaterEqual(len(skills), 10)
-        for skill in sorted(skills):
-            with self.subTest(skill=skill):
-                self.assertTrue(any(skill in c.get("expect", []) for c in cases), "no positive case")
-                self.assertTrue(any(skill in c.get("forbid", []) for c in cases), "no negative case")
-
     def test_sandbox_cases_name_tickets_that_exist(self):
         for path in sorted((REPO / "evals/cases").glob("*.toml")):
             with self.subTest(case=path.name):

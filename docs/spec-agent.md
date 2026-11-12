@@ -5,7 +5,8 @@ request: **spec → plan → implement → verify → document → deliver**, ru
 skill with a team of small, reusable agents. You approve at three gates. Everything else runs
 on its own.
 
-spec-agent is the engine of Gatework, brainrc's default pack ([packs.md](packs.md#bundled-packs)):
+spec-agent is the engine of Gatework, brainrc's default pack ([packs.md](packs.md#default-packs),
+[brainrc/gatework](https://github.com/brainrc/gatework)):
 the `brainrc-gatework` skill. Its old names (`spec-agent`, `/spec-status`, `ticket-github` and the
 other unprefixed skills) are deprecated aliases until 0.8.0.
 
@@ -13,7 +14,7 @@ other unprefixed skills) are deprecated aliases until 0.8.0.
 > and that hooks enforce the guardrails. That is fully true only in Claude Code. OpenCode runs
 > real subagents, but without per-role models, and its hooks block instead of asking. Codex,
 > Antigravity CLI, and Cursor have no named subagents, so the engine
-> [switches roles in one session](../packs/gatework/skills/brainrc-gatework/references/fallback.md): reviewers have
+> [switches roles in one session](https://github.com/brainrc/gatework/blob/main/skills/brainrc-gatework/references/fallback.md): reviewers have
 > seen the implementer's reasoning, and the guardrails are instructions, not hooks. The fallback
 > limits what reviewers read, and for standard and large runs it recommends a fresh session for
 > review ([below](#harness-support)).
@@ -43,7 +44,7 @@ no git remote, `SPEC_PR_STATUS_FIXTURE` names a `pr_status` fixture file read in
 | `/brainrc-gatework-resume [ref]` | Continue an interrupted run (any tool) |
 
 These are user-invoked skills (`skills/brainrc-work/` and so on), so every harness that reads skills
-gets them. In the Claude Code plugin they're `/brainrc:brainrc-work`; in Codex, call the skill by name.
+gets them. In the Claude Code plugin they're `/gatework:brainrc-work`; in Codex, call the skill by name.
 
 ## Auto mode
 
@@ -96,7 +97,7 @@ the researcher reads is never obeyed; a plan that flags any instruction creates 
 The plan ends at a Ticket gate listing each ticket (at most 10) as an outward action; nothing is
 created before you approve it. `--dry-run` creates nothing. `--oneshot` creates proven local
 tickets only and refuses GitHub. State lives in `specs/plan-<slug>/`. Details:
-[planning.md](../packs/gatework/skills/brainrc-gatework/references/planning.md).
+[planning.md](https://github.com/brainrc/gatework/blob/main/skills/brainrc-gatework/references/planning.md).
 
 ## Design principles
 
@@ -131,7 +132,7 @@ To express dependencies, use GitHub issue dependencies or a `Depends on #N` line
 body. For local tickets, use `depends_on: [local:...]` in the child's frontmatter, and list the
 children in the epic's `children:` (their order is the epic order).
 
-Details: [campaign.md](../packs/gatework/skills/brainrc-gatework/references/campaign.md).
+Details: [campaign.md](https://github.com/brainrc/gatework/blob/main/skills/brainrc-gatework/references/campaign.md).
 
 ## Living specs
 
@@ -139,7 +140,7 @@ Each run's `specs/<slug>/` describes one change; `specs/living/<area>.md` descri
 system behaves now, one file per capability area (`cli`, `export`). The analyst reads the areas
 a ticket touches and writes the spec's `## Requirement changes`: ADDED, MODIFIED, and REMOVED
 requirements against them, or `None.` In the document stage the engine applies that delta with
-`packs/gatework/skills/brainrc-gatework/scripts/living_specs.py apply`, so the Deliver gate's diff shows the
+Gatework's `skills/brainrc-gatework/scripts/living_specs.py apply`, so the Deliver gate's diff shows the
 behavior change next to the code. The script checks every block first (a MODIFIED or REMOVED
 target must exist, an ADDED one must not) and writes nothing if any fails. Each requirement names
 the run that last changed it. Formats: `templates/spec.md` and `templates/living.md`. Projects
@@ -151,8 +152,8 @@ For tools outside the run's repo (a pack repo, a workspace root), spec-agent wri
 run's absolute path to `$BRAINRC_HOME/active-run` (default `~/.config/brainrc/active-run`) at
 intake, on resume, and at every checkpoint commit. The file is one line. It is not cleared when
 a run finishes, and the last write wins across sessions. A tool reads it through
-`packs/gatework/skills/brainrc-gatework/scripts/active_run.py read`, or falls back to the newest run in `<cwd>/specs/`
-and every branch worktree's `specs/` when the file is absent or names a missing directory (detached task and verify worktrees are skipped). The contract is in [state.md](../packs/gatework/skills/brainrc-gatework/references/state.md#active-run-pointer).
+Gatework's `skills/brainrc-gatework/scripts/active_run.py read`, or falls back to the newest run in `<cwd>/specs/`
+and every branch worktree's `specs/` when the file is absent or names a missing directory (detached task and verify worktrees are skipped). The contract is in [state.md](https://github.com/brainrc/gatework/blob/main/skills/brainrc-gatework/references/state.md#active-run-pointer).
 
 ## Run worktrees
 
@@ -221,10 +222,11 @@ For standard and large runs the engine stops before batched review and recommend
 - **Agent:** add `agents/<name>.md` (frontmatter `name`, `description`, `tools`, `model`; body
   Role / Reads / Writes / Must not / Done when / Handoff), then reference it in the engine.
 - **Domain skill:** add `skills/<name>/SKILL.md` with Validate / Conventions / Review checklist /
-  Never-without-approval, then add a row to the Domains table in `packs/gatework/skills/brainrc-gatework/SKILL.md`.
+  Never-without-approval, then add a row to the Domains table in `skills/brainrc-gatework/SKILL.md`. These live in
+  [brainrc/gatework](https://github.com/brainrc/gatework); a private one goes in your own pack.
 - **Ticket connector:** add `skills/ticket-<system>/SKILL.md` implementing `fetch`, `comment`,
   `transition`, `link_pr` per the
-  [connector contract](../packs/gatework/skills/brainrc-gatework/references/connectors.md). `validate` checks the
+  [connector contract](https://github.com/brainrc/gatework/blob/main/skills/brainrc-gatework/references/connectors.md). `validate` checks the
   headings. Existing ones: `brainrc-ticket-local`, `brainrc-ticket-github`, `brainrc-ticket-jira`.
   Optional: `pr_status` (read-only; without it `watch` skips).
 

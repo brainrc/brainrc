@@ -31,7 +31,6 @@ ALLOW = [
     ("tests/test_ownership.py", r".*", "A: tests ownership of old hook dirs"),
     ("tests/test_backups.py", r".*", "A: tests old backup names"),
     ("tests/test_plugin_docs.py", r".*", "A: checks docs for the old plugin name"),
-    ("tests/test_active_run.py", r".*", "A: tests the old home is not read"),
     # A, partly: tests that keep a few exact legacy tokens.
     ("tests/test_brainrc.py", r"AICFG_HOME", "A: the old env var"),
     ("tests/test_brainrc.py", r"\.config\W+ai-config", "A: the legacy settings home"),
@@ -85,8 +84,6 @@ ALLOW = [
     ("docs/troubleshooting.md", r"moving-from-ai-config|Moving from ai-config", "E: link to the migration section"),
     ("docs/troubleshooting.md", r"AICFG_HOME|ai-config@ai-config", "E: old env var and plugin id"),
     ("docs/troubleshooting.md", r"bak-aicfg", "E: old backup names"),
-    ("packs/gatework/skills/brainrc-gatework/SKILL.md", OLD_LINE, "E: old-name fallbacks"),
-    ("packs/gatework/skills/brainrc-gatework/SKILL.md", r"ai-config:<role>", "E: old role names, checked by test_plugin_docs"),
     # F. The allowlist test itself.
     ("tests/test_old_names.py", r".*", "F: this table"),
 ]

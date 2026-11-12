@@ -8,7 +8,6 @@
 #   path     pack repo root; ~ and $ENV_VARS expand, relative paths are relative to this file
 #   git      instead of path: a URL brainrc fetches into $BRAINRC_HOME/packs/<key> (apply, update)
 #   ref      with git: tag, branch, or commit (default: the remote's default branch)
-#   bundled  true for a pack that ships inside core as packs/<name>/ (only in this file)
 #   enabled  default true; set false to remove the pack's links and hooks on the next apply
 #
 # Packs usually differ per machine, so list them in packs.local.toml (gitignored):
@@ -16,9 +15,12 @@
 # [work]
 # path = "~/src/work-ai-pack"
 #
-# Bundled packs ship inside core under packs/<name>/ and are on unless packs.local.toml says
-# `enabled = false` (`brainrc init` asks). With none enabled, brainrc installs core's rules and
-# guard hooks and nothing else.
+# The packs listed here are the default packs: on unless packs.local.toml says `enabled = false`
+# (`brainrc init` asks). With none enabled, brainrc installs core's rules and guard hooks and
+# nothing else. A `path` or `git` in packs.local.toml replaces a default pack's own (a `ref` alone
+# keeps its URL), e.g. `[gatework] path = "~/src/gatework"` to work on Gatework from a checkout.
 
 [gatework]
-bundled = true   # spec-driven work: spec-agent, its roles, ticket connectors and domain skills
+git = "https://github.com/brainrc/gatework.git"
+ref = "v0.7.0"
+description = "spec-driven work from a ticket to a reviewed PR"

@@ -151,7 +151,8 @@ def _sync(apply: bool, repair: bool = False) -> int:
                 fetch_pack(key, cfg, root)
             except ConfigError as e:
                 print(f"ERROR {e}")
-                print("\nNothing written. Check the pack's `git` and `ref`, then re-run.")
+                print(f"\nNothing written. Check the pack's `git` and `ref`, then re-run, or set "
+                      f"`enabled = false` for [{key}] in packs.local.toml.")
                 return 1
     try:
         srcs = sources()

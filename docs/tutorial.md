@@ -10,15 +10,18 @@ yet, skim the [architecture overview](architecture.md) first.
 Run every command from the core checkout unless a step says otherwise. CI runs steps 1-5 of this
 page on every change (`scripts/check_tutorial.py`), so they stay accurate.
 
-## 1. Clone core and check it
+## 1. Clone core, install it, and check it
 
 ```bash
 git clone <this-repo> ~/brainrc
 cd ~/brainrc
+python3 scripts/brainrc.py apply
 python3 scripts/brainrc.py validate
 ```
 
-You should see a line starting with `OK:` that counts skills, agents, and commands.
+`apply` fetches the default pack, [Gatework](https://github.com/brainrc/gatework), and installs
+core and Gatework into your AI tools. `validate` should then print a line starting with `OK:`
+that counts skills, agents, and commands.
 
 ## 2. Create the pack
 
@@ -80,7 +83,7 @@ python3 scripts/brainrc.py validate --pack ~/src/myteam-ai-pack
 ```
 
 You should see `OK:` with `(packs: gatework, myteam)` at the end: core, the default pack it
-ships, and yours. A common mistake is a skill without
+fetched in step 1, and yours. A common mistake is a skill without
 the prefix. `validate` then names it, for example
 ``myteam:skills/protobuf: pack skills must start with `myteam-` ``.
 
@@ -127,6 +130,8 @@ Then validate it in the pack's own CI on every push, against core's latest `main
 
 ```yaml
 - run: git clone --depth 1 <this-repo> core
+- run: git clone --depth 1 https://github.com/brainrc/gatework gatework
+- run: printf '[gatework]\npath = "%s/gatework"\n' "$PWD" > core/packs.local.toml
 - run: python3 core/scripts/brainrc.py validate --pack .
 ```
 
@@ -135,6 +140,6 @@ Then validate it in the pack's own CI on every push, against core's latest `main
 - [examples/pack-acme](../examples/pack-acme/README.md) shows every other pack feature: an
   intake context skill, a ticket connector, Deliver checks, rules, commands, and tripwires.
 - [docs/packs.md](packs.md) is the full pack reference.
-- To add a domain skill to core for everyone instead, put it in `packs/gatework/skills/<stack>/`, add a row
-  to the Domains table in `packs/gatework/skills/brainrc-gatework/SKILL.md`, and follow the repo's
-  [AGENTS.md](../AGENTS.md) rules.
+- To add a domain skill to Gatework for everyone instead, open a pull request on
+  [brainrc/gatework](https://github.com/brainrc/gatework): the skill goes in `skills/<stack>/`
+  with a row in the Domains table of `skills/brainrc-gatework/SKILL.md`.

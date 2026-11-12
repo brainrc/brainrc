@@ -1,7 +1,7 @@
 """init: first-run setup. Pick the harnesses to manage, and adopt existing instruction files.
 
 `brainrc init` asks which installed harnesses brainrc should manage and writes the answer to
-harnesses.local.toml, then whether to install each bundled pack (packs.local.toml). `--profile`
+harnesses.local.toml, then whether to install each default pack (packs.local.toml). `--profile`
 sets what this machine installs (brainrc.local.toml). A harness's instructions file (~/.claude/CLAUDE.md, ~/.codex/AGENTS.md, ...)
 that the user wrote would make apply report a CONFLICT, so init copies its text into
 rules/adopted-<harness>.local.md (rendered into every harness's instructions) and moves the
@@ -22,7 +22,7 @@ from .config import (
     PROFILE_FILE, ConfigError, TABLE_HEADER, _layered, check_config, expand, harness_home, load_harnesses, tilde,
 )
 from .plan import _managed_target, link_target
-from .sources import bundled_sources, sources
+from .sources import default_packs, sources
 
 
 @dataclass
@@ -167,7 +167,7 @@ def cmd_init(yes: bool = False, harnesses: list[str] | None = None, adopt: bool 
              dry_run: bool = False, profile: str | None = None) -> int:
     """Pick harnesses (all installed ones with --yes, or the ones named) and adopt instruction files."""
     try:
-        bundled = bundled_sources()
+        defaults = default_packs()
         packs = _layered("packs")
         for w in check_config():
             print(f"WARN {w}")
@@ -233,12 +233,12 @@ def cmd_init(yes: bool = False, harnesses: list[str] | None = None, adopt: bool 
     packs_file = config.local_dir() / "packs.local.toml"
     packs_before = packs_file.read_text() if packs_file.is_file() else ""
     packs_after = packs_before
-    for src in bundled if interactive else []:
-        on = packs.get(src.key, {}).get("enabled", True)
-        what = src.meta.get("description", "")
-        if _ask(f"Install the {src.name} pack{f' ({what})' if what else ''}?", on) != on:
-            packs_after = set_enabled(packs_after, src.key, not on)
-    _write(packs_file, packs_before, packs_after, dry_run, "bundled packs changed")
+    for key in defaults if interactive else []:
+        on = packs.get(key, {}).get("enabled", True)
+        what = packs.get(key, {}).get("description", "")
+        if _ask(f"Install the {key} pack{f' ({what})' if what else ''}?", on) != on:
+            packs_after = set_enabled(packs_after, key, not on)
+    _write(packs_file, packs_before, packs_after, dry_run, "default packs changed")
     if profile:
         profile_file = config.local_dir() / PROFILE_FILE
         before_profile = profile_file.read_text() if profile_file.is_file() else ""

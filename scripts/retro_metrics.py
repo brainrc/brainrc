@@ -1,7 +1,7 @@
 """Per-run metrics for spec-agent run folders.
 
 `load_run` turns one `specs/<slug>/` folder into a `RunRecord` (every metric None when unknown)
-or a `Skipped`. Fields follow packs/gatework/skills/brainrc-gatework/references/state.md. Missing is unknown (None),
+or a `Skipped`. Fields follow Gatework's skills/brainrc-gatework/references/state.md (brainrc/gatework). Missing is unknown (None),
 never 0. Invalid timestamps add a warning and the affected values are None: nothing is clamped.
 """
 from __future__ import annotations

@@ -64,21 +64,28 @@ class RepairTest(TempRepoCase):
         self.assertIn("Everything in sync.", out)
         self.assertEqual(brainrc.doctor_findings(), [])
 
+    def rename_skill(self):
+        skills = self.repo / "packs/gatework/skills"
+        new = skills / "brainrc-spec-agent-renamed"
+        shutil.move(str(skills / "spec-agent"), str(new))
+        md = new / "SKILL.md"
+        md.write_text(md.read_text().replace("name: spec-agent\n", f"name: {new.name}\n", 1))
+
     def test_an_item_gone_from_the_moved_checkout_is_pruned(self):
         quiet(brainrc.cmd_sync, True)
         self.move_checkout()
-        shutil.move(str(self.repo / "packs/gatework/skills/spec-agent"), str(self.repo / "packs/gatework/skills/spec-agent-renamed"))
+        self.rename_skill()
         code, out = run("apply", "--repair")
         self.assertEqual(code, 0, out)
         self.assertIn("PRUNE", out)
         self.assertFalse(os.path.lexists(self.skill))
-        self.assertTrue((self.home / ".claude/skills/spec-agent-renamed").is_symlink())
+        self.assertTrue((self.home / ".claude/skills/brainrc-spec-agent-renamed").is_symlink())
 
     def test_repair_works_without_a_manifest(self):
         quiet(brainrc.cmd_sync, True)
         (self.settings_home / "harnesses.json").unlink()  # an install from before the manifest
         self.move_checkout()
-        shutil.move(str(self.repo / "packs/gatework/skills/spec-agent"), str(self.repo / "packs/gatework/skills/spec-agent-renamed"))
+        self.rename_skill()
         code, out = run("apply", "--repair")
         self.assertEqual(code, 0, out)
         self.assertFalse(os.path.lexists(self.skill))  # pruned: its old root was inferred

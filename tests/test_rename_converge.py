@@ -172,9 +172,8 @@ class InstalledOldLinkTest(OldInstallCase):
         self.pkg = Path(tempfile.mkdtemp()) / "brainrc"
         self.core = self.pkg / "_core"
         shutil.copytree(self.repo, self.core, symlinks=True)
-        roles = self.core / "packs/gatework/skills/brainrc-gatework/roles"
-        roles.unlink()
-        shutil.copytree(self.core / "packs/gatework/agents", roles)
+        pack = self.core / "packs/gatework"  # a relative path is read beside packs.local.toml
+        (self.core / "packs.toml").write_text(f'[gatework]\npath = "{pack}"\n')
         brainrc.config.REPO = self.core
 
     def tearDown(self):

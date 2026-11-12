@@ -27,9 +27,6 @@ from .config import (
 )
 
 
-BUNDLED = "packs"  # packs that ship inside core, as packs/<key>/ (the default pack, gatework)
-
-
 @dataclass
 class Source:
     name: str             # "core" or the pack name
@@ -43,11 +40,9 @@ class Source:
         return self.name == "core"
 
     @property
-    def bundled(self) -> bool:
-        """A pack that ships inside core (packs/<name>/, named in core's own packs.toml): always the
-        same version as core. A pack of the user's that happens to sit under packs/ is not one."""
-        return (not self.is_core and self.root.parent == config.REPO / BUNDLED
-                and self.root.name in shipped_bundled())
+    def default(self) -> bool:
+        """A default pack: one core's own packs.toml lists (Gatework), wherever this machine gets it."""
+        return not self.is_core and bool(self.key) and self.key in default_packs()
 
     def rel(self, path: Path) -> str:
         rel = str(path.relative_to(self.root))
@@ -139,7 +134,7 @@ def pack_compat(src: Source, core: tuple[int, ...]) -> tuple[list[str], list[str
 
 def check_packs(srcs: list[Source]) -> tuple[list[str], list[str]]:
     """(errors, warnings) for every pack in srcs. Reads VERSION only when there are packs."""
-    packs = [s for s in srcs if not s.is_core and not s.bundled]
+    packs = [s for s in srcs if not s.is_core]
     if not packs:
         return [], []
     core = core_version()
@@ -151,18 +146,14 @@ def check_packs(srcs: list[Source]) -> tuple[list[str], list[str]]:
     return errors, warnings
 
 
-def shipped_bundled() -> set[str]:
-    """The packs core's own packs.toml bundles (packs.local.toml can't add one)."""
-    return {k for k, v in _read_toml(config.REPO / "packs.toml").items() if isinstance(v, dict) and v.get("bundled")}
+def default_packs() -> list[str]:
+    """The packs core's own packs.toml lists, in order: on unless packs.local.toml says `enabled = false`."""
+    return [k for k, v in _read_toml(config.REPO / "packs.toml").items() if isinstance(v, dict)]
 
 
 def _pack_root(cfg: dict, key: str) -> Path:
-    if sum(("path" in cfg, "git" in cfg, bool(cfg.get("bundled")))) != 1:
-        raise ConfigError(f"packs.toml [{key}]: set `path`, `git` or `bundled = true` (one of them)")
-    if cfg.get("bundled") and key not in shipped_bundled():
-        raise ConfigError(f"packs.local.toml [{key}]: `bundled` is only for the packs core ships; use `path`")
-    if cfg.get("bundled"):
-        return config.REPO / BUNDLED / key  # read-only when installed, like the rest of core
+    if ("path" in cfg) == ("git" in cfg):
+        raise ConfigError(f"packs.toml [{key}]: set `path` or `git` (one of them)")
     if "git" in cfg:
         return config.settings_home() / "packs" / key  # fetched by brainrc (brainrc/packs.py)
     root = expand(str(cfg["path"]))
@@ -184,17 +175,23 @@ def sources(include_disabled: bool = False) -> list[Source]:
     return found
 
 
-def bundled_sources(skip: Path | None = None) -> list[Source]:
-    """The bundled packs the shipped packs.toml enables, whatever packs.local.toml says: what
-    `validate --pack` checks a pack against, since a pack may use the default pack's skills and
-    agents. skip: a root to leave out (the pack being validated)."""
-    found = []
-    for key, cfg in _read_toml(config.REPO / "packs.toml").items():
-        if isinstance(cfg, dict) and cfg.get("bundled") and cfg.get("enabled", True):
-            root = _pack_root(cfg, key)
-            if skip is None or root.resolve() != skip.resolve():
-                found.append(load_pack(root, key))
-    return found
+def default_sources(skip: str = "") -> tuple[list[Source], list[str]]:
+    """The default packs this machine has on disk (fetched, or a local `path`), whatever their
+    `enabled`: what `validate --pack` checks a pack against, since a pack may use the default
+    pack's skills and agents. skip: the name of a pack to leave out (the pack being validated).
+    Also returns the keys of the default packs not on disk yet (apply fetches them)."""
+    found, missing = [], []
+    layered = _layered("packs")
+    for key in default_packs():
+        cfg = layered.get(key, {})
+        root = _pack_root(cfg, key)
+        if not root.is_dir():
+            missing.append(key)
+            continue
+        src = load_pack(root, key)
+        if src.name != skip:
+            found.append(src)
+    return found, missing
 
 
 def skills(src: Source | None = None) -> list[Path]:

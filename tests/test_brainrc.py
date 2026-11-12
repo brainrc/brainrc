@@ -18,7 +18,10 @@ import brainrc  # noqa: E402  (the package at the repo root)
 
 FOREIGN = {"hooks": [{"type": "command", "command": "node /opt/other/hook.js"}]}
 OURS_OLD = {"matcher": "Bash", "hooks": [{"type": "command", "command": "python3 ~/.claude/hooks/ai-config/old.py"}]}
-SOURCES = ("packs", "overrides", "rules")  # core ships no skills, agents or commands: the gatework pack does
+SOURCES = ("overrides", "rules")  # core ships no skills, agents or commands: its default pack, Gatework, does
+DEFAULT_PACK = REPO / "tests/fixtures/default-pack"  # a stand-in for Gatework (brainrc/gatework)
+# Each test's core lists the stand-in as its default pack, from packs/gatework inside it.
+TEST_PACKS_TOML = '[gatework]\npath = "packs/gatework"\ndescription = "spec-driven work from a ticket to a reviewed PR"\n'
 FRAGMENT = REPO / "overrides/claude/settings.fragment.json"
 
 
@@ -44,8 +47,10 @@ def copy_repo(dest: Path) -> None:
     for name in SOURCES:
         shutil.copytree(REPO / name, dest / name, symlinks=True,
                         ignore=shutil.ignore_patterns("*.local.md", "__pycache__"))
+    shutil.copytree(DEFAULT_PACK, dest / "packs/gatework", symlinks=True,
+                    ignore=shutil.ignore_patterns("README.md", "__pycache__"))
     shutil.copy2(REPO / "harnesses.toml", dest / "harnesses.toml")
-    shutil.copy2(REPO / "packs.toml", dest / "packs.toml")
+    (dest / "packs.toml").write_text(TEST_PACKS_TOML)  # relative: a moved checkout keeps its pack
     shutil.copy2(REPO / "VERSION", dest / "VERSION")
     shutil.copy2(REPO / "CHANGELOG.md", dest / "CHANGELOG.md")
 
@@ -465,7 +470,7 @@ class SyncFakeHomeTest(TempRepoCase):
 
         skill = self.home / ".claude/skills/brainrc-gatework"
         self.assertTrue(skill.is_symlink())
-        self.assertTrue((skill / "roles" / "brainrc-implementer.md").is_file())
+        self.assertTrue((skill / "roles" / "brainrc-verifier.md").is_file())
         self.assertTrue((self.home / ".claude/hooks/brainrc/guard_outward.py").is_file())
 
         merged = json.loads(settings.read_text())
@@ -503,12 +508,6 @@ draft = true
 '''
 PACK_FRAGMENT = {"hooks": {"PreToolUse": [{"matcher": "Bash", "hooks": [
     {"type": "command", "command": 'python3 "{{hooks_dir}}/guard_acme.py"'}]}]}}
-
-
-def roles_error():
-    """Gatework's own roles-link check, through its validator plugin."""
-    src = brainrc.load_pack(brainrc.config.REPO / "packs/gatework", "gatework")
-    return brainrc.plugins.load(src).roles_error(src)
 
 
 def make_pack(root: Path, pack_toml: str = PACK_TOML) -> Path:
@@ -577,8 +576,7 @@ class PackSyncTest(TempRepoCase):
 
         ext = brainrc.config.home_extensions_file().read_text()
         for expected in ("| `deploy/*.yaml` | acme-deploy | brainrc-infra-reviewer | acme |",
-                         "- `acme-context` (acme): every ticket", '"connector": "brainrc-ticket-github"',
-                         "- (acme) Deploy plan reviewed"):
+                         '"connector": "brainrc-ticket-github"', '"Deploy plan reviewed"'):
             self.assertIn(expected, ext)
 
         code, out = quiet(brainrc.cmd_sync, False)
@@ -744,7 +742,7 @@ class DoctorTest(TempRepoCase):
         self.assertEqual(snapshot(self.home, self.repo), before)
 
     def test_stale_render(self):
-        (self.repo / "rules/99-new.md").write_text("# New\n\n- Rule.\n")
+        (self.repo / "rules/99-new.md").write_text("---\ntrigger: always_on\nalwaysApply: true\n---\n# New\n\n- Rule.\n")
         self.assert_one_fail("instructions.md", "apply")
 
     def test_missing_render(self):
@@ -896,50 +894,6 @@ class BudgetTest(TempRepoCase):
         self.assertRegex(out, r"core: ~\d+ / 3000 always-loaded tokens")
 
 
-class UnslopSplitTest(unittest.TestCase):
-    SKILL = REPO / "packs/gatework/skills/brainrc-unslop"
-
-    def test_no_rule_line_was_lost(self):
-        text = "\n".join(p.read_text() for p in sorted(self.SKILL.rglob("*.md")))
-        for line in (REPO / "tests/fixtures/unslop-rules.txt").read_text().splitlines():
-            with self.subTest(line=line[:60]):
-                self.assertIn(line, text)
-
-    def test_skill_md_is_short_and_links_its_references(self):
-        body = (self.SKILL / "SKILL.md").read_text()
-        self.assertLess(len(body), 6000)
-        for ref in ("structure.md", "clarity.md", "change-prose.md"):
-            self.assertIn(f"references/{ref}", body)
-        description = brainrc.frontmatter(self.SKILL / "SKILL.md")["description"]
-        self.assertLessEqual(brainrc.estimate_tokens(description), 60)
-
-
-class RolesLinkTest(TempRepoCase):
-    def setUp(self):
-        super().setUp()
-        self.roles = self.repo / "packs/gatework/skills/brainrc-gatework/roles"
-
-    def assert_validate_fails(self):
-        code, out = quiet(brainrc.cmd_validate)
-        self.assertEqual(code, 1, out)
-        self.assertIn("skills/brainrc-gatework/roles", out)
-        self.assertIn("Platforms", out)
-
-    def test_repo_link_passes(self):
-        self.assertTrue(self.roles.is_symlink())
-        self.assertIsNone(roles_error())
-
-    def test_plain_file_from_a_checkout_without_symlinks_fails(self):
-        self.roles.unlink()
-        self.roles.write_text("../../agents")  # what git writes when core.symlinks is false
-        self.assert_validate_fails()
-
-    def test_link_to_the_wrong_place_fails(self):
-        self.roles.unlink()
-        self.roles.symlink_to("../../skills")
-        self.assert_validate_fails()
-
-
 class PluginTest(TempRepoCase):
     def manifest(self, name="plugin.json"):
         return json.loads(brainrc.plugin_manifests()[f".claude-plugin/{name}"])
@@ -953,9 +907,8 @@ class PluginTest(TempRepoCase):
         self.assertIn(claude_guard("${CLAUDE_PLUGIN_ROOT}/overrides/claude/hooks", "guard_outward.py"), commands)
         self.assertNotIn("{{hooks_dir}}", json.dumps(plugin))
 
-    def test_antigravity_manifest_is_the_name_and_the_skills_path(self):
-        self.assertEqual(json.loads(brainrc.plugin_manifests()["plugin.json"]),
-                         {"name": "brainrc", "skills": "packs/gatework/skills"})
+    def test_antigravity_manifest_is_the_name_only(self):
+        self.assertEqual(json.loads(brainrc.plugin_manifests()["plugin.json"]), {"name": "brainrc"})
 
     def test_marketplace_lists_the_repo_as_the_plugin(self):
         market = self.manifest("marketplace.json")
@@ -1064,7 +1017,7 @@ class SettingsHomeTest(TempRepoCase):
 
     def test_doctor_names_the_home_render(self):
         quiet(brainrc.cmd_sync, True)
-        (self.repo / "rules/99-new.md").write_text("# New\n\n- Rule.\n")
+        (self.repo / "rules/99-new.md").write_text("---\ntrigger: always_on\nalwaysApply: true\n---\n# New\n\n- Rule.\n")
         fails = [f for f in brainrc.doctor_findings() if f[0] == "FAIL"]
         self.assertEqual(len(fails), 1, fails)
         self.assertIn(brainrc.tilde(self.settings_home / "instructions.md"), fails[0][1])
@@ -1428,9 +1381,11 @@ class InstalledModeTest(TempRepoCase):
         self.pkg = Path(tempfile.mkdtemp()) / "brainrc"
         self.core = self.pkg / "_core"
         copy_repo(self.core)
-        roles = self.core / "packs/gatework/skills/brainrc-gatework/roles"
-        roles.unlink()
-        shutil.copytree(self.core / "packs/gatework/agents", roles)  # wheels copy the link's files
+        # The default pack lives outside the package, where apply fetched it.
+        self.default_pack = self.pkg.parent / "gatework"
+        shutil.move(self.core / "packs/gatework", self.default_pack)
+        (self.core / "packs").rmdir()
+        (self.core / "packs.toml").write_text(TEST_PACKS_TOML.replace('"packs/gatework"', f'"{self.default_pack}"'))
         brainrc.config.REPO = self.core
         self.home = Path(tempfile.mkdtemp())
         self.old_home = os.environ["HOME"]
@@ -1468,7 +1423,7 @@ class InstalledModeTest(TempRepoCase):
         self.assertEqual(code, 0, out)
         self.assertEqual(self.files(), before)
         self.assertTrue((self.settings_home / "extensions.md").is_file())
-        self.assertEqual(brainrc.link_target(self.home / ".claude/skills/spec-agent"), self.core / "packs/gatework/skills/spec-agent")
+        self.assertEqual(brainrc.link_target(self.home / ".claude/skills/spec-agent"), self.default_pack / "skills/spec-agent")
         self.assertEqual(brainrc.doctor_findings(), [])
 
     def copy_root(self) -> Path:
@@ -1554,9 +1509,6 @@ class InstalledModeTest(TempRepoCase):
         self.assertEqual(code, 1, out)
         self.assertIn("checkout", out)
 
-    def test_copied_roles_are_fine_when_installed(self):
-        self.assertIsNone(roles_error())
-
     def test_tokens_match_a_checkout(self):
         _, installed = quiet(brainrc.cmd_tokens)
         brainrc.config.REPO = self.repo
@@ -1567,6 +1519,29 @@ class InstalledModeTest(TempRepoCase):
 def git(*args, cwd=None):
     subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@example.com", "-c", "maintenance.auto=false", *args],
                    cwd=cwd, check=True, capture_output=True)
+
+
+_STAND_IN_REMOTE: list[Path] = []
+
+
+def default_pack_env() -> dict[str, str]:
+    """Env for a subprocess that runs the real checkout's brainrc: git fetches the default pack's
+    URL from a local repo of the stand-in, tagged with the pinned ref, so apply never reaches GitHub."""
+    import tomllib
+    cfg = tomllib.loads((REPO / "packs.toml").read_text())["gatework"]
+    if not _STAND_IN_REMOTE:
+        tmp = Path(tempfile.mkdtemp()).resolve()
+        import atexit
+        atexit.register(shutil.rmtree, tmp, True)
+        remote = tmp / "gatework"
+        shutil.copytree(DEFAULT_PACK, remote, symlinks=True, ignore=shutil.ignore_patterns("__pycache__"))
+        git("init", "-q", "-b", "main", cwd=remote)
+        git("add", "-A", cwd=remote)
+        git("commit", "-q", "-m", "stand-in", cwd=remote)
+        git("tag", cfg["ref"], cwd=remote)
+        _STAND_IN_REMOTE.append(remote)
+    return {"GIT_CONFIG_COUNT": "1", "GIT_CONFIG_KEY_0": f"url.{_STAND_IN_REMOTE[0].as_uri()}.insteadOf",
+            "GIT_CONFIG_VALUE_0": cfg["git"]}
 
 
 class GitPackTest(TempRepoCase):
@@ -1653,7 +1628,7 @@ class GitPackTest(TempRepoCase):
         self.use(git=self.url, path="somewhere")
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 1, out)
-        self.assertIn("`path`, `git`", out)
+        self.assertIn("set `path` or `git` (one of them)", out)
 
     def test_url_that_looks_like_an_option_is_refused(self):
         self.use(git="--upload-pack=touch x")
@@ -1912,7 +1887,9 @@ class CursorPluginTest(TempRepoCase):
         set_core_version(self.repo, "1.2.3")
         plugin = self.manifest()
         self.assertEqual((plugin["name"], plugin["version"], plugin["license"]), ("brainrc", "1.2.3", "MIT"))
-        self.assertEqual((plugin["skills"], plugin["agents"], plugin["rules"]), ("./packs/gatework/skills/", "./packs/gatework/agents/", "./rules/"))
+        self.assertEqual(plugin["rules"], "./rules/")
+        self.assertNotIn("skills", plugin)  # Gatework's skills and agents are its own plugin's
+        self.assertNotIn("agents", plugin)
         self.assertEqual(plugin["hooks"], "./.cursor-plugin/hooks.json")
         hooks = json.loads(brainrc.plugin_manifests()[".cursor-plugin/hooks.json"])
         self.assertEqual(hooks["version"], 1)
@@ -2046,73 +2023,14 @@ class ChangelogCheckTest(TempRepoCase):
         self.assertIn("CHANGELOG.md: no `## X.Y.Z` heading", out)
 
 
-def write_skill(root: Path, name: str, body: str) -> None:
-    (root / "skills" / name).mkdir(parents=True, exist_ok=True)
-    (root / "skills" / name / "SKILL.md").write_text(
-        f"---\nname: {name}\ndescription: Test connector {name}.\n---\n# {name}\n\n{body}")
-
-
-class ConnectorCheckTest(TempRepoCase):
-    """Connector skills need a heading for every required operation (references/connectors.md)."""
+class ExamplePackTest(TempRepoCase):
+    """examples/pack-acme is the copyable template: it must pass against the real core VERSION and
+    the default pack (here the stand-in; CI also checks it against the real Gatework)."""
 
     def setUp(self):
         super().setUp()
-        set_core_version(self.repo, "1.2.3")
-
-    def test_core_connectors_pass(self):
-        code, out = quiet(brainrc.cmd_validate)
-        self.assertEqual(code, 0, out)
-
-    def test_default_pack_connector_missing_an_operation_fails(self):
-        write_skill(self.repo / "packs/gatework", "brainrc-ticket-x", "## fetch\n\n## comment\n\n## transition\n")
-        code, out = quiet(brainrc.cmd_validate)
-        self.assertEqual(code, 1)
-        self.assertIn("skills/brainrc-ticket-x/SKILL.md: connector missing `##` sections for link_pr", out)
-
-    def test_core_local_and_github_connectors_document_create(self):
-        for name in ("brainrc-ticket-local", "brainrc-ticket-github"):
-            text = (Path(__file__).resolve().parent.parent / "packs/gatework/skills" / name / "SKILL.md").read_text()
-            self.assertRegex(text, r"(?m)^## create\b", name)
-            self.assertRegex(text, r"Implements the ticket connector interface:.*`create`", name)
-        contract = (Path(__file__).resolve().parent.parent / "packs/gatework/skills/brainrc-gatework/references/connectors.md").read_text()
-        self.assertRegex(contract, r"\| `create` \| no \| outward \| after an approved Ticket gate \|")
-
-    def test_a_connector_without_create_still_validates(self):
-        write_skill(self.repo / "packs/gatework", "brainrc-ticket-w", "## fetch\n\n## comment / transition / link_pr\n")
-        code, out = quiet(brainrc.cmd_validate)
-        self.assertEqual(code, 0, out)
-
-    def test_one_heading_may_name_several_operations(self):
-        write_skill(self.repo / "packs/gatework", "brainrc-ticket-y", "## fetch (read-only)\n\n## comment / transition / link_pr\n")
-        code, out = quiet(brainrc.cmd_validate)
-        self.assertEqual(code, 0, out)
-
-    def test_pr_status_is_optional_for_connectors(self):
-        write_skill(self.repo / "packs/gatework", "brainrc-ticket-with", "## fetch\n\n## comment / transition / link_pr\n\n## pr_status\n")
-        write_skill(self.repo / "packs/gatework", "brainrc-ticket-without", "## fetch\n\n## comment / transition / link_pr\n")
-        code, out = quiet(brainrc.cmd_validate)
-        self.assertEqual(code, 0, out)
-        self.assertNotIn("pr_status", out)
-
-    def test_pr_status_does_not_replace_required_operations(self):
-        write_skill(self.repo / "packs/gatework", "brainrc-ticket-z", "## fetch\n\n## comment / transition\n\n## pr_status\n")
-        code, out = quiet(brainrc.cmd_validate)
-        self.assertEqual(code, 1)
-        self.assertIn("skills/brainrc-ticket-z/SKILL.md: connector missing `##` sections for link_pr", out)
-
-    def test_pack_connector_missing_operations_fails(self):
-        pack = make_pack(Path(tempfile.mkdtemp()).resolve() / "acme-pack",
-                         PACK_TOML.replace('connector = "brainrc-ticket-github"', 'connector = "acme-tickets"'))
-        self.addCleanup(shutil.rmtree, pack.parent)
-        write_skill(pack, "acme-tickets", "## fetch\n")
-        code, out = quiet(brainrc.cmd_validate, str(pack))
-        self.assertEqual(code, 1)
-        self.assertIn("acme:skills/acme-tickets/SKILL.md: connector missing `##` sections for "
-                      "comment, transition, link_pr", out)
-
-
-class ExamplePackTest(unittest.TestCase):
-    """examples/pack-acme is the copyable template: it must pass against the real core VERSION."""
+        shutil.copy2(REPO / "VERSION", self.repo / "VERSION")
+        shutil.copy2(REPO / "CHANGELOG.md", self.repo / "CHANGELOG.md")
 
     def test_example_pack_is_valid_without_warnings(self):
         code, out = quiet(brainrc.cmd_validate, str(REPO / "examples/pack-acme"))
@@ -2634,8 +2552,9 @@ class PyprojectTest(unittest.TestCase):
         for src, dest in include.items():
             self.assertTrue((REPO / src).exists(), src)
             self.assertTrue(dest.startswith("brainrc/_core/"), dest)
-        for needed in ("packs", "rules", "harnesses.toml", "VERSION", "CHANGELOG.md"):
+        for needed in ("rules", "harnesses.toml", "packs.toml", "VERSION", "CHANGELOG.md"):
             self.assertIn(needed, include)
+        self.assertNotIn("packs", include)  # the default pack is fetched from its own repo (#338)
 
 
 if __name__ == "__main__":

@@ -1,9 +1,9 @@
-"""The syncer split from spec-agent (#172): Gatework as a bundled pack with its own validator plugin."""
-import json
+"""The syncer split from spec-agent (#172): Gatework as a default pack with its own validator plugin."""
 import os
 import shutil
 import sys
 import tempfile
+import tomllib
 import unittest
 from pathlib import Path
 
@@ -72,14 +72,6 @@ class ZeroPacksTest(SplitCase):
 
 
 class ExtensionsTest(SplitCase):
-    def test_namespaced_extensions_render_without_warnings(self):
-        self.acme()
-        code, out = quiet(brainrc.cmd_validate)
-        self.assertEqual(code, 0, out)
-        self.assertNotIn("WARN", out)
-        quiet(brainrc.cmd_sync, True)
-        self.assertIn("- (acme) Deploy plan reviewed", (self.settings_home / "extensions.md").read_text())
-
     def test_legacy_top_level_extensions_still_render_with_a_warning(self):
         self.acme(LEGACY_TOML)
         code, out = quiet(brainrc.cmd_validate)
@@ -96,16 +88,6 @@ class ExtensionsTest(SplitCase):
         self.assertIn("[extensions.spec-agent] is deprecated", out)
         quiet(brainrc.cmd_sync, True)
         self.assertIn('"connector": "brainrc-ticket-github"', (self.settings_home / "extensions.md").read_text())
-
-    def test_a_deprecated_skill_name_warns_and_renders_as_its_new_name(self):
-        self.acme(PACK_TOML.replace('"brainrc-ticket-github"', '"ticket-github"'))
-        code, out = quiet(brainrc.cmd_validate)
-        self.assertEqual(code, 0, out)
-        self.assertIn("acme:pack.toml: `ticket-github` is deprecated; name `brainrc-ticket-github`", out)
-        quiet(brainrc.cmd_sync, True)
-        ext = (self.settings_home / "extensions.md").read_text()
-        self.assertIn('"connector": "brainrc-ticket-github"', ext)
-        self.assertNotIn('"ticket-github"', ext)
 
     def test_errors_in_the_gatework_table_come_from_its_plugin(self):
         self.acme(PACK_TOML.replace('skills = ["acme-deploy"]', 'skills = ["acme-nope"]'))
@@ -154,14 +136,17 @@ class PluginTrustTest(SplitCase):
         findings = brainrc.doctor_findings()
         self.assertFalse(any("ran" in f[1] or "validator" in f[1] for f in findings), findings)
 
-    def test_only_core_bundles_a_pack(self):
-        make_pack(self.repo / "packs/acme")
-        self.packs("[acme]\nbundled = true\n")
+    def test_a_default_packs_validator_is_trusted(self):
+        (self.repo / "packs/gatework/validator.py").write_text(self.PLUGIN)
         code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1, out)
-        self.assertIn("`bundled` is only for the packs core ships", out)
-        self.packs('[acme]\npath = "packs/acme"\n')
-        self.assertFalse(brainrc.load_pack(self.repo / "packs/acme", "acme").bundled)
+        self.assertIn("ERROR gatework: plugin ran", out)
+
+    def test_bundled_is_no_longer_a_pack_key(self):
+        self.packs("[gatework]\nbundled = true\n")
+        code, out = quiet(brainrc.cmd_validate)
+        self.assertEqual(code, 0, out)
+        self.assertIn("unknown key `bundled` in [gatework]", out)
 
     def test_validate_pack_runs_the_packs_own_validator(self):
         self.acme_with_plugin()
@@ -188,61 +173,7 @@ class PluginTrustTest(SplitCase):
         self.assertIn("`validator` must name a .py file in the pack", out)
 
 
-class SkillAliasTest(SplitCase):
-    def skill(self, name: str) -> Path:
-        return self.repo / "packs/gatework/skills" / name / "SKILL.md"
-
-    def test_an_alias_stays_a_stub_the_model_cant_pick(self):
-        stub = self.skill("kubernetes")
-        stub.write_text(stub.read_text().replace("disable-model-invocation: true\n", ""))
-        code, out = quiet(brainrc.cmd_validate)
-        self.assertEqual(code, 1, out)
-        self.assertIn("skills/kubernetes/SKILL.md: alias needs `disable-model-invocation: true`", out)
-
-    def test_an_alias_is_kept_until_its_removal_release(self):
-        shutil.rmtree(self.skill("runbook").parent)
-        code, out = quiet(brainrc.cmd_validate)
-        self.assertEqual(code, 1, out)
-        self.assertIn("deprecated alias for `brainrc-runbook` is missing (keep it until 0.8.0)", out)
-
-    def test_a_command_alias_passes_its_arguments_on(self):
-        stub = self.skill("spec-approve")
-        stub.write_text(stub.read_text().replace("Arguments: $ARGUMENTS\n", ""))
-        code, out = quiet(brainrc.cmd_validate)
-        self.assertEqual(code, 1, out)
-        self.assertIn("skills/spec-approve/SKILL.md: alias body must pass on `$ARGUMENTS`", out)
-
-
-class GateworkPackTest(unittest.TestCase):
-    ROOT = Path(__file__).resolve().parent.parent
-
-    def test_the_pack_is_self_contained(self):
-        pack = self.ROOT / "packs/gatework"
-        for p in pack.rglob("*"):
-            if p.is_symlink():
-                with self.subTest(link=str(p.relative_to(pack))):
-                    self.assertTrue(p.resolve().is_relative_to(pack), "a link that leaves the pack breaks the move")
-        meta = brainrc.load_pack(pack, "gatework").meta
-        self.assertEqual((meta["id"], meta["validator"]), ("brainrc/gatework", "validator.py"))
-
-    def test_spec_agent_is_a_deprecated_alias_for_one_minor_release(self):
-        skills = self.ROOT / "packs/gatework/skills"
-        alias = brainrc.frontmatter(skills / "spec-agent/SKILL.md")
-        self.assertEqual(brainrc.frontmatter(skills / "brainrc-gatework/SKILL.md")["name"], "brainrc-gatework")
-        self.assertEqual(alias["description"], "Deprecated, use brainrc-gatework (removed in 0.8.0)")
-        self.assertEqual(alias["disable-model-invocation"], "true")
-        self.assertIn("`brainrc-gatework` skill", (skills / "spec-agent/SKILL.md").read_text())
-        for old, new in brainrc.naming.SKILL_ALIASES.items():
-            with self.subTest(alias=old):
-                meta = brainrc.frontmatter(skills / old / "SKILL.md")
-                self.assertEqual(meta["description"], f"Deprecated, use {new} (removed in 0.8.0)")
-                self.assertEqual(brainrc.frontmatter(skills / new / "SKILL.md")["name"], new)
-        for name in ("brainrc-work", "brainrc-plan", "brainrc-gatework-approve", "brainrc-gatework-resume"):
-            with self.subTest(skill=name):
-                text = (skills / name / "SKILL.md").read_text()
-                self.assertIn("`brainrc-gatework` skill", text)
-                self.assertNotIn("`spec-agent` skill", text)
-
+class CoreTest(unittest.TestCase):
     def test_core_holds_no_spec_agent_knowledge(self):
         for name in ("EXTENSION_KEYS", "ROLES_LINK", "REQUIRED_CONNECTOR_OPS", "extensions_file"):
             with self.subTest(name=name):
@@ -251,45 +182,55 @@ class GateworkPackTest(unittest.TestCase):
             self.assertFalse(hasattr(brainrc.validate, name))
 
 
-class PluginInstallTest(unittest.TestCase):
-    """Codex (through .claude-plugin/) and Antigravity (root plugin.json) find Gatework's skills."""
-    ROOT = Path(__file__).resolve().parent.parent
+class DefaultPackTest(SplitCase):
+    """Gatework is a default pack: core's packs.toml fetches it from its own repo (#338)."""
+    REAL = Path(__file__).resolve().parent.parent
 
-    def setUp(self):
-        # Codex's install copy drops symlinks; copy the repo the same way.
-        self.tmp = Path(tempfile.mkdtemp())
-        self.copy = self.tmp / "plugin"
-        ignore = shutil.ignore_patterns(".git", "__pycache__")
-        shutil.copytree(self.ROOT, self.copy, symlinks=True, ignore=ignore)
-        for link in [p for p in self.copy.rglob("*") if p.is_symlink()]:
-            link.unlink()
-        self.expected = {p.parent.name for p in (self.ROOT / "packs/gatework/skills").glob("*/SKILL.md")}
+    def test_core_fetches_gatework_from_its_repo_at_a_release_tag(self):
+        cfg = tomllib.loads((self.REAL / "packs.toml").read_text())["gatework"]
+        self.assertEqual(cfg["git"], "https://github.com/brainrc/gatework.git")
+        self.assertRegex(cfg["ref"], r"^v\d+\.\d+\.\d+$")
+        self.assertNotIn("path", cfg)
+        self.assertFalse((self.REAL / "packs").exists(), "core ships no pack of its own")
 
-    def tearDown(self):
-        shutil.rmtree(self.tmp)
+    def test_a_local_path_replaces_the_default_packs_git(self):
+        (self.repo / "packs.toml").write_text('[gatework]\ngit = "https://example.com/g.git"\nref = "v1.0.0"\n')
+        clone = self.repo / "packs/gatework"
+        self.packs(f'[gatework]\npath = "{clone}"\n')
+        cfg = brainrc.config._layered("packs")["gatework"]
+        self.assertEqual(cfg, {"path": str(clone)})
+        self.assertEqual(brainrc.sources()[1].root, clone)
+        self.assertTrue(brainrc.sources()[1].default)
 
-    def found(self, paths) -> set[str]:
-        paths = [paths] if isinstance(paths, str) else paths
-        return {s.parent.name for d in paths for s in (self.copy / d).glob("*/SKILL.md")}
+    def test_a_local_ref_alone_keeps_the_git_url(self):
+        (self.repo / "packs.toml").write_text('[gatework]\ngit = "https://example.com/g.git"\nref = "v1.0.0"\n')
+        self.packs('[gatework]\nref = "v1.1.0"\n')
+        cfg = brainrc.config._layered("packs")["gatework"]
+        self.assertEqual((cfg["git"], cfg["ref"]), ("https://example.com/g.git", "v1.1.0"))
 
-    def test_codex_reads_one_skills_dir_from_the_claude_manifest(self):
-        manifest = json.loads((self.copy / ".claude-plugin/plugin.json").read_text())
-        self.assertIsInstance(manifest["skills"], str)  # the form Codex documents
-        self.assertTrue(manifest["skills"].startswith("./"))
-        self.assertEqual(self.found(manifest["skills"]), self.expected)
+    def test_a_pack_enabled_locally_is_not_a_default_pack(self):
+        self.acme()
+        acme = [s for s in brainrc.sources() if s.key == "acme"][0]
+        self.assertFalse(acme.default)
 
-    def test_antigravity_reads_skills_paths_from_the_root_manifest(self):
-        manifest = json.loads((self.copy / "plugin.json").read_text())
-        self.assertLessEqual(set(manifest), {"name", "skills"})  # its schema rejects other keys
-        self.assertFalse(manifest["skills"].startswith(("/", "./", "..")))
-        self.assertEqual(self.found(["skills", manifest["skills"]]), self.expected)
+    def test_validate_pack_checks_against_the_default_pack(self):
+        self.acme()  # its extensions name brainrc-infra-reviewer and brainrc-ticket-github
+        code, out = quiet(brainrc.cmd_validate, str(self.pack))
+        self.assertEqual(code, 0, out)
+        self.assertIn("(packs: gatework, acme)", out)
 
-    def test_the_engine_finds_its_roles_without_the_roles_link(self):
-        engine = self.copy / "packs/gatework/skills/brainrc-gatework"
-        self.assertFalse((engine / "roles").exists())
-        self.assertIn("../../agents/<role>.md", (engine / "SKILL.md").read_text())
-        for role in (self.ROOT / "packs/gatework/agents").glob("brainrc-*.md"):
-            self.assertTrue((engine / "../../agents" / role.name).is_file(), role.name)
+    def test_validate_pack_of_the_default_pack_itself_checks_it_once(self):
+        code, out = quiet(brainrc.cmd_validate, str(self.repo / "packs/gatework"))
+        self.assertEqual(code, 0, out)
+        self.assertIn("(packs: gatework)", out)
+        self.assertNotIn("duplicate", out.lower())
+
+    def test_validate_pack_says_when_the_default_pack_is_not_fetched(self):
+        (self.repo / "packs.toml").write_text('[gatework]\ngit = "https://example.com/g.git"\nref = "v1.0.0"\n')
+        self.acme()
+        code, out = quiet(brainrc.cmd_validate, str(self.pack))
+        self.assertIn("default pack `gatework` isn't fetched yet, so this pack is checked without it", out)
+        self.assertIn("(packs: acme)", out)
 
 
 if __name__ == "__main__":

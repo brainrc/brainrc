@@ -53,7 +53,8 @@ first, and the last 5 backups are kept).
 
 ## Install without a clone
 
-`brainrc` also installs as a command, with core's skills, agents, rules, and hooks bundled:
+`brainrc` also installs as a command, with core's rules and hooks bundled (`apply` fetches
+Gatework, the default pack):
 
 ```bash
 uv tool install git+https://github.com/brainrc/brainrc   # or: pipx install git+https://github.com/brainrc/brainrc
@@ -96,51 +97,58 @@ packs, and unmerged hooks. Each problem comes with its fix.
 
 ## Plugins (no clone)
 
-### Claude Code
+There are two plugins: `brainrc` (this repo) carries core's guard hooks and rules, and
+`gatework` ([brainrc/gatework](https://github.com/brainrc/gatework)) carries the skills
+(including `/brainrc-work`) and the agents. Install both for what `brainrc` installs, minus
+the rules where a harness's plugins can't load them.
 
-Claude Code users can install the skills (including `/brainrc-work`), agents, and guard hooks as a plugin:
+### Claude Code
 
 ```text
 /plugin marketplace add brainrc/brainrc
 /plugin install brainrc@brainrc
+/plugin marketplace add brainrc/gatework
+/plugin install gatework@gatework
 ```
 
-| Piece | Plugin | `brainrc` |
+| Piece | Plugins | `brainrc` |
 |---|---|---|
-| Skills, agents | yes, named `brainrc:<name>` (`/brainrc:brainrc-work`) | yes |
-| Claude guard hooks | yes | yes |
+| Skills, agents | `gatework`, named `gatework:<name>` (`/gatework:brainrc-work`) | yes |
+| Claude guard hooks | `brainrc` | yes |
 | Rules (`rules/`) | no: plugins can't load instructions into every session | yes |
 | Packs, other harnesses (Codex, OpenCode, Antigravity, Cursor) | no | yes |
 
 Use one path, not both: together they load every skill and hook twice. For rules with the
-plugin, copy `rules/*.md` into your own `~/.claude/CLAUDE.md`.
+plugins, copy `rules/*.md` into your own `~/.claude/CLAUDE.md`.
 
 ### Codex
 
 ```text
 codex plugin marketplace add brainrc/brainrc
 codex plugin add brainrc@brainrc
+codex plugin marketplace add brainrc/gatework
+codex plugin add gatework@gatework
 ```
 
-Codex gets the skills (`brainrc-work`, `brainrc-review`, `brainrc-gatework-*`, and the rest) and the agent files spec-agent
-reads. Rules don't come with a Codex plugin: run `brainrc`, or copy `rules/*.md` into
-`~/.codex/AGENTS.md`. Whether Codex runs the plugin's guard hooks is not yet verified
-([harness packages](harness-packages.md#codex)).
+Codex gets Gatework's skills (`brainrc-work`, `brainrc-review`, `brainrc-gatework-*`, and the
+rest) and the agent files spec-agent reads. Rules don't come with a Codex plugin: run `brainrc`,
+or copy `rules/*.md` into `~/.codex/AGENTS.md`. Whether Codex runs the `brainrc` plugin's guard
+hooks is not yet verified ([harness packages](harness-packages.md#codex)).
 
 ### Antigravity CLI
 
-Antigravity CLI (`agy`) installs the repo as a plugin from the root `plugin.json`:
+Antigravity CLI (`agy`) installs each repo as a plugin from its root `plugin.json`:
 
 ```text
 agy plugin install https://github.com/brainrc/brainrc
+agy plugin install https://github.com/brainrc/gatework
 ```
 
-It gets the rules: each `rules/*.md` carries `trigger: always_on`, which Antigravity needs to
-load it, and the skills, from `packs/gatework/skills` (the `skills` path in `plugin.json`).
-Antigravity has no manifest path for agents, so the role files reach it only as files the
-`brainrc-gatework` skill reads. Guard hooks aren't included yet, so use
-agy's own permission settings. This install was built from Antigravity's public docs and issues
-and hasn't been run end to end
+The first gets the rules: each `rules/*.md` carries `trigger: always_on`, which Antigravity needs
+to load it. The second gets the skills from Gatework's root `skills/`. Antigravity has no
+manifest path for agents, so the role files reach it only as files the `brainrc-gatework` skill
+reads. Guard hooks aren't included yet, so use agy's own permission settings. This install was
+built from Antigravity's public docs and issues and hasn't been run end to end
 ([harness packages](harness-packages.md#antigravity-cli)).
 
 ### Cursor
@@ -149,13 +157,14 @@ Cursor loads a checkout as a local plugin from `.cursor-plugin/`:
 
 ```bash
 ln -s ~/src/brainrc ~/.cursor/plugins/local/brainrc
+ln -s ~/src/gatework ~/.cursor/plugins/local/gatework
 ```
 
-It gets the skills, the agents, the rules (each carries `alwaysApply: true`), and the guard
-hooks for shell commands and file reads, which deny instead of asking. Use the plugin or
-`brainrc`'s Cursor links, not both: `brainrc` links the same skills and hooks (Cursor has no user
-rules file, so rules come only with the plugin). Built from Cursor's official plugin repo and not
-yet run in a real Cursor ([harness packages](harness-packages.md#cursor)).
+The first gets the rules (each carries `alwaysApply: true`) and the guard hooks for shell
+commands and file reads, which deny instead of asking; the second gets the skills and the agents.
+Use the plugins or `brainrc`'s Cursor links, not both: `brainrc` links the same skills and hooks
+(Cursor has no user rules file, so rules come only with the plugin). Built from Cursor's official
+plugin repo and not yet run in a real Cursor ([harness packages](harness-packages.md#cursor)).
 
 ### Moving from ai-config
 
@@ -171,7 +180,7 @@ Then install `brainrc@brainrc` as above. `doctor` warns until the old plugin is 
 ## Platforms
 
 macOS and Linux. Everything installs by symlink, and spec-agent reads its role files through
-the `packs/gatework/skills/brainrc-gatework/roles` symlink, so the checkout needs symlinks too. On Windows, use WSL,
+Gatework's `skills/brainrc-gatework/roles` symlink, so checkouts need symlinks too. On Windows, use WSL,
 or turn on Developer Mode and run `git config --global core.symlinks true` before cloning.
 `validate` and `doctor` report a checkout without symlinks, with the fix.
 
@@ -206,13 +215,12 @@ in a **pack**: a separate repo with the same layout. See [packs.md](packs.md).
 ```
 rules/          Global instructions, as ordered markdown fragments (00-core.md, 10-git.md, ...).
                 Concatenated into CLAUDE.md / AGENTS.md.
-packs/gatework/ Gatework, the default pack: its skills/ (the brainrc-gatework engine, ticket
-                connectors, domain skills), agents/ (brainrc-analyst … brainrc-verifier) and validator.py.
 commands/       Optional, for packs: slash commands. Gatework's (/brainrc-work, /brainrc-review, /brainrc-gatework-*) are skills.
 mcp/            Canonical MCP server registry. Env var names only, never secret values.
 overrides/      Harness-specific config (Claude guard hooks + settings fragment).
 harnesses.toml  Where each harness reads each content type.
-packs.toml      The bundled Gatework pack; extra source repos ("packs") go in packs.local.toml.
+packs.toml      The default pack, Gatework (brainrc/gatework, fetched by `apply`); extra source
+                repos ("packs") go in packs.local.toml.
 VERSION         Core version that packs pin with `requires_core`; changes in CHANGELOG.md.
 changelog.d/    One fragment per unreleased change; folded into CHANGELOG.md on release.
 brainrc/        The brainrc package: sync, validate, doctor, plugin, tokens (Python 3.11+, stdlib only).

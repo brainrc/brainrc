@@ -43,9 +43,9 @@ In Claude Code, the quickest path:
 /plugin install brainrc@brainrc
 ```
 
-The plugin covers Claude Code only. For the other tools, or to also get the shared rules and
-private packs, use the syncer above. All install paths, platform notes, and pinning:
-[docs/install.md](docs/install.md).
+It carries the guard hooks; add spec-agent the same way from `brainrc/gatework`. Plugins cover
+Claude Code only. For the other tools, rules and private packs, use the syncer above. All install
+paths, platform notes, and pinning: [docs/install.md](docs/install.md).
 
 ## Why not …
 
@@ -70,7 +70,7 @@ application code *and* infrastructure.
 ```
 
 You approve the **spec**, the **plan**, and **delivery** (push, PR, ticket update). Everything
-between runs on its own, with evidence at every step. Details: [docs/spec-agent.md](docs/spec-agent.md).
+between runs on its own, with evidence at every step. It lives in [Gatework](https://github.com/brainrc/gatework), the default pack. Details: [docs/spec-agent.md](docs/spec-agent.md).
 
 > **Harness support is not equal.** Each role gets a fresh context, and the guard hooks are
 > enforced, only in **Claude Code**. **OpenCode** also runs roles as real subagents, but every

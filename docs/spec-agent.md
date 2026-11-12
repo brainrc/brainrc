@@ -5,6 +5,9 @@ request: **spec → plan → implement → verify → document → deliver**, ru
 skill with a team of small, reusable agents. You approve at three gates. Everything else runs
 on its own.
 
+spec-agent is the engine of Gatework, brainrc's default pack ([packs.md](packs.md#bundled-packs)):
+the `brainrc-gatework` skill, with `spec-agent` kept as a deprecated alias until 0.8.0.
+
 > **Best effort outside Claude Code.** The design assumes each role starts with a fresh context
 > and that hooks enforce the guardrails. That is fully true only in Claude Code. OpenCode runs
 > real subagents, but without per-role models, and its hooks block instead of asking. Codex,

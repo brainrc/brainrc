@@ -1,0 +1,10 @@
+---
+bump: minor
+---
+- Frontmatter is parsed as the YAML subset skills and agents use: folded (`>`) and literal (`|`) block scalars with their chomping and indentation indicators, quoted values and comments. A multi-line `description` now reads in full instead of as `>` (#171).
+- **[pack contract]** Core's skills and agents move into Gatework, a pack bundled under `packs/gatework/` (ID `brainrc/gatework`) and on by default. `[gatework] enabled = false` in `packs.local.toml` turns it off (`brainrc init` asks), and brainrc then installs core's rules and guard hooks and nothing else. The folder is self-contained so it can move to its own repo (#172).
+- **[pack contract]** The engine skill is now `brainrc-gatework`; `spec-agent` stays as a deprecated alias until 0.8.0. The deprecated agent aliases (`analyst`, `verifier` and the rest), announced for removal in 0.7.0, now stay until 0.8.0 too, so both go in one release (#172).
+- **[pack contract]** A pack can ship a validator plugin (`validator = "validator.py"` in `pack.toml`) with its own checks and renders. Core runs it for bundled packs, under `validate --pack`, and for packs with `run_validator = true`. Gatework's plugin now holds the extension keys, the connector checks, the roles link and agent alias checks, and the `extensions.md` render (#172).
+- **[pack contract]** Pack extensions for spec-agent move under `[extensions.gatework]`. The keys directly under `[extensions]`, and `[extensions.spec-agent]`, still work and warn until 0.8.0. `validate` warns about an extensions table no enabled pack reads. `apply` no longer writes the deprecated copy at `skills/spec-agent/references/extensions.md` and removes the old one (#172).
+- Per-machine profiles and excludes in `brainrc.local.toml`: `profile = "minimal"` installs rules only, `"recommended"` adds skills, agents, commands and hooks, and `"full"` (the default) adds MCP servers; `exclude = ["skills/brainrc-aws"]` drops matching items. `apply` prunes what they drop, and `brainrc init --profile` writes the profile (#173).
+- The example packs and the tutorial pin `requires_core = ">=0.6, <0.8"` and use `[extensions.gatework]`.

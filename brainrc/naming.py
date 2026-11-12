@@ -98,7 +98,7 @@ def _item_names(src: Source) -> list[str]:
 AGENT_ALIASES = {n: f"brainrc-{n}" for n in (
     "analyst", "architect", "code-reviewer", "doc-writer", "implementer", "infra-reviewer",
     "researcher", "security-reviewer", "test-writer", "verifier")}
-AGENT_ALIAS_REMOVED_IN = "0.7.0"
+AGENT_ALIAS_REMOVED_IN = "0.8.0"  # was 0.7.0; kept one more minor release with the spec-agent alias (#172)
 
 
 # Items core shipped before the split (#172). Rule 7 lets them keep their names inside the official

@@ -1029,14 +1029,7 @@ class UserInvokedSkillTest(unittest.TestCase):
     def test_core_has_no_commands_folder(self):
         self.assertFalse((REPO / "commands").exists())
 
-    def test_skills_taking_arguments_are_user_invoked(self):
-        for skill in sorted((REPO / "packs/gatework/skills").glob("*/SKILL.md")):
-            if "$ARGUMENTS" not in skill.read_text():
-                continue
-            with self.subTest(skill=skill.parent.name):
-                meta = brainrc.frontmatter(skill)
-                self.assertEqual(meta.get("disable-model-invocation"), "true")
-                self.assertTrue(meta.get("argument-hint"))
+    # Gatework's tests check that its skills taking $ARGUMENTS are user-invoked.
 
 
 class PythonVersionTest(unittest.TestCase):

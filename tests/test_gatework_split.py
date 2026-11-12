@@ -225,6 +225,28 @@ class DefaultPackTest(SplitCase):
         self.assertIn("(packs: gatework)", out)
         self.assertNotIn("duplicate", out.lower())
 
+    def test_validate_pack_names_a_missing_local_path(self):
+        self.packs(f'[gatework]\npath = "{self.pack.parent / "nowhere"}"\n')
+        make_pack(self.pack)
+        code, out = quiet(brainrc.cmd_validate, str(self.pack))
+        self.assertIn("default pack `gatework`: no directory at", out)
+        self.assertNotIn("fetched", out)
+
+    def test_validate_pack_leaves_out_a_disabled_default_pack(self):
+        self.acme(extra="\n[gatework]\nenabled = false\n")
+        code, out = quiet(brainrc.cmd_validate, str(self.pack))
+        self.assertIn("(packs: acme)", out)
+        self.assertNotIn("isn't fetched", out)
+
+    def test_validate_pack_of_a_default_pack_clone_applies_core_only_checks(self):
+        skills = self.repo / "packs/gatework/skills"
+        (skills / "brainrc-work").rename(skills / "init")  # a harness built-in
+        md = skills / "init/SKILL.md"
+        md.write_text(md.read_text().replace("name: brainrc-work", "name: init"))
+        code, out = quiet(brainrc.cmd_validate, str(self.repo / "packs/gatework"))
+        self.assertEqual(code, 1, out)
+        self.assertIn("skill name `init` is reserved", out)
+
     def test_validate_pack_says_when_the_default_pack_is_not_fetched(self):
         (self.repo / "packs.toml").write_text('[gatework]\ngit = "https://example.com/g.git"\nref = "v1.0.0"\n')
         self.acme()

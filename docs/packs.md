@@ -158,8 +158,9 @@ Python module in the pack. Each name in it is optional:
 | `doctor(me)` | `(FAIL or WARN, what, fix)` findings for `doctor` |
 | `render_extensions(tables)` | the text of `$BRAINRC_HOME/extensions.md` |
 
-A validator is the pack's code running inside `brainrc`, so core runs it only for a default pack,
-for the pack `validate --pack` checks, and for a pack whose entry in `packs.local.toml` sets
+A validator is the pack's code running inside `brainrc`, so core runs it only for a default pack
+(core's `packs.toml` pins it, or your own `packs.local.toml` points it elsewhere), for the pack
+`validate --pack` checks, and for a pack whose entry in `packs.local.toml` sets
 `run_validator = true`. Otherwise `validate` warns that the pack ships one. Gatework's
 [validator.py](https://github.com/brainrc/gatework/blob/main/validator.py) is the reference.
 

@@ -41,8 +41,9 @@ class Source:
 
     @property
     def default(self) -> bool:
-        """A default pack: one core's own packs.toml lists (Gatework), wherever this machine gets it."""
-        return not self.is_core and bool(self.key) and self.key in default_packs()
+        """A default pack: one core's own packs.toml lists (Gatework), wherever this machine gets it.
+        `validate --pack` has no table key, so a pack it checks counts by its name."""
+        return not self.is_core and (self.key or self.name) in default_packs()
 
     def rel(self, path: Path) -> str:
         rel = str(path.relative_to(self.root))
@@ -146,9 +147,17 @@ def check_packs(srcs: list[Source]) -> tuple[list[str], list[str]]:
     return errors, warnings
 
 
+_DEFAULT_PACKS: dict[str, list[str]] = {}
+
+
 def default_packs() -> list[str]:
-    """The packs core's own packs.toml lists, in order: on unless packs.local.toml says `enabled = false`."""
-    return [k for k, v in _read_toml(config.REPO / "packs.toml").items() if isinstance(v, dict)]
+    """The packs core's own packs.toml lists, in order: on unless packs.local.toml says `enabled = false`.
+    Parsed once per text: Source.default asks for every source."""
+    path = config.REPO / "packs.toml"
+    text = path.read_text() if path.is_file() else ""
+    if text not in _DEFAULT_PACKS:
+        _DEFAULT_PACKS[text] = [k for k, v in _read_toml(path).items() if isinstance(v, dict)] if text else []
+    return _DEFAULT_PACKS[text]
 
 
 def _pack_root(cfg: dict, key: str) -> Path:
@@ -176,22 +185,29 @@ def sources(include_disabled: bool = False) -> list[Source]:
 
 
 def default_sources(skip: str = "") -> tuple[list[Source], list[str]]:
-    """The default packs this machine has on disk (fetched, or a local `path`), whatever their
-    `enabled`: what `validate --pack` checks a pack against, since a pack may use the default
-    pack's skills and agents. skip: the name of a pack to leave out (the pack being validated).
-    Also returns the keys of the default packs not on disk yet (apply fetches them)."""
-    found, missing = [], []
+    """The enabled default packs this machine has on disk (fetched, or a local `path`): what
+    `validate --pack` checks a pack against, since a pack may use their skills and agents.
+    skip: a pack name to leave out (the pack being validated). Also returns a warning for each
+    enabled default pack that isn't on disk."""
+    found, warnings = [], []
     layered = _layered("packs")
     for key in default_packs():
         cfg = layered.get(key, {})
-        root = _pack_root(cfg, key)
-        if not root.is_dir():
-            missing.append(key)
+        if not cfg.get("enabled", True) or key == skip:
             continue
-        src = load_pack(root, key)
-        if src.name != skip:
-            found.append(src)
-    return found, missing
+        root = _pack_root(cfg, key)
+        if root.is_dir():
+            src = load_pack(root, key)
+            if src.name != skip:
+                found.append(src)
+        elif "path" in cfg:
+            warnings.append(f"default pack `{key}`: no directory at {tilde(root)} (its `path`), so this "
+                            "pack is checked without it")
+        else:
+            warnings.append(f"default pack `{key}` isn't fetched yet, so this pack is checked without it; "
+                            f"run `{config.command('apply')}` first, or set `path` for [{key}] in "
+                            "packs.local.toml to a clone")
+    return found, warnings
 
 
 def skills(src: Source | None = None) -> list[Path]:

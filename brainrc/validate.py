@@ -270,11 +270,9 @@ def cmd_validate(pack: str | None = None, key: str = "") -> int:
         if pack:
             root = expand(pack).resolve()
             checked = load_pack(root, key or None)
-            defaults, unfetched = default_sources(skip=checked.name)
+            defaults, missing = default_sources(skip=checked.name)
             srcs = [Source("core", config.REPO), *defaults, checked]
-            config_warnings += [f"default pack `{k}` isn't fetched yet, so this pack is checked without "
-                                f"it; run `{config.command('apply')}` first, or set `path` for [{k}] in "
-                                "packs.local.toml to a clone" for k in unfetched if k != checked.name]
+            config_warnings += missing
         else:
             srcs = sources()
         plugins = validators(srcs)

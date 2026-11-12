@@ -8,7 +8,8 @@ bump: patch
   `path` to a clone. Its skills, agents and names are unchanged.
 - **[pack contract]** "Bundled" packs become default packs: any table in core's `packs.toml`. A
   default pack's validator plugin is trusted, and a local `path` or `git` replaces its shipped
-  origin (a local `ref` alone keeps the URL). The `bundled` key is gone; `validate` warns about it.
+  origin (a local `ref` alone keeps the URL). The `bundled` key is gone and `validate` warns about
+  it; only core could set it, so no pack breaks.
 - `validate --pack` checks a pack against core and the default packs on disk, and warns when a
   default pack isn't fetched yet.
 - The plugins split: `brainrc` carries the guard hooks and rules, and Gatework is its own plugin

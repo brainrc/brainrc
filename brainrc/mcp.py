@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from . import jsonc
-from .config import ConfigError, expand, former_homes, in_scope, load_harnesses, settings_home
+from .config import ConfigError, expand, former_homes, in_scope, installs, load_harnesses, settings_home
 from .settings import replace_file
 from .sources import Source
 
@@ -150,7 +150,7 @@ class McpSync:
 
 def mcp_plan(srcs: list[Source]) -> list[McpSync]:
     """One sync per harness with an `mcp` file; disabled harnesses get none, so theirs are removed."""
-    servers = load_servers(srcs)
+    servers = load_servers(srcs) if installs("mcp") else {}  # none unless the profile installs them
     enabled = load_harnesses()
     syncs = []
     for name, h in load_harnesses(include_disabled=True).items():

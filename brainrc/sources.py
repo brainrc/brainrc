@@ -1,6 +1,7 @@
 """Sources (core and packs), their items, and the rule and extension renders."""
 from __future__ import annotations
 
+import fnmatch
 import os
 import re
 import tomllib
@@ -203,6 +204,21 @@ def markdown_files(folder: str, src: Source | None = None) -> list[Path]:
 
 def items(src: Source, kind: str) -> list[Path]:
     return skills(src) if kind == "skills" else markdown_files(kind, src)
+
+
+def installed_items(src: Source, kind: str) -> list[Path]:
+    """items(src, kind) that this machine installs: none under the minimal profile, and never one
+    that brainrc.local.toml `exclude` matches. A pattern matches the item's path in its source
+    (`skills/brainrc-aws`) or that path after the pack's name (`gatework:skills/brainrc-aws`)."""
+    if not config.installs("items"):
+        return []
+    _, exclude = config.install_profile()
+    found = []
+    for p in items(src, kind):
+        rel = str(p.relative_to(src.root))
+        if not any(fnmatch.fnmatchcase(r, pat.rstrip("/")) for pat in exclude for r in (rel, f"{src.name}:{rel}")):
+            found.append(p)
+    return found
 
 
 def item_name(path: Path) -> str:

@@ -13,6 +13,7 @@ from .config import (
     ConfigError,
     expand,
     hook_command_dir,
+    installs,
     hooks_copy_root,
     load_harnesses,
     pack_hooks_dir,
@@ -20,7 +21,7 @@ from .config import (
     rendered_instructions,
     tilde,
 )
-from .sources import Source, items, sources
+from .sources import Source, installed_items, sources
 from .opencode import agents_format
 
 
@@ -196,19 +197,20 @@ def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
     roots = [s.root for s in every_src] + (old_roots or [])
     links: list[Link] = []
     merges: list[SettingsMerge] = []
+    hooks_on = installs("hooks")  # the minimal profile installs rules only (#173)
     for name, h in _scoped(load_harnesses()).items():
         for kind in KINDS:
             if kind in h:
                 d = expand(h[kind])
                 rendered = kind == "agents" and agents_format(h) == "opencode"
                 links += [Link(name, d / p.name, rendered_agents_dir() / p.name if rendered else p)
-                          for src in srcs for p in items(src, kind)]
+                          for src in srcs for p in installed_items(src, kind)]
         if "instructions" in h:
             links.append(Link(name, expand(h["instructions"]), rendered_instructions()))
-        if "plugin" in h:  # one file the harness loads as a plugin (OpenCode's guards)
+        if "plugin" in h and hooks_on:  # one file the harness loads as a plugin (OpenCode's guards)
             links.append(Link(name, expand(h["plugin"]), config.REPO / "overrides" / name / "plugin.js"))
         fragments: list[tuple[Path, str | None]] = []
-        for src in srcs:
+        for src in srcs if hooks_on else []:
             hooks = src.root / "overrides" / name / "hooks"
             hooks_dir = None
             if "hooks_dir" in h:
@@ -224,6 +226,9 @@ def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
         if "settings" in h and fragments:
             known = {pack_hooks_dir(h["hooks_dir"], s.name) for s in every_src if "hooks_dir" in h}
             merges.append(SettingsMerge(name, expand(h["settings"]), fragments, known))
+        elif "settings" in h and "hooks_dir" in h and not hooks_on:  # take brainrc's hooks back out
+            known = {h["hooks_dir"]} | {pack_hooks_dir(h["hooks_dir"], s.name) for s in every_src}
+            merges.append(SettingsMerge(name, expand(h["settings"]), [], known))
     # A disabled harness keeps its settings file, so take brainrc's hooks back out of it:
     # merging no fragments removes only the groups brainrc owns.
     enabled = load_harnesses()

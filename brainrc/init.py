@@ -1,7 +1,8 @@
 """init: first-run setup. Pick the harnesses to manage, and adopt existing instruction files.
 
 `brainrc init` asks which installed harnesses brainrc should manage and writes the answer to
-harnesses.local.toml. A harness's instructions file (~/.claude/CLAUDE.md, ~/.codex/AGENTS.md, ...)
+harnesses.local.toml, then whether to install each bundled pack (packs.local.toml). `--profile`
+sets what this machine installs (brainrc.local.toml). A harness's instructions file (~/.claude/CLAUDE.md, ~/.codex/AGENTS.md, ...)
 that the user wrote would make apply report a CONFLICT, so init copies its text into
 rules/adopted-<harness>.local.md (rendered into every harness's instructions) and moves the
 original aside, leaving the path free for apply's link. It never runs apply itself.
@@ -17,9 +18,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from . import config
-from .config import ConfigError, TABLE_HEADER, check_config, expand, harness_home, load_harnesses, tilde
+from .config import (
+    PROFILE_FILE, ConfigError, TABLE_HEADER, _layered, check_config, expand, harness_home, load_harnesses, tilde,
+)
 from .plan import _managed_target, link_target
-from .sources import sources
+from .sources import bundled_sources, sources
 
 
 @dataclass
@@ -68,6 +71,29 @@ def set_enabled(text: str, name: str, value: bool) -> str:
         lines[start] += "\n"
     lines.insert(start + 1, line + "\n")
     return "".join(lines)
+
+
+def set_profile(text: str, profile: str) -> str:
+    """text (a brainrc.local.toml) with its top-level `profile` set, everything else kept as is."""
+    line = f'profile = "{profile}"\n'
+    lines = text.splitlines(keepends=True)
+    for i, raw in enumerate(lines):
+        if TABLE_HEADER.match(raw):
+            break
+        if re.match(r"\s*profile\s*=", raw):
+            lines[i] = line
+            return "".join(lines)
+    return line + text
+
+
+def _write(path: Path, before: str, after: str, dry_run: bool, what: str) -> None:
+    if after == before:
+        return
+    tomllib.loads(after)  # the setters keep the file valid TOML; fail loudly if one ever doesn't
+    if not dry_run:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(after)
+    print(f"{'Would write' if dry_run else 'Wrote'} {tilde(path)}: {what}.")
 
 
 def _instruction_files(names: list[str], roots: list[Path]) -> list[tuple[str, Path]]:
@@ -138,9 +164,11 @@ def _adopt(a: Adoption) -> None:
 
 
 def cmd_init(yes: bool = False, harnesses: list[str] | None = None, adopt: bool = True,
-             dry_run: bool = False) -> int:
+             dry_run: bool = False, profile: str | None = None) -> int:
     """Pick harnesses (all installed ones with --yes, or the ones named) and adopt instruction files."""
     try:
+        bundled = bundled_sources()
+        packs = _layered("packs")
         for w in check_config():
             print(f"WARN {w}")
         every = load_harnesses(include_disabled=True)
@@ -202,6 +230,20 @@ def cmd_init(yes: bool = False, harnesses: list[str] | None = None, adopt: bool 
         moved = "Would move" if dry_run else "Moved"
         where = f"; its text loads from {tilde(a.rule)}" if a.rule else f"; {a.note}"
         print(f"{moved} {tilde(a.file)} to {a.backup.name}{where}.")
+    packs_file = config.local_dir() / "packs.local.toml"
+    packs_before = packs_file.read_text() if packs_file.is_file() else ""
+    packs_after = packs_before
+    for src in bundled if interactive else []:
+        on = packs.get(src.key, {}).get("enabled", True)
+        what = src.meta.get("description", "")
+        if _ask(f"Install the {src.name} pack{f' ({what})' if what else ''}?", on) != on:
+            packs_after = set_enabled(packs_after, src.key, not on)
+    _write(packs_file, packs_before, packs_after, dry_run, "bundled packs changed")
+    if profile:
+        profile_file = config.local_dir() / PROFILE_FILE
+        before_profile = profile_file.read_text() if profile_file.is_file() else ""
+        _write(profile_file, before_profile, set_profile(before_profile, profile), dry_run,
+               f"this machine installs the {profile} profile")
     if any(a.rule for a in adoptions):
         print("Adopted text goes into the shared rules, so every harness brainrc manages loads it.")
     moved = {a.file for a in adoptions}

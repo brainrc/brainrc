@@ -412,6 +412,9 @@ def _parser() -> argparse.ArgumentParser:
                    help="manage exactly these harnesses (repeat it, or separate names with commas); "
                    "asks nothing")
     p.add_argument("--no-adopt", action="store_true", help="leave instruction files where they are")
+    p.add_argument("--profile", choices=("minimal", "recommended", "full"),
+                   help="what this machine installs, in brainrc.local.toml: minimal is rules only, "
+                   "recommended adds skills, agents, commands and hooks, full adds MCP servers")
     p.add_argument("--dry-run", action="store_true", help="print what init would do, write nothing")
     repair_help = ("also relink broken links to where an item used to be: after moving the checkout, "
                    "or a package upgrade to a new Python")
@@ -479,7 +482,8 @@ def _dispatch(argv: list[str]) -> int:
         return _locked(lambda: cmd_uninstall(purge=args.purge))
     if cmd == "init":
         named = [n for names in args.harness or [] for n in names] if args.harness else None
-        return cmd_init(yes=args.yes, harnesses=named, adopt=not args.no_adopt, dry_run=args.dry_run)
+        return cmd_init(yes=args.yes, harnesses=named, adopt=not args.no_adopt, dry_run=args.dry_run,
+                        profile=args.profile)
     if cmd in ("status", "apply"):
         only = [n for names in getattr(args, "only", None) or [] for n in names]
         return cmd_sync(apply=cmd == "apply", only=only or None, repair=args.repair)

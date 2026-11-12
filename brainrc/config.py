@@ -189,7 +189,37 @@ def check_config() -> list[str]:
     warnings: list[str] = []
     for name in LAYERED_KEYS:
         _layered(name, warnings)
+    install_profile(warnings)
     return warnings
+
+
+PROFILE_FILE = "brainrc.local.toml"
+# What each profile installs besides the rules (#173). full is everything, and the default.
+PROFILES = {"minimal": frozenset(), "recommended": frozenset({"items", "hooks"}),
+            "full": frozenset({"items", "hooks", "mcp"})}
+
+
+def install_profile(warnings: list[str] | None = None) -> tuple[str, list[str]]:
+    """(profile, exclude patterns) from this machine's brainrc.local.toml: what apply installs."""
+    path = local_dir() / PROFILE_FILE
+    data = _read_toml(path)
+    text = path.read_text() if data else ""
+    profile, exclude = data.get("profile", "full"), data.get("exclude", [])
+    if profile not in PROFILES:
+        raise ConfigError(f"{tilde(path)}:{line_of(text, 'profile')}: `profile` must be one of "
+                          f"{', '.join(PROFILES)}")
+    if not isinstance(exclude, list) or not all(isinstance(e, str) and e for e in exclude):
+        raise ConfigError(f"{tilde(path)}:{line_of(text, 'exclude')}: `exclude` must be a list of "
+                          "paths or patterns, e.g. [\"skills/brainrc-aws\"]")
+    if warnings is not None:
+        warnings += [f"{tilde(path)}:{line_of(text, k)}: unknown key `{k}`"
+                     for k in data if k not in ("profile", "exclude")]
+    return profile, exclude
+
+
+def installs(part: str) -> bool:
+    """True if this machine's profile installs part: items (skills, agents, commands), hooks, mcp."""
+    return part in PROFILES[install_profile()[0]]
 
 
 def load_harnesses(include_disabled: bool = False, include_missing: bool = False,

@@ -262,12 +262,14 @@ def pack_errors(srcs: list[Source]) -> list[tuple[Source, list[str]]]:
     return [(src, errors) for src, errors in found if errors]
 
 
-def cmd_validate(pack: str | None = None) -> int:
+def cmd_validate(pack: str | None = None, key: str = "") -> int:
+    """key: the pack's packs.toml table when doctor checks an enabled pack, so its validator runs
+    only if the user trusts it (`validate --pack` from the command line runs it)."""
     try:
         config_warnings = check_config()
         if pack:
             root = expand(pack).resolve()
-            srcs = [Source("core", config.REPO), *bundled_sources(skip=root), load_pack(root)]
+            srcs = [Source("core", config.REPO), *bundled_sources(skip=root), load_pack(root, key or None)]
         else:
             srcs = sources()
         plugins = validators(srcs)
@@ -278,8 +280,14 @@ def cmd_validate(pack: str | None = None) -> int:
     skill_names = {p.name for s in srcs for p in skills(s)}
     errors = duplicate_packs(srcs) + collisions(srcs)
     for src in srcs:
-        errors += _validate_source(src, agent_names, skill_names, plugins)
-    errors += plugin_errors(srcs, plugins)
+        try:
+            errors += _validate_source(src, agent_names, skill_names, plugins)
+        except ConfigError as e:  # a validator plugin that failed
+            errors.append(str(e))
+    try:
+        errors += plugin_errors(srcs, plugins)
+    except ConfigError as e:
+        errors.append(str(e))
     errors += check_servers(srcs)
     warnings = config_warnings + extension_warnings(srcs, plugins)
     try:

@@ -44,8 +44,10 @@ class Source:
 
     @property
     def bundled(self) -> bool:
-        """A pack that ships inside core (packs/<name>/): always the same version as core."""
-        return not self.is_core and self.root.parent == config.REPO / BUNDLED
+        """A pack that ships inside core (packs/<name>/, named in core's own packs.toml): always the
+        same version as core. A pack of the user's that happens to sit under packs/ is not one."""
+        return (not self.is_core and self.root.parent == config.REPO / BUNDLED
+                and self.root.name in shipped_bundled())
 
     def rel(self, path: Path) -> str:
         rel = str(path.relative_to(self.root))
@@ -149,9 +151,16 @@ def check_packs(srcs: list[Source]) -> tuple[list[str], list[str]]:
     return errors, warnings
 
 
+def shipped_bundled() -> set[str]:
+    """The packs core's own packs.toml bundles (packs.local.toml can't add one)."""
+    return {k for k, v in _read_toml(config.REPO / "packs.toml").items() if isinstance(v, dict) and v.get("bundled")}
+
+
 def _pack_root(cfg: dict, key: str) -> Path:
     if sum(("path" in cfg, "git" in cfg, bool(cfg.get("bundled")))) != 1:
         raise ConfigError(f"packs.toml [{key}]: set `path`, `git` or `bundled = true` (one of them)")
+    if cfg.get("bundled") and key not in shipped_bundled():
+        raise ConfigError(f"packs.local.toml [{key}]: `bundled` is only for the packs core ships; use `path`")
     if cfg.get("bundled"):
         return config.REPO / BUNDLED / key  # read-only when installed, like the rest of core
     if "git" in cfg:

@@ -179,7 +179,8 @@ def _sync(apply: bool, repair: bool = False) -> int:
         return 1
     try:
         bad_packs = pack_errors(srcs)
-    except ConfigError as e:  # a pack's validator that won't load
+        extensions = render_extensions(srcs)
+    except ConfigError as e:  # a pack's validator that won't load or run
         print(f"ERROR {e}\n\nNothing written. Fix the pack's validator, or disable the pack.")
         return 1
     if bad_packs:
@@ -206,7 +207,6 @@ def _sync(apply: bool, repair: bool = False) -> int:
         rendered = rendered_instructions()
         rendered.parent.mkdir(parents=True, exist_ok=True)
         rendered.write_text(render_instructions(srcs))
-        extensions = render_extensions(srcs)
         if extensions is not None:
             home_extensions_file().write_text(extensions)
         elif home_extensions_file().is_file():  # no enabled pack reads it any more

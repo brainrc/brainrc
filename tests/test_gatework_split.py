@@ -138,6 +138,20 @@ class PluginTrustTest(SplitCase):
         self.assertEqual(code, 1, out)
         self.assertIn("ERROR acme: plugin ran", out)
 
+    def test_doctor_runs_no_untrusted_validator(self):
+        self.acme_with_plugin(body="raise SystemExit('ran')\n")
+        findings = brainrc.doctor_findings()
+        self.assertFalse(any("ran" in f[1] or "validator" in f[1] for f in findings), findings)
+
+    def test_only_core_bundles_a_pack(self):
+        make_pack(self.repo / "packs/acme")
+        self.packs("[acme]\nbundled = true\n")
+        code, out = quiet(brainrc.cmd_validate)
+        self.assertEqual(code, 1, out)
+        self.assertIn("`bundled` is only for the packs core ships", out)
+        self.packs('[acme]\npath = "packs/acme"\n')
+        self.assertFalse(brainrc.load_pack(self.repo / "packs/acme", "acme").bundled)
+
     def test_validate_pack_runs_the_packs_own_validator(self):
         self.acme_with_plugin()
         code, out = quiet(brainrc.cmd_validate, str(self.pack))
@@ -149,6 +163,12 @@ class PluginTrustTest(SplitCase):
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 1, out)
         self.assertIn("acme:check.py: validator failed to load (RuntimeError: boom)", out)
+
+    def test_a_validator_that_raises_is_an_error_not_a_crash(self):
+        self.acme_with_plugin("run_validator = true\n", "def check(me, srcs):\n    raise KeyError('x')\n")
+        code, out = quiet(brainrc.cmd_validate)
+        self.assertEqual(code, 1, out)
+        self.assertIn("acme:check.py: check failed (KeyError: 'x')", out)
 
     def test_validator_outside_the_pack_is_refused(self):
         self.acme(PACK_TOML.replace('prefix = "acme-"\n', 'prefix = "acme-"\nvalidator = "../x.py"\n'))

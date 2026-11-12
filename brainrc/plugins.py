@@ -57,6 +57,14 @@ def load(src: Source) -> ModuleType | None:
     return _LOADED[key]
 
 
+def _call(me: Source, mod: ModuleType, fn: str, *args):
+    """mod.fn(*args); an error in the pack's code becomes a ConfigError naming the pack."""
+    try:
+        return getattr(mod, fn)(*args)
+    except Exception as e:  # noqa: BLE001
+        raise ConfigError(f"{me.name}:{me.meta.get('validator')}: {fn} failed ({type(e).__name__}: {e})") from None
+
+
 def validators(srcs: list[Source]) -> list[tuple[Source, ModuleType]]:
     return [(src, mod) for src in srcs if (mod := load(src))]
 
@@ -80,7 +88,7 @@ def extension_errors(src: Source, plugins: list[tuple[Source, ModuleType]],
     errors = []
     for me, mod in plugins:
         if hasattr(mod, "check_extensions") and (t := table(src, me, mod)):
-            errors += mod.check_extensions(t, f"{src.name}:pack.toml", skill_names, agent_names)
+            errors += _call(me, mod, "check_extensions", t, f"{src.name}:pack.toml", skill_names, agent_names)
     return errors
 
 
@@ -109,11 +117,11 @@ def extension_warnings(srcs: list[Source], plugins: list[tuple[Source, ModuleTyp
 
 
 def plugin_errors(srcs: list[Source], plugins: list[tuple[Source, ModuleType]]) -> list[str]:
-    return [e for me, mod in plugins if hasattr(mod, "check") for e in mod.check(me, srcs)]
+    return [e for me, mod in plugins if hasattr(mod, "check") for e in _call(me, mod, "check", me, srcs)]
 
 
 def plugin_findings(plugins: list[tuple[Source, ModuleType]]) -> list[tuple[str, str, str]]:
-    return [f for me, mod in plugins if hasattr(mod, "doctor") for f in mod.doctor(me)]
+    return [f for me, mod in plugins if hasattr(mod, "doctor") for f in _call(me, mod, "doctor", me)]
 
 
 def render_extensions(srcs: list[Source]) -> str | None:
@@ -121,5 +129,5 @@ def render_extensions(srcs: list[Source]) -> str | None:
     for me, mod in validators(srcs):
         if hasattr(mod, "render_extensions"):
             others = [s for s in srcs if not s.is_core and s is not me]
-            return mod.render_extensions([(s.name, table(s, me, mod)) for s in others])
+            return _call(me, mod, "render_extensions", [(s.name, table(s, me, mod)) for s in others])
     return None

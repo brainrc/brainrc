@@ -88,7 +88,7 @@ def _doctor_sources() -> tuple[list[Source], list[Source], list[Finding]]:
             found += [("FAIL", e, fix) for e in errors]
             continue
         with contextlib.redirect_stdout(io.StringIO()):
-            failed = not src.bundled and cmd_validate(str(root))  # a bundled pack is checked with core
+            failed = not src.bundled and cmd_validate(str(root), src.key)  # a bundled pack is checked with core
         if failed:
             found.append(("FAIL", f"pack {src.name}: validate --pack fails",
                           command(f"validate --pack {shell_path(root)}")))
@@ -102,7 +102,11 @@ def _doctor_sources() -> tuple[list[Source], list[Source], list[Finding]]:
 def _render_findings(srcs: list[Source]) -> list[Finding]:
     found = []
     targets = [(rendered_instructions(), lambda: render_instructions(srcs))]
-    if (extensions := render_extensions(srcs)) is not None:
+    try:
+        extensions = render_extensions(srcs)
+    except ConfigError:  # a validator that won't load: doctor_findings reports it
+        extensions = None
+    if extensions is not None:
         targets.append((home_extensions_file(), lambda: extensions))
     targets += [(path, lambda text=text: text) for path, text in rendered_agents(srcs).items()]
     for path, render in targets:

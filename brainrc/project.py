@@ -28,6 +28,8 @@ BEGIN = "<!-- brainrc:begin"
 END = "<!-- brainrc:end -->"
 BLOCK = re.compile(r"<!-- brainrc:begin\b[^\n]*-->\n.*?<!-- brainrc:end -->", re.S)
 ORIGIN_KEYS = ("git", "path")
+PROJECT_KEYS = ("project_skills", "project_instructions")  # harnesses.toml: where a tool needs its own
+SAFE_REL = re.compile(r"(?![/~$\\])(?![A-Za-z]:)(?!(.*/)?\.\.(/|$))[^\\]+")
 
 
 def find_project(start: Path | None = None) -> Path | None:
@@ -64,6 +66,15 @@ class Project:
     def exclude(self) -> list[str]:
         return self.manifest.get("exclude", [])
 
+    @property
+    def harnesses(self) -> dict[str, dict]:
+        """The tools that get their own files (docs/project.md), from core's harnesses.toml only:
+        the ones brainrc.toml names, else every enabled one, by name."""
+        core = core_harnesses()
+        names = self.manifest["harnesses"] if "harnesses" in self.manifest else \
+            [n for n, h in core.items() if h.get("enabled", True)]
+        return {n: core[n] for n in sorted(names)}
+
     def packs(self) -> list[Pack]:
         """Enabled packs: core's default packs in packs.toml order, then the ones brainrc.toml adds."""
         core = _read_toml(config.REPO / "packs.toml")
@@ -90,6 +101,17 @@ def _pack_root(key: str, cfg: dict, base: Path) -> Path:
     return root if root.is_absolute() else base / root
 
 
+def core_harnesses() -> dict[str, dict]:
+    """core's harnesses.toml, never harnesses.local.toml: a project's files can't depend on a machine.
+    A `project_*` path must stay inside the repo."""
+    found = _read_toml(config.REPO / "harnesses.toml")
+    for name, h in found.items():
+        for key in PROJECT_KEYS:
+            if key in h and not (isinstance(h[key], str) and SAFE_REL.fullmatch(h[key])):
+                raise ConfigError(f"harnesses.toml: [{name}] {key} must be a path inside the repo")
+    return found
+
+
 def load(root: Path) -> Project:
     """The project at root, its brainrc.toml checked against the schema and core's default packs."""
     path = root / MANIFEST
@@ -103,6 +125,10 @@ def load(root: Path) -> Project:
     for key, cfg in data.get("packs", {}).items() if isinstance(data.get("packs"), dict) else ():
         if isinstance(cfg, dict) and key not in default_packs() and not any(k in cfg for k in ORIGIN_KEYS):
             problems.append(f"packs.{key}: set `git` or `path` ({key} isn't a default pack)")
+    core = core_harnesses()  # checks its project paths, so outputs() can't fail on them later
+    if not problems and data.get("harnesses"):
+        problems += [f"harnesses: unknown harness `{n}` (one of: {', '.join(sorted(core))})"
+                     for n in data["harnesses"] if n not in core]
     if problems:
         raise ConfigError(f"{where}: " + "; ".join(problems))
     return Project(root, data)
@@ -147,15 +173,31 @@ def with_block(text: str | None, block: str | None) -> str | None:
     return rest if rest.strip() else None
 
 
+def import_block() -> str:
+    """The block for a tool that reads its own instructions file, not AGENTS.md: an import of it."""
+    return f"{BEGIN}: generated from {MANIFEST}. Edit the packs, not this block. -->\n@{INSTRUCTIONS}\n{END}"
+
+
 def outputs(project: Project, srcs: list[Source]) -> tuple[dict[str, bytes], dict[str, str]]:
-    """(whole files by repo path, marked blocks by repo path) that the project's packs produce."""
+    """(whole files by repo path, marked blocks by repo path) that the project's packs produce:
+    the standard .agents/skills/ and AGENTS.md first, then a copy only where a selected tool can't
+    read them (harnesses.toml `project_skills`, `project_instructions`)."""
+    harnesses = project.harnesses.values()
+    skill_dirs = [SKILLS_DIR, *sorted({h["project_skills"] for h in harnesses if "project_skills" in h} - {SKILLS_DIR})]
     files: dict[str, bytes] = {}
     for src in srcs:
         for skill in project_items(src, "skills", project.exclude):
             for rel, f in tree_files(skill):
-                files[f"{SKILLS_DIR}/{skill.name}/{rel}"] = f.read_bytes()
+                for top in skill_dirs:
+                    files[f"{top}/{skill.name}/{rel}"] = f.read_bytes()
     block = render_block(srcs)
-    return files, ({INSTRUCTIONS: block} if block else {})
+    if not block:
+        return files, {}
+    blocks = {INSTRUCTIONS: block}
+    for h in harnesses:
+        if h.get("project_instructions", INSTRUCTIONS) != INSTRUCTIONS:
+            blocks[h["project_instructions"]] = import_block()
+    return files, blocks
 
 
 def _read(path: Path) -> bytes | None:
@@ -176,7 +218,7 @@ def _linked(root: Path, rel: str) -> bool:
 def _unit(rel: str) -> str:
     """What a status line names: a skill's directory, or the file itself."""
     parts = rel.split("/")
-    return "/".join(parts[:3]) + "/" if rel.startswith(SKILLS_DIR + "/") and len(parts) > 3 else rel
+    return "/".join(parts[:3]) + "/" if len(parts) > 3 and parts[1] == "skills" else rel
 
 
 RANK = {"create": 0, "update": 1, "prune": 2, "conflict": 3}

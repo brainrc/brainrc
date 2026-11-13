@@ -103,7 +103,8 @@ PATH_KEYS = ("home", "skills", "agents", "agents_format", "commands", "plugin", 
 
 # Known keys of each table in <name>.toml / <name>.local.toml, and the type each must have.
 LAYERED_KEYS = {
-    "harnesses": {"enabled": bool, **dict.fromkeys(PATH_KEYS, str)},
+    "harnesses": {"enabled": bool, **dict.fromkeys(PATH_KEYS, str),
+                  "project_skills": str, "project_instructions": str},  # repo paths, never expanded
     "packs": {"enabled": bool, "path": str, "git": str, "ref": str, "run_validator": bool,
               "description": str},
 }

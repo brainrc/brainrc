@@ -14,7 +14,7 @@ from . import lock
 from .config import ConfigError, _layered, tilde
 from .frozen import compare_config, diff_files, diff_outputs
 from .packs import head
-from .project import BLOCK, MANIFEST, SKILLS_DIR, _read, load, outputs, project_pack_files
+from .project import BLOCK, MANIFEST, _read, _unit, load, outputs, project_pack_files
 from .sources import _pack_root, load_pack, tree_files
 
 
@@ -49,7 +49,7 @@ def _repo(root: Path, locked: dict) -> list[str]:
             errors.append(f"{rel}: missing (brainrc.lock lists it)")
         elif lock.digest(data) != want:
             errors.append(f"{rel}: differs from {lock.NAME}")
-    skills = sorted({"/".join(rel.split("/")[:3]) for rel in owned if rel.startswith(SKILLS_DIR + "/")})
+    skills = sorted({_unit(rel).rstrip("/") for rel in owned if _unit(rel) != rel})
     for skill in skills:
         if (root / skill).is_dir() and not (root / skill).is_symlink():
             errors += [f"{skill}/{rel}: not in {lock.NAME}" for rel, _ in tree_files(root / skill)

@@ -12,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import PACK_TOML, TempRepoCase, brainrc, install_harnesses, make_pack, quiet  # noqa: E402
 
 from brainrc import lock, project  # noqa: E402
+from brainrc.project import import_block  # noqa: E402
 
 TEAM_TOML = PACK_TOML.replace('name = "acme"', 'name = "team"').replace('prefix = "acme-"', 'prefix = "team-"') \
     .replace('requires_core = ">=1.0, <2"', 'requires_core = ">=0"')
@@ -194,7 +195,8 @@ class ApplyTest(ProjectCase):
         self.assertIn("- Team rule.", agents)
         self.assertTrue(agents.endswith("<!-- brainrc:end -->\n"))
         block = project.BLOCK.search(agents)[0]
-        self.assertEqual(lock.read(self.proj / "brainrc.lock")["blocks"], {"AGENTS.md": lock.digest(block.encode())})
+        self.assertEqual(lock.read(self.proj / "brainrc.lock")["blocks"],
+                         {"AGENTS.md": lock.digest(block.encode()), "CLAUDE.md": lock.digest(import_block().encode())})
 
 
 class MachineLocalTest(ProjectCase):
@@ -240,7 +242,7 @@ class OwnershipTest(ProjectCase):
         shutil.copy(self.repo / "packs/gatework/skills/brainrc-work/SKILL.md", mine)
         self.manifest()
         out = self.apply()
-        self.assertNotIn("brainrc-work/", out)
+        self.assertNotIn(".agents/skills/brainrc-work/", out)
         self.assertIn(".agents/skills/brainrc-work/SKILL.md", lock.read(self.proj / "brainrc.lock")["outputs"])
 
     def test_an_owned_file_follows_its_source(self):

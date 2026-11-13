@@ -153,6 +153,14 @@ class ProjectFrozenTest(FrozenCase):
         self.assertEqual((other / "brainrc.lock").read_text(), self.lock_text)
         self.assertEqual(home_files(self.home), [])  # the project's lock installs nothing for the user
 
+    def test_apply_on_two_fresh_machines_is_byte_identical(self):
+        """The epic's acceptance test: a fake Gatework git remote, two fresh HOMEs, plain apply."""
+        other = self.second_checkout()
+        (other / "brainrc.lock").unlink()
+        self.apply()
+        self.assertEqual({k: v for k, v in tree(other).items() if not k.startswith(".git/")}, self.first)
+        self.assertEqual((other / "brainrc.lock").read_text(), self.lock_text)
+
     def test_a_moved_tag_changes_nothing_in_the_project(self):
         self.move_tag("v1", "v2")
         other = self.second_checkout()

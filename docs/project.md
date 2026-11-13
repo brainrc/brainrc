@@ -34,6 +34,18 @@ in the current directory, under its own `Project <dir> (brainrc.toml)` heading.
 - **Rules** from the project's packs go into a marked block in `AGENTS.md`:
   `<!-- brainrc:begin: … -->` to `<!-- brainrc:end -->`. Your own text above and below the block
   stays. With no rules, there is no block, and a file that held only the block is removed.
+- **Standard files first.** Codex, OpenCode, Cursor and Antigravity read `.agents/skills/` and
+  `AGENTS.md` themselves, so they get nothing else. A tool that can't read them names its own
+  places in `harnesses.toml` (`project_skills`, `project_instructions`). Today that is Claude Code
+  only: skills are copied to `.claude/skills/` too, and `CLAUDE.md` gets a marked block holding
+  `@AGENTS.md`. `harnesses` in `brainrc.toml` picks which tools get their own files; drop one and
+  its files and block are removed.
+
+| Tool | Skills | Instructions |
+| --- | --- | --- |
+| Codex, OpenCode, Cursor, Antigravity | `.agents/skills/` | `AGENTS.md` |
+| Claude Code | `.claude/skills/` (copy) | `CLAUDE.md` block importing `AGENTS.md` |
+
 - **Only the project's packs**: core's rules and guard hooks, MCP servers and anything
   machine-local (`packs.local.toml`, `brainrc.local.toml`, `*.local.md`) stay in the user scope,
   so they never change a project's files.
@@ -99,7 +111,7 @@ path = "tools/agent-pack"   # relative to the repo root
 |---|---|---|
 | `version` | integer | Format version. `1`, the default. |
 | `exclude` | array of strings | Items not to install, as a path in the pack (`skills/brainrc-aws`) or after its name (`gatework:skills/brainrc-aws`); `*` and `?` match. |
-| `harnesses` | array of strings | Harnesses (from `harnesses.toml`) that get tool-specific files besides the standard ones. Default: every harness in core's `harnesses.toml`. |
+| `harnesses` | array of strings | Harnesses (from `harnesses.toml`) that get tool-specific files besides the standard ones. Default: every enabled harness in core's `harnesses.toml` (never `harnesses.local.toml`); `[]` for the standard files only. |
 | `packs.<key>` | table | One pack. `<key>` is lowercase letters, digits and `-`. |
 | `packs.<key>.enabled` | boolean | Default `true`. `false` turns a default pack off. |
 | `packs.<key>.git` | string | A URL to fetch. Can't start with `-`. |

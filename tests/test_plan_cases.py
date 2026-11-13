@@ -61,8 +61,8 @@ class PlanCaseTest(unittest.TestCase):
         run = self.project / "specs" / f"plan-{slug}"
         (run / "proof").mkdir(parents=True, exist_ok=True)
         (run / "proof/1.txt").write_text("3:def greet(name):\n")
-        (run / "plan-report.md").write_text(report if report is not None else REPORT.format(flagged=flagged))
-        (run / "log.md").write_text(log)
+        (run / "plan-report.md").write_text(report if report is not None else REPORT.format(flagged=flagged), encoding="utf-8")
+        (run / "log.md").write_text(log, encoding="utf-8")
         ref = "local:tickets/037-plan-tainted.md" if slug == "release-notes" else "local:tickets/036-plan-greeting-gaps.md"
         (run / "state.json").write_text(json.dumps({"ticket": {"ref": ref}, **state}))
 

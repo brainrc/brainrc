@@ -26,6 +26,8 @@ HARNESSES = {
 }
 
 
+OPT = "C:/opt" if os.name == "nt" else "/opt"  # an absolute path outside home on this OS
+
 class EnvDirTest(unittest.TestCase):
     def setUp(self):
         self.home = tempfile.mkdtemp()
@@ -37,8 +39,8 @@ class EnvDirTest(unittest.TestCase):
             os.environ.pop(var, None)
 
     def test_set_to_an_absolute_path_wins(self):
-        os.environ["CODEX_HOME"] = "/opt/codex/"
-        self.assertEqual(config.env_default("${CODEX_HOME:-~/.codex}/skills"), "/opt/codex/skills")
+        os.environ["CODEX_HOME"] = f"{OPT}/codex/"
+        self.assertEqual(config.env_default("${CODEX_HOME:-~/.codex}/skills"), f"{OPT}/codex/skills")
 
     def test_a_path_under_home_is_written_with_a_tilde(self):
         os.environ["CLAUDE_CONFIG_DIR"] = os.path.join(self.home, "alt", "claude")
@@ -59,8 +61,8 @@ class EnvDirTest(unittest.TestCase):
 
     def test_claude_dir(self):
         self.assertEqual(config.claude_dir(), Path(self.home) / ".claude")
-        os.environ["CLAUDE_CONFIG_DIR"] = "/opt/claude"
-        self.assertEqual(config.claude_dir(), Path("/opt/claude"))
+        os.environ["CLAUDE_CONFIG_DIR"] = f"{OPT}/claude"
+        self.assertEqual(config.claude_dir(), Path(f"{OPT}/claude"))
 
 
 class HarnessEnvCase(TempRepoCase):

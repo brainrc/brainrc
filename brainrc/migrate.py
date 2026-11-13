@@ -63,6 +63,20 @@ def _refusal(source: Path, target: Path) -> str | None:
     return None
 
 
+def _rename_into(source: Path, target: Path) -> None:
+    """os.rename onto a target that is missing or an empty dir. Windows won't rename onto even an
+    empty dir, so there the empty target goes first, and comes back if the rename fails."""
+    if os.name == "nt" and target.is_dir() and not target.is_symlink():
+        target.rmdir()
+        try:
+            os.rename(source, target)
+        except BaseException:
+            target.mkdir(exist_ok=True)
+            raise
+        return
+    os.rename(source, target)
+
+
 def _move(source: Path, target: Path) -> OSError | None:
     """Put source at target: one rename, or across devices a copy beside the target renamed into
     place. Raises OSError while the target is not in place; returns the error if only removing the
@@ -78,7 +92,7 @@ def _move(source: Path, target: Path) -> OSError | None:
         removed = source.unlink
     else:
         try:
-            os.rename(source, target)
+            _rename_into(source, target)
             return None
         except OSError as e:
             if e.errno != errno.EXDEV:
@@ -87,7 +101,7 @@ def _move(source: Path, target: Path) -> OSError | None:
         try:
             os.chmod(tmp, os.stat(source).st_mode & 0o7777)
             shutil.copytree(source, tmp, symlinks=True, dirs_exist_ok=True)
-            os.rename(tmp, target)
+            _rename_into(tmp, target)
         except BaseException:
             shutil.rmtree(tmp, ignore_errors=True)
             raise

@@ -2094,7 +2094,8 @@ class LocalTripwireTest(TempRepoCase):
         # GIT_DIR / GIT_INDEX_FILE; without this, `git -C <tmp>` here and in validate would write
         # to and read from that repo's index instead of the temp copy's. Started before
         # super().setUp() so the cleanup, which runs after tearDown, restores the real env.
-        env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+        # GITHUB_ACTIONS turns on redacted output (#344); the tests that want it set it themselves.
+        env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_") and k != "GITHUB_ACTIONS"}
         patcher = mock.patch.dict(os.environ, env, clear=True)
         patcher.start()
         self.addCleanup(patcher.stop)
@@ -2193,6 +2194,52 @@ class LocalTripwireTest(TempRepoCase):
         self.assertEqual(code, 1, out)
         self.assertIn("tripwires.local.toml: is tracked by git", out)
         self.assertNotIn("tripwires.local.toml:1:", out)  # its own terms don't trip on itself
+
+    def test_in_ci_the_output_never_names_a_term(self):
+        lines = self.doc.read_text().splitlines()
+        self.doc.write_text("\n".join(lines + ["Worked on this at INITECH."]) + "\n")
+        (self.repo / "packs/gatework/skills/brainrc-gatework/initech-notes.txt").write_text("plain\n")
+        (self.repo / "packs/gatework/skills/brainrc-gatework/ref.txt").symlink_to("../initech/ref.txt")
+        self.write_terms('terms = ["Globex", "Initech"]\n')
+        with mock.patch.dict(os.environ, {"GITHUB_ACTIONS": "true"}):
+            code, out = quiet(brainrc.cmd_validate)
+        self.assertEqual(code, 1, out)
+        self.assertIn(f"skills/brainrc-gatework/references/campaign.md:{len(lines) + 1}: local tripwire #2\n", out)
+        self.assertIn("skills/brainrc-gatework/***-notes.txt: local tripwire #2 in the file name\n", out)
+        self.assertIn("skills/brainrc-gatework/ref.txt: local tripwire #2 in the link target\n", out)
+        self.assertNotIn("initech", out.casefold())
+        self.assertNotIn("globex", out.casefold())
+
+    def test_a_terms_file_named_on_the_command_line_replaces_the_local_one(self):
+        self.doc.write_text(self.doc.read_text() + "\nWorked on this at Initech.\n")
+        self.write_terms('terms = ["globex"]\n')  # ignored: the named file wins
+        named = Path(tempfile.mkdtemp()) / "terms.toml"
+        self.addCleanup(shutil.rmtree, named.parent)
+        named.write_text('terms = ["initech"]\n')
+        code, out = quiet(lambda: brainrc.cmd_validate(local_tripwires=str(named)))
+        self.assertEqual(code, 1, out)
+        self.assertIn('local tripwire: contains "initech" (terms.toml)', out)
+        self.assertNotIn("globex", out)
+
+    def test_a_named_terms_file_must_exist_and_list_a_term(self):
+        named = Path(tempfile.mkdtemp()) / "terms.toml"
+        self.addCleanup(shutil.rmtree, named.parent)
+        code, out = quiet(lambda: brainrc.cmd_validate(local_tripwires=str(named)))
+        self.assertEqual(code, 1, out)
+        self.assertIn("terms.toml: not found (--local-tripwires)", out)
+        named.write_text("terms = []\n")
+        code, out = quiet(lambda: brainrc.cmd_validate(local_tripwires=str(named)))
+        self.assertEqual(code, 1, out)
+        self.assertIn("terms.toml: lists no `terms` (--local-tripwires)", out)
+
+    def test_the_cli_takes_a_terms_file(self):
+        self.doc.write_text(self.doc.read_text() + "\nWorked on this at Initech.\n")
+        named = Path(tempfile.mkdtemp()) / "terms.toml"
+        self.addCleanup(shutil.rmtree, named.parent)
+        named.write_text('terms = ["initech"]\n')
+        code, out = quiet(brainrc.cli._dispatch, ["brainrc", "validate", "--local-tripwires", str(named)])
+        self.assertEqual(code, 1, out)
+        self.assertIn('local tripwire: contains "initech" (terms.toml)', out)
 
     def test_the_repo_ignores_the_file(self):
         out = subprocess.run(["git", "-C", str(REPO), "check-ignore", "-q", "--no-index", "tripwires.local.toml"])

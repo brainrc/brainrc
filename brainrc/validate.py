@@ -28,6 +28,7 @@ from .config import (
     key_line,
     line_of,
     load_harnesses,
+    tilde,
 )
 from .sources import (
     Source,
@@ -131,7 +132,8 @@ def coverage_findings(src: Source, agent_names: set[str], skill_names: set[str])
 RESERVED_SKILL_NAMES = frozenset({"review", "plan", "init", "help", "status", "compact"})
 
 
-def _validate_source(src: Source, agent_names: set[str], skill_names: set[str], plugins=()) -> list[str]:
+def _validate_source(src: Source, agent_names: set[str], skill_names: set[str], plugins=(),
+                     local_tripwires: Path | None = None) -> list[str]:
     errors = []
     if src.is_core:
         errors += [f"overrides/{name}/plugin.js: missing, but harnesses.toml [{name}] sets `plugin`"
@@ -205,7 +207,7 @@ def _validate_source(src: Source, agent_names: set[str], skill_names: set[str], 
         errors += extension_errors(src, list(plugins), skill_names, agent_names)
     errors += _check_tripwires(src)
     if src.is_core:
-        errors += _check_local_tripwires(src)
+        errors += _check_local_tripwires(src, local_tripwires)
     return errors
 
 
@@ -312,41 +314,65 @@ def _tracked_files(src: Source) -> tuple[list[Path], bool]:
     return sorted(src.root / name for name in out.stdout.decode(errors="replace").split("\0") if name), True
 
 
-def _check_local_tripwires(src: Source) -> list[str]:
+def _redacting() -> bool:
+    """CI logs can be public: there, local tripwire errors give each term's number, never the term."""
+    return os.environ.get("GITHUB_ACTIONS") == "true"
+
+
+def _redact(text: str, needles: list[tuple[str, str]]) -> str:
+    """text with every term replaced by `***`; the whole text when case folding hides a match."""
+    for t, _ in needles:
+        text = re.sub(re.escape(t.strip()), "***", text, flags=re.I)
+    return "<path withheld>" if any(n in text.casefold() for _, n in needles) else text
+
+
+def _check_local_tripwires(src: Source, path: Path | None = None) -> list[str]:
     """Each maintainer's own forbidden terms (an employer, a client), kept out of git in
     tripwires.local.toml as `terms = [...]`: any tracked core file that contains one fails, by name or
-    content, compared case-insensitively. The file itself must never be tracked."""
-    path = src.root / LOCAL_TRIPWIRES
+    content, compared case-insensitively. The file itself must never be tracked. `path` (from
+    `validate --local-tripwires`, which CI writes from a secret) replaces the file at the core root,
+    and then must exist and list a term: a check CI was told to run never passes by being skipped."""
+    explicit = path is not None
+    path = path if explicit else src.root / LOCAL_TRIPWIRES
+    label = path.name
     if not path.is_file():
-        return []
+        return [f"{tilde(path)}: not found (--local-tripwires)"] if explicit else []
     files, from_git = _tracked_files(src)
-    errors = [f"{LOCAL_TRIPWIRES}: is tracked by git; remove it with `git rm --cached {LOCAL_TRIPWIRES}`"
+    errors = [f"{label}: is tracked by git; remove it with `git rm --cached {label}`"
               for p in files if from_git and p == path]
     try:
         terms = _read_toml(path).get("terms", [])
     except ConfigError as e:
         return errors + [str(e)]
     if not isinstance(terms, list) or not all(isinstance(t, str) and t.strip() for t in terms):
-        return errors + [f"{LOCAL_TRIPWIRES}: `terms` must be a list of non-empty strings"]
+        return errors + [f"{label}: `terms` must be a list of non-empty strings"]
+    if explicit and not terms:
+        return errors + [f"{label}: lists no `terms` (--local-tripwires)"]
     needles = [(t, t.strip().casefold()) for t in terms]
+    redact = _redacting()
+
+    def found(i: int, t: str, where: str) -> str:
+        return f"local tripwire #{i}{where}" if redact else f"local tripwire: {where or 'contains'} \"{t}\" ({label})"
+
     for p in files if needles else []:
         if p == path or not (p.is_symlink() or p.is_file()):
             continue
         rel = src.rel(p)
-        errors += [f"{rel}: local tripwire: the file name contains \"{t}\" ({LOCAL_TRIPWIRES})"
-                   for t, n in needles if n in rel.casefold()]
+        shown = _redact(rel, needles) if redact else rel
+        errors += [f"{shown}: {found(i, t, ' in the file name' if redact else 'the file name contains')}"
+                   for i, (t, n) in enumerate(needles, 1) if n in rel.casefold()]
         if p.is_symlink():  # git commits the link's target path, not the file it points at
             target = config.readlink(p).casefold()
-            errors += [f"{rel}: local tripwire: the link target contains \"{t}\" ({LOCAL_TRIPWIRES})"
-                       for t, n in needles if n in target]
+            errors += [f"{shown}: {found(i, t, ' in the link target' if redact else 'the link target contains')}"
+                       for i, (t, n) in enumerate(needles, 1) if n in target]
             continue
         data = p.read_bytes()
         if b"\0" in data[:8192]:
             continue  # binary
         for lineno, line in enumerate(data.decode(errors="replace").splitlines(), 1):
             folded = line.casefold()
-            errors += [f"{rel}:{lineno}: local tripwire: contains \"{t}\" ({LOCAL_TRIPWIRES})"
-                       for t, n in needles if n in folded]
+            errors += [f"{shown}:{lineno}: {found(i, t, '')}"
+                       for i, (t, n) in enumerate(needles, 1) if n in folded]
     return errors
 
 
@@ -363,10 +389,12 @@ def pack_errors(srcs: list[Source]) -> list[tuple[Source, list[str]]]:
     return [(src, errors) for src, errors in found if errors]
 
 
-def cmd_validate(pack: str | None = None, key: str = "", fetch_defaults: bool = False) -> int:
+def cmd_validate(pack: str | None = None, key: str = "", fetch_defaults: bool = False,
+                 local_tripwires: str | None = None) -> int:
     """key: the pack's packs.toml table when doctor checks an enabled pack, so its validator runs
     only if the user trusts it and its tests don't run (`validate --pack` from the command line
-    runs both). fetch_defaults: check against core's default packs at the refs core pins."""
+    runs both). fetch_defaults: check against core's default packs at the refs core pins.
+    local_tripwires: a terms file to use instead of tripwires.local.toml at the core root."""
     try:
         config_warnings = check_config()
         if pack:
@@ -390,7 +418,8 @@ def cmd_validate(pack: str | None = None, key: str = "", fetch_defaults: bool = 
     errors = duplicate_packs(srcs) + collisions(srcs)
     for src in srcs:
         try:
-            errors += _validate_source(src, agent_names, skill_names, plugins)
+            errors += _validate_source(src, agent_names, skill_names, plugins,
+                                       expand(local_tripwires).resolve() if local_tripwires else None)
         except ConfigError as e:  # a validator plugin that failed
             errors.append(str(e))
     try:

@@ -43,7 +43,7 @@ no git remote, `SPEC_PR_STATUS_FIXTURE` names a `pr_status` fixture file read in
 | `/brainrc-gatework-approve [notes]` | Approve the pending gate |
 | `/brainrc-gatework-resume [ref]` | Continue an interrupted run (any tool) |
 
-These are user-invoked skills (`skills/brainrc-work/` and so on), so every harness that reads skills
+These are user-invoked skills (Gatework's `skills/brainrc-work/` and so on), so every harness that reads skills
 gets them. In the Claude Code plugin they're `/gatework:brainrc-work`; in Codex, call the skill by name.
 
 ## Auto mode

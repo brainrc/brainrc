@@ -64,7 +64,7 @@ class MigrateCase(unittest.TestCase):
         return found
 
     def snapshot(self):
-        return sorted(str(p.relative_to(self.tmp)) for p in self.tmp.rglob("*"))
+        return sorted(p.relative_to(self.tmp).as_posix() for p in self.tmp.rglob("*"))
 
 
 class TestMigrate(MigrateCase):
@@ -132,7 +132,7 @@ class TestMigrate(MigrateCase):
         before = self.snapshot()
         proc = self.run_cli("migrate", "--dry-run")
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
-        self.assertIn(str(self.old).replace(str(self.home), "~"), proc.stdout)
+        self.assertIn(self.old.as_posix().replace(self.home.as_posix(), "~"), proc.stdout)
         self.assertIn("~/.config/brainrc", proc.stdout)
         self.assertEqual(self.snapshot(), before)
 
@@ -286,6 +286,7 @@ class TestCrossDeviceSafety(MigrateCase):
         self.assertIn("Nothing moved", out)
         self.assertEqual(self.snapshot(), before)
 
+    @unittest.skipIf(os.name == "nt", "Windows has no Unix mode bits to copy")
     def test_temp_dir_has_the_source_mode(self):
         self.legacy_install()
         os.chmod(self.old, 0o700)
@@ -314,7 +315,7 @@ class TestCrossDeviceSafety(MigrateCase):
         self.assertEqual(code, 1)
         self.assertIn("the copy is in place", out)
         self.assertIn("could not be fully removed", out)
-        self.assertIn(str(old).replace(str(self.home), "~"), out)
+        self.assertIn(old.as_posix().replace(self.home.as_posix(), "~"), out)
         self.assertIn("denied", out)
         self.assertTrue((self.new / "packs.local.toml").is_file())
         synced.assert_called_once()
@@ -339,7 +340,8 @@ class TestPathSanity(MigrateCase):
         self.refused("home directory", AICFG_HOME=str(self.home), BRAINRC_HOME=str(self.tmp / "dst"))
 
     def test_root_as_source_refused(self):
-        self.refused("home directory", AICFG_HOME="/", BRAINRC_HOME=str(self.tmp / "dst"))
+        self.refused("home directory", AICFG_HOME=self.tmp.anchor,  # "/", or "C:\\" on Windows
+                     BRAINRC_HOME=str(self.tmp / "dst"))
 
     def test_ancestor_of_target_refused(self):
         src = self.tmp / "src"

@@ -54,7 +54,7 @@ class OneshotFlagCaseTest(unittest.TestCase):
             state.pop("oneshot")
             state.pop("auto")
             state["gates"] = {"spec": "approved", "plan": "pending"}
-            (self.run / "log.md").write_text("## engine · Spec gate · auto-approved\n## engine · resume\n")
+            (self.run / "log.md").write_text("## engine · Spec gate · auto-approved\n## engine · resume\n", encoding="utf-8")
         else:
             state.pop("oneshot")
             state.pop("auto")
@@ -155,7 +155,7 @@ class OneshotFlagCaseTest(unittest.TestCase):
         self.assert_breaks(n, lambda s: s.update(auto=True), "state.json")
         self.assert_breaks(n, lambda s: s["gates"].update(plan="approved"), "gates.plan")
         state = self.good(n)
-        (self.run / "log.md").write_text("## engine · Plan gate · auto-approved\n")
+        (self.run / "log.md").write_text("## engine · Plan gate · auto-approved\n", encoding="utf-8")
         code, out = self.grade(n, state)
         self.assertEqual(code, 1, out)
         self.assertRegex(out, "FAIL .*log.md")
@@ -163,7 +163,7 @@ class OneshotFlagCaseTest(unittest.TestCase):
     def test_resume_case_fails_when_the_first_run_was_not_oneshot(self):
         n = "sandbox-031"
         state = self.good(n)
-        (self.run / "log.md").write_text("## engine · Spec gate · approved\n## engine · resume\n")
+        (self.run / "log.md").write_text("## engine · Spec gate · approved\n## engine · resume\n", encoding="utf-8")
         code, out = self.grade(n, state)
         self.assertEqual(code, 1, out)
         self.assertRegex(out, "FAIL .*log.md")

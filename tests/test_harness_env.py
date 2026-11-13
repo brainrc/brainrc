@@ -132,7 +132,7 @@ class SetTest(HarnessEnvCase):
         d, _ = self.configure("claude", str(self.elsewhere / "claude"))
         run("apply", "--only", "claude")
         settings = (d / "settings.json").read_text()
-        self.assertIn(str(d / "hooks" / "brainrc"), settings)
+        self.assertIn((d / "hooks" / "brainrc").as_posix(), settings)
         self.assertTrue((d / "hooks" / "brainrc").is_symlink())
 
     def test_codex_home_under_home(self):

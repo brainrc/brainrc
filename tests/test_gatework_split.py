@@ -227,7 +227,7 @@ class DefaultPackTest(SplitCase):
         self.assertNotIn("duplicate", out.lower())
 
     def test_validate_pack_names_a_missing_local_path(self):
-        self.packs(f'[gatework]\npath = "{self.pack.parent / "nowhere"}"\n')
+        self.packs(f"[gatework]\npath = '{self.pack.parent / 'nowhere'}'\n")
         make_pack(self.pack)
         code, out = quiet(brainrc.cmd_validate, str(self.pack))
         self.assertIn("default pack `gatework`: no directory at", out)

@@ -12,6 +12,12 @@ from brainrc.plan import Link
 from support import bare_env, home_env, symlink
 
 
+def sh_path(path: Path) -> str:
+    """How sh prints a path: as is, or on Windows (Git Bash) with / and C:/ written as /c/."""
+    s = path.as_posix()
+    return f"/{path.drive[0].lower()}{s[2:]}" if os.name == "nt" and path.drive else s
+
+
 class ShellPathTest(unittest.TestCase):
     def setUp(self):
         tmp = tempfile.TemporaryDirectory()
@@ -32,15 +38,15 @@ class ShellPathTest(unittest.TestCase):
 
     def test_a_sibling_of_home_is_not_shortened(self):
         sibling = self.home.parent / (self.home.name + "e") / ".claude/x"   # "my homee" beside "my home"
-        self.assertEqual(shell_path(sibling), f"'{sibling}'")
-        nested = Path("/srv") / str(self.home).lstrip("/") / "old"            # home's path inside another
-        self.assertEqual(shell_path(nested), f"'{nested}'")
+        self.assertEqual(shell_path(sibling), f"'{sibling.as_posix()}'")
+        nested = Path("/srv", *self.home.parts[1:], "old")                   # home's path inside another
+        self.assertEqual(shell_path(nested), f"'{nested.as_posix()}'")
 
     def test_the_shell_reads_back_the_same_path(self):
         for path in (self.home / "My Skills/it's", self.home / "a;rm -rf x", Path("/opt/a b/$HOME")):
             out = subprocess.run(["sh", "-c", f"printf %s {shell_path(path)}"], capture_output=True,
                                  text=True, env=bare_env(self.home))
-            self.assertEqual(out.stdout, str(path))
+            self.assertEqual(out.stdout, sh_path(path))
 
 
 class DoctorFixQuotingTest(unittest.TestCase):

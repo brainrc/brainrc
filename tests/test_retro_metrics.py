@@ -306,7 +306,7 @@ class RetroMetricsTest(unittest.TestCase):
         run = self.write(state)
         for name, text in (("verify.md", verify), ("retro.md", retro), ("log.md", log)):
             if text is not None:
-                (run / name).write_text(text)
+                (run / name).write_text(text, encoding="utf-8")
         rec = load_run(run)
         self.assertIsInstance(rec, RunRecord, rec)
         return rec

@@ -31,7 +31,7 @@ def snapshot(home: Path) -> dict[str, object]:
     """Every dir, file and link under home, JSON files parsed; brainrc's backups left out."""
     found: dict[str, object] = {}
     for p in sorted(home.rglob("*")):
-        rel = str(p.relative_to(home))
+        rel = p.relative_to(home).as_posix()
         if BACKUP.search(p.name):
             continue
         if p.is_symlink():

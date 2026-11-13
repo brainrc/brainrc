@@ -585,7 +585,7 @@ class TriggerTest(unittest.TestCase):
         cases = self.tmp / "triggers.toml"
         cases.write_text('[[case]]\nprompt = "Fix this terraform plan"\nexpect = ["terraform"]\n'
                          '[[case]]\nprompt = "Rename a Go function"\nexpect = ["brainrc-go-service"]\nforbid = ["terraform"]\n')
-        code, out = quiet(evals.cmd_triggers, cmd=f"python3 {model}", files=[cases])
+        code, out = quiet(evals.cmd_triggers, cmd=f"python3 {model.as_posix()}", files=[cases])
         self.assertEqual(code, 0, out)
         self.assertIn("2 passed, 0 failed", out)
 
@@ -649,7 +649,7 @@ class AutoCaseTest(unittest.TestCase):
 
     def happy(self, name: str) -> dict:
         ticket, size, gates = self.HAPPY[name]
-        (self.run / "log.md").write_text("".join(f"## engine · {g.title()} gate · auto-approved\n" for g in gates))
+        (self.run / "log.md").write_text("".join(f"## engine · {g.title()} gate · auto-approved\n" for g in gates), encoding="utf-8")
         (self.run / "pr-body.md").write_text("Title\n\n## Decisions made without you\n- none\n")
         return {"ticket": {"ref": f"local:tickets/{ticket}", "pr": "001-demo"}, "branch": "001-demo",
                 "size": size, "auto": True, "blocked": None, "gates": {g: "approved" for g in gates},
@@ -679,7 +679,7 @@ class AutoCaseTest(unittest.TestCase):
         for name in self.HAPPY:
             with self.subTest(case=name):
                 state = self.happy(name)
-                (self.run / "log.md").write_text("## engine · Spec gate · approved\n")
+                (self.run / "log.md").write_text("## engine · Spec gate · approved\n", encoding="utf-8")
                 code, out = self.grade(name, state)
                 self.assertEqual(code, 1, out)
                 self.assertRegex(out, "FAIL .*auto-approved")
@@ -711,7 +711,7 @@ class AutoCaseTest(unittest.TestCase):
                   "sandbox-011": lambda: (self.run / "plan.md").write_text("## Callouts\n- **New dependencies:** none\n"),
                   "sandbox-012": lambda: (self.run / "spec.md").write_text("no split\n"),
                   "sandbox-013": lambda: (self.run / "spec.md").write_text("token 0123456789abcdef\n"),
-                  "sandbox-014": lambda: (self.run / "log.md").write_text("## security-reviewer · review · done\n")}
+                  "sandbox-014": lambda: (self.run / "log.md").write_text("## security-reviewer · review · done\n", encoding="utf-8")}
         for name, broken in breaks.items():
             with self.subTest(case=name):
                 state = self.stop(name)
@@ -731,7 +731,7 @@ class AutoCampaignCaseTest(unittest.TestCase):
         self.project = make_project(self.tmp / "project")
         self.dir = self.project / "specs/campaign-018-epic"
         self.dir.mkdir(parents=True)
-        (self.dir / "log.md").write_text("## 2026-01-01T00:00:00Z · Campaign gate · auto-approved\n")
+        (self.dir / "log.md").write_text("## 2026-01-01T00:00:00Z · Campaign gate · auto-approved\n", encoding="utf-8")
         members, prev = [], "main"
         for i, ref in enumerate(self.REFS, 1):
             slug = f"{i + 4:03d}-child"
@@ -770,7 +770,7 @@ class AutoCampaignCaseTest(unittest.TestCase):
         self.assertRegex(out, "FAIL .*auto")
 
     def test_campaign_gate_not_auto_approved_fails(self):
-        (self.dir / "log.md").write_text("## 2026-01-01T00:00:00Z · Campaign gate presented\n")
+        (self.dir / "log.md").write_text("## 2026-01-01T00:00:00Z · Campaign gate presented\n", encoding="utf-8")
         code, out = self.grade()
         self.assertEqual(code, 1, out)
         self.assertRegex(out, "FAIL .*auto-approved")

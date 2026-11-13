@@ -29,7 +29,7 @@ from .sources import (
     check_packs, collisions, core_version, duplicate_packs, render_instructions, sources,
 )
 from .init import cmd_init
-from .uninstall import cmd_uninstall
+from .uninstall import cmd_uninstall, finish_purge
 from .opencode import rendered_agents
 from .packs import adopt_record, describe, fetch_pack, git_packs, needs_fetch
 from .plan import hooks_copy_current, invalid_fragments, link_target, old_root, plan, stale_hooks_copy
@@ -484,7 +484,8 @@ def _dispatch(argv: list[str]) -> int:
             return cmd_uninstall(dry_run=True, purge=args.purge)
         if not settings_home().exists():  # nothing to lock against, and the lock would create it
             return cmd_uninstall(purge=args.purge)
-        return _locked(lambda: cmd_uninstall(purge=args.purge))
+        code = _locked(lambda: cmd_uninstall(purge=args.purge))
+        return finish_purge() or code
     if cmd == "init":
         named = [n for names in args.harness or [] for n in names] if args.harness else None
         return cmd_init(yes=args.yes, harnesses=named, adopt=not args.no_adopt, dry_run=args.dry_run,

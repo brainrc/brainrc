@@ -59,3 +59,18 @@ def readlink(link) -> str:
     """os.readlink without the \\\\?\\ prefix Windows puts on an absolute target."""
     target = os.readlink(link)
     return target[4:] if target.startswith("\\\\?\\") and not target.startswith("\\\\?\\UNC\\") else target
+
+
+def stub_command(bin_dir, name: str, body: str) -> None:
+    """A command `name` in bin_dir that runs the Python `body`. Windows runs no #! script and
+    finds commands by PATHEXT, so there it is a .cmd that hands its arguments to Python."""
+    if os.name == "nt":
+        with open(os.path.join(bin_dir, f"{name}.py"), "w", encoding="utf-8") as f:
+            f.write(body + "\n")
+        with open(os.path.join(bin_dir, f"{name}.cmd"), "w") as f:
+            f.write(f'@"{sys.executable}" "%~dp0{name}.py" %*\n')
+        return
+    path = os.path.join(bin_dir, name)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(f"#!{sys.executable}\n{body}\n")
+    os.chmod(path, 0o755)

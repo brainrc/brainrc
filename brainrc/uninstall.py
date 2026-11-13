@@ -220,10 +220,32 @@ def _purge_refusal(home: Path, configs: list[tuple[str, dict]]) -> str | None:
     return None
 
 
+_held_lock: list[Path] = []  # a purged home whose apply.lock this run still holds open (Windows)
+
+
 def _purge(home: Path) -> None:
     for p in sorted(home.iterdir()):
+        if os.name == "nt" and p.name == "apply.lock":
+            _held_lock.append(home)  # Windows can't delete a file held open: finish_purge() does it
+            continue
         _remove(p)
-    home.rmdir()
+    if not _held_lock:
+        home.rmdir()
+
+
+def finish_purge() -> int:
+    """After the lock is let go: delete the apply.lock and settings home --purge had to leave."""
+    while _held_lock:
+        home = _held_lock.pop()
+        if [p.name for p in home.iterdir()] != ["apply.lock"]:
+            continue  # something new arrived since the purge; leave it
+        try:
+            (home / "apply.lock").unlink()
+            home.rmdir()
+        except OSError as e:
+            print(f"{'FAILED':9} {'':9} {tilde(home)}  ({e.strerror or e}; left alone)")
+            return 1
+    return 0
 
 
 def plan_uninstall(purge: bool = False) -> tuple[list[Step], list[str], list[str]]:

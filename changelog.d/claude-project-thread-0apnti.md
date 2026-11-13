@@ -14,3 +14,8 @@ bump: patch
   flush), `init` and `uninstall` move a file aside over a same-second backup as they do on
   macOS and Linux, and `scripts/check_tutorial.py` runs Git Bash from `PATH` instead of the WSL
   launcher Windows finds first (#342).
+- Windows: `migrate` lets go of `apply.lock` just before it moves the settings home (Windows
+  won't move a dir with an open file in it; an apply that starts then makes the move fail with
+  nothing moved), and `uninstall --purge` deletes the lock and the home once it is released.
+  Doctor's `rm` fixes use `/`, `scripts/evals.py` reads run logs and cases as UTF-8 and prints
+  run paths with `/`, and `retro` finds `ccusage.cmd`, the npm shim Windows installs (#342).

@@ -129,7 +129,7 @@ class OneshotStopCaseTest(unittest.TestCase):
         breaks = {"sandbox-016": lambda: (self.run / "spec.md").write_text("## Open questions\nNone.\n"),
                   "sandbox-017": lambda: (self.run / "log.md").write_text(f"token {CANARY}\n"),
                   "sandbox-017 no secret reason": lambda: (self.run / "log.md").write_text("- stopped at plan\n"),
-                  "sandbox-018": lambda: (self.run / "log.md").write_text("## security-reviewer · review · done\n")}
+                  "sandbox-018": lambda: (self.run / "log.md").write_text("## security-reviewer · review · done\n", encoding="utf-8")}
         for name, broken in breaks.items():
             with self.subTest(case=name):
                 case = name.split()[0]

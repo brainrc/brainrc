@@ -37,7 +37,7 @@ class MovedTest(HarnessEnvCase):
     def test_default_then_var_warns_and_uninstall_cleans_both(self):
         self.apply(None)
         out = self.apply(str(self.other))
-        self.assertIn(f"WARN claude's config dir moved from ~/.claude to {self.other}", out)
+        self.assertIn(f"WARN claude's config dir moved from ~/.claude to {self.other.as_posix()}", out)
         self.assertIn("removes them with the rest", out)
         code, out = quiet(brainrc.cmd_doctor)
         self.assertRegex(out, r"WARN claude: \d+ of brainrc's links are still in ~/.claude, but claude reads")
@@ -49,7 +49,7 @@ class MovedTest(HarnessEnvCase):
     def test_var_then_default_says_how_to_clean_the_old_dir(self):
         self.apply(str(self.other))
         out = self.apply(None)
-        self.assertIn(f"WARN claude's config dir moved from {self.other} to ~/.claude", out)
+        self.assertIn(f"WARN claude's config dir moved from {self.other.as_posix()} to ~/.claude", out)
         self.assertIn("run with CLAUDE_CONFIG_DIR set as before", out)
         self.configure("claude", str(self.other))  # the fix the warning gives
         code, out = run("uninstall")

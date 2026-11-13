@@ -125,8 +125,8 @@ def shell_path(path: Path) -> str:
     try:
         rel = path.relative_to(Path.home())
     except ValueError:
-        return shlex.quote(str(path))
-    return "~" if rel == Path(".") else "~/" + shlex.quote(str(rel))
+        return shlex.quote(path.as_posix())
+    return "~" if rel == Path(".") else "~/" + shlex.quote(rel.as_posix())
 
 
 def _link_finding(link: Link, roots: list[Path]) -> Finding | None:

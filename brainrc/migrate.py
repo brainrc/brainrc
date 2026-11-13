@@ -155,6 +155,10 @@ def cmd_migrate(dry_run: bool) -> int:
                 print(f"ERROR another brainrc apply is running (lock: {tilde(busy)})")
                 print("\nNothing moved. Let it finish, then re-run.")
                 return 1
+            if os.name == "nt":
+                # Windows won't rename or delete a dir with an open file in it, so let go of the
+                # locks first. An apply that starts now holds its lock open, and the move fails safely.
+                stack.close()
             if own:
                 own.unlink(missing_ok=True)  # the target must be empty for the rename
             if _occupied(target):

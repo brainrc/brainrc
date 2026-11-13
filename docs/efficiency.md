@@ -1,12 +1,15 @@
 # Efficiency: speed and tokens
 
-## Built into this repo
+## Built in
+
+Most of these live in [Gatework](https://github.com/brainrc/gatework), the default pack, at
+the paths shown; rows marked *core* are in this repo.
 
 | Technique | Where | Why it saves |
 |---|---|---|
-| Size-based execution mode | `brainrc-gatework/references/efficiency.md` | trivial/small tickets run inline: no subagent spawn overhead |
+| Size-based execution mode | `skills/brainrc-gatework/references/efficiency.md` | trivial/small tickets run inline: no subagent spawn overhead |
 | Implementer writes its own tests by default | `agents/brainrc-implementer.md` | one agent run per task instead of two |
-| Batched review, parallel reviewers | `brainrc-gatework/SKILL.md` | one review pass per branch; concurrent read-only reviewers |
+| Batched review, parallel reviewers | `skills/brainrc-gatework/SKILL.md` | one review pass per branch; concurrent read-only reviewers |
 | Per-agent model tiers | `model:` in `agents/*.md` | routine roles (verify, docs) on the cheapest tier; budgets stop a cheap model from using more tokens than it saves (the k9s trial verifier: 45k tokens, 18 tool calls before its budget was added) |
 | Paths, not contents, in dispatch | `references/handoff.md` | subagents load only what they need |
 | Handoff blocks ≤ ~150 words; engine reads only the newest | `references/handoff.md` | main thread stays small across long runs |
@@ -14,8 +17,8 @@
 | Plan summarized via `terraform show -json` + jq | `skills/brainrc-terraform` | resource actions instead of full plan text |
 | Checks scoped to changed packages/roots during implement | `references/efficiency.md` | faster loops; full run once at verify |
 | Domain skills load on demand | Agent Skills progressive disclosure | only the stacks touched cost tokens |
-| Short, de-duplicated global rules | `rules/` | rules load in every session of every tool |
-| Always-loaded token budgets | `validate` (`CORE_ALWAYS_BUDGET`, pack `max_always_tokens`) | rules and descriptions can't grow unnoticed; `tokens` shows each source against its budget ([packs](packs.md#context-cost)) |
+| Short, de-duplicated global rules | `rules/` (*core*) | rules load in every session of every tool |
+| Always-loaded token budgets | `validate` (*core*: `CORE_ALWAYS_BUDGET`, pack `max_always_tokens`) | rules and descriptions can't grow unnoticed; `tokens` shows each source against its budget ([packs](packs.md#context-cost)) |
 | Long skills keep catalogues in `references/` | e.g. `skills/brainrc-unslop` | the body read on every use stays short |
 | Static role files, variable text last | `agents/`, dispatch prompt | stable prefixes for prompt caching |
 

@@ -1,6 +1,6 @@
 {
   "name": "brainrc",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "description": "Guard hooks for AI coding harnesses. Gatework, the spec-driven skills and agents, is its own plugin: brainrc/gatework.",
   "author": {
     "name": "brainrc contributors"

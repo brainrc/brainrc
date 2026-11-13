@@ -12,6 +12,10 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.7.3 (2026-11-13)
+
+- Docs: finish repointing spec-agent wording at Gatework after the split. The README names the `gatework@gatework` plugin, `docs/efficiency.md` says which rows live in Gatework, and CONTRIBUTING.md asks for sandbox evals when the Gatework `ref` moves, since its roles and references no longer change in this repo.
+
 ## 0.7.2 (2026-11-13)
 
 - Install Gatework v0.7.1, whose roles check accepts the link as git on Windows stores it (`..\..\agents`).

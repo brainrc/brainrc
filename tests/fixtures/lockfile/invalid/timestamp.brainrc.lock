@@ -1,0 +1,6 @@
+# expect: unknown key `written_at`
+# brainrc.lock: written by brainrc. Don't edit it; commit it with brainrc.toml.
+version = 1
+brainrc = "0.7.3"
+scope = "user"
+written_at = "2026-11-13T06:00:00Z"

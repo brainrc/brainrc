@@ -1,0 +1,13 @@
+# expect: packs.gatework.commit
+# brainrc.lock: written by brainrc. Don't edit it; commit it with brainrc.toml.
+version = 1
+brainrc = "0.7.3"
+scope = "user"
+
+[packs.gatework]
+git = "https://github.com/brainrc/gatework.git"
+ref = "v0.7.1"
+commit = "753b996"
+
+[packs.gatework.files]
+"pack.toml" = "sha256:4862f447f2c7f272fa2f4aaf89dadb3b1ac09105bd5864f8d1a0c9452bb0a226"

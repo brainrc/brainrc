@@ -1,0 +1,3 @@
+# expect: packs.gatework.enabled: must be a boolean
+[packs.gatework]
+enabled = "no"

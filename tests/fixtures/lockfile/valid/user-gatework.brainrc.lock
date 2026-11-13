@@ -1,0 +1,15 @@
+# brainrc.lock: written by brainrc. Don't edit it; commit it with brainrc.toml.
+version = 1
+brainrc = "0.7.3"
+scope = "user"
+
+[packs.gatework]
+git = "https://github.com/brainrc/gatework.git"
+ref = "v0.7.1"
+commit = "753b9960c5e0d2f1a4b7c8e9d0a1b2c3d4e5f607"
+
+[packs.gatework.files]
+"agents/brainrc-analyst.md" = "sha256:f44ceb062e35dfeea6ed7f8524d53bb0bff19f553e25cae7ef4850e4185ccbba"
+"pack.toml" = "sha256:4862f447f2c7f272fa2f4aaf89dadb3b1ac09105bd5864f8d1a0c9452bb0a226"
+"rules/50-gatework.md" = "sha256:7369949b47ef2c6ba26fbbee659cedc76123a75c17d321a52d8d1ef35e948042"
+"skills/brainrc-work/SKILL.md" = "sha256:00e13ed7af55b27622f1d6eab5bec0147e68efe28dc2b12461117afa1a5ed40e"

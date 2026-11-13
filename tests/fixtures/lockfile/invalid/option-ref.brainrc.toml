@@ -1,0 +1,4 @@
+# expect: packs.acme.ref
+[packs.acme]
+git = "https://example.com/a.git"
+ref = "--upload-pack=x"

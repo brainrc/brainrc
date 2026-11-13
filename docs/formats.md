@@ -84,6 +84,11 @@ with it closed. Cursor and Antigravity aren't supported yet.
 A separate repo with the same layout plus a `pack.toml`, layered on top of this one per
 machine. Format and extension points: [packs.md](packs.md).
 
+## Project manifest and lock: `brainrc.toml`, `brainrc.lock`
+
+A repo's own packs and the lock that pins them: [project.md](project.md), with JSON Schemas in
+[`schemas/`](schemas/).
+
 ## Harness support
 
 | | Claude Code | Codex | OpenCode | Antigravity CLI | Cursor |

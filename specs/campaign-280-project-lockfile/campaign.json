@@ -1,0 +1,21 @@
+{
+  "ref": "gh:280",
+  "shape": "ordered",
+  "dependency_source": "none",
+  "started_at": "2026-11-13T06:01:36Z",
+  "delivery": "stacked",
+  "gates": {
+    "campaign": {
+      "presented_at": "2026-11-13T06:01:36Z",
+      "approved_at": "2026-11-13T06:01:36Z"
+    }
+  },
+  "members": [
+    {"ref": "gh:281", "order": 1, "depends_on": [], "status": "in_progress", "slug": "281-lockfile-spec", "branch": "claude/project-thread-4ue2xj", "pr": null, "base": "main", "merged": false},
+    {"ref": "gh:282", "order": 2, "depends_on": [], "status": "todo", "slug": "282-project-scope", "branch": "claude/project-thread-4ue2xj-282", "pr": null, "base": "claude/project-thread-4ue2xj", "merged": false},
+    {"ref": "gh:283", "order": 3, "depends_on": [], "status": "todo", "slug": "283-lock-hashes", "branch": "claude/project-thread-4ue2xj-283", "pr": null, "base": "claude/project-thread-4ue2xj-282", "merged": false},
+    {"ref": "gh:284", "order": 4, "depends_on": [], "status": "todo", "slug": "284-install-frozen", "branch": "claude/project-thread-4ue2xj-284", "pr": null, "base": "claude/project-thread-4ue2xj-283", "merged": false},
+    {"ref": "gh:285", "order": 5, "depends_on": [], "status": "todo", "slug": "285-check-drift", "branch": "claude/project-thread-4ue2xj-285", "pr": null, "base": "claude/project-thread-4ue2xj-284", "merged": false},
+    {"ref": "gh:286", "order": 6, "depends_on": [], "status": "todo", "slug": "286-standards-first", "branch": "claude/project-thread-4ue2xj-286", "pr": null, "base": "claude/project-thread-4ue2xj-285", "merged": false}
+  ]
+}

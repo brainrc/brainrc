@@ -1,0 +1,4 @@
+# expect: set only one of `git`, `path`
+[packs.acme]
+git = "https://example.com/a.git"
+path = "tools/a"

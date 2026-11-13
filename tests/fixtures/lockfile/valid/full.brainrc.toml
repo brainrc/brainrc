@@ -1,0 +1,14 @@
+version = 1
+exclude = ["gatework:skills/brainrc-aws", "skills/*-draft"]
+harnesses = ["claude", "codex"]
+
+[packs.gatework]
+ref = "v0.7.1"
+
+[packs.acme]
+git = "https://example.com/acme/agent-pack.git"
+ref = "v2"
+description = "Acme's deploy skills"
+
+[packs.team]
+path = "tools/agent-pack"

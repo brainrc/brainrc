@@ -83,7 +83,7 @@ between runs on its own, with evidence at every step. It lives in [Gatework](htt
 | Doc | For |
 |---|---|
 | [guardrails](docs/guardrails.md) · [post-deliver](docs/post-deliver.md) | what the hooks catch and their gaps; following a PR through CI and merge |
-| [packs](docs/packs.md) · [tutorial](docs/tutorial.md) | private skills and rules in a separate repo |
+| [packs](docs/packs.md) · [tutorial](docs/tutorial.md) · [project lock](docs/project.md) | private skills and rules in a separate repo; a repo's own packs, pinned in `brainrc.lock` |
 | [formats](docs/formats.md) · [troubleshooting](docs/troubleshooting.md) · [roadmap](docs/roadmap.md) · [architecture](docs/architecture.md) | reference |
 | [sandbox](examples/sandbox/README.md) · [evals](docs/evals.md) · [e2e runs](docs/e2e-runs.md) | try spec-agent on a toy repo and grade the run |
 

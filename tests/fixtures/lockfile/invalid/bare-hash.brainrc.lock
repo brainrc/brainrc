@@ -1,0 +1,11 @@
+# expect: packs.gatework.files."pack.toml"
+# brainrc.lock: written by brainrc. Don't edit it; commit it with brainrc.toml.
+version = 1
+brainrc = "0.7.3"
+scope = "user"
+
+[packs.gatework]
+path = "~/src/gatework"
+
+[packs.gatework.files]
+"pack.toml" = "4862f447f2c7f272fa2f4aaf89dadb3b1ac09105bd5864f8d1a0c9452bb0a226"

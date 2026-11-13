@@ -11,7 +11,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 import retro_ccusage  # noqa: E402
-from support import rmtree
+from support import rmtree  # noqa: E402
 
 SINCE, UNTIL = date(2026, 10, 1), date(2026, 10, 20)
 

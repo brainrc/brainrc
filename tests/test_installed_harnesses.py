@@ -9,7 +9,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import TempRepoCase, brainrc, home_files, quiet  # noqa: E402
-from support import home_env, restore_home, rmtree, saved_home
+from support import home_env, restore_home, rmtree, saved_home  # noqa: E402
 
 
 class InstalledHarnessTest(TempRepoCase):

@@ -10,6 +10,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+
 from support import rmtree
 
 REPO = Path(__file__).resolve().parent.parent

@@ -10,7 +10,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import TempRepoCase, brainrc, install_harnesses, quiet  # noqa: E402
-from support import home_env, restore_home, rmtree, saved_home
+from support import home_env, restore_home, rmtree, saved_home, symlink  # noqa: E402
 
 
 def run(*args: str) -> tuple[int, str]:
@@ -103,7 +103,7 @@ class RepairTest(TempRepoCase):
 
     def test_a_broken_link_to_another_item_stays_a_conflict(self):
         self.skill.parent.mkdir(parents=True, exist_ok=True)
-        self.skill.symlink_to(self.home / "gone/somewhere-else")
+        symlink(self.skill, self.home / "gone/somewhere-else")
         code, out = run("apply", "--repair")
         self.assertEqual(code, 1)
         self.assertIn("CONFLICT", out)
@@ -113,7 +113,7 @@ class RepairTest(TempRepoCase):
         mine = self.home / "mine/skills/spec-agent"
         mine.mkdir(parents=True)
         self.skill.parent.mkdir(parents=True, exist_ok=True)
-        self.skill.symlink_to(mine)
+        symlink(self.skill, mine)
         code, out = run("apply", "--repair")
         self.assertEqual(code, 1)
         self.assertEqual(os.readlink(self.skill), str(mine))
@@ -139,9 +139,9 @@ class RepairTest(TempRepoCase):
         notes.mkdir(parents=True)
         (notes / "SKILL.md").write_text("x\n")
         mine = self.home / ".claude/skills/my-notes"
-        mine.symlink_to(notes)
+        symlink(mine, notes)
         self.skill.unlink()
-        self.skill.symlink_to(self.home / "dotfiles/skills/spec-agent")  # the user's own, broken
+        symlink(self.skill, self.home / "dotfiles/skills/spec-agent")  # the user's own, broken
         code, out = run("apply", "--repair")
         self.assertEqual(code, 0, out)
         self.assertNotIn("PRUNE", out)
@@ -152,9 +152,9 @@ class RepairTest(TempRepoCase):
         quiet(brainrc.cmd_sync, True)
         (self.home / "skills/my-notes").mkdir(parents=True)
         mine = self.home / ".claude/skills/my-notes"
-        mine.symlink_to(self.home / "skills/my-notes")  # a live link of the user's
+        symlink(mine, self.home / "skills/my-notes")  # a live link of the user's
         self.skill.unlink()
-        self.skill.symlink_to(self.home / "skills/spec-agent")  # broken: its derived root is ~
+        symlink(self.skill, self.home / "skills/spec-agent")  # broken: its derived root is ~
         (trusted, prune), _ = quiet(brainrc.cli._old_roots, brainrc.sources(), [self.repo])
         self.assertNotIn(self.home, trusted + prune)
         code, out = run("apply", "--repair")

@@ -5,3 +5,8 @@ bump: patch
   `USERPROFILE` beside `HOME` for a fake home (Windows reads only `USERPROFILE`), and child
   processes keep `SYSTEMROOT`. Temp dirs are resolved (no 8.3 short names) and pack paths are
   written as TOML literal strings, so a Windows path's backslashes aren't read as escapes (#342).
+- Windows: links to a skill or hooks directory are made as directory links (a file link to a
+  directory reads as broken there), link targets drop the `\\?\` prefix Windows adds, a hooks dir
+  is written into hook commands with `/` and JSON-escaped, and messages show paths with `/`
+  (`~/.claude/skills/...`, `rules/10-git.md`), so `exclude` patterns and tripwire `paths` match
+  on every OS (#342).

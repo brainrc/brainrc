@@ -9,7 +9,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import PACK_TOML, TempRepoCase, brainrc, install_harnesses, make_pack, quiet, set_core_version  # noqa: E402
-from support import home_env, restore_home, rmtree, saved_home
+from support import home_env, restore_home, rmtree, saved_home  # noqa: E402
 
 LEGACY_TOML = PACK_TOML.replace("[extensions.gatework]", "[extensions]").replace("extensions.gatework.", "extensions.")
 

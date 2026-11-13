@@ -4,7 +4,6 @@ Every case runs against a fresh temp HOME with an explicit env, never the real h
 """
 import contextlib
 import errno
-import fcntl
 import io
 import os
 import subprocess
@@ -16,8 +15,10 @@ from unittest import mock
 
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO / "tests"))
+from brainrc import cli  # noqa: E402
+from support import bare_env, home_env, symlink  # noqa: E402
 from test_brainrc import default_pack_env  # noqa: E402
-from support import bare_env, home_env
+
 HOME_VARS = ("HOME", "USERPROFILE", "BRAINRC_HOME", "AICFG_HOME", "XDG_CONFIG_HOME", "CLAUDE_CONFIG_DIR", "CODEX_HOME", "PYTHONWARNINGS")
 LOCAL_FILES = {
     "packs.local.toml": "# no packs\n",
@@ -85,7 +86,7 @@ class TestMigrate(MigrateCase):
         real.mkdir()
         (real / "packs.local.toml").write_text("# x\n")
         self.old.parent.mkdir(parents=True)
-        self.old.symlink_to(real)
+        symlink(self.old, real)
         proc = self.run_cli("migrate")
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
         self.assertTrue(self.new.is_symlink())
@@ -98,7 +99,7 @@ class TestMigrate(MigrateCase):
         real.mkdir(parents=True)
         (real / "packs.local.toml").write_text("# x\n")
         self.old.parent.mkdir(parents=True)
-        self.old.symlink_to(Path("..") / "dotfiles" / "brainrc-settings")
+        symlink(self.old, Path("..") / "dotfiles" / "brainrc-settings")
         brainrc_home = self.home / "elsewhere" / "brainrc"
         brainrc_home.mkdir(parents=True)  # an existing empty target (AC8)
         proc = self.run_cli("migrate", BRAINRC_HOME=str(brainrc_home))
@@ -177,7 +178,7 @@ class TestMigrate(MigrateCase):
     def test_ac12_held_lock_blocks_move(self):
         self.old.mkdir(parents=True)
         with open(self.old / "apply.lock", "a") as f:
-            fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            self.assertTrue(cli._try_lock(f))  # flock or msvcrt, as apply takes it
             proc = self.run_cli("migrate")
         self.assertNotEqual(proc.returncode, 0)
         self.assertTrue(self.old.is_dir())
@@ -245,7 +246,7 @@ class TestCrossDeviceSafety(MigrateCase):
         real.mkdir()
         (real / "packs.local.toml").write_text("# x\n")
         self.old.parent.mkdir(parents=True)
-        self.old.symlink_to(real)
+        symlink(self.old, real)
         code, out, _ = self.migrate_in_process(exdev_rename(self.old))
         self.assertEqual(code, 0, out)
         self.assertTrue(self.new.is_symlink())
@@ -257,7 +258,7 @@ class TestCrossDeviceSafety(MigrateCase):
         real = self.old.parent / "real"
         real.mkdir(parents=True)
         (real / "packs.local.toml").write_text("# x\n")
-        self.old.symlink_to("real")
+        symlink(self.old, "real")
         code, out, _ = self.migrate_in_process(exdev_rename(self.old))
         self.assertEqual(code, 0, out)
         self.assertTrue(self.new.is_symlink())
@@ -378,7 +379,7 @@ class TestPathSanity(MigrateCase):
         self.new.parent.mkdir(parents=True, exist_ok=True)
         empty = self.tmp / "empty"
         empty.mkdir()
-        self.new.symlink_to(empty)
+        symlink(self.new, empty)
         before = self.snapshot()
         proc = self.run_cli("migrate")
         self.assertNotEqual(proc.returncode, 0)
@@ -392,7 +393,7 @@ class TestLocks(MigrateCase):
         (src / "packs.local.toml").write_text("# x\n")
         dst.mkdir()
         with open(dst / "apply.lock", "a") as f:  # what a running apply holds with BRAINRC_HOME set
-            fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            self.assertTrue(cli._try_lock(f))
             proc = self.run_cli("migrate", AICFG_HOME=str(src), BRAINRC_HOME=str(dst))
         self.assertNotEqual(proc.returncode, 0)
         self.assertIn("another brainrc apply", proc.stdout)
@@ -415,7 +416,7 @@ class TestLinkRepoint(unittest.TestCase):
         old.mkdir(parents=True)
         new.mkdir(parents=True)
         dest = tmp / "dest"
-        dest.symlink_to(old / link_to)
+        symlink(dest, old / link_to)
         env = bare_env(tmp)
         with mock.patch.dict(os.environ, env, clear=True):
             return plan.Link("claude", dest, new / desired_rel).state()

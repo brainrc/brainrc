@@ -11,7 +11,7 @@ from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import TempRepoCase, brainrc, install_harnesses, quiet  # noqa: E402
-from support import home_env, restore_home, rmtree, saved_home
+from support import home_env, restore_home, rmtree, saved_home  # noqa: E402
 
 SERVERS = '[servers.docs]\ncommand = "docs-mcp"\nharnesses = ["claude"]\n'
 

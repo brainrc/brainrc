@@ -9,7 +9,7 @@ from unittest import mock
 
 from brainrc.doctor import _link_finding, _stray_link_findings, shell_path
 from brainrc.plan import Link
-from support import bare_env, home_env
+from support import bare_env, home_env, symlink
 
 
 class ShellPathTest(unittest.TestCase):
@@ -56,7 +56,7 @@ class DoctorFixQuotingTest(unittest.TestCase):
     def test_broken_link_fix_quotes_the_link(self):
         dest = self.home / "Skills Dir" / "review"
         dest.parent.mkdir()
-        dest.symlink_to(self.home / "gone repo" / "review")
+        symlink(dest, self.home / "gone repo" / "review")
         with self.env():
             level, what, fix = _link_finding(Link("claude", dest, self.home / "repo/skills/review"), [])
         self.assertEqual(level, "FAIL")
@@ -65,7 +65,7 @@ class DoctorFixQuotingTest(unittest.TestCase):
     def test_stray_broken_link_fix_quotes_the_link(self):
         skills = self.home / "Skills Dir"
         skills.mkdir()
-        (skills / "old one").symlink_to(self.home / "gone")
+        symlink(skills / "old one", self.home / "gone")
         harnesses = {"claude": {"skills": "~/Skills Dir"}}
         with self.env(), mock.patch("brainrc.doctor.load_harnesses", return_value=harnesses):
             [(level, what, fix)] = _stray_link_findings(set())

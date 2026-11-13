@@ -11,7 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import TempRepoCase, brainrc, quiet  # noqa: E402
 from brainrc import naming  # noqa: E402
 from brainrc.sources import Source  # noqa: E402
-from support import rmtree
+from support import rmtree  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 

@@ -248,7 +248,7 @@ def _sync(apply: bool, repair: bool = False) -> int:
             link.dest.parent.mkdir(parents=True, exist_ok=True)
             if link.dest.is_symlink():
                 link.dest.unlink()
-            link.dest.symlink_to(link.source)
+            config.symlink(link.dest, link.source)
     for p in stale:
         changes += 1
         print(f"{'PRUNE':9} {'':9} {tilde(p)}")

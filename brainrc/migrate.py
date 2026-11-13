@@ -69,12 +69,12 @@ def _move(source: Path, target: Path) -> OSError | None:
     source failed."""
     target.parent.mkdir(parents=True, exist_ok=True)
     if source.is_symlink():  # move the link, not what it points at, on any device
-        link = os.readlink(source)
+        link = config.readlink(source)
         if not os.path.isabs(link):
             link = os.path.normpath(os.path.join(source.parent, link))
         if target.is_dir() and not target.is_symlink():
             target.rmdir()  # empty, checked by the caller
-        os.symlink(link, target)
+        config.symlink(target, link)
         removed = source.unlink
     else:
         try:

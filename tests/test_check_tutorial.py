@@ -20,7 +20,7 @@ spec.loader.exec_module(check_tutorial)
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import default_pack_env  # noqa: E402
-from support import rmtree
+from support import rmtree  # noqa: E402
 
 
 def setUpModule():

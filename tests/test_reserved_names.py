@@ -7,7 +7,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import TempRepoCase, brainrc, make_pack, quiet, set_core_version  # noqa: E402
-from support import rmtree
+from support import rmtree  # noqa: E402
 
 
 class ReservedNamesTest(TempRepoCase):

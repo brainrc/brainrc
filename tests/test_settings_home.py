@@ -14,7 +14,8 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO / "tests"))
 from test_brainrc import default_pack_env  # noqa: E402
-from support import home_env
+from support import home_env, symlink  # noqa: E402
+
 HOME_VARS = ("HOME", "USERPROFILE", "BRAINRC_HOME", "AICFG_HOME", "XDG_CONFIG_HOME", "CLAUDE_CONFIG_DIR", "CODEX_HOME", "PYTHONWARNINGS")
 
 
@@ -268,13 +269,13 @@ class HomeFunctionsTest(unittest.TestCase):
     def test_brainrc_home_symlinked_to_the_legacy_dir_is_not_a_former_home(self):
         self.old.mkdir(parents=True)
         link = self.tmp / "x"
-        link.symlink_to(self.old)
+        symlink(link, self.old)
         os.environ["BRAINRC_HOME"] = str(link)
         self.assertEqual(self.config.former_homes(), [])
 
     def test_broken_legacy_symlink_counts_as_absent(self):
         self.old.parent.mkdir(parents=True)
-        self.old.symlink_to(self.tmp / "gone")
+        symlink(self.old, self.tmp / "gone")
         self.assertIsNone(self.config.unmigrated_home())
 
     def test_unmigrated_home_names_which_old_home(self):

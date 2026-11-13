@@ -6,7 +6,7 @@ import tempfile
 from pathlib import Path
 
 from test_brainrc import TempRepoCase, brainrc, make_pack, quiet, set_core_version
-from support import home_env, restore_home, rmtree, saved_home
+from support import home_env, restore_home, rmtree, saved_home, symlink
 
 GH = '[servers.gh]\ncommand = "npx"\nargs = ["-y", "@modelcontextprotocol/server-github"]\nenv_from = ["GH_TOKEN"]\n'
 USER_CLAUDE_HOOK = "python3 ~/mine/ai-config-tools/check.py"  # path merely contains ai-config
@@ -59,11 +59,11 @@ class OldInstallCase(TempRepoCase):
         for new, old in (("brainrc", "ai-config"), ("brainrc-acme", "ai-config-acme")):
             target = brainrc.link_target(claude / new)
             (claude / new).unlink()
-            (claude / old).symlink_to(claude_target if (claude_target and new == "brainrc") else target)
+            symlink(claude / old, claude_target if (claude_target and new == "brainrc") else target)
         cursor_dir = self.home / ".cursor/hooks"
         target = brainrc.link_target(cursor_dir / "brainrc")
         (cursor_dir / "brainrc").unlink()
-        (cursor_dir / "ai-config").symlink_to(target)
+        symlink(cursor_dir / "ai-config", target)
 
     def seed_backups(self) -> None:
         for path in (self.settings, self.hooks_json):
@@ -189,7 +189,7 @@ class InstalledOldLinkTest(OldInstallCase):
                 shutil.copy2(src, copy / src.name)
         hooks = self.home / ".claude/hooks"
         hooks.mkdir(parents=True)
-        (hooks / "ai-config").symlink_to(copy)
+        symlink(hooks / "ai-config", copy)
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertFalse((hooks / "ai-config").is_symlink())

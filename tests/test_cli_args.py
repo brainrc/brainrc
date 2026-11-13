@@ -16,7 +16,7 @@ sys.path.insert(0, str(REPO))
 sys.path.insert(0, str(REPO / "tests"))
 import brainrc  # noqa: E402
 from test_brainrc import TempRepoCase, copy_repo, home_files, install_harnesses, quiet  # noqa: E402
-from support import home_env, restore_home, rmtree, saved_home
+from support import home_env, restore_home, rmtree, saved_home  # noqa: E402
 
 
 def run(*args: str) -> tuple[int, str, str]:

@@ -47,3 +47,9 @@ def bare_env(home, **extra: str) -> dict[str, str]:
     without SYSTEMROOT, so that one is kept when set."""
     keep = {k: os.environ[k] for k in ("PATH", "SYSTEMROOT") if k in os.environ}
     return {**keep, **home_env(home), **extra}
+
+
+def symlink(link, target) -> None:
+    """link.symlink_to(target), marked as a directory link when target is a directory: Windows
+    treats a file link to a directory as broken."""
+    os.symlink(target, link, target_is_directory=os.path.isdir(os.path.join(os.path.dirname(link), target)))

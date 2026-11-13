@@ -11,7 +11,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
 from retro_metrics import RunRecord, Skipped, load_run  # noqa: E402
-from support import rmtree
+from support import rmtree  # noqa: E402
 
 COMPLETE = {
     "version": 1,

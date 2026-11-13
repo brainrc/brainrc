@@ -15,7 +15,7 @@ from test_uninstall import run  # noqa: E402
 
 from brainrc import config, jsonc  # noqa: E402
 from brainrc.mcp import McpSync, mcp_change, mcp_file  # noqa: E402
-from support import home_env, rmtree
+from support import home_env, rmtree  # noqa: E402
 
 # harness -> (env var, its default dir under ~, the dir under the var, MCP file relative to ~ / the var)
 HARNESSES = {

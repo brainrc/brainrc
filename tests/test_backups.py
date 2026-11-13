@@ -7,6 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from brainrc.config import BACKUPS_KEPT
 from brainrc.settings import replace_file
+from support import symlink
 
 
 class BackupTests(unittest.TestCase):
@@ -54,7 +55,7 @@ class BackupTests(unittest.TestCase):
         elsewhere = self.dir / "elsewhere.json"
         elsewhere.write_text("mine")
         link = self.dir / "settings.json.bak-aicfg-20250101T000000Z"
-        link.symlink_to(elsewhere)
+        symlink(link, elsewhere)
         replace_file(self.target, '{"a": 1}', "{}")
         for name in lookalikes:
             self.assertTrue((self.dir / name).exists(), name)

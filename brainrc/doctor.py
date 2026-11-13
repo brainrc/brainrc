@@ -110,7 +110,7 @@ def _render_findings(srcs: list[Source]) -> list[Finding]:
         targets.append((home_extensions_file(), lambda: extensions))
     targets += [(path, lambda text=text: text) for path, text in rendered_agents(srcs).items()]
     for path, render in targets:
-        rel = tilde(path) if not path.is_relative_to(config.REPO) else str(path.relative_to(config.REPO))
+        rel = tilde(path) if not path.is_relative_to(config.REPO) else path.relative_to(config.REPO).as_posix()
         if not path.is_file():
             found.append(("FAIL", f"{rel} has not been rendered", command("apply")))
         elif path.read_text() != render():

@@ -13,7 +13,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import TempRepoCase, brainrc, copy_repo, install_harnesses, quiet  # noqa: E402
-from support import home_env, restore_home, rmtree, saved_home
+from support import home_env, restore_home, rmtree, saved_home, symlink  # noqa: E402
 
 BACKUP = re.compile(r"\.bak-brainrc-\d{8}T\d{6}Z$")
 SETTINGS = {"theme": "dark", "hooks": {"PreToolUse": [
@@ -62,7 +62,7 @@ class UninstallTest(TempRepoCase):
         (self.home / ".codex/config.toml").write_text('model = "o3"\n')
         (self.home / ".claude/skills/my-skill").mkdir(parents=True)
         (self.home / ".claude/skills/my-skill/SKILL.md").write_text("mine\n")
-        (self.home / ".claude/skills/my-link").symlink_to(self.home / ".claude/skills/my-skill")
+        symlink(self.home / ".claude/skills/my-link", self.home / ".claude/skills/my-skill")
 
     def tearDown(self):
         restore_home(self.old_home)

@@ -6,7 +6,8 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from support import rmtree
+
+from support import rmtree, symlink
 
 HOOKS = Path(__file__).resolve().parent.parent / "overrides" / "claude" / "hooks"
 
@@ -442,7 +443,7 @@ class CursorGuardTest(unittest.TestCase):
     def test_works_through_a_symlinked_hooks_dir(self):
         link_dir = Path(tempfile.mkdtemp()).resolve()
         try:
-            (link_dir / "ai-config").symlink_to(CURSOR_GUARD.parent)
+            symlink(link_dir / "ai-config", CURSOR_GUARD.parent)
             reply = cursor({"hook_event_name": "beforeShellExecution", "command": "git push"},
                            link_dir / "ai-config" / "guard.py")
             self.assertEqual(reply["permission"], "deny")
@@ -481,13 +482,13 @@ class FailOpenTest(unittest.TestCase):
     def hooks_dir(self, harness: str) -> Path:
         """A link to the real hooks, as apply makes it."""
         d = self.tmp / harness
-        d.symlink_to(REPO / "overrides" / harness / "hooks")
+        symlink(d, REPO / "overrides" / harness / "hooks")
         return d
 
     def remove_target(self, link: Path) -> None:
         """The checkout moved or the package went away: the link now dangles."""
         link.unlink()
-        link.symlink_to(self.tmp / "gone")
+        symlink(link, self.tmp / "gone")
 
     def test_claude_commands_behave_like_the_guards_when_present(self):
         d = self.hooks_dir("claude")

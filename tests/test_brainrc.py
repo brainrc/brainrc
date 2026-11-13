@@ -15,7 +15,7 @@ from unittest import mock
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO))
 import brainrc  # noqa: E402  (the package at the repo root)
-from support import home_env, restore_home, rmtree, saved_home
+from support import home_env, restore_home, rmtree, saved_home, symlink  # noqa: E402
 
 FOREIGN = {"hooks": [{"type": "command", "command": "node /opt/other/hook.js"}]}
 OURS_OLD = {"matcher": "Bash", "hooks": [{"type": "command", "command": "python3 ~/.claude/hooks/ai-config/old.py"}]}
@@ -246,15 +246,15 @@ class SyncFakeHomeTest(TempRepoCase):
         quiet(brainrc.cmd_sync, True)
         link = self.home / ".claude/skills/spec-agent"
         link.unlink()
-        link.symlink_to(os.path.relpath(self.repo / "packs/gatework/skills/spec-agent", link.parent))
+        symlink(link, os.path.relpath(self.repo / "packs/gatework/skills/spec-agent", link.parent))
         self.assertEqual(brainrc.Link("claude", link, self.repo / "packs/gatework/skills/spec-agent").state(), "ok")
 
     def test_updates_moved_links_and_prunes_dangling(self):
         quiet(brainrc.cmd_sync, True)
         skills_dir = self.home / ".claude/skills"
         (skills_dir / "spec-agent").unlink()
-        (skills_dir / "spec-agent").symlink_to(self.repo / "packs/gatework/skills/brainrc-terraform")  # points at wrong skill
-        (skills_dir / "gone").symlink_to(self.repo / "packs/gatework/skills/gone")  # removed from the repo
+        symlink(skills_dir / "spec-agent", self.repo / "packs/gatework/skills/brainrc-terraform")  # points at wrong skill
+        symlink(skills_dir / "gone", self.repo / "packs/gatework/skills/gone")  # removed from the repo
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0)
         self.assertIn("UPDATE", out)
@@ -431,7 +431,7 @@ class SyncFakeHomeTest(TempRepoCase):
         target.write_text('{"theme": "dark"}\n')
         settings = self.home / ".claude/settings.json"
         settings.parent.mkdir(exist_ok=True)
-        settings.symlink_to(target)
+        symlink(settings, target)
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertTrue(settings.is_symlink())
@@ -450,7 +450,7 @@ class SyncFakeHomeTest(TempRepoCase):
         target = dotfiles / "settings.json"
         settings = self.home / ".claude/settings.json"
         settings.parent.mkdir(exist_ok=True)
-        settings.symlink_to(target)
+        symlink(settings, target)
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertTrue(settings.is_symlink())
@@ -762,21 +762,21 @@ class DoctorTest(TempRepoCase):
 
     def test_link_to_the_wrong_item(self):
         (self.skills / "spec-agent").unlink()
-        (self.skills / "spec-agent").symlink_to(self.repo / "packs/gatework/skills/brainrc-terraform")
+        symlink(self.skills / "spec-agent", self.repo / "packs/gatework/skills/brainrc-terraform")
         self.assert_one_fail("spec-agent", "apply")
 
     def test_stale_link(self):
-        (self.skills / "gone").symlink_to(self.repo / "packs/gatework/skills/gone")
+        symlink(self.skills / "gone", self.repo / "packs/gatework/skills/gone")
         self.assert_one_fail("gone", "apply")
 
     def test_broken_link_after_moving_the_repo(self):
         (self.skills / "spec-agent").unlink()
-        (self.skills / "spec-agent").symlink_to("/nonexistent/old-checkout/skills/spec-agent")
+        symlink(self.skills / "spec-agent", "/nonexistent/old-checkout/skills/spec-agent")
         self.assert_one_fail("broken", "apply --repair")
 
     def test_broken_link_to_another_item(self):
         (self.skills / "spec-agent").unlink()
-        (self.skills / "spec-agent").symlink_to("/nonexistent/somewhere/else")
+        symlink(self.skills / "spec-agent", "/nonexistent/somewhere/else")
         self.assert_one_fail("broken", "rm")
 
     def test_real_file_where_a_link_belongs(self):
@@ -1002,7 +1002,7 @@ class SettingsHomeTest(TempRepoCase):
         old.write_text("old render\n")
         link = self.home / ".claude/CLAUDE.md"
         link.parent.mkdir(parents=True, exist_ok=True)
-        link.symlink_to(old)
+        symlink(link, old)
         code, out = quiet(brainrc.cmd_sync, False)
         self.assertRegex(out, r"UPDATE +claude +~/.claude/CLAUDE.md")
         quiet(brainrc.cmd_sync, True)
@@ -1235,7 +1235,7 @@ class CrashRegressionTest(TempRepoCase):
         super().tearDown()
 
     def test_dangling_markdown_link_in_a_skill_is_reported(self):
-        (self.repo / "packs/gatework/skills/brainrc-terraform/gone.md").symlink_to(self.repo / "nowhere.md")
+        symlink(self.repo / "packs/gatework/skills/brainrc-terraform/gone.md", self.repo / "nowhere.md")
         code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1, out)
         self.assertIn("skills/brainrc-terraform/gone.md: dangling symlink", out)
@@ -1292,8 +1292,8 @@ class HookDirRenameTest(PackSyncTest):
     def old_install(self):
         hooks = self.home / ".claude/hooks"
         hooks.mkdir(parents=True)
-        (hooks / "ai-config").symlink_to(self.core_hooks())
-        (hooks / "ai-config-acme").symlink_to(self.pack / "overrides/claude/hooks")
+        symlink(hooks / "ai-config", self.core_hooks())
+        symlink(hooks / "ai-config-acme", self.pack / "overrides/claude/hooks")
         old = [{"matcher": "Bash", "hooks": [{"type": "command", "command": f"python3 $HOME/.claude/hooks/{d}/x.py"}]}
                for d in ("ai-config", "ai-config-acme")]
         (self.home / ".claude/settings.json").write_text(json.dumps({"hooks": {"PreToolUse": old}}))
@@ -1325,7 +1325,7 @@ class HookDirRenameTest(PackSyncTest):
     def test_cursor_old_link_is_removed(self):
         hooks = self.home / ".cursor/hooks"
         hooks.mkdir(parents=True)
-        (hooks / "ai-config").symlink_to(self.repo / "overrides/cursor/hooks")
+        symlink(hooks / "ai-config", self.repo / "overrides/cursor/hooks")
         quiet(brainrc.cmd_sync, True)
         self.assertEqual(sorted(p.name for p in hooks.iterdir()), ["brainrc"])
 
@@ -1343,7 +1343,7 @@ class HookDirRenameTest(PackSyncTest):
         hooks.mkdir(parents=True)
         mine = self.home / "my-hooks"
         mine.mkdir()
-        (hooks / "ai-config").symlink_to(mine)
+        symlink(hooks / "ai-config", mine)
         quiet(brainrc.cmd_sync, True)
         self.assertEqual(brainrc.link_target(hooks / "ai-config"), mine)
 
@@ -1353,7 +1353,7 @@ class HookDirRenameTest(PackSyncTest):
         copy.mkdir(parents=True)
         hooks = self.home / ".claude/hooks"
         hooks.mkdir(parents=True)
-        (hooks / "ai-config").symlink_to(copy)
+        symlink(hooks / "ai-config", copy)
         quiet(brainrc.cmd_sync, True)
         self.assertFalse((hooks / "ai-config").is_symlink())
         self.assertTrue(copy.is_dir())  # former-home copies are left for migrate
@@ -1462,7 +1462,7 @@ class InstalledModeTest(TempRepoCase):
     def test_an_old_link_into_the_package_is_repointed(self):
         link = self.home / ".claude/hooks/brainrc"
         link.parent.mkdir(parents=True, exist_ok=True)
-        link.symlink_to(self.core / "overrides/claude/hooks")
+        symlink(link, self.core / "overrides/claude/hooks")
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertRegex(out, r"UPDATE +claude +~/.claude/hooks/brainrc")
@@ -1776,7 +1776,7 @@ class HarnessPluginTest(TempRepoCase):
 
     def test_apply_replaces_the_old_guard_link(self):
         self.old_link.parent.mkdir(parents=True, exist_ok=True)
-        self.old_link.symlink_to(self.repo / "overrides/opencode/plugin.js")
+        symlink(self.old_link, self.repo / "overrides/opencode/plugin.js")
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertEqual(brainrc.link_target(self.link), self.repo / "overrides/opencode/plugin.js")
@@ -1795,7 +1795,7 @@ class HarnessPluginTest(TempRepoCase):
 
     def test_a_foreign_symlink_at_the_old_guard_path_is_left_alone(self):
         self.old_link.parent.mkdir(parents=True, exist_ok=True)
-        self.old_link.symlink_to(self.home)
+        symlink(self.old_link, self.home)
         quiet(brainrc.cmd_sync, True)
         self.assertTrue(self.old_link.is_symlink())
         self.assertEqual(brainrc.link_target(self.link), self.repo / "overrides/opencode/plugin.js")
@@ -2173,11 +2173,11 @@ class LocalTripwireTest(TempRepoCase):
     def test_a_link_is_checked_by_its_target_path_not_followed(self):
         outside = self.repo.parent / "outside.md"
         outside.write_text("initech\n")  # not committed, so not checked
-        (self.repo / "packs/gatework/skills/brainrc-gatework/outside.txt").symlink_to(outside)
+        symlink(self.repo / "packs/gatework/skills/brainrc-gatework/outside.txt", outside)
         self.write_terms('terms = ["initech"]\n')
         code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 0, out)
-        (self.repo / "packs/gatework/skills/brainrc-gatework/ref.txt").symlink_to("../initech/ref.txt")  # broken, but committed as is
+        symlink(self.repo / "packs/gatework/skills/brainrc-gatework/ref.txt", "../initech/ref.txt")  # broken, but committed as is
         code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1, out)
         self.assertIn('skills/brainrc-gatework/ref.txt: local tripwire: the link target contains "initech"', out)

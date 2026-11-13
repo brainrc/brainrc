@@ -8,6 +8,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+
 from support import rmtree
 
 SCRIPT = Path(__file__).resolve().parent.parent / "scripts" / "retro_report.py"

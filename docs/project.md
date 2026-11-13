@@ -58,7 +58,10 @@ fetches each git pack's locked `commit`, never its `ref`, so a moved tag changes
 check runs before anything is written: the packs in `brainrc.toml` (or `packs.toml`) and the lock
 must match by key, URL, ref and path, and every file must hash as the lock says, outputs included.
 On any mismatch it names each one, writes nothing and exits 1. It never rewrites the lock and
-never removes files. The scope is the project when there is a `brainrc.toml` here or above, else
+never removes files. It won't overwrite a file brainrc didn't write either: one at a locked path
+whose hash is neither the lock's nor what brainrc last wrote there on this machine (kept in
+`$BRAINRC_HOME/project-state/`), or a hand-edited block in `AGENTS.md`. It names each one and
+writes nothing; `--force` overwrites them. The scope is the project when there is a `brainrc.toml` here or above, else
 the user; `--scope user|project` picks one. `brainrc install` without `--frozen` is `apply`.
 
 ## Checking for drift in CI

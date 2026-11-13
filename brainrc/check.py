@@ -14,7 +14,7 @@ from . import lock
 from .config import ConfigError, _layered, tilde
 from .frozen import compare_config, diff_files, diff_outputs
 from .packs import head
-from .project import BLOCK, MANIFEST, SKILLS_DIR, _read, load, outputs, project_pack_files
+from .project import BLOCK, MANIFEST, SKILLS_DIR, _read, last_written, load, outputs, project_pack_files
 from .sources import _pack_root, load_pack, tree_files
 
 
@@ -42,13 +42,17 @@ def _repo(root: Path, locked: dict) -> list[str]:
     """Each file brainrc owns in the repo that differs from the lock, is missing, or was added to a
     skill directory brainrc owns."""
     errors = []
+    mine = last_written(root)  # brainrc's own older output is stale, not someone else's file
+    stale = " (brainrc wrote it for another lock; `install --frozen` updates it)"
+    foreign = " and isn't brainrc's output (`install --frozen` refuses it without --force)"
     owned = locked.get("outputs", {})
     for rel, want in sorted(owned.items()):
         data = _read(root / rel)
         if data is None:
             errors.append(f"{rel}: missing (brainrc.lock lists it)")
         elif lock.digest(data) != want:
-            errors.append(f"{rel}: differs from {lock.NAME}")
+            errors.append(f"{rel}: differs from {lock.NAME}"
+                          + (stale if lock.digest(data) == mine["outputs"].get(rel) else foreign))
     skills = sorted({"/".join(rel.split("/")[:3]) for rel in owned if rel.startswith(SKILLS_DIR + "/")})
     for skill in skills:
         if (root / skill).is_dir() and not (root / skill).is_symlink():
@@ -60,7 +64,8 @@ def _repo(root: Path, locked: dict) -> list[str]:
         if m is None:
             errors.append(f"{rel}: brainrc's block is missing")
         elif lock.digest(m.group(0).encode("utf-8")) != want:
-            errors.append(f"{rel}: brainrc's block differs from {lock.NAME}")
+            ours = lock.digest(m.group(0).encode("utf-8")) == mine["blocks"].get(rel)
+            errors.append(f"{rel}: brainrc's block differs from {lock.NAME}" + (stale if ours else foreign))
     return errors
 
 

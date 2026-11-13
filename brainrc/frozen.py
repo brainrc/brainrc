@@ -15,7 +15,7 @@ from . import lock
 from .config import ConfigError, _layered, tilde
 from .packs import _git, _record, head
 from .project import (
-    MANIFEST, Project, _linked, _read, _unit, load, outputs, project_pack_files, with_block,
+    MANIFEST, Project, _linked, _read, _unit, foreign, load, outputs, project_pack_files, remember, with_block,
 )
 from .sources import _pack_root, core_version, load_pack
 
@@ -149,8 +149,9 @@ def user(sync) -> int:
     return sync()
 
 
-def project(root: Path) -> int:
-    """The project at root from its brainrc.lock: its packs' files, written into the repo."""
+def project(root: Path, force: bool = False) -> int:
+    """The project at root from its brainrc.lock: its packs' files, written into the repo. A file
+    at one of the lock's paths that brainrc didn't write fails it, unless force."""
     print(f"\nProject {tilde(root)} ({MANIFEST})")
     stage = Stage()
     try:
@@ -177,8 +178,13 @@ def project(root: Path) -> int:
                    for rel in sorted({*files, *blocks}) if _linked(proj.root, rel)]
     if errors:
         return _fail(errors, stage, f"Run `apply` to install the current packs and relock, or restore {lock.NAME}.")
+    if not force:
+        errors = foreign(proj.root, locked, files, blocks)
+        if errors:
+            return _fail(errors, stage, "Move or commit those files, or pass --force to overwrite them.")
     stage.commit()
     _write_frozen(proj, files, blocks)
+    remember(proj.root, locked.get("outputs", {}), locked.get("blocks", {}))
     return 0
 
 

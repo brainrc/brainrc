@@ -41,8 +41,17 @@ class ProjectCheckTest(CheckCase):
         skill = self.proj / ".agents/skills/team-deploy/SKILL.md"
         skill.write_text(skill.read_text() + "Edited.\n")
         out = self.check(code=1)
-        self.assertIn("DRIFT .agents/skills/team-deploy/SKILL.md: differs from brainrc.lock", out)
+        self.assertIn("DRIFT .agents/skills/team-deploy/SKILL.md: differs from brainrc.lock and isn't "
+                      "brainrc's output (`install --frozen` refuses it without --force)", out)
         self.assertIn("1 difference from brainrc.lock.", out)
+
+    def test_brainrc_s_own_output_for_another_lock_is_named_as_such(self):
+        skill = self.proj / "tools/team-pack/skills/team-deploy/SKILL.md"
+        skill.write_text(skill.read_text() + "Changed.\n")
+        self.apply()
+        (self.proj / "brainrc.lock").write_text(self.lock_text)  # e.g. the committed lock, pulled back
+        out = self.check(code=1)
+        self.assertIn(".agents/skills/team-deploy/SKILL.md: differs from brainrc.lock (brainrc wrote it for another lock", out)
 
     def test_a_missing_or_added_file_is_named(self):
         (self.proj / ".agents/skills/team-deploy/SKILL.md").unlink()

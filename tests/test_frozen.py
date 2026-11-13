@@ -27,8 +27,8 @@ def tree(root: Path) -> dict[str, bytes]:
 
 
 class FrozenCase(GitLockCase):
-    def frozen(self, code: int = 0, scope: str | None = None) -> str:
-        got, out = quiet(brainrc.cli.cmd_install, True, scope)
+    def frozen(self, code: int = 0, scope: str | None = None, force: bool = False) -> str:
+        got, out = quiet(brainrc.cli.cmd_install, True, scope, force)
         self.assertEqual(got, code, out)
         return out
 
@@ -187,6 +187,44 @@ class ProjectFrozenTest(FrozenCase):
         out = self.frozen(scope="user")
         self.assertNotIn("Project", out)
 
+    def test_a_file_brainrc_did_not_write_fails_unless_forced(self):
+        other = self.second_checkout()
+        mine = other / ".agents/skills/team-deploy/SKILL.md"
+        mine.parent.mkdir(parents=True)
+        mine.write_text("my own skill\n")
+        out = self.frozen(code=1)
+        self.assertIn("ERROR .agents/skills/team-deploy/SKILL.md: brainrc didn't write this file", out)
+        self.assertIn("pass --force to overwrite them", out)
+        self.assertEqual(mine.read_text(), "my own skill\n")
+        self.assertFalse((other / ".agents/skills/team-context").exists())  # nothing written
+        self.frozen(force=True)
+        self.assertEqual({k: v for k, v in tree(other).items() if not k.startswith(".git/")}, self.first)
+
+    def test_a_hand_edited_block_fails_unless_forced(self):
+        other = self.second_checkout()
+        self.frozen()
+        agents = other / "AGENTS.md"
+        agents.write_text(agents.read_text().replace("- Team rule.", "- My rule."))
+        out = self.frozen(code=1)
+        self.assertIn("AGENTS.md: brainrc's block was edited by hand", out)
+        self.assertIn("- My rule.", agents.read_text())
+        self.frozen(force=True)
+        self.assertIn("- Team rule.", agents.read_text())
+
+    def test_files_brainrc_wrote_before_are_updated_without_force(self):
+        other = self.second_checkout()
+        self.frozen()  # this machine now has the old files, written by brainrc
+        os.chdir(self.proj)  # a teammate changes the pack and relocks
+        skill = self.proj / "tools/team-pack/skills/team-deploy/SKILL.md"
+        skill.write_text(skill.read_text() + "Changed.\n")
+        self.apply()
+        for rel in ("brainrc.lock", "tools/team-pack/skills/team-deploy/SKILL.md"):
+            shutil.copy(self.proj / rel, other / rel)
+        os.chdir(other)
+        out = self.frozen()
+        self.assertIn("UPDATE    project   .agents/skills/team-deploy/", out)
+        self.assertTrue((other / ".agents/skills/team-deploy/SKILL.md").read_text().endswith("Changed.\n"))
+
     def test_scope_project_outside_a_project_is_an_error(self):
         os.chdir(self.proj.parent)
         self.frozen(code=2, scope="project")
@@ -198,8 +236,10 @@ class InstallCommandTest(FrozenCase):
         self.assertEqual(code, 0, out)
         self.assertTrue(self.user_lock.is_file())
 
-    def test_scope_needs_frozen(self):
+    def test_scope_and_force_need_frozen(self):
         code, _ = quiet(brainrc.main, ["brainrc", "install", "--scope", "user"])
+        self.assertEqual(code, 2)
+        code, _ = quiet(brainrc.main, ["brainrc", "install", "--force"])
         self.assertEqual(code, 2)
 
     def test_lock_left_alone(self):

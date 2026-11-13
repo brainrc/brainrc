@@ -484,8 +484,9 @@ def hooks_copy_root() -> Path:
 
 def hook_command_dir(hooks_dir: str) -> str:
     """hooks_dir as written into hook commands: `~` becomes `$HOME` so the shell expands it, and
-    `\\` becomes `/` (a shell reads a backslash as an escape; Windows takes either separator)."""
-    hooks_dir = hooks_dir.replace("\\", "/")
+    on Windows `\\` becomes `/` (a shell reads a backslash as an escape; Windows takes either)."""
+    if os.name == "nt":
+        hooks_dir = hooks_dir.replace("\\", "/")
     return "$HOME" + hooks_dir[1:] if hooks_dir.startswith("~") else hooks_dir
 
 

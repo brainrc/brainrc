@@ -223,12 +223,13 @@ _held_lock: list[Path] = []  # a purged home whose apply.lock this run still hol
 
 
 def _purge(home: Path) -> None:
+    held = os.name == "nt" and (home / "apply.lock").exists()  # Windows can't delete a file held open
     for p in sorted(home.iterdir()):
-        if os.name == "nt" and p.name == "apply.lock":
-            _held_lock.append(home)  # Windows can't delete a file held open: finish_purge() does it
-            continue
-        _remove(p)
-    if not _held_lock:
+        if not (held and p.name == "apply.lock"):
+            _remove(p)
+    if held:
+        _held_lock.append(home)  # finish_purge() deletes the lock and the home
+    else:
         home.rmdir()
 
 

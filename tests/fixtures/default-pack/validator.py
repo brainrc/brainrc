@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PurePath
 
 NAMESPACE = "gatework"
 EXTENSION_KEYS = frozenset({"domains", "intake_context", "ticket", "deliver_checks"})
@@ -32,7 +32,7 @@ def check_extensions(ext: dict, where: str, skill_names: set[str], agent_names: 
 
 def roles_error(me) -> str | None:
     path = me.root / ROLES
-    if path.is_symlink() and os.readlink(path) == "../../agents":
+    if path.is_symlink() and PurePath(os.readlink(path)) == PurePath("../../agents"):  # Windows: ..\..\agents
         return None
     found = f"a link to {os.readlink(path)}" if path.is_symlink() else "a plain file" if path.exists() else "missing"
     return f"{me.rel(path)} must be a symlink to ../../agents but is {found}"

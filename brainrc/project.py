@@ -112,6 +112,11 @@ def project_items(src: Source, kind: str, exclude: list[str]) -> list[Path]:
     return [p for p in items(src, kind) if not excluded(src, p, exclude)]
 
 
+def project_pack_files(project: Project, src: Source) -> dict[str, str]:
+    """What the project installs from a pack (docs/project.md): no hooks, and `exclude` from brainrc.toml."""
+    return lock.pack_files(src, project_items(src, "skills", project.exclude), False)
+
+
 def render_block(srcs: list[Source]) -> str | None:
     """The marked block brainrc owns in AGENTS.md: each pack's rules, labelled. None without rules."""
     parts = []
@@ -218,8 +223,7 @@ def sync(root: Path, apply: bool) -> int:
         return 1
     files, blocks = outputs(project, srcs)
     try:
-        locked = {p.key: lock.pack_entry(p.cfg, p.root, lock.pack_files(src, project_items(src, "skills", project.exclude), False))
-                  for p, src in zip(packs, srcs)}
+        locked = {p.key: lock.pack_entry(p.cfg, p.root, project_pack_files(project, src)) for p, src in zip(packs, srcs)}
     except ConfigError as e:
         print(f"ERROR {e}\n\nNothing written in the project.")
         return 1

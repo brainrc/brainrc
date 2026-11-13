@@ -51,6 +51,16 @@ a ref the lock already has now resolves to another commit (a tag was moved, a br
 fetches, so it reports a move only once this machine's clone has the new commit; it then names
 both commits and writes nothing.
 
+## Installing from the lock
+
+`brainrc install --frozen` installs exactly what `brainrc.lock` records, for CI and teammates. It
+fetches each git pack's locked `commit`, never its `ref`, so a moved tag changes nothing. Every
+check runs before anything is written: the packs in `brainrc.toml` (or `packs.toml`) and the lock
+must match by key, URL, ref and path, and every file must hash as the lock says, outputs included.
+On any mismatch it names each one, writes nothing and exits 1. It never rewrites the lock and
+never removes files. The scope is the project when there is a `brainrc.toml` here or above, else
+the user; `--scope user|project` picks one. `brainrc install` without `--frozen` is `apply`.
+
 ## `brainrc.toml`
 
 ```toml

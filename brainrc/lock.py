@@ -179,9 +179,15 @@ def user_lock(srcs: list[Source]) -> dict:
     packs = {}
     for src in srcs:
         if not src.is_core:
-            items = [p for kind in KINDS for p in installed_items(src, kind)]
-            packs[src.key] = pack_entry(layered[src.key], src.root, pack_files(src, items, config.installs("hooks")))
+            packs[src.key] = pack_entry(layered[src.key], src.root, user_pack_files(src))
     return new_lock("user", packs)
+
+
+def user_pack_files(src: Source) -> dict[str, str]:
+    """What the user scope installs from a pack: its items after the profile and `exclude`, and
+    its hooks when the profile installs hooks."""
+    items = [p for kind in KINDS for p in installed_items(src, kind)]
+    return pack_files(src, items, config.installs("hooks"))
 
 
 def report_moved(old: dict | None, new: dict, label: str) -> None:

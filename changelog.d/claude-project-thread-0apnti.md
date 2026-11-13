@@ -19,3 +19,5 @@ bump: patch
   nothing moved) and moves onto an empty target dir as on macOS and Linux, and `uninstall --purge` deletes the lock and the home once it is released.
   Doctor's `rm` fixes use `/`, `scripts/evals.py` reads run logs and cases as UTF-8 and prints
   run paths with `/`, and `retro` finds `ccusage.cmd`, the npm shim Windows installs (#342).
+- Windows: `migrate`, `uninstall --purge` and pack fetches delete read-only files too, so a
+  fetched pack's git objects no longer leave the old settings home behind (#342).

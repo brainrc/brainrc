@@ -13,7 +13,6 @@ from __future__ import annotations
 import json
 import os
 import re
-import shutil
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -174,7 +173,7 @@ def _generated() -> list[Path]:
 
 def _remove(path: Path) -> None:
     if path.is_dir() and not path.is_symlink():
-        shutil.rmtree(path)
+        config.rmtree(path)
     else:
         path.unlink()
 

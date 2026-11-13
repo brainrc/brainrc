@@ -5,6 +5,8 @@ import contextlib
 import operator
 import os
 import re
+import shutil
+import stat
 import sys
 
 try:
@@ -318,6 +320,20 @@ def check_only(names: list[str]) -> str | None:
 
 def expand(path: str) -> Path:
     return Path(os.path.expandvars(os.path.expanduser(path)))
+
+
+def rmtree(path, ignore_errors: bool = False) -> None:
+    """shutil.rmtree that also deletes read-only files: Windows won't, and git marks its objects
+    read-only, so a fetched pack's .git would stay behind."""
+    def writable_retry(func, p, _exc):
+        os.chmod(p, stat.S_IWRITE)
+        func(p)
+    handler = {"onexc" if sys.version_info >= (3, 12) else "onerror": writable_retry}
+    try:
+        shutil.rmtree(path, **handler)
+    except OSError:
+        if not ignore_errors:
+            raise
 
 
 def readlink(path) -> str:

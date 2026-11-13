@@ -103,9 +103,9 @@ def _move(source: Path, target: Path) -> OSError | None:
             shutil.copytree(source, tmp, symlinks=True, dirs_exist_ok=True)
             _rename_into(tmp, target)
         except BaseException:
-            shutil.rmtree(tmp, ignore_errors=True)
+            config.rmtree(tmp, ignore_errors=True)
             raise
-        removed = lambda: shutil.rmtree(source)
+        removed = lambda: config.rmtree(source)
     try:
         removed()
     except OSError as e:

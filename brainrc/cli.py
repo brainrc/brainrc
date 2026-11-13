@@ -44,6 +44,7 @@ from .manifest import checked_manifest, updated_manifest, write_manifest
 from .moved import move_warnings
 from .migrate import cmd_migrate
 from .project import find_project, sync as project_sync
+from . import lock
 
 
 CHANGED_HINT = "(changed during apply; close Claude Code and re-run)"
@@ -310,6 +311,7 @@ def _sync(apply: bool, repair: bool = False) -> int:
     managed = {n: h for n, h in config.load_harnesses().items() if config.in_scope(n)}
     for w in move_warnings(managed):
         print(f"WARN {w}")
+    lock_code = _user_lock(srcs, apply)
     if apply:
         write_manifest(updated_manifest(managed, [s.root for s in srcs], config.harness_scope()))
     missing = {n: home for n, home in config.missing_harnesses().items() if config.in_scope(n)}
@@ -330,7 +332,22 @@ def _sync(apply: bool, repair: bool = False) -> int:
     if changed:
         print(f"\n{changed} file(s) changed while apply ran, so they were left alone. "
               f"Close Claude Code (it rewrites {tilde(config.claude_json())} while running), then re-run.")
-    return 1 if conflicts or changed else 0
+    return 1 if conflicts or changed or lock_code else 0
+
+
+def _user_lock(srcs, apply: bool) -> int:
+    """apply writes the user scope's brainrc.lock; both report a ref that moved to another commit."""
+    path = lock.user_lock_path()
+    try:
+        old = lock.read(path)
+        new = lock.user_lock(srcs)
+    except ConfigError as e:
+        print(f"ERROR {e}")
+        return 1
+    lock.report_moved(old, new, "apply relocks it" if not apply else f"relocked in {tilde(path)}")
+    if apply:
+        lock.write(path, new)
+    return 0
 
 
 def cmd_update() -> int:

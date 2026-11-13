@@ -43,6 +43,7 @@ from .doctor import cmd_doctor
 from .manifest import checked_manifest, updated_manifest, write_manifest
 from .moved import move_warnings
 from .migrate import cmd_migrate
+from .project import find_project, sync as project_sync
 
 
 CHANGED_HINT = "(changed during apply; close Claude Code and re-run)"
@@ -66,7 +67,14 @@ def cmd_sync(apply: bool, only: list[str] | None = None, repair: bool = False) -
 
 
 def _locked_sync(apply: bool, repair: bool = False) -> int:
-    return _locked(lambda: _sync(True, repair)) if apply else _sync(False, repair)
+    return _locked(lambda: _both_scopes(True, repair)) if apply else _both_scopes(False, repair)
+
+
+def _both_scopes(apply: bool, repair: bool = False) -> int:
+    """User scope, then the project in the current directory, if it has a brainrc.toml."""
+    code = _sync(apply, repair)
+    root = find_project()
+    return max(code, project_sync(root, apply)) if root else code
 
 
 def _locked(run) -> int:

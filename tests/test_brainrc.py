@@ -49,6 +49,7 @@ def copy_repo(dest: Path) -> None:
                         ignore=shutil.ignore_patterns("*.local.md", "__pycache__"))
     shutil.copytree(DEFAULT_PACK, dest / "packs/gatework", symlinks=True,
                     ignore=shutil.ignore_patterns("README.md", "__pycache__"))
+    shutil.copytree(REPO / "docs/schemas", dest / "docs/schemas")  # brainrc.toml and brainrc.lock (#281)
     shutil.copy2(REPO / "harnesses.toml", dest / "harnesses.toml")
     (dest / "packs.toml").write_text(TEST_PACKS_TOML)  # relative: a moved checkout keeps its pack
     shutil.copy2(REPO / "VERSION", dest / "VERSION")

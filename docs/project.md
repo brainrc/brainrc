@@ -24,6 +24,25 @@ fixtures are in `tests/fixtures/lockfile/`.
 Both scopes apply together. The user's own config still layers on top of a project's at run
 time, because harnesses read the user's home and the repo.
 
+## What `apply` writes in a project
+
+`brainrc apply` (and `status`, which writes nothing) runs the user scope first, then the project
+in the current directory, under its own `Project <dir> (brainrc.toml)` heading.
+
+- **Skills** are copied, not linked, to `.agents/skills/<name>/`, so the repo works on every
+  machine and in CI. A link inside a skill (Gatework's `roles/`) is copied as the files it points to.
+- **Rules** from the project's packs go into a marked block in `AGENTS.md`:
+  `<!-- brainrc:begin: … -->` to `<!-- brainrc:end -->`. Your own text above and below the block
+  stays. With no rules, there is no block, and a file that held only the block is removed.
+- **Only the project's packs**: core's rules and guard hooks, MCP servers and anything
+  machine-local (`packs.local.toml`, `brainrc.local.toml`, `*.local.md`) stay in the user scope,
+  so they never change a project's files.
+- **Git packs** are fetched by `apply`, never by `status`, into
+  `$BRAINRC_HOME/project-packs/<key>-<id>`, one clone per URL and ref.
+- **Ownership**: `brainrc.lock` lists every file `brainrc` wrote (`outputs`). A file there is
+  updated or removed as its pack changes. A file brainrc didn't write, or one you changed after
+  it was removed from the packs, is a `CONFLICT` and is left alone.
+
 ## `brainrc.toml`
 
 ```toml

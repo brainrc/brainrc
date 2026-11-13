@@ -45,6 +45,7 @@ from .moved import move_warnings
 from .migrate import cmd_migrate
 from .project import MANIFEST as PROJECT_MANIFEST, find_project, sync as project_sync
 from . import frozen as frozen_install
+from . import check as drift
 from . import lock
 
 
@@ -366,6 +367,17 @@ def cmd_install(frozen: bool, scope: str | None = None) -> int:
     return _locked(lambda: frozen_install.user(lambda: _sync(True, relock=False)))
 
 
+def cmd_check(scope: str | None = None) -> int:
+    """Exit 1 when the project's files or the packs drifted from brainrc.lock (brainrc/check.py).
+    No network and no writes, so CI can run it on a fresh checkout."""
+    root = find_project()
+    scope = scope or ("project" if root else "user")
+    if scope == "project" and root is None:
+        print(f"ERROR no {PROJECT_MANIFEST} here or above, up to the repo root")
+        return 2
+    return drift.project(root) if scope == "project" else drift.user()
+
+
 def cmd_update() -> int:
     """Refetch every git pack at its `ref`, then apply."""
     try:
@@ -481,6 +493,15 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--frozen", action="store_true", help="install exactly what brainrc.lock records, or fail")
     p.add_argument("--scope", choices=("user", "project"),
                    help="which lock --frozen installs (default: the project's when there is one)")
+    p = add("check", "exit 1 when the repo's agent files or the packs drifted from brainrc.lock (no "
+            "network, writes nothing)",
+            "Compare brainrc.toml with brainrc.lock, every pack this machine has with the hashes the lock "
+            "records, and every file brainrc owns in the repo (and its block in AGENTS.md) with the lock. "
+            "Each difference is named; any one exits 1. A git pack not fetched here is checked through "
+            "the repo's files, and a moved tag is reported as MOVED without failing. In a repo with "
+            "brainrc.toml it checks the project; elsewhere the user scope.")
+    p.add_argument("--scope", choices=("user", "project"),
+                   help="which lock to check against (default: the project's when there is one)")
     p = add("uninstall", "remove everything apply put into the harnesses",
             "Remove the links brainrc made (broken ones too), its hooks in each settings file and "
             "the MCP servers it added, then the files and directories that leaves empty. Your own "
@@ -548,6 +569,8 @@ def _dispatch(argv: list[str]) -> int:
         return cmd_doctor()
     if cmd == "update":
         return cmd_update()
+    if cmd == "check":
+        return cmd_check(args.scope)
     if cmd == "install":
         if args.scope and not args.frozen:
             print("ERROR --scope needs --frozen", file=sys.stderr)

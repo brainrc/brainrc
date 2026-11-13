@@ -61,6 +61,22 @@ On any mismatch it names each one, writes nothing and exits 1. It never rewrites
 never removes files. The scope is the project when there is a `brainrc.toml` here or above, else
 the user; `--scope user|project` picks one. `brainrc install` without `--frozen` is `apply`.
 
+## Checking for drift in CI
+
+`brainrc check` exits 1 when anything differs from `brainrc.lock`, naming each difference: a pack
+in `brainrc.toml` the lock doesn't have (or the reverse), a pack file this machine has that hashes
+differently, a file brainrc owns in the repo that was edited, removed or added to, and its block in
+`AGENTS.md`. It uses no network and writes nothing. A git pack not fetched on this machine is checked
+through the repo's files; a tag that moved under a clone is reported as `MOVED` and doesn't fail.
+
+```yaml
+- uses: actions/checkout@v4
+- name: Agent files match brainrc.lock
+  run: pipx run --spec git+https://github.com/brainrc/brainrc brainrc check
+```
+
+`brainrc install --frozen` after it also fetches each git pack at its locked commit and checks it.
+
 ## `brainrc.toml`
 
 ```toml

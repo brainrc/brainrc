@@ -14,14 +14,15 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO / "tests"))
 from test_brainrc import default_pack_env  # noqa: E402
-HOME_VARS = ("HOME", "BRAINRC_HOME", "AICFG_HOME", "XDG_CONFIG_HOME", "CLAUDE_CONFIG_DIR", "CODEX_HOME", "PYTHONWARNINGS")
+from support import home_env
+HOME_VARS = ("HOME", "USERPROFILE", "BRAINRC_HOME", "AICFG_HOME", "XDG_CONFIG_HOME", "CLAUDE_CONFIG_DIR", "CODEX_HOME", "PYTHONWARNINGS")
 
 
 class HomeCase(unittest.TestCase):
     def setUp(self):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
-        self.tmp = Path(tmp.name)
+        self.tmp = Path(tmp.name).resolve()
         self.home = self.tmp / "home"
         self.home.mkdir()
         self.new = self.home / ".config" / "brainrc"
@@ -30,7 +31,7 @@ class HomeCase(unittest.TestCase):
     def run_cli(self, *args, home=None, **env_vars):
         env = {k: v for k, v in os.environ.items() if k not in HOME_VARS}
         env.update(default_pack_env())  # the default pack comes from a local stand-in, not GitHub
-        env["HOME"] = str(home or self.home)
+        env.update(home_env(home or self.home))
         env.update(env_vars)
         return subprocess.run(
             [sys.executable, "scripts/brainrc.py", *args], cwd=REPO, env=env,
@@ -233,13 +234,13 @@ class HomeFunctionsTest(unittest.TestCase):
     def setUp(self):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
-        self.tmp = Path(tmp.name)
+        self.tmp = Path(tmp.name).resolve()
         self.home = self.tmp / "home"
         self.home.mkdir()
         self.old = self.home / ".config" / "ai-config"
         env = {k: v for k, v in os.environ.items() if k not in HOME_VARS}
         env.update(default_pack_env())  # the default pack comes from a local stand-in, not GitHub
-        env["HOME"] = str(self.home)
+        env.update(home_env(self.home))
         patcher = mock.patch.dict(os.environ, env, clear=True)
         patcher.start()
         self.addCleanup(patcher.stop)

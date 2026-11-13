@@ -10,6 +10,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from support import rmtree
 
 REPO = Path(__file__).resolve().parent.parent
 spec = importlib.util.spec_from_file_location("evals", REPO / "scripts" / "evals.py")
@@ -58,7 +59,7 @@ class OneshotStopCaseTest(unittest.TestCase):
               "sandbox-028": "you know which languages we mean", "sandbox-029": "just add it"}
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = Path(tempfile.mkdtemp()).resolve()
         self.project = self.tmp / "project"
         self.run = self.project / "specs/001-demo"
         self.run.mkdir(parents=True)
@@ -70,7 +71,7 @@ class OneshotStopCaseTest(unittest.TestCase):
         git(self.project, "commit", "-qm", "Initial")
 
     def tearDown(self):
-        shutil.rmtree(self.tmp)
+        rmtree(self.tmp)
 
     def grade(self, name: str, state: dict) -> tuple[int, str]:
         (self.run / "state.json").write_text(json.dumps(state))

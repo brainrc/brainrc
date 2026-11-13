@@ -9,6 +9,7 @@ from unittest import mock
 
 from brainrc.doctor import _link_finding, _stray_link_findings, shell_path
 from brainrc.plan import Link
+from support import bare_env, home_env
 
 
 class ShellPathTest(unittest.TestCase):
@@ -17,7 +18,7 @@ class ShellPathTest(unittest.TestCase):
         self.addCleanup(tmp.cleanup)
         self.home = Path(tmp.name).resolve() / "my home"
         self.home.mkdir()
-        patcher = mock.patch.dict(os.environ, {"HOME": str(self.home)})
+        patcher = mock.patch.dict(os.environ, home_env(self.home))
         patcher.start()
         self.addCleanup(patcher.stop)
 
@@ -38,7 +39,7 @@ class ShellPathTest(unittest.TestCase):
     def test_the_shell_reads_back_the_same_path(self):
         for path in (self.home / "My Skills/it's", self.home / "a;rm -rf x", Path("/opt/a b/$HOME")):
             out = subprocess.run(["sh", "-c", f"printf %s {shell_path(path)}"], capture_output=True,
-                                 text=True, env={"HOME": str(self.home), "PATH": os.environ["PATH"]})
+                                 text=True, env=bare_env(self.home))
             self.assertEqual(out.stdout, str(path))
 
 
@@ -50,7 +51,7 @@ class DoctorFixQuotingTest(unittest.TestCase):
         self.home.mkdir()
 
     def env(self):
-        return mock.patch.dict(os.environ, {"HOME": str(self.home)})
+        return mock.patch.dict(os.environ, home_env(self.home))
 
     def test_broken_link_fix_quotes_the_link(self):
         dest = self.home / "Skills Dir" / "review"

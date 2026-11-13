@@ -13,7 +13,7 @@ class BackupTests(unittest.TestCase):
     def setUp(self):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
-        self.dir = Path(tmp.name)
+        self.dir = Path(tmp.name).resolve()
         self.target = self.dir / "settings.json"
         self.target.write_text("{}")
 

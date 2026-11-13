@@ -8,6 +8,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from support import rmtree
 
 SCRIPT = Path(__file__).resolve().parent.parent / "scripts" / "retro_report.py"
 
@@ -42,7 +43,7 @@ class ReportTest(unittest.TestCase):
         self.calls = self.tmp / "calls.txt"
 
     def tearDown(self):
-        shutil.rmtree(self.tmp)
+        rmtree(self.tmp)
 
     def run_dir(self, root: Path, slug: str, state, raw: str | None = None) -> Path:
         d = root / "specs" / slug

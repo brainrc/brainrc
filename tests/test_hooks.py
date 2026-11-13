@@ -6,6 +6,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from support import rmtree
 
 HOOKS = Path(__file__).resolve().parent.parent / "overrides" / "claude" / "hooks"
 
@@ -439,14 +440,14 @@ class CursorGuardTest(unittest.TestCase):
                          {"permission": "allow"})
 
     def test_works_through_a_symlinked_hooks_dir(self):
-        link_dir = Path(tempfile.mkdtemp())
+        link_dir = Path(tempfile.mkdtemp()).resolve()
         try:
             (link_dir / "ai-config").symlink_to(CURSOR_GUARD.parent)
             reply = cursor({"hook_event_name": "beforeShellExecution", "command": "git push"},
                            link_dir / "ai-config" / "guard.py")
             self.assertEqual(reply["permission"], "deny")
         finally:
-            shutil.rmtree(link_dir)
+            rmtree(link_dir)
 
 
 REPO = HOOKS.parent.parent.parent
@@ -472,10 +473,10 @@ def run_command(command: str, payload: dict) -> subprocess.CompletedProcess:
 
 class FailOpenTest(unittest.TestCase):
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = Path(tempfile.mkdtemp()).resolve()
 
     def tearDown(self):
-        shutil.rmtree(self.tmp)
+        rmtree(self.tmp)
 
     def hooks_dir(self, harness: str) -> Path:
         """A link to the real hooks, as apply makes it."""

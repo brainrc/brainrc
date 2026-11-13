@@ -20,6 +20,7 @@ spec.loader.exec_module(check_tutorial)
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import default_pack_env  # noqa: E402
+from support import rmtree
 
 
 def setUpModule():
@@ -64,7 +65,7 @@ class DocCouplingTest(unittest.TestCase):
         text = DOC.read_text(encoding="utf-8")
         self.assertIn(old, text)
         d = tempfile.mkdtemp(prefix="tut-test-")
-        self.addCleanup(__import__("shutil").rmtree, d, True)
+        self.addCleanup(rmtree, d, True)
         p = Path(d, "tutorial.md")
         p.write_text(text.replace(old, new), encoding="utf-8")
         return str(p)
@@ -154,7 +155,7 @@ class ReadmeParseTest(unittest.TestCase):
 class ReadmeCheckTest(unittest.TestCase):
     def readme(self, text: str) -> str:
         d = tempfile.mkdtemp(prefix="readme-test-")
-        self.addCleanup(__import__("shutil").rmtree, d, True)
+        self.addCleanup(rmtree, d, True)
         p = Path(d, "README.md")
         p.write_text(text, encoding="utf-8")
         return str(p)

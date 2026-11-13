@@ -17,7 +17,8 @@ from unittest import mock
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO / "tests"))
 from test_brainrc import default_pack_env  # noqa: E402
-HOME_VARS = ("HOME", "BRAINRC_HOME", "AICFG_HOME", "XDG_CONFIG_HOME", "CLAUDE_CONFIG_DIR", "CODEX_HOME", "PYTHONWARNINGS")
+from support import bare_env, home_env
+HOME_VARS = ("HOME", "USERPROFILE", "BRAINRC_HOME", "AICFG_HOME", "XDG_CONFIG_HOME", "CLAUDE_CONFIG_DIR", "CODEX_HOME", "PYTHONWARNINGS")
 LOCAL_FILES = {
     "packs.local.toml": "# no packs\n",
     "harnesses.local.toml": "# no overrides\n",
@@ -29,7 +30,7 @@ class MigrateCase(unittest.TestCase):
     def setUp(self):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
-        self.tmp = Path(tmp.name)
+        self.tmp = Path(tmp.name).resolve()
         self.home = self.tmp / "home"
         self.home.mkdir()
         (self.home / ".claude").mkdir()  # an installed harness, so apply links into it (#126)
@@ -39,7 +40,7 @@ class MigrateCase(unittest.TestCase):
     def run_cli(self, *args, **env_vars):
         env = {k: v for k, v in os.environ.items() if k not in HOME_VARS}
         env.update(default_pack_env())  # the default pack comes from a local stand-in, not GitHub
-        env["HOME"] = str(self.home)
+        env.update(home_env(self.home))
         env.update(env_vars)
         return subprocess.run([sys.executable, "scripts/brainrc.py", *args], cwd=REPO, env=env,
                               capture_output=True, text=True, timeout=120)
@@ -206,7 +207,7 @@ class TestCrossDevice(MigrateCase):
                 raise OSError(errno.EXDEV, "cross-device")
             return real_rename(src, dst, *a, **kw)
 
-        env = {"HOME": str(self.home), "PATH": os.environ.get("PATH", "")}
+        env = bare_env(self.home)
         with mock.patch.dict(os.environ, env, clear=True), \
                 mock.patch("os.rename", side_effect=rename), \
                 mock.patch.object(cli, "cmd_sync", return_value=0):
@@ -231,7 +232,7 @@ def exdev_rename(old):
 class TestCrossDeviceSafety(MigrateCase):
     def migrate_in_process(self, rename, sync=0, **env_vars):
         from brainrc import cli, migrate
-        env = {"HOME": str(self.home), "PATH": os.environ.get("PATH", ""), **env_vars}
+        env = bare_env(self.home, **env_vars)
         out = io.StringIO()
         with mock.patch.dict(os.environ, env, clear=True), mock.patch("os.rename", side_effect=rename), \
                 mock.patch.object(cli, "cmd_sync", return_value=sync) as synced, \
@@ -415,7 +416,7 @@ class TestLinkRepoint(unittest.TestCase):
         new.mkdir(parents=True)
         dest = tmp / "dest"
         dest.symlink_to(old / link_to)
-        env = {"HOME": str(tmp), "PATH": os.environ.get("PATH", "")}
+        env = bare_env(tmp)
         with mock.patch.dict(os.environ, env, clear=True):
             return plan.Link("claude", dest, new / desired_rel).state()
 

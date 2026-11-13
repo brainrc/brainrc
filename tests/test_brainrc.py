@@ -15,6 +15,7 @@ from unittest import mock
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO))
 import brainrc  # noqa: E402  (the package at the repo root)
+from support import home_env, restore_home, rmtree, saved_home
 
 FOREIGN = {"hooks": [{"type": "command", "command": "node /opt/other/hook.js"}]}
 OURS_OLD = {"matcher": "Bash", "hooks": [{"type": "command", "command": "python3 ~/.claude/hooks/ai-config/old.py"}]}
@@ -87,7 +88,7 @@ class TempRepoCase(unittest.TestCase):
         copy_repo(self.repo)
         self.old_repo = brainrc.config.REPO
         brainrc.config.REPO = self.repo
-        self.settings_home = Path(tempfile.mkdtemp()) / "brainrc"
+        self.settings_home = Path(tempfile.mkdtemp()).resolve() / "brainrc"
         self.old_brainrc_home = os.environ.get("BRAINRC_HOME")
         os.environ["BRAINRC_HOME"] = str(self.settings_home)
         # CI runners set XDG_CONFIG_HOME; each of these moves a harness's paths (#110).
@@ -100,8 +101,8 @@ class TempRepoCase(unittest.TestCase):
         else:
             os.environ["BRAINRC_HOME"] = self.old_brainrc_home
         os.environ.update(self.old_harness_env)
-        shutil.rmtree(self.settings_home.parent)
-        shutil.rmtree(self.repo)
+        rmtree(self.settings_home.parent)
+        rmtree(self.repo)
 
 
 class ReleaseTest(TempRepoCase):
@@ -223,14 +224,14 @@ class MergeSettingsTest(unittest.TestCase):
 class SyncFakeHomeTest(TempRepoCase):
     def setUp(self):
         super().setUp()
-        self.home = Path(tempfile.mkdtemp())
-        self.old_home = os.environ["HOME"]
-        os.environ["HOME"] = str(self.home)
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
         install_harnesses(self.home)
 
     def tearDown(self):
-        os.environ["HOME"] = self.old_home
-        shutil.rmtree(self.home)
+        restore_home(self.old_home)
+        rmtree(self.home)
         super().tearDown()
 
     def test_status_writes_nothing(self):
@@ -535,23 +536,23 @@ def make_pack(root: Path, pack_toml: str = PACK_TOML) -> Path:
 class PackSyncTest(TempRepoCase):
     def setUp(self):
         super().setUp()
-        self.home = Path(tempfile.mkdtemp())
-        self.old_home = os.environ["HOME"]
-        os.environ["HOME"] = str(self.home)
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
         install_harnesses(self.home)
         self.pack = make_pack(Path(tempfile.mkdtemp()).resolve() / "acme-pack")
         set_core_version(self.repo, "1.2.3")
         self.enable_pack()
 
     def tearDown(self):
-        os.environ["HOME"] = self.old_home
-        shutil.rmtree(self.home)
-        shutil.rmtree(self.pack.parent)
+        restore_home(self.old_home)
+        rmtree(self.home)
+        rmtree(self.pack.parent)
         super().tearDown()
 
     def enable_pack(self, enabled: bool = True) -> None:
         (self.repo / "packs.local.toml").write_text(
-            f'[acme]\npath = "{self.pack}"\nenabled = {str(enabled).lower()}\n')
+            f'[acme]\npath = \'{self.pack}\'\nenabled = {str(enabled).lower()}\n')
 
     def settings_commands(self) -> list[str]:
         settings = json.loads((self.home / ".claude/settings.json").read_text())
@@ -674,16 +675,16 @@ def snapshot(*roots: Path) -> dict:
 class DoctorTest(TempRepoCase):
     def setUp(self):
         super().setUp()
-        self.home = Path(tempfile.mkdtemp())
-        self.old_home = os.environ["HOME"]
-        os.environ["HOME"] = str(self.home)
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
         install_harnesses(self.home)
         quiet(brainrc.cmd_sync, True)
         self.skills = self.home / ".claude/skills"
 
     def tearDown(self):
-        os.environ["HOME"] = self.old_home
-        shutil.rmtree(self.home)
+        restore_home(self.old_home)
+        rmtree(self.home)
         super().tearDown()
 
     def doctor(self, expect_code: int | None = None) -> list[tuple[str, str, str]]:
@@ -755,7 +756,7 @@ class DoctorTest(TempRepoCase):
         self.assert_one_fail("spec-agent", "apply")
 
     def test_many_missing_links_are_one_line(self):
-        shutil.rmtree(self.skills)
+        rmtree(self.skills)
         self.skills.mkdir()
         self.assert_one_fail("links are missing", "apply")
 
@@ -784,7 +785,7 @@ class DoctorTest(TempRepoCase):
         self.assert_one_fail("not a link", "move")
 
     def test_a_harness_that_is_not_installed_is_skipped_not_reported(self):
-        shutil.rmtree(self.home / ".cursor")  # apply skips it (#126), so doctor has nothing to say
+        rmtree(self.home / ".cursor")  # apply skips it (#126), so doctor has nothing to say
         self.assertEqual(self.doctor(0), [])
 
     def test_missing_pack_path(self):
@@ -794,7 +795,7 @@ class DoctorTest(TempRepoCase):
     def test_incompatible_pack(self):
         pack = make_pack(self.home / "acme-pack")
         set_requires_core(pack, 'requires_core = ">=99"')
-        (self.repo / "packs.local.toml").write_text(f'[acme]\npath = "{pack}"\n')
+        (self.repo / "packs.local.toml").write_text(f'[acme]\npath = \'{pack}\'\n')
         findings = self.doctor(1)
         self.assertTrue(any(f[0] == "FAIL" and "acme" in f[1] and "requires_core" in f[1] for f in findings), findings)
 
@@ -834,7 +835,7 @@ class BudgetTest(TempRepoCase):
 
     def tearDown(self):
         brainrc.tokens.CORE_ALWAYS_BUDGET = self.old_budget
-        shutil.rmtree(self.pack.parent)
+        rmtree(self.pack.parent)
         super().tearDown()
 
     def check(self, *packs):
@@ -956,14 +957,14 @@ class PluginTest(TempRepoCase):
 class SettingsHomeTest(TempRepoCase):
     def setUp(self):
         super().setUp()
-        self.home = Path(tempfile.mkdtemp())
-        self.old_home = os.environ["HOME"]
-        os.environ["HOME"] = str(self.home)
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
         install_harnesses(self.home)
 
     def tearDown(self):
-        os.environ["HOME"] = self.old_home
-        shutil.rmtree(self.home)
+        restore_home(self.old_home)
+        rmtree(self.home)
         super().tearDown()
 
     def test_defaults_to_config_dir_under_home(self):
@@ -1084,7 +1085,7 @@ class RenderInstructionsTest(TempRepoCase):
         self.srcs = [self.core, brainrc.load_pack(self.acme), brainrc.load_pack(beta)]
 
     def tearDown(self):
-        shutil.rmtree(self.tmp)
+        rmtree(self.tmp)
         super().tearDown()
 
     def last_core_rule(self, out: str) -> int:
@@ -1154,16 +1155,16 @@ class OpenCodeAgentTest(TempRepoCase):
 
     def setUp(self):
         super().setUp()
-        self.home = Path(tempfile.mkdtemp())
-        self.old_home = os.environ["HOME"]
-        os.environ["HOME"] = str(self.home)
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
         install_harnesses(self.home)
         self.agents = self.home / ".config/opencode/agents"
         self.renders = self.settings_home / "opencode/agents"
 
     def tearDown(self):
-        os.environ["HOME"] = self.old_home
-        shutil.rmtree(self.home)
+        restore_home(self.old_home)
+        rmtree(self.home)
         super().tearDown()
 
     def write_agent(self, name: str, meta: str) -> Path:
@@ -1223,14 +1224,14 @@ class CrashRegressionTest(TempRepoCase):
 
     def setUp(self):
         super().setUp()
-        self.home = Path(tempfile.mkdtemp())
-        self.old_home = os.environ["HOME"]
-        os.environ["HOME"] = str(self.home)
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
         install_harnesses(self.home)
 
     def tearDown(self):
-        os.environ["HOME"] = self.old_home
-        shutil.rmtree(self.home)
+        restore_home(self.old_home)
+        rmtree(self.home)
         super().tearDown()
 
     def test_dangling_markdown_link_in_a_skill_is_reported(self):
@@ -1371,7 +1372,7 @@ class InstalledModeTest(TempRepoCase):
 
     def setUp(self):
         super().setUp()
-        self.pkg = Path(tempfile.mkdtemp()) / "brainrc"
+        self.pkg = Path(tempfile.mkdtemp()).resolve() / "brainrc"
         self.core = self.pkg / "_core"
         copy_repo(self.core)
         # The default pack lives outside the package, where apply fetched it.
@@ -1380,15 +1381,15 @@ class InstalledModeTest(TempRepoCase):
         (self.core / "packs").rmdir()
         (self.core / "packs.toml").write_text(TEST_PACKS_TOML.replace('"packs/gatework"', f'"{self.default_pack}"'))
         brainrc.config.REPO = self.core
-        self.home = Path(tempfile.mkdtemp())
-        self.old_home = os.environ["HOME"]
-        os.environ["HOME"] = str(self.home)
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
         install_harnesses(self.home)
 
     def tearDown(self):
-        os.environ["HOME"] = self.old_home
-        shutil.rmtree(self.home)
-        shutil.rmtree(self.pkg.parent)
+        restore_home(self.old_home)
+        rmtree(self.home)
+        rmtree(self.pkg.parent)
         super().tearDown()
 
     def files(self) -> list[str]:
@@ -1436,7 +1437,7 @@ class InstalledModeTest(TempRepoCase):
         quiet(brainrc.cmd_sync, True)
         claude = json.loads((self.home / ".claude/settings.json").read_text())
         cursor = json.loads((self.home / ".cursor/hooks.json").read_text())
-        shutil.rmtree(self.core)  # an upgrade to a new Python moved the package
+        rmtree(self.core)  # an upgrade to a new Python moved the package
         risky = {"tool_name": "Bash", "tool_input": {"command": "git push origin main"}}
         run = subprocess.run(["sh", "-c", claude["hooks"]["PreToolUse"][0]["hooks"][0]["command"]],
                              input=json.dumps(risky), capture_output=True, text=True)
@@ -1525,7 +1526,7 @@ def default_pack_env() -> dict[str, str]:
     if not _STAND_IN_REMOTE:
         tmp = Path(tempfile.mkdtemp()).resolve()
         import atexit
-        atexit.register(shutil.rmtree, tmp, True)
+        atexit.register(rmtree, tmp, True)
         remote = tmp / "gatework"
         shutil.copytree(DEFAULT_PACK, remote, symlinks=True, ignore=shutil.ignore_patterns("__pycache__"))
         git("init", "-q", "-b", "main", cwd=remote)
@@ -1542,11 +1543,11 @@ class GitPackTest(TempRepoCase):
 
     def setUp(self):
         super().setUp()
-        self.home = Path(tempfile.mkdtemp())
-        self.old_home = os.environ["HOME"]
-        os.environ["HOME"] = str(self.home)
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
         install_harnesses(self.home)
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = Path(tempfile.mkdtemp()).resolve()
         work = self.tmp / "work"
         shutil.copytree(REPO / "examples/pack-acme", work)
         git("init", "-q", cwd=work)
@@ -1565,9 +1566,9 @@ class GitPackTest(TempRepoCase):
         self.clone = self.settings_home / "packs/acme"
 
     def tearDown(self):
-        os.environ["HOME"] = self.old_home
-        shutil.rmtree(self.home)
-        shutil.rmtree(self.tmp)
+        restore_home(self.old_home)
+        rmtree(self.home)
+        rmtree(self.tmp)
         super().tearDown()
 
     def use(self, **keys):
@@ -1648,7 +1649,7 @@ class GitPackTest(TempRepoCase):
         quiet(brainrc.cmd_sync, True)
         moved = self.tmp / "moved.git"
         shutil.copytree(self.tmp / "acme.git", moved)
-        shutil.rmtree(self.tmp / "acme.git")
+        rmtree(self.tmp / "acme.git")
         self.use(git=moved.as_uri(), ref="v2")
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
@@ -1755,16 +1756,16 @@ class HarnessPluginTest(TempRepoCase):
 
     def setUp(self):
         super().setUp()
-        self.home = Path(tempfile.mkdtemp())
-        self.old_home = os.environ["HOME"]
-        os.environ["HOME"] = str(self.home)
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
         install_harnesses(self.home)
         self.link = self.home / ".config/opencode/plugins/brainrc-guard.js"
         self.old_link = self.home / ".config/opencode/plugins/ai-config-guard.js"
 
     def tearDown(self):
-        os.environ["HOME"] = self.old_home
-        shutil.rmtree(self.home)
+        restore_home(self.old_home)
+        rmtree(self.home)
         super().tearDown()
 
     def test_apply_links_the_plugin_and_doctor_is_clean(self):
@@ -1822,15 +1823,15 @@ class CursorHooksTest(TempRepoCase):
 
     def setUp(self):
         super().setUp()
-        self.home = Path(tempfile.mkdtemp())
-        self.old_home = os.environ["HOME"]
-        os.environ["HOME"] = str(self.home)
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
         install_harnesses(self.home)
         self.hooks_json = self.home / ".cursor/hooks.json"
 
     def tearDown(self):
-        os.environ["HOME"] = self.old_home
-        shutil.rmtree(self.home)
+        restore_home(self.old_home)
+        rmtree(self.home)
         super().tearDown()
 
     def wanted(self):
@@ -1914,7 +1915,7 @@ class PackValidateTest(TempRepoCase):
         set_core_version(self.repo, "1.2.3")
 
     def tearDown(self):
-        shutil.rmtree(self.pack.parent)
+        rmtree(self.pack.parent)
         super().tearDown()
 
     def test_valid_pack(self):
@@ -1950,7 +1951,7 @@ class PackValidateTest(TempRepoCase):
 
     def test_incompatible_enabled_pack_fails_plain_validate(self):
         set_requires_core(self.pack, 'requires_core = "<1"')
-        (self.repo / "packs.local.toml").write_text(f'[acme]\npath = "{self.pack}"\n')
+        (self.repo / "packs.local.toml").write_text(f'[acme]\npath = \'{self.pack}\'\n')
         code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1)
         self.assertIn("requires_core `<1` is not satisfied by core 1.2.3", out)
@@ -2044,7 +2045,7 @@ class ValidateTest(unittest.TestCase):
         self.assertEqual(code, 0, out)
 
     def test_catches_placeholder_without_hooks_dir(self):
-        tmp = Path(tempfile.mkdtemp())
+        tmp = Path(tempfile.mkdtemp()).resolve()
         try:
             copy_repo(tmp)
             toml = tmp / "harnesses.toml"
@@ -2058,10 +2059,10 @@ class ValidateTest(unittest.TestCase):
             self.assertEqual(code, 1)
             self.assertIn("has no hooks_dir", out)
         finally:
-            shutil.rmtree(tmp)
+            rmtree(tmp)
 
     def test_catches_broken_references(self):
-        tmp = Path(tempfile.mkdtemp())
+        tmp = Path(tempfile.mkdtemp()).resolve()
         try:
             copy_repo(tmp)
             skill = tmp / "packs/gatework/skills/brainrc-gatework/SKILL.md"
@@ -2079,7 +2080,7 @@ class ValidateTest(unittest.TestCase):
                              "unknown skill `nope`", "unknown model `gpt-9`"):
                 self.assertIn(expected, out)
         finally:
-            shutil.rmtree(tmp)
+            rmtree(tmp)
 
 
 class LocalTripwireTest(TempRepoCase):
@@ -2200,14 +2201,14 @@ class ConfigErrorTest(TempRepoCase):
 
     def setUp(self):
         super().setUp()
-        self.home = Path(tempfile.mkdtemp())
-        self.old_home = os.environ["HOME"]
-        os.environ["HOME"] = str(self.home)
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
         install_harnesses(self.home)
 
     def tearDown(self):
-        os.environ["HOME"] = self.old_home
-        shutil.rmtree(self.home)
+        restore_home(self.old_home)
+        rmtree(self.home)
         super().tearDown()
 
     def assert_error(self, error: str) -> None:
@@ -2280,7 +2281,7 @@ class ConfigErrorTest(TempRepoCase):
         pack = self.repo / "packs-src/acme"
         (pack / "skills").mkdir(parents=True)
         (pack / "pack.toml").write_text('name = "acme"\nrequires_core = ">=0.1"\n')
-        path = self.local("packs", f'[acme]\npath = "{pack}"\nreff = "v1"\n')
+        path = self.local("packs", f'[acme]\npath = \'{pack}\'\nreff = "v1"\n')
         self.assert_warning(f"{path}:3: unknown key `reff` in [acme]")
 
     def test_harness_only_in_local_file_warns_and_still_loads(self):
@@ -2300,7 +2301,7 @@ class ConfigErrorTest(TempRepoCase):
         pack = self.repo / "packs-src/acme"
         (pack / "skills").mkdir(parents=True, exist_ok=True)
         (pack / "pack.toml").write_text(text)
-        self.local("packs", f'[acme]\npath = "{pack}"\n')
+        self.local("packs", f'[acme]\npath = \'{pack}\'\n')
         return brainrc.tilde(pack / "pack.toml")
 
     def test_pack_toml_syntax_error_names_file_and_line(self):
@@ -2321,9 +2322,9 @@ class ClosedStdoutTest(unittest.TestCase):
     """`brainrc doctor | head -1`: the reader stops early, brainrc exits quietly."""
 
     def test_closed_stdout_exits_without_a_traceback(self):
-        tmp = Path(tempfile.mkdtemp())
-        self.addCleanup(shutil.rmtree, tmp)
-        env = {**os.environ, "HOME": str(tmp), "BRAINRC_HOME": str(tmp / "brainrc")}
+        tmp = Path(tempfile.mkdtemp()).resolve()
+        self.addCleanup(rmtree, tmp)
+        env = {**os.environ, **home_env(tmp), "BRAINRC_HOME": str(tmp / "brainrc")}
         for cmd in ("doctor", "status"):
             p = subprocess.Popen([sys.executable, str(REPO / "scripts/brainrc.py"), cmd], env=env,
                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -2339,14 +2340,14 @@ class DuplicatePackTest(TempRepoCase):
 
     def setUp(self):
         super().setUp()
-        self.home = Path(tempfile.mkdtemp())
-        self.old_home = os.environ["HOME"]
-        os.environ["HOME"] = str(self.home)
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
         install_harnesses(self.home)
 
     def tearDown(self):
-        os.environ["HOME"] = self.old_home
-        shutil.rmtree(self.home)
+        restore_home(self.old_home)
+        rmtree(self.home)
         super().tearDown()
 
     def packs(self, **names: str) -> None:
@@ -2356,7 +2357,7 @@ class DuplicatePackTest(TempRepoCase):
             root = self.repo / "packs-src" / key
             (root / "skills").mkdir(parents=True)
             (root / "pack.toml").write_text(f'name = "{name}"\nrequires_core = ">=0.1"\n')
-            lines.append(f'[{key}]\npath = "{root}"\n')
+            lines.append(f'[{key}]\npath = \'{root}\'\n')
         (self.repo / "packs.local.toml").write_text("".join(lines))
 
     def test_two_packs_with_one_name_are_refused(self):
@@ -2400,18 +2401,18 @@ class PackApplyCheckTest(TempRepoCase):
 
     def setUp(self):
         super().setUp()
-        self.home = Path(tempfile.mkdtemp())
-        self.old_home = os.environ["HOME"]
-        os.environ["HOME"] = str(self.home)
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
         install_harnesses(self.home)
         self.pack = self.repo / "packs-src/acme"
         (self.pack / "skills").mkdir(parents=True)
         (self.pack / "pack.toml").write_text('name = "acme"\nrequires_core = ">=0.1"\n')
-        (self.repo / "packs.local.toml").write_text(f'[acme]\npath = "{self.pack}"\n')
+        (self.repo / "packs.local.toml").write_text(f'[acme]\npath = \'{self.pack}\'\n')
 
     def tearDown(self):
-        os.environ["HOME"] = self.old_home
-        shutil.rmtree(self.home)
+        restore_home(self.old_home)
+        rmtree(self.home)
         super().tearDown()
 
     def skill(self, name: str, description: str = "Deploy things. Use when deploying.") -> None:
@@ -2447,7 +2448,7 @@ class PackApplyCheckTest(TempRepoCase):
         (good / "skills").mkdir(parents=True)
         (good / "pack.toml").write_text('name = "good"\nrequires_core = ">=0.1"\n')
         with open(self.repo / "packs.local.toml", "a") as f:
-            f.write(f'[good]\npath = "{good}"\n')
+            f.write(f'[good]\npath = \'{good}\'\n')
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 1, out)
         self.assertNotIn(f"validate --pack {brainrc.tilde(good)}", out)

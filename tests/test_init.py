@@ -14,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import TempRepoCase, brainrc, home_files, quiet  # noqa: E402
 
 from brainrc.init import set_enabled  # noqa: E402
+from support import home_env, restore_home, rmtree, saved_home
 
 
 def run(*args: str, stdin: str | None = None, tty: bool = False) -> tuple[int, str]:
@@ -49,17 +50,17 @@ class InitTest(TempRepoCase):
 
     def setUp(self):
         super().setUp()
-        self.home = Path(tempfile.mkdtemp())
-        self.old_home = os.environ["HOME"]
-        os.environ["HOME"] = str(self.home)
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
         (self.home / ".claude").mkdir()
         (self.home / ".codex").mkdir()
         self.claude_md = self.home / ".claude/CLAUDE.md"
         self.claude_md.write_text("Always answer in haiku.\n")
 
     def tearDown(self):
-        os.environ["HOME"] = self.old_home
-        shutil.rmtree(self.home)
+        restore_home(self.old_home)
+        rmtree(self.home)
         super().tearDown()
 
     def local(self) -> dict:

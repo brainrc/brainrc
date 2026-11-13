@@ -10,6 +10,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import TempRepoCase, brainrc, install_harnesses, quiet  # noqa: E402
+from support import home_env, restore_home, rmtree, saved_home
 
 
 def run(*args: str) -> tuple[int, str]:
@@ -22,22 +23,22 @@ def run(*args: str) -> tuple[int, str]:
 class RepairTest(TempRepoCase):
     def setUp(self):
         super().setUp()
-        self.home = Path(tempfile.mkdtemp())
-        self.old_home = os.environ["HOME"]
-        os.environ["HOME"] = str(self.home)
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
         install_harnesses(self.home)
         self.skill = self.home / ".claude/skills/spec-agent"
 
     def tearDown(self):
-        os.environ["HOME"] = self.old_home
-        shutil.rmtree(self.home)
+        restore_home(self.old_home)
+        rmtree(self.home)
         super().tearDown()
 
     def move_checkout(self) -> Path:
         old = self.repo
-        new = Path(tempfile.mkdtemp()) / "moved"
+        new = Path(tempfile.mkdtemp()).resolve() / "moved"
         shutil.move(str(old), str(new))
-        self.addCleanup(shutil.rmtree, new.parent, True)
+        self.addCleanup(rmtree, new.parent, True)
         self.repo = new
         brainrc.config.REPO = new
         return old

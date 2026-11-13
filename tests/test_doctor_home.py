@@ -6,8 +6,9 @@ from pathlib import Path
 from unittest import mock
 
 from brainrc.doctor import _home_findings, cmd_doctor
+from support import home_env
 
-HOME_VARS = ("HOME", "BRAINRC_HOME", "AICFG_HOME", "XDG_CONFIG_HOME", "CLAUDE_CONFIG_DIR", "CODEX_HOME")
+HOME_VARS = ("HOME", "USERPROFILE", "BRAINRC_HOME", "AICFG_HOME", "XDG_CONFIG_HOME", "CLAUDE_CONFIG_DIR", "CODEX_HOME")
 
 
 class TestHomeFindings(unittest.TestCase):
@@ -21,7 +22,7 @@ class TestHomeFindings(unittest.TestCase):
 
     def findings(self, **env_vars):
         env = {k: v for k, v in os.environ.items() if k not in HOME_VARS}
-        env["HOME"] = str(self.home)
+        env.update(home_env(self.home))
         env.update(env_vars)
         with mock.patch.dict(os.environ, env, clear=True):
             return _home_findings()
@@ -103,7 +104,7 @@ class TestHomeFindings(unittest.TestCase):
         self.new.mkdir(parents=True)
         (self.new / "instructions.md").write_text("x\n")
         env = {k: v for k, v in os.environ.items() if k not in HOME_VARS}
-        env["HOME"] = str(self.home)
+        env.update(home_env(self.home))
         with mock.patch.dict(os.environ, env, clear=True), \
                 mock.patch("brainrc.doctor.doctor_findings", return_value=_home_findings()), \
                 mock.patch("builtins.print"):

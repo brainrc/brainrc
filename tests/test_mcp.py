@@ -10,6 +10,7 @@ from pathlib import Path
 from unittest import mock
 
 from test_brainrc import TempRepoCase, brainrc, make_pack, quiet, set_core_version
+from support import home_env, restore_home, rmtree, saved_home
 
 GH = '[servers.gh]\ncommand = "npx"\nargs = ["-y", "@modelcontextprotocol/server-github"]\nenv_from = ["GH_TOKEN"]\n'
 DOCS = '[servers.docs]\nurl = "https://docs.example.com/mcp"\n'
@@ -23,9 +24,9 @@ class McpCase(TempRepoCase):
 
     def setUp(self):
         super().setUp()
-        self.home = Path(tempfile.mkdtemp())
-        self.old_home = os.environ["HOME"]
-        os.environ["HOME"] = str(self.home)
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
         os.environ["GH_TOKEN"] = SECRET
         for d in (".claude", ".codex", ".config/opencode", ".gemini/config", ".cursor"):
             (self.home / d).mkdir(parents=True)
@@ -34,9 +35,9 @@ class McpCase(TempRepoCase):
         self.opencode = self.home / ".config/opencode/opencode.json"
 
     def tearDown(self):
-        os.environ["HOME"] = self.old_home
+        restore_home(self.old_home)
         os.environ.pop("GH_TOKEN", None)
-        shutil.rmtree(self.home)
+        rmtree(self.home)
         super().tearDown()
 
     def registry(self, text: str, root: Path | None = None) -> None:
@@ -84,10 +85,10 @@ class PackServersTest(McpCase):
         super().setUp()
         self.pack = make_pack(Path(tempfile.mkdtemp()).resolve() / "acme-pack")
         set_core_version(self.repo, "1.2.3")
-        (self.repo / "packs.local.toml").write_text(f'[acme]\npath = "{self.pack}"\n')
+        (self.repo / "packs.local.toml").write_text(f'[acme]\npath = \'{self.pack}\'\n')
 
     def tearDown(self):
-        shutil.rmtree(self.pack.parent)
+        rmtree(self.pack.parent)
         super().tearDown()
 
     def test_pack_servers_need_the_prefix_and_unique_names(self):

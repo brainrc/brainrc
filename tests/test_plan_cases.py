@@ -10,6 +10,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from support import rmtree
 
 REPO = Path(__file__).resolve().parent.parent
 spec = importlib.util.spec_from_file_location("evals", REPO / "scripts" / "evals.py")
@@ -43,7 +44,7 @@ def git(cwd: Path, *args: str) -> str:
 
 class PlanCaseTest(unittest.TestCase):
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = Path(tempfile.mkdtemp()).resolve()
         self.project = self.tmp / "project"
         self.project.mkdir()
         (self.project / "README.md").write_text("demo\n")
@@ -53,7 +54,7 @@ class PlanCaseTest(unittest.TestCase):
         git(self.project, "commit", "-qm", "Initial")
 
     def tearDown(self):
-        shutil.rmtree(self.tmp)
+        rmtree(self.tmp)
 
     def plan(self, slug: str, state: dict, flagged: str = "", log: str = "", report: str | None = None) -> None:
         run = self.project / "specs" / f"plan-{slug}"

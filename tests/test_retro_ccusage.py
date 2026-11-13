@@ -11,6 +11,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 import retro_ccusage  # noqa: E402
+from support import rmtree
 
 SINCE, UNTIL = date(2026, 10, 1), date(2026, 10, 20)
 
@@ -25,7 +26,7 @@ class CcusageTest(unittest.TestCase):
 
     def tearDown(self):
         os.environ["PATH"] = self.old_path
-        shutil.rmtree(self.root)
+        rmtree(self.root)
 
     def stub(self, body: str):
         path = self.bin / "ccusage"

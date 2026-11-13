@@ -13,8 +13,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import TempRepoCase, brainrc, quiet  # noqa: E402
 
 from brainrc.doctor import _double_install_findings, _plugin_findings, cmd_doctor  # noqa: E402
+from support import home_env, restore_home, rmtree, saved_home
 
-HOME_VARS = ("HOME", "BRAINRC_HOME", "AICFG_HOME", "XDG_CONFIG_HOME", "CLAUDE_CONFIG_DIR", "CODEX_HOME")
+HOME_VARS = ("HOME", "USERPROFILE", "BRAINRC_HOME", "AICFG_HOME", "XDG_CONFIG_HOME", "CLAUDE_CONFIG_DIR", "CODEX_HOME")
 
 
 class TestPluginFindings(unittest.TestCase):
@@ -28,7 +29,7 @@ class TestPluginFindings(unittest.TestCase):
 
     def findings(self):
         env = {k: v for k, v in os.environ.items() if k not in HOME_VARS}
-        env["HOME"] = str(self.home)
+        env.update(home_env(self.home))
         with mock.patch.dict(os.environ, env, clear=True):
             return _plugin_findings()
 
@@ -155,7 +156,7 @@ class TestPluginFindings(unittest.TestCase):
     def test_warnings_do_not_change_exit_code(self):
         self.write_installed({"plugins": {"ai-config@ai-config": []}})
         env = {k: v for k, v in os.environ.items() if k not in HOME_VARS}
-        env["HOME"] = str(self.home)
+        env.update(home_env(self.home))
         with mock.patch.dict(os.environ, env, clear=True), \
                 mock.patch("brainrc.doctor.doctor_findings", return_value=_plugin_findings()), \
                 mock.patch("builtins.print"):
@@ -179,7 +180,7 @@ class DoubleInstallTest(unittest.TestCase):
 
     def findings(self, linked):
         env = {k: v for k, v in os.environ.items() if k not in HOME_VARS}
-        env["HOME"] = str(self.home)
+        env.update(home_env(self.home))
         with mock.patch.dict(os.environ, env, clear=True):
             return _double_install_findings(set(linked))
 
@@ -230,16 +231,16 @@ class DoubleInstallDoctorTest(TempRepoCase):
 
     def setUp(self):
         super().setUp()
-        self.home = Path(tempfile.mkdtemp())
-        self.old_home = os.environ["HOME"]
-        os.environ["HOME"] = str(self.home)
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
         (self.home / ".claude/plugins").mkdir(parents=True)
         (self.home / ".claude/plugins/installed_plugins.json").write_text(
             json.dumps({"version": 2, "plugins": {"brainrc@brainrc": [{"scope": "user"}]}}))
 
     def tearDown(self):
-        os.environ["HOME"] = self.old_home
-        shutil.rmtree(self.home)
+        restore_home(self.old_home)
+        rmtree(self.home)
         super().tearDown()
 
     def double(self):

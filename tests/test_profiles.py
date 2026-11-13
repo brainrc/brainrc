@@ -11,6 +11,7 @@ from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import TempRepoCase, brainrc, install_harnesses, quiet  # noqa: E402
+from support import home_env, restore_home, rmtree, saved_home
 
 SERVERS = '[servers.docs]\ncommand = "docs-mcp"\nharnesses = ["claude"]\n'
 
@@ -18,14 +19,14 @@ SERVERS = '[servers.docs]\ncommand = "docs-mcp"\nharnesses = ["claude"]\n'
 class ProfileCase(TempRepoCase):
     def setUp(self):
         super().setUp()
-        self.home = Path(tempfile.mkdtemp())
-        self.old_home = os.environ["HOME"]
-        os.environ["HOME"] = str(self.home)
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
         install_harnesses(self.home)
 
     def tearDown(self):
-        os.environ["HOME"] = self.old_home
-        shutil.rmtree(self.home)
+        restore_home(self.old_home)
+        rmtree(self.home)
         super().tearDown()
 
     def local(self, text: str) -> None:

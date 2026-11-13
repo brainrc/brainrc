@@ -15,6 +15,7 @@ from test_uninstall import run  # noqa: E402
 
 from brainrc import config, jsonc  # noqa: E402
 from brainrc.mcp import McpSync, mcp_change, mcp_file  # noqa: E402
+from support import home_env, rmtree
 
 # harness -> (env var, its default dir under ~, the dir under the var, MCP file relative to ~ / the var)
 HARNESSES = {
@@ -28,10 +29,10 @@ HARNESSES = {
 class EnvDirTest(unittest.TestCase):
     def setUp(self):
         self.home = tempfile.mkdtemp()
-        patcher = mock.patch.dict(os.environ, {"HOME": self.home})
+        patcher = mock.patch.dict(os.environ, home_env(self.home))
         patcher.start()
         self.addCleanup(patcher.stop)
-        self.addCleanup(shutil.rmtree, self.home)
+        self.addCleanup(rmtree, self.home)
         for var in config.HARNESS_VARS:
             os.environ.pop(var, None)
 
@@ -69,11 +70,11 @@ class HarnessEnvCase(TempRepoCase):
         super().setUp()
         self.home = Path(tempfile.mkdtemp()).resolve()
         self.elsewhere = Path(tempfile.mkdtemp()).resolve()  # outside HOME
-        patcher = mock.patch.dict(os.environ, {"HOME": str(self.home)})
+        patcher = mock.patch.dict(os.environ, home_env(self.home))
         patcher.start()
         self.addCleanup(patcher.stop)
-        self.addCleanup(shutil.rmtree, self.home)
-        self.addCleanup(shutil.rmtree, self.elsewhere)
+        self.addCleanup(rmtree, self.home)
+        self.addCleanup(rmtree, self.elsewhere)
         (self.repo / "mcp").mkdir(exist_ok=True)
         (self.repo / "mcp/servers.toml").write_text('[servers.docs]\nurl = "https://example.com/mcp"\n')
 
@@ -156,7 +157,7 @@ class UnsetTest(HarnessEnvCase):
             with self.subTest(harness=harness):
                 d, _ = self.lifecycle(harness, None)
                 self.assertTrue(str(d).startswith(str(self.home)))
-                shutil.rmtree(d)  # uninstalled: the next harness's doctor run sees only itself
+                rmtree(d)  # uninstalled: the next harness's doctor run sees only itself
 
 
 class EmptyTest(HarnessEnvCase):
@@ -165,7 +166,7 @@ class EmptyTest(HarnessEnvCase):
             with self.subTest(harness=harness):
                 d, _ = self.lifecycle(harness, "")
                 self.assertEqual(d, self.home / HARNESSES[harness][1])
-                shutil.rmtree(d)  # uninstalled: the next harness's doctor run sees only itself
+                rmtree(d)  # uninstalled: the next harness's doctor run sees only itself
 
 
 class RelativeTest(HarnessEnvCase):

@@ -6,6 +6,7 @@ import tempfile
 from pathlib import Path
 
 from test_brainrc import TempRepoCase, brainrc, make_pack, quiet, set_core_version
+from support import home_env, restore_home, rmtree, saved_home
 
 GH = '[servers.gh]\ncommand = "npx"\nargs = ["-y", "@modelcontextprotocol/server-github"]\nenv_from = ["GH_TOKEN"]\n'
 USER_CLAUDE_HOOK = "python3 ~/mine/ai-config-tools/check.py"  # path merely contains ai-config
@@ -17,14 +18,14 @@ class OldInstallCase(TempRepoCase):
 
     def setUp(self):
         super().setUp()
-        self.home = Path(tempfile.mkdtemp())
-        self.old_home = os.environ["HOME"]
-        os.environ["HOME"] = str(self.home)
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
         os.environ["GH_TOKEN"] = "x"
         self.addCleanup(os.environ.pop, "GH_TOKEN", None)
         self.pack = make_pack(Path(tempfile.mkdtemp()).resolve() / "acme-pack")
         set_core_version(self.repo, "1.2.3")
-        (self.repo / "packs.local.toml").write_text(f'[acme]\npath = "{self.pack}"\n')
+        (self.repo / "packs.local.toml").write_text(f'[acme]\npath = \'{self.pack}\'\n')
         (self.repo / "mcp").mkdir(exist_ok=True)
         (self.repo / "mcp/servers.toml").write_text(GH)
         for d in (".claude", ".cursor", ".codex", ".config/opencode", ".gemini/config"):
@@ -34,9 +35,9 @@ class OldInstallCase(TempRepoCase):
         self.claude_json = self.home / ".claude.json"
 
     def tearDown(self):
-        os.environ["HOME"] = self.old_home
-        shutil.rmtree(self.home)
-        shutil.rmtree(self.pack.parent)
+        restore_home(self.old_home)
+        rmtree(self.home)
+        rmtree(self.pack.parent)
         super().tearDown()
 
     def core_hooks(self, harness: str) -> Path:
@@ -169,15 +170,15 @@ class InstalledOldLinkTest(OldInstallCase):
 
     def setUp(self):
         super().setUp()
-        self.pkg = Path(tempfile.mkdtemp()) / "brainrc"
+        self.pkg = Path(tempfile.mkdtemp()).resolve() / "brainrc"
         self.core = self.pkg / "_core"
         shutil.copytree(self.repo, self.core, symlinks=True)
         pack = self.core / "packs/gatework"  # a relative path is read beside packs.local.toml
-        (self.core / "packs.toml").write_text(f'[gatework]\npath = "{pack}"\n')
+        (self.core / "packs.toml").write_text(f'[gatework]\npath = \'{pack}\'\n')
         brainrc.config.REPO = self.core
 
     def tearDown(self):
-        shutil.rmtree(self.pkg.parent)
+        rmtree(self.pkg.parent)
         super().tearDown()
 
     def test_old_link_to_the_resolved_homes_copy_is_pruned_and_the_copy_used(self):

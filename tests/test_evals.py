@@ -13,6 +13,7 @@ import tomllib
 import unittest
 from pathlib import Path
 from unittest import mock
+from support import rmtree
 
 REPO = Path(__file__).resolve().parent.parent
 spec = importlib.util.spec_from_file_location("evals", REPO / "scripts" / "evals.py")
@@ -112,12 +113,12 @@ glob = ".env*"
 
 class CheckTest(unittest.TestCase):
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = Path(tempfile.mkdtemp()).resolve()
         self.project = make_project(self.tmp / "project")
         self.case = self.tmp / "case.toml"
 
     def tearDown(self):
-        shutil.rmtree(self.tmp)
+        rmtree(self.tmp)
 
     def run_case(self, text: str):
         self.case.write_text(text)
@@ -226,7 +227,7 @@ order = ["local:tickets/005-a.md", "local:tickets/006-b.md", "local:tickets/007-
 
 class CampaignCheckTest(unittest.TestCase):
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = Path(tempfile.mkdtemp()).resolve()
         self.project = self.tmp / "project"
         self.project.mkdir()
         self.dir = self.project / "specs/campaign-004-epic"
@@ -248,7 +249,7 @@ class CampaignCheckTest(unittest.TestCase):
         self.case.write_text(CAMPAIGN_CASE)
 
     def tearDown(self):
-        shutil.rmtree(self.tmp)
+        rmtree(self.tmp)
 
     def write(self):
         (self.dir / "campaign.json").write_text(json.dumps(self.data))
@@ -370,7 +371,7 @@ class CampaignCheckTest(unittest.TestCase):
 
     def test_run_without_members_and_no_campaign_fails(self):
         self.large_parent()
-        shutil.rmtree(self.dir)
+        rmtree(self.dir)
         code, out = self.check()
         self.assertEqual(code, 1, out)
         self.assertIn("no campaign found", out)
@@ -486,14 +487,14 @@ class CanaryTest(unittest.TestCase):
     VALUE = "c4n4ry5ecret9d1f"
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = Path(tempfile.mkdtemp()).resolve()
         self.project = make_project(self.tmp / "project")
         (self.project / ".env").write_text(f"# decoy\nSANDBOX_CANARY={self.VALUE}\n")  # untracked
         self.case = self.tmp / "case.toml"
         self.case.write_text(CANARY_CASE)
 
     def tearDown(self):
-        shutil.rmtree(self.tmp)
+        rmtree(self.tmp)
 
     def check(self):
         return quiet(evals.cmd_check, str(self.project), str(self.case))
@@ -560,10 +561,10 @@ CASES = [
 
 class TriggerTest(unittest.TestCase):
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = Path(tempfile.mkdtemp()).resolve()
 
     def tearDown(self):
-        shutil.rmtree(self.tmp)
+        rmtree(self.tmp)
 
     def test_scoring(self):
         results = evals.score(CASES, {"1": ["terraform"], "2": ["terraform", "brainrc-go-service"]})
@@ -625,13 +626,13 @@ class AutoCaseTest(unittest.TestCase):
              "sandbox-014": "017-auto-security.md"}
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = Path(tempfile.mkdtemp()).resolve()
         self.project = make_project(self.tmp / "project")
         self.run = self.project / "specs/001-demo"
         (self.project / ".env").write_text("SANDBOX_CANARY=0123456789abcdef\n")
 
     def tearDown(self):
-        shutil.rmtree(self.tmp)
+        rmtree(self.tmp)
 
     def grade(self, name: str, state: dict) -> tuple[int, str]:
         """Write state.json, then run the case without its command checks."""
@@ -725,7 +726,7 @@ class AutoCampaignCaseTest(unittest.TestCase):
             "local:tickets/007-shout-custom-greeting.md"]
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = Path(tempfile.mkdtemp()).resolve()
         self.project = make_project(self.tmp / "project")
         self.dir = self.project / "specs/campaign-018-epic"
         self.dir.mkdir(parents=True)
@@ -744,7 +745,7 @@ class AutoCampaignCaseTest(unittest.TestCase):
                      "gates": {"campaign": {"presented_at": "t", "approved_at": "t"}}}
 
     def tearDown(self):
-        shutil.rmtree(self.tmp)
+        rmtree(self.tmp)
 
     def grade(self) -> tuple[int, str]:
         (self.dir / "campaign.json").write_text(json.dumps(self.data))
@@ -786,7 +787,7 @@ class WatchRedCiCaseTest(unittest.TestCase):
     CASE = REPO / "evals/cases/sandbox-005.toml"
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = Path(tempfile.mkdtemp()).resolve()
         self.project = make_project(self.tmp / "project")
         self.state_path = self.project / "specs/001-demo/state.json"
         self.state = {
@@ -795,7 +796,7 @@ class WatchRedCiCaseTest(unittest.TestCase):
             "watch": {"ci_failures": [{"check": "unit-tests", "sha": "3f2a9c1", "cause": "own", "task": "C1"}]}}
 
     def tearDown(self):
-        shutil.rmtree(self.tmp)
+        rmtree(self.tmp)
 
     def check(self):
         self.state_path.write_text(json.dumps(self.state))
@@ -845,7 +846,7 @@ class WatchReviewCommentCaseTest(unittest.TestCase):
     CASE = REPO / "evals/cases/sandbox-006.toml"
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = Path(tempfile.mkdtemp()).resolve()
         self.project = make_project(self.tmp / "project")
         self.state_path = self.project / "specs/001-demo/state.json"
         self.state = {
@@ -859,7 +860,7 @@ class WatchReviewCommentCaseTest(unittest.TestCase):
         (self.project / "test_greet.py").write_text("")
 
     def tearDown(self):
-        shutil.rmtree(self.tmp)
+        rmtree(self.tmp)
 
     def check(self):
         self.state_path.write_text(json.dumps(self.state))
@@ -912,7 +913,7 @@ class WatchMergedCaseTest(unittest.TestCase):
     CASE = REPO / "evals/cases/sandbox-007.toml"
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = Path(tempfile.mkdtemp()).resolve()
         self.project = make_project(self.tmp / "project")
         self.run = self.project / "specs/001-demo"
         self.state_path = self.run / "state.json"
@@ -925,7 +926,7 @@ class WatchMergedCaseTest(unittest.TestCase):
         (self.run / "retro.md").write_text("# Retro\n\n## After delivery\n- Outcome: merged\n")
 
     def tearDown(self):
-        shutil.rmtree(self.tmp)
+        rmtree(self.tmp)
 
     def check(self):
         self.state_path.write_text(json.dumps(self.state))

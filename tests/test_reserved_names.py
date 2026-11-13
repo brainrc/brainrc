@@ -7,6 +7,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import TempRepoCase, brainrc, make_pack, quiet, set_core_version  # noqa: E402
+from support import rmtree
 
 
 class ReservedNamesTest(TempRepoCase):
@@ -39,7 +40,7 @@ class ReservedNamesPackTest(TempRepoCase):
         set_core_version(self.repo, "1.2.3")
 
     def tearDown(self):
-        shutil.rmtree(self.pack.parent)
+        rmtree(self.pack.parent)
         super().tearDown()
 
     def add_pack_skill(self, name):

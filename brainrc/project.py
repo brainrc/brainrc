@@ -7,6 +7,7 @@ reaches a project's files, so every machine writes the same bytes (docs/project.
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 import re
 import tomllib
@@ -158,6 +159,54 @@ def outputs(project: Project, srcs: list[Source]) -> tuple[dict[str, bytes], dic
     return files, ({INSTRUCTIONS: block} if block else {})
 
 
+def state_path(root: Path) -> Path:
+    """This machine's record of what brainrc last wrote in the project at root."""
+    tag = hashlib.sha256(str(root.resolve()).encode()).hexdigest()[:16]
+    return settings_home() / "project-state" / f"{tag}.json"
+
+
+def last_written(root: Path) -> dict[str, dict[str, str]]:
+    """{"outputs": {path: hash}, "blocks": {path: hash}}: what brainrc wrote here last, on this machine."""
+    try:
+        data = json.loads(state_path(root).read_text())
+    except (OSError, ValueError):
+        data = {}
+    data = data if isinstance(data, dict) else {}
+    return {t: {k: v for k, v in data.get(t, {}).items() if isinstance(v, str)} if isinstance(data.get(t), dict)
+            else {} for t in ("outputs", "blocks")}
+
+
+def remember(root: Path, outputs: dict[str, str], blocks: dict[str, str]) -> None:
+    path = state_path(root)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(f".{path.name}.tmp")
+    tmp.write_text(json.dumps({"outputs": outputs, "blocks": blocks}, indent=1, sort_keys=True) + "\n")
+    tmp.replace(path)
+
+
+def foreign(root: Path, locked: dict, files: dict[str, bytes], blocks: dict[str, str]) -> list[str]:
+    """Each output path holding something brainrc didn't write: a file (or the block inside one)
+    whose hash is neither the lock's nor what brainrc last wrote there on this machine."""
+    mine = last_written(root)
+    found = []
+    for rel in sorted(files):
+        path = root / rel
+        data = _read(path)
+        if data is None:
+            if os.path.lexists(path):
+                found.append(f"{rel}: not a file brainrc wrote (a link or a directory)")
+            continue
+        if lock.digest(data) not in (locked.get("outputs", {}).get(rel), mine["outputs"].get(rel)):
+            found.append(f"{rel}: brainrc didn't write this file")
+    for rel in sorted(blocks):
+        data = _read(root / rel)
+        m = BLOCK.search(data.decode("utf-8")) if data is not None else None
+        if m and lock.digest(m.group(0).encode("utf-8")) not in (locked.get("blocks", {}).get(rel),
+                                                                mine["blocks"].get(rel)):
+            found.append(f"{rel}: brainrc's block was edited by hand")
+    return found
+
+
 def _read(path: Path) -> bytes | None:
     return path.read_bytes() if path.is_file() and not path.is_symlink() else None
 
@@ -291,6 +340,7 @@ def _write(project: Project, old: dict, files: dict[str, bytes], blocks: dict[st
             else:
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_bytes(data)
+        remember(project.root, written, block_hashes)
         if lock.write(project.lock_path, new_lock):
             print(f"{'LOCK':9} {'project':9} {lock.NAME}")
     elif lock_changes:

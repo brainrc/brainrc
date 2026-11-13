@@ -6,6 +6,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from support import home_env
+
 REPO = Path(__file__).resolve().parent.parent
 
 
@@ -14,7 +16,8 @@ class EntryPointCase(unittest.TestCase):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
         self.env = {k: v for k, v in os.environ.items() if k != "PYTHONWARNINGS"}
-        self.env.update(HOME=tmp.name, BRAINRC_HOME=str(Path(tmp.name) / "brainrc"))
+        home = Path(tmp.name).resolve()
+        self.env.update(home_env(home), BRAINRC_HOME=str(home / "brainrc"))
 
     def run_py(self, *args):
         return subprocess.run(

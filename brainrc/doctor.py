@@ -110,7 +110,7 @@ def _render_findings(srcs: list[Source]) -> list[Finding]:
         targets.append((home_extensions_file(), lambda: extensions))
     targets += [(path, lambda text=text: text) for path, text in rendered_agents(srcs).items()]
     for path, render in targets:
-        rel = tilde(path) if not path.is_relative_to(config.REPO) else str(path.relative_to(config.REPO))
+        rel = tilde(path) if not path.is_relative_to(config.REPO) else path.relative_to(config.REPO).as_posix()
         if not path.is_file():
             found.append(("FAIL", f"{rel} has not been rendered", command("apply")))
         elif path.read_text() != render():
@@ -125,8 +125,8 @@ def shell_path(path: Path) -> str:
     try:
         rel = path.relative_to(Path.home())
     except ValueError:
-        return shlex.quote(str(path))
-    return "~" if rel == Path(".") else "~/" + shlex.quote(str(rel))
+        return shlex.quote(path.as_posix())
+    return "~" if rel == Path(".") else "~/" + shlex.quote(rel.as_posix())
 
 
 def _link_finding(link: Link, roots: list[Path]) -> Finding | None:

@@ -66,7 +66,7 @@ path = "tools/agent-pack"   # relative to the repo root
 byte-identical.
 
 ```toml
-# brainrc.lock: written by brainrc. Don't edit it; commit it with brainrc.toml.
+# brainrc.lock: written by brainrc. Don't edit it by hand.
 version = 1
 brainrc = "0.7.3"
 scope = "project"

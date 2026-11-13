@@ -1,5 +1,5 @@
 # expect: version: must be 1
-# brainrc.lock: written by brainrc. Don't edit it; commit it with brainrc.toml.
+# brainrc.lock: written by brainrc. Don't edit it by hand.
 version = 2
 brainrc = "0.7.3"
 scope = "user"

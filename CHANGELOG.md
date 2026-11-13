@@ -12,6 +12,10 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.7.2 (2026-11-13)
+
+- Install Gatework v0.7.1, whose roles check accepts the link as git on Windows stores it (`..\..\agents`).
+
 ## 0.7.1 (2026-11-12)
 
 - Gatework moves to its own repository, [brainrc/gatework](https://github.com/brainrc/gatework),

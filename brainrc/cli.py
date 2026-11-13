@@ -352,7 +352,7 @@ def _user_lock(srcs, apply: bool) -> int:
     return 0
 
 
-def cmd_install(frozen: bool, scope: str | None = None) -> int:
+def cmd_install(frozen: bool, scope: str | None = None, force: bool = False) -> int:
     """install = apply. install --frozen installs exactly what the lock records (brainrc/frozen.py):
     the project's when the current directory has one (or --scope project), else the user scope's."""
     if not frozen:
@@ -363,7 +363,7 @@ def cmd_install(frozen: bool, scope: str | None = None) -> int:
         print(f"ERROR no {PROJECT_MANIFEST} here or above, up to the repo root")
         return 2
     if scope == "project":
-        return _locked(lambda: frozen_install.project(root))
+        return _locked(lambda: frozen_install.project(root, force))
     return _locked(lambda: frozen_install.user(lambda: _sync(True, relock=False)))
 
 
@@ -493,6 +493,9 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--frozen", action="store_true", help="install exactly what brainrc.lock records, or fail")
     p.add_argument("--scope", choices=("user", "project"),
                    help="which lock --frozen installs (default: the project's when there is one)")
+    p.add_argument("--force", action="store_true",
+                   help="with --frozen in a project: overwrite files at the lock's paths that brainrc "
+                   "didn't write (by default they fail the install)")
     p = add("check", "exit 1 when the repo's agent files or the packs drifted from brainrc.lock (no "
             "network, writes nothing)",
             "Compare brainrc.toml with brainrc.lock, every pack this machine has with the hashes the lock "
@@ -572,8 +575,8 @@ def _dispatch(argv: list[str]) -> int:
     if cmd == "check":
         return cmd_check(args.scope)
     if cmd == "install":
-        if args.scope and not args.frozen:
-            print("ERROR --scope needs --frozen", file=sys.stderr)
+        if (args.scope or args.force) and not args.frozen:
+            print(f"ERROR {'--scope' if args.scope else '--force'} needs --frozen", file=sys.stderr)
             return 2
-        return cmd_install(args.frozen, args.scope)
+        return cmd_install(args.frozen, args.scope, args.force)
     return cmd_tokens()

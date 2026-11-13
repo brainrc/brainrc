@@ -58,7 +58,7 @@ class Step:
 SETTINGS_HOME_ENTRIES = re.compile(
     r".*\.local\.(toml|md)|rules|packs|instructions\.md|extensions\.md|harnesses\.json|"
     r"\.harnesses\.json\.tmp|mcp-owned\.json|apply\.lock|active-run|opencode|hooks|"
-    r"\.?brainrc\.lock(\.tmp)?|project-packs")
+    r"\.?brainrc\.lock(\.tmp)?|project-packs|project-state")
 
 
 def _harness_configs(manifest: dict, warnings: list[str]) -> list[tuple[str, dict]]:

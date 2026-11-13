@@ -10,7 +10,7 @@ from pathlib import Path
 from unittest import mock
 
 from test_brainrc import TempRepoCase, brainrc, make_pack, quiet, set_core_version
-from support import home_env, restore_home, rmtree, saved_home, symlink
+from support import home_env, readlink, restore_home, rmtree, saved_home, symlink
 
 GH = '[servers.gh]\ncommand = "npx"\nargs = ["-y", "@modelcontextprotocol/server-github"]\nenv_from = ["GH_TOKEN"]\n'
 DOCS = '[servers.docs]\nurl = "https://docs.example.com/mcp"\n'
@@ -183,7 +183,7 @@ class McpSyncTest(McpCase):
         self.registry(GH)
         self.apply()
         self.assertTrue(self.claude.is_symlink())
-        self.assertEqual(self.claude.readlink(), target)
+        self.assertEqual(Path(readlink(self.claude)), target)
         data = json.loads(target.read_text())
         self.assertEqual(data["userID"], "u")
         self.assertIn("gh", data["mcpServers"])

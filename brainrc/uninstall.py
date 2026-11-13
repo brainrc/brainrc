@@ -117,7 +117,7 @@ def _fragment_extras(name: str) -> dict:
 def _set_aside(path: Path) -> None:
     """Delete a file that holds nothing of the user's, keeping it as a backup like apply does."""
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    os.rename(path, path.with_name(f"{path.name}.bak-brainrc-{stamp}"))
+    os.replace(path, path.with_name(f"{path.name}.bak-brainrc-{stamp}"))  # rename's POSIX behaviour, on Windows too
 
 
 def _settings_steps(name: str, h: dict, problems: list[str]) -> list[Step]:

@@ -28,6 +28,8 @@ EXPECTED = {
 EXPECTED_README = {1: [re.escape("Dry run. Run `apply` to write."), re.escape("Everything in sync.")]}
 COPY_IGNORE = shutil.ignore_patterns(".git", "dist", "__pycache__", "*.local.*", ".env*")
 HEADING = re.compile(r"^## (\d+)\. (.+?)\s*$")
+# By name, Windows finds System32's WSL launcher before Git Bash on PATH; look bash up on PATH.
+BASH = shutil.which("bash") or "bash"
 FENCE = re.compile(r"^```bash\s*$")
 
 
@@ -102,7 +104,7 @@ def run(parsed: dict[int, tuple[str, str]], expected: dict[int, list[str]]) -> b
         for n, (title, block) in parsed.items():
             name = f"step {n} {title}"
             try:
-                r = subprocess.run(["bash", "-e", "-o", "pipefail", "-c", block], cwd=checkout, env=env,
+                r = subprocess.run([BASH, "-e", "-o", "pipefail", "-c", block], cwd=checkout, env=env,
                                    capture_output=True, text=True, timeout=120)
             except subprocess.TimeoutExpired:
                 report(name, False, "timed out after 120 s")

@@ -7,6 +7,7 @@ built in `_parser`; `brainrc --help` and `brainrc <command> --help` print them.
 from __future__ import annotations
 
 import argparse
+import errno
 import os
 import shutil
 import sys
@@ -364,7 +365,10 @@ def main(argv: list[str]) -> int:
         code = _dispatch(argv)
         sys.stdout.flush()  # inside the try: a closed pipe fails here, not at interpreter exit
         return code
-    except BrokenPipeError:
+    except OSError as e:
+        # A closed pipe: BrokenPipeError, or EINVAL from Windows' flush.
+        if not isinstance(e, BrokenPipeError) and e.errno != errno.EINVAL:
+            raise
         os.dup2(os.open(os.devnull, os.O_WRONLY), sys.stdout.fileno())  # so the final flush can't fail
         return 0
 

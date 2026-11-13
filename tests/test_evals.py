@@ -537,10 +537,10 @@ class SandboxSetupTest(unittest.TestCase):
         script = re.search(r"```bash\n(.*?)```", readme, re.S).group(1)
         with tempfile.TemporaryDirectory() as tmp:
             target = Path(tmp) / "spec-sandbox"
-            script = script.replace("/tmp/spec-sandbox", str(target))
+            script = script.replace("/tmp/spec-sandbox", target.as_posix())  # bash reads a backslash as an escape
             env = {**os.environ, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@example.com",
                    "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@example.com"}
-            subprocess.run(["bash", "-euc", script], cwd=REPO, check=True, capture_output=True, env=env)
+            subprocess.run([shutil.which("bash") or "bash", "-euc", script], cwd=REPO, check=True, capture_output=True, env=env)
             self.assertEqual(git(target, "status", "--short", "--ignored=no"), "")
             self.assertNotIn(".env", git(target, "ls-files").split())
             value = (target / ".env").read_text().split("=", 1)[1].strip()

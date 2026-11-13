@@ -53,3 +53,9 @@ def symlink(link, target) -> None:
     """link.symlink_to(target), marked as a directory link when target is a directory: Windows
     treats a file link to a directory as broken."""
     os.symlink(target, link, target_is_directory=os.path.isdir(os.path.join(os.path.dirname(link), target)))
+
+
+def readlink(link) -> str:
+    """os.readlink without the \\\\?\\ prefix Windows puts on an absolute target."""
+    target = os.readlink(link)
+    return target[4:] if target.startswith("\\\\?\\") and not target.startswith("\\\\?\\UNC\\") else target

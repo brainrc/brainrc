@@ -16,7 +16,7 @@ from unittest import mock
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO / "tests"))
 from brainrc import cli  # noqa: E402
-from support import bare_env, home_env, symlink  # noqa: E402
+from support import bare_env, home_env, readlink, symlink  # noqa: E402
 from test_brainrc import default_pack_env  # noqa: E402
 
 HOME_VARS = ("HOME", "USERPROFILE", "BRAINRC_HOME", "AICFG_HOME", "XDG_CONFIG_HOME", "CLAUDE_CONFIG_DIR", "CODEX_HOME", "PYTHONWARNINGS")
@@ -59,7 +59,7 @@ class MigrateCase(unittest.TestCase):
         for base, dirs, files in os.walk(self.home):
             for name in dirs + files:
                 p = Path(base, name)
-                if p.is_symlink() and os.readlink(p).startswith(str(directory)):
+                if p.is_symlink() and readlink(p).startswith(str(directory)):
                     found.append(p)
         return found
 
@@ -90,7 +90,7 @@ class TestMigrate(MigrateCase):
         proc = self.run_cli("migrate")
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
         self.assertTrue(self.new.is_symlink())
-        self.assertEqual(os.readlink(self.new), str(real))
+        self.assertEqual(readlink(self.new), str(real))
         self.assertTrue((real / "packs.local.toml").is_file())
         self.assertFalse(os.path.lexists(self.old))
 
@@ -250,7 +250,7 @@ class TestCrossDeviceSafety(MigrateCase):
         code, out, _ = self.migrate_in_process(exdev_rename(self.old))
         self.assertEqual(code, 0, out)
         self.assertTrue(self.new.is_symlink())
-        self.assertEqual(os.readlink(self.new), str(real))
+        self.assertEqual(readlink(self.new), str(real))
         self.assertFalse(os.path.lexists(self.old))
         self.assertEqual(sorted(os.listdir(real)), ["apply.lock", "packs.local.toml"])
 

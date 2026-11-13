@@ -13,7 +13,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import TempRepoCase, brainrc, copy_repo, install_harnesses, quiet  # noqa: E402
-from support import home_env, restore_home, rmtree, saved_home, symlink  # noqa: E402
+from support import home_env, readlink, restore_home, rmtree, saved_home, symlink  # noqa: E402
 
 BACKUP = re.compile(r"\.bak-brainrc-\d{8}T\d{6}Z$")
 SETTINGS = {"theme": "dark", "hooks": {"PreToolUse": [
@@ -35,7 +35,7 @@ def snapshot(home: Path) -> dict[str, object]:
         if BACKUP.search(p.name):
             continue
         if p.is_symlink():
-            found[rel] = ("link", os.readlink(p))
+            found[rel] = ("link", readlink(p))
         elif p.is_dir():
             found[rel] = "dir"
         elif p.suffix == ".json":

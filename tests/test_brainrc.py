@@ -15,7 +15,7 @@ from unittest import mock
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO))
 import brainrc  # noqa: E402  (the package at the repo root)
-from support import home_env, restore_home, rmtree, saved_home, symlink  # noqa: E402
+from support import home_env, readlink, restore_home, rmtree, saved_home, symlink  # noqa: E402
 
 FOREIGN = {"hooks": [{"type": "command", "command": "node /opt/other/hook.js"}]}
 OURS_OLD = {"matcher": "Bash", "hooks": [{"type": "command", "command": "python3 ~/.claude/hooks/ai-config/old.py"}]}
@@ -435,7 +435,7 @@ class SyncFakeHomeTest(TempRepoCase):
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertTrue(settings.is_symlink())
-        self.assertEqual(settings.readlink(), target)
+        self.assertEqual(Path(readlink(settings)), target)
         data = json.loads(target.read_text())
         self.assertEqual(data["theme"], "dark")
         self.assertIn("hooks", data)
@@ -454,7 +454,7 @@ class SyncFakeHomeTest(TempRepoCase):
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertTrue(settings.is_symlink())
-        self.assertEqual(settings.readlink(), target)
+        self.assertEqual(Path(readlink(settings)), target)
         self.assertIn("hooks", json.loads(target.read_text()))
 
     def test_apply_then_in_sync_and_conflicts_respected(self):
@@ -668,7 +668,7 @@ def snapshot(*roots: Path) -> dict:
     seen = {}
     for root in roots:
         for path in sorted(root.rglob("*")):
-            seen[path] = os.readlink(path) if path.is_symlink() else (path.lstat().st_size, path.lstat().st_mtime_ns)
+            seen[path] = readlink(path) if path.is_symlink() else (path.lstat().st_size, path.lstat().st_mtime_ns)
     return seen
 
 
@@ -1379,7 +1379,7 @@ class InstalledModeTest(TempRepoCase):
         self.default_pack = self.pkg.parent / "gatework"
         shutil.move(self.core / "packs/gatework", self.default_pack)
         (self.core / "packs").rmdir()
-        (self.core / "packs.toml").write_text(TEST_PACKS_TOML.replace('"packs/gatework"', f'"{self.default_pack}"'))
+        (self.core / "packs.toml").write_text(TEST_PACKS_TOML.replace('"packs/gatework"', f"'{self.default_pack}'"))
         brainrc.config.REPO = self.core
         self.home = Path(tempfile.mkdtemp()).resolve()
         self.old_home = saved_home()

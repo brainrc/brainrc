@@ -160,7 +160,7 @@ def _adopt(a: Adoption) -> None:
     if a.rule:
         a.rule.parent.mkdir(parents=True, exist_ok=True)
         a.rule.write_text(a.text)
-    os.rename(a.file, a.backup)  # a link is moved as the link; its target is never touched
+    os.replace(a.file, a.backup)  # as rename on POSIX, also on Windows; a link is moved as the link; its target is never touched
 
 
 def cmd_init(yes: bool = False, harnesses: list[str] | None = None, adopt: bool = True,

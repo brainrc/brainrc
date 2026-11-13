@@ -10,7 +10,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import TempRepoCase, brainrc, install_harnesses, quiet  # noqa: E402
-from support import home_env, restore_home, rmtree, saved_home, symlink  # noqa: E402
+from support import home_env, readlink, restore_home, rmtree, saved_home, symlink  # noqa: E402
 
 
 def run(*args: str) -> tuple[int, str]:
@@ -44,7 +44,7 @@ class RepairTest(TempRepoCase):
         return old
 
     def links_into(self, root: Path) -> list[Path]:
-        return [p for p in self.home.rglob("*") if p.is_symlink() and str(root) in os.readlink(p)]
+        return [p for p in self.home.rglob("*") if p.is_symlink() and str(root) in readlink(p)]
 
     def test_a_moved_checkout_is_back_in_sync_after_repair(self):
         quiet(brainrc.cmd_sync, True)
@@ -58,7 +58,7 @@ class RepairTest(TempRepoCase):
         self.assertIn("REPAIR", out)
         self.assertNotIn("CONFLICT", out)
         self.assertEqual(self.links_into(old), [])
-        self.assertEqual(os.readlink(self.skill), str(self.repo / "packs/gatework/skills/spec-agent"))
+        self.assertEqual(readlink(self.skill), str(self.repo / "packs/gatework/skills/spec-agent"))
         self.assertTrue((self.home / ".claude/hooks/brainrc").resolve().is_dir())
         code, out = run("status")
         self.assertEqual(code, 0, out)
@@ -107,7 +107,7 @@ class RepairTest(TempRepoCase):
         code, out = run("apply", "--repair")
         self.assertEqual(code, 1)
         self.assertIn("CONFLICT", out)
-        self.assertEqual(os.readlink(self.skill), str(self.home / "gone/somewhere-else"))
+        self.assertEqual(readlink(self.skill), str(self.home / "gone/somewhere-else"))
 
     def test_a_working_link_to_the_users_own_copy_stays_a_conflict(self):
         mine = self.home / "mine/skills/spec-agent"
@@ -116,7 +116,7 @@ class RepairTest(TempRepoCase):
         symlink(self.skill, mine)
         code, out = run("apply", "--repair")
         self.assertEqual(code, 1)
-        self.assertEqual(os.readlink(self.skill), str(mine))
+        self.assertEqual(readlink(self.skill), str(mine))
         self.assertNotIn("apply --repair` relinks", out)
 
     def test_doctor_suggests_repair_for_a_moved_checkout(self):
@@ -145,8 +145,8 @@ class RepairTest(TempRepoCase):
         code, out = run("apply", "--repair")
         self.assertEqual(code, 0, out)
         self.assertNotIn("PRUNE", out)
-        self.assertEqual(os.readlink(mine), str(notes))
-        self.assertEqual(os.readlink(self.skill), str(self.repo / "packs/gatework/skills/spec-agent"))
+        self.assertEqual(readlink(mine), str(notes))
+        self.assertEqual(readlink(self.skill), str(self.repo / "packs/gatework/skills/spec-agent"))
 
     def test_a_shallow_broken_link_never_makes_home_a_root(self):
         quiet(brainrc.cmd_sync, True)

@@ -10,3 +10,7 @@ bump: patch
   is written into hook commands with `/` and JSON-escaped, and messages show paths with `/`
   (`~/.claude/skills/...`, `rules/10-git.md`), so `exclude` patterns and tripwire `paths` match
   on every OS (#342).
+- Windows: `brainrc doctor | head` exits quietly there too (a closed pipe raises `EINVAL` on
+  flush), `init` and `uninstall` move a file aside over a same-second backup as they do on
+  macOS and Linux, and `scripts/check_tutorial.py` runs Git Bash from `PATH` instead of the WSL
+  launcher Windows finds first (#342).

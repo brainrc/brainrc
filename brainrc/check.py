@@ -14,7 +14,7 @@ from . import lock
 from .config import ConfigError, _layered, tilde
 from .frozen import compare_config, diff_files, diff_outputs
 from .packs import head
-from .project import BLOCK, MANIFEST, _read, _unit, load, outputs, project_pack_files
+from .project import BLOCK, MANIFEST, _read, _unit, load, outputs, planned, project_pack_files
 from .sources import _pack_root, load_pack, tree_files
 
 
@@ -38,7 +38,7 @@ def _pack(key: str, cfg: dict, root: Path, entry: dict, files_of, notes: list[st
     return diff_files(key, entry["files"], files_of(src)), src
 
 
-def _repo(root: Path, locked: dict) -> list[str]:
+def _repo(root: Path, locked: dict, tops: list[str]) -> list[str]:
     """Each file brainrc owns in the repo that differs from the lock, is missing, or was added to a
     skill directory brainrc owns."""
     errors = []
@@ -49,7 +49,7 @@ def _repo(root: Path, locked: dict) -> list[str]:
             errors.append(f"{rel}: missing (brainrc.lock lists it)")
         elif lock.digest(data) != want:
             errors.append(f"{rel}: differs from {lock.NAME}")
-    skills = sorted({_unit(rel).rstrip("/") for rel in owned if _unit(rel) != rel})
+    skills = sorted({_unit(rel, tops).rstrip("/") for rel in owned if _unit(rel, tops) != rel})
     for skill in skills:
         if (root / skill).is_dir() and not (root / skill).is_symlink():
             errors += [f"{skill}/{rel}: not in {lock.NAME}" for rel, _ in tree_files(root / skill)
@@ -93,6 +93,7 @@ def project(root: Path) -> int:
     errors = compare_config({p.key: p.cfg for p in packs}, locked.get("packs", {}), MANIFEST)
     srcs = []
     if not errors:
+        errors += planned(proj, locked)  # brainrc.toml's `harnesses`, checked from the lock alone
         for p in packs:
             found, src = _pack(p.key, p.cfg, p.root, locked["packs"][p.key],
                                lambda s: project_pack_files(proj, s), notes)
@@ -102,7 +103,7 @@ def project(root: Path) -> int:
         files, blocks = outputs(proj, srcs)
         errors += diff_outputs(locked, {r: lock.digest(d) for r, d in files.items()},
                                {r: lock.digest(b.encode("utf-8")) for r, b in blocks.items()})
-    errors += _repo(proj.root, locked)
+    errors += _repo(proj.root, locked, proj.skill_tops)
     return _report(errors, notes, "Run `apply` to rewrite the files and relock, then commit both.")
 
 

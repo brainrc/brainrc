@@ -15,7 +15,7 @@ from . import lock
 from .config import ConfigError, _layered, tilde
 from .packs import _git, _record, head
 from .project import (
-    MANIFEST, Project, _linked, _read, _unit, load, outputs, project_pack_files, with_block,
+    MANIFEST, Project, _linked, _read, _unit, load, outputs, planned, project_pack_files, with_block,
 )
 from .sources import _pack_root, core_version, load_pack
 
@@ -170,11 +170,15 @@ def project(root: Path) -> int:
     files: dict[str, bytes] = {}
     blocks: dict[str, str] = {}
     if not errors:
+        errors += planned(proj, locked)  # brainrc.toml's `harnesses` moved files the lock put elsewhere
+    if not errors:
         files, blocks = outputs(proj, [srcs[p.key] for p in packs])
         errors += diff_outputs(locked, {r: lock.digest(d) for r, d in files.items()},
                                {r: lock.digest(b.encode("utf-8")) for r, b in blocks.items()})
         errors += [f"{rel}: a directory on its way is a link; brainrc won't write through it"
                    for rel in sorted({*files, *blocks}) if _linked(proj.root, rel)]
+        errors += [f"{rel}: is a link; brainrc won't write through it" for rel in sorted(blocks)
+                   if (proj.root / rel).is_symlink()]
     if errors:
         return _fail(errors, stage, f"Run `apply` to install the current packs and relock, or restore {lock.NAME}.")
     stage.commit()
@@ -202,6 +206,7 @@ def _write_frozen(proj: Project, files: dict[str, bytes], blocks: dict[str, str]
         new = with_block(current, block)
         if new != current:
             changes[rel] = new.encode("utf-8")
+    tops = proj.skill_tops
     tmp = proj.root / f".brainrc-install-{os.getpid()}"
     shutil.rmtree(tmp, ignore_errors=True)
     try:
@@ -212,7 +217,7 @@ def _write_frozen(proj: Project, files: dict[str, bytes], blocks: dict[str, str]
         for n, rel in enumerate(sorted(changes)):
             dest = proj.root / rel
             state = "update" if dest.exists() else "create"
-            states[_unit(rel)] = "update" if states.get(_unit(rel)) == "update" else state
+            states[_unit(rel, tops)] = "update" if states.get(_unit(rel, tops)) == "update" else state
             dest.parent.mkdir(parents=True, exist_ok=True)
             os.replace(tmp / str(n), dest)
     finally:

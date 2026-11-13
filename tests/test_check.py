@@ -85,6 +85,14 @@ class ProjectCheckTest(CheckCase):
         (self.proj / ".agents/skills/brainrc-work/SKILL.md").write_text("changed\n")
         self.assertIn("DRIFT .agents/skills/brainrc-work/SKILL.md", self.check(code=1))
 
+    def test_harnesses_changed_without_apply_fails_even_without_the_git_pack(self):
+        shutil.rmtree(self.settings_home / "project-packs")  # CI: nothing fetched
+        self.manifest('harnesses = []\n\n[packs.team]\npath = "tools/team-pack"\n')
+        out = self.check(code=1)
+        self.assertIn("DRIFT .claude/skills/brainrc-work/: in brainrc.lock, but brainrc.toml no longer asks for it", out)
+        self.assertIn("DRIFT CLAUDE.md: brainrc's block is in brainrc.lock, but brainrc.toml no longer asks", out)
+        self.assertNotIn(".agents/skills/brainrc-work/", out)
+
     def test_a_moved_tag_is_reported_and_does_not_fail(self):
         a, b = rev(self.bare, "v1"), rev(self.bare, "v2")
         self.move_tag("v1", "v2")

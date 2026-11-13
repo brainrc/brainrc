@@ -184,6 +184,14 @@ class ProjectFrozenTest(FrozenCase):
         self.assertIn("pack more: in brainrc.toml but not in brainrc.lock (run apply to relock)", out)
         self.assertFalse((other / ".agents").exists())
 
+    def test_harnesses_changed_without_apply_names_brainrc_toml(self):
+        other = self.second_checkout()
+        (other / "brainrc.toml").write_text('harnesses = ["codex"]\n\n' + (other / "brainrc.toml").read_text())
+        out = self.frozen(code=1)
+        self.assertIn(".claude/skills/team-deploy/: in brainrc.lock, but brainrc.toml no longer asks for it", out)
+        self.assertNotIn("don't produce", out)
+        self.assertFalse((other / ".agents").exists())
+
     def test_a_changed_path_pack_fails(self):
         other = self.second_checkout()
         rule = other / "tools/team-pack/rules/50-team.md"

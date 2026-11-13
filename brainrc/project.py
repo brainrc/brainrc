@@ -10,7 +10,7 @@ import hashlib
 import os
 import re
 import tomllib
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from . import config, lock, schema
@@ -29,7 +29,6 @@ END = "<!-- brainrc:end -->"
 BLOCK = re.compile(r"<!-- brainrc:begin\b[^\n]*-->\n.*?<!-- brainrc:end -->", re.S)
 ORIGIN_KEYS = ("git", "path")
 PROJECT_KEYS = ("project_skills", "project_instructions")  # harnesses.toml: where a tool needs its own
-SAFE_REL = re.compile(r"(?![/~$\\])(?![A-Za-z]:)(?!(.*/)?\.\.(/|$))[^\\]+")
 
 
 def find_project(start: Path | None = None) -> Path | None:
@@ -57,6 +56,7 @@ class Pack:
 class Project:
     root: Path
     manifest: dict
+    core: dict = field(default_factory=dict)  # core's harnesses.toml, read and checked once by load()
 
     @property
     def lock_path(self) -> Path:
@@ -70,10 +70,36 @@ class Project:
     def harnesses(self) -> dict[str, dict]:
         """The tools that get their own files (docs/project.md), from core's harnesses.toml only:
         the ones brainrc.toml names, else every enabled one, by name."""
-        core = core_harnesses()
         names = self.manifest["harnesses"] if "harnesses" in self.manifest else \
-            [n for n, h in core.items() if h.get("enabled", True)]
-        return {n: core[n] for n in sorted(names)}
+            [n for n, h in self.core.items() if h.get("enabled", True)]
+        return {n: self.core[n] for n in sorted(names)}
+
+    @property
+    def skill_dirs(self) -> list[str]:
+        """Where skills are copied: .agents/skills/, then each selected tool's own directory."""
+        own = {h["project_skills"] for h in self.harnesses.values() if "project_skills" in h} - {SKILLS_DIR}
+        return [SKILLS_DIR, *sorted(own)]
+
+    @property
+    def skill_tops(self) -> list[str]:
+        """Every directory a skill could be copied to, selected or not: how status groups files."""
+        return [SKILLS_DIR, *sorted({h["project_skills"] for h in self.core.values() if "project_skills" in h})]
+
+    @property
+    def instruction_files(self) -> list[str]:
+        """AGENTS.md, then each selected tool's own instructions file, unless it already reads
+        AGENTS.md: a link to it, or a file whose own text imports it (`@AGENTS.md`)."""
+        found = [INSTRUCTIONS]
+        agents = (self.root / INSTRUCTIONS).resolve()
+        for rel in sorted({h.get("project_instructions", INSTRUCTIONS) for h in self.harnesses.values()} - {INSTRUCTIONS}):
+            path = self.root / rel
+            if path.is_symlink() and path.resolve() == agents:
+                continue
+            own = BLOCK.sub("", path.read_bytes().decode("utf-8")) if _read(path) is not None else ""
+            if f"@{INSTRUCTIONS}" in (line.strip() for line in own.splitlines()):
+                continue
+            found.append(rel)
+        return found
 
     def packs(self) -> list[Pack]:
         """Enabled packs: core's default packs in packs.toml order, then the ones brainrc.toml adds."""
@@ -107,9 +133,17 @@ def core_harnesses() -> dict[str, dict]:
     found = _read_toml(config.REPO / "harnesses.toml")
     for name, h in found.items():
         for key in PROJECT_KEYS:
-            if key in h and not (isinstance(h[key], str) and SAFE_REL.fullmatch(h[key])):
+            if key in h and not _in_repo(h[key]):
                 raise ConfigError(f"harnesses.toml: [{name}] {key} must be a path inside the repo")
     return found
+
+
+def _in_repo(rel) -> bool:
+    """A plain relative path in the repo: no `..`, `.` or empty part, nothing under .git."""
+    if not isinstance(rel, str) or "\\" in rel or re.match(r"[~$]|[A-Za-z]:", rel):
+        return False
+    parts = rel.split("/")
+    return all(p not in ("", ".", "..") for p in parts) and parts[0] != ".git"
 
 
 def load(root: Path) -> Project:
@@ -131,7 +165,7 @@ def load(root: Path) -> Project:
                      for n in data["harnesses"] if n not in core]
     if problems:
         raise ConfigError(f"{where}: " + "; ".join(problems))
-    return Project(root, data)
+    return Project(root, data, core)
 
 
 def project_items(src: Source, kind: str, exclude: list[str]) -> list[Path]:
@@ -182,22 +216,44 @@ def outputs(project: Project, srcs: list[Source]) -> tuple[dict[str, bytes], dic
     """(whole files by repo path, marked blocks by repo path) that the project's packs produce:
     the standard .agents/skills/ and AGENTS.md first, then a copy only where a selected tool can't
     read them (harnesses.toml `project_skills`, `project_instructions`)."""
-    harnesses = project.harnesses.values()
-    skill_dirs = [SKILLS_DIR, *sorted({h["project_skills"] for h in harnesses if "project_skills" in h} - {SKILLS_DIR})]
+    skill_dirs = project.skill_dirs
     files: dict[str, bytes] = {}
     for src in srcs:
         for skill in project_items(src, "skills", project.exclude):
             for rel, f in tree_files(skill):
+                data = f.read_bytes()
                 for top in skill_dirs:
-                    files[f"{top}/{skill.name}/{rel}"] = f.read_bytes()
+                    files[f"{top}/{skill.name}/{rel}"] = data
     block = render_block(srcs)
     if not block:
         return files, {}
-    blocks = {INSTRUCTIONS: block}
-    for h in harnesses:
-        if h.get("project_instructions", INSTRUCTIONS) != INSTRUCTIONS:
-            blocks[h["project_instructions"]] = import_block()
-    return files, blocks
+    return files, {rel: block if rel == INSTRUCTIONS else import_block() for rel in project.instruction_files}
+
+
+def planned(project: Project, locked: dict) -> list[str]:
+    """Where brainrc.toml now puts files (its `harnesses`) against where the lock says they went,
+    worked out from the lock's own pack files, so no pack has to be on this machine. One line per
+    skill or block, naming brainrc.toml as the cause."""
+    want: set[str] = set()
+    rules = False
+    for entry in locked.get("packs", {}).values():
+        for rel in entry["files"]:
+            parts = rel.split("/")
+            if parts[0] == "skills" and len(parts) > 2:
+                want.update(f"{top}/{'/'.join(parts[1:])}" for top in project.skill_dirs)
+            rules = rules or parts[0] == "rules"
+    have = set(locked.get("outputs", {}))
+    errors = set()
+    for rel in want ^ have:
+        unit = _unit(rel, project.skill_tops)
+        errors.add(f"{unit}: {MANIFEST} asks for it, {lock.NAME} doesn't have it (run apply to relock)" if rel in want
+                   else f"{unit}: in {lock.NAME}, but {MANIFEST} no longer asks for it (run apply to relock)")
+    blocks = set(project.instruction_files) if rules else set()
+    for rel in blocks ^ set(locked.get("blocks", {})):
+        errors.add(f"{rel}: {MANIFEST} asks for brainrc's block, {lock.NAME} doesn't have it (run apply to relock)"
+                   if rel in blocks else
+                   f"{rel}: brainrc's block is in {lock.NAME}, but {MANIFEST} no longer asks for it (run apply to relock)")
+    return sorted(errors)
 
 
 def _read(path: Path) -> bytes | None:
@@ -215,10 +271,12 @@ def _linked(root: Path, rel: str) -> bool:
     return False
 
 
-def _unit(rel: str) -> str:
-    """What a status line names: a skill's directory, or the file itself."""
-    parts = rel.split("/")
-    return "/".join(parts[:3]) + "/" if len(parts) > 3 and parts[1] == "skills" else rel
+def _unit(rel: str, tops: list[str]) -> str:
+    """What a status line names: a skill's directory under one of tops, or the file itself."""
+    for top in tops:
+        if rel.startswith(top + "/") and "/" in rel[len(top) + 1:]:
+            return f"{top}/{rel[len(top) + 1:].split('/')[0]}/"
+    return rel
 
 
 RANK = {"create": 0, "update": 1, "prune": 2, "conflict": 3}
@@ -276,12 +334,13 @@ def sync(root: Path, apply: bool) -> int:
 def _write(project: Project, old: dict, files: dict[str, bytes], blocks: dict[str, str], apply: bool,
            locked: dict[str, dict]) -> int:
     owned = old.get("outputs", {})
+    tops = project.skill_tops
     states: dict[str, str] = {}
     written: dict[str, str] = {}
     actions: list[tuple[str, str, bytes | None]] = []  # (state, path, bytes or None to delete)
     for rel, data in sorted(files.items()):
         if _linked(project.root, rel):
-            states[_unit(rel)] = "conflict"
+            states[_unit(rel, tops)] = "conflict"
             continue
         now = _read(project.root / rel)
         if now == data:
@@ -289,7 +348,7 @@ def _write(project: Project, old: dict, files: dict[str, bytes], blocks: dict[st
             continue
         state = "create" if now is None and not os.path.lexists(project.root / rel) else \
             "update" if rel in owned and now is not None else "conflict"
-        states[_unit(rel)] = max(states.get(_unit(rel), state), state, key=RANK.get)
+        states[_unit(rel, tops)] = max(states.get(_unit(rel, tops), state), state, key=RANK.get)
         if state != "conflict":
             actions.append((state, rel, data))
             written[rel] = lock.digest(data)
@@ -300,7 +359,7 @@ def _write(project: Project, old: dict, files: dict[str, bytes], blocks: dict[st
         if now is None:
             continue
         state = "prune" if lock.digest(now) == was else "conflict"
-        states[_unit(rel)] = max(states.get(_unit(rel), state), state, key=RANK.get)
+        states[_unit(rel, tops)] = max(states.get(_unit(rel, tops), state), state, key=RANK.get)
         if state == "prune":
             actions.append(("prune", rel, None))
         else:

@@ -163,7 +163,10 @@ def _check_toml(name: str, path: Path, data: dict, known_tables: set[str] | None
             warnings.append(f"{tilde(path)}:{line_of(text, table)}: unknown {name[:-2]} [{table}]")
         for key, value in values.items():
             kind = LAYERED_KEYS[name].get(key)
-            if kind is None:
+            if key.startswith("project_") and path.name.endswith(".local.toml"):
+                warnings.append(f"{tilde(path)}:{line_of(text, table, key)}: `{key}` is read from core's "
+                                f"{name}.toml only, so a project's files don't depend on a machine")
+            elif kind is None:
                 warnings.append(f"{tilde(path)}:{line_of(text, table, key)}: unknown key `{key}` in [{table}]")
             elif not isinstance(value, kind):
                 want = "true or false" if kind is bool else "a string"

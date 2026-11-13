@@ -38,8 +38,9 @@ in the current directory, under its own `Project <dir> (brainrc.toml)` heading.
   `AGENTS.md` themselves, so they get nothing else. A tool that can't read them names its own
   places in `harnesses.toml` (`project_skills`, `project_instructions`). Today that is Claude Code
   only: skills are copied to `.claude/skills/` too, and `CLAUDE.md` gets a marked block holding
-  `@AGENTS.md`. `harnesses` in `brainrc.toml` picks which tools get their own files; drop one and
-  its files and block are removed.
+  `@AGENTS.md`, unless it already reads `AGENTS.md` (a link to it, or its own `@AGENTS.md` line).
+  `harnesses` in `brainrc.toml` picks which tools get their own files; drop one and its files and
+  block are removed.
 
 | Tool | Skills | Instructions |
 | --- | --- | --- |

@@ -176,6 +176,8 @@ def project(root: Path, force: bool = False) -> int:
                                {r: lock.digest(b.encode("utf-8")) for r, b in blocks.items()})
         errors += [f"{rel}: a directory on its way is a link; brainrc won't write through it"
                    for rel in sorted({*files, *blocks}) if _linked(proj.root, rel)]
+        errors += [f"{rel}: is a link; brainrc won't write through it" for rel in sorted(blocks)
+                   if (proj.root / rel).is_symlink()]
     if errors:
         return _fail(errors, stage, f"Run `apply` to install the current packs and relock, or restore {lock.NAME}.")
     if not force:

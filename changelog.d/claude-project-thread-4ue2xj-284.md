@@ -8,4 +8,5 @@ bump: patch
   defaults to the project when there is a `brainrc.toml`, else the user scope; `--scope` picks one.
 - `install --frozen` won't overwrite a file in the repo that brainrc didn't write (its hash is
   neither the lock's nor what brainrc last wrote there on this machine) or a hand-edited block:
-  it names each one and writes nothing. `--force` overwrites them.
+  it names each one and writes nothing. `--force` overwrites them. It never writes through an
+  `AGENTS.md` that is a link, even with `--force`.

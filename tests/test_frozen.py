@@ -211,6 +211,14 @@ class ProjectFrozenTest(FrozenCase):
         self.frozen(force=True)
         self.assertIn("- Team rule.", agents.read_text())
 
+    def test_a_linked_block_file_fails_even_when_forced(self):
+        other = self.second_checkout()
+        (other / "notes.md").write_text("someone else's file\n")
+        (other / "AGENTS.md").symlink_to("notes.md")
+        out = self.frozen(code=1, force=True)
+        self.assertIn("AGENTS.md: is a link; brainrc won't write through it", out)
+        self.assertEqual((other / "notes.md").read_text(), "someone else's file\n")
+
     def test_files_brainrc_wrote_before_are_updated_without_force(self):
         other = self.second_checkout()
         self.frozen()  # this machine now has the old files, written by brainrc

@@ -244,9 +244,10 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True, moved: frozens
         return 1
     if apply and permissions.widens(perms) and not permissions.confirm(perms, yes, ""):
         return 1
-    if apply:  # a note, not a change: status stays "Everything in sync."
-        mcp_pins.report_unpinned({n: s for sync in mcp_plan(srcs) if sync.harness == "claude"
-                                  for n, s in sync.servers.items()})
+    claude_mcp = [sync for sync in mcp_plan(srcs) if sync.harness == "claude"]  # none under --only codex
+    if apply and claude_mcp:  # a note, not a change: status stays "Everything in sync."
+        mcp_pins.prune(claude_mcp[0].servers)
+        mcp_pins.report_unpinned(claude_mcp[0].servers)
 
     if apply:
         rendered = rendered_instructions()

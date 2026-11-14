@@ -19,6 +19,7 @@ import hashlib
 import json
 import os
 import queue
+import re
 import signal
 import subprocess
 import sys
@@ -27,6 +28,9 @@ import time
 from pathlib import Path
 
 BUDGET = 4.0  # seconds for every server together; the fragment gives the hook 10
+MISSES = 3  # sessions in a row a server went unchecked before the hook says so
+SHOWN = 10  # tool names shown per server; the rest are counted
+SAFE_NAME = re.compile(r"[A-Za-z0-9_.-]{1,64}")
 PROTOCOL = "2025-06-18"
 PINS, LAST = "mcp-pins.json", "mcp-pins.last.json"
 
@@ -54,11 +58,10 @@ def _stop(proc: subprocess.Popen) -> None:
             proc.kill()
     except OSError:
         pass
-    for pipe in (proc.stdin, proc.stdout):
-        try:
-            pipe.close()
-        except OSError:
-            pass
+    try:  # stdout is the reader thread's to close: closing it here can block on a helper's pipe
+        proc.stdin.close()
+    except OSError:
+        pass
     try:
         proc.wait(timeout=1)
     except subprocess.TimeoutExpired:
@@ -70,12 +73,14 @@ def list_tools(command: str, args: list[str], timeout: float) -> list[dict]:
     TimeoutError or ValueError; the server is stopped either way."""
     deadline = time.monotonic() + timeout
     proc = subprocess.Popen([command, *args], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                            stderr=subprocess.DEVNULL, start_new_session=os.name == "posix")
+                            stderr=subprocess.DEVNULL, start_new_session=os.name == "posix",
+                            cwd=Path.home())  # the same for pin-mcp and the hook, whatever the project
     lines: queue.Queue = queue.Queue()
 
     def read() -> None:
-        for line in proc.stdout:
-            lines.put(line)
+        with proc.stdout:
+            for line in proc.stdout:
+                lines.put(line)
         lines.put(None)
 
     threading.Thread(target=read, daemon=True).start()
@@ -99,10 +104,15 @@ def list_tools(command: str, args: list[str], timeout: float) -> list[dict]:
                 msg = json.loads(line)
             except ValueError:
                 continue  # a server's stray log line on stdout
-            if isinstance(msg, dict) and msg.get("id") == id_:
-                if "error" in msg:
-                    raise ValueError(f"error from the server: {msg['error'].get('message', msg['error'])}")
-                return msg.get("result") or {}
+            if not isinstance(msg, dict) or msg.get("id") != id_ or "method" in msg:
+                continue  # a notification, or a request from the server that happens to use our id
+            if "error" in msg:
+                err = msg["error"]
+                raise ValueError(f"error from the server: {err.get('message', err) if isinstance(err, dict) else err}")
+            result = msg.get("result")
+            if not isinstance(result, dict):
+                raise ValueError("a malformed answer from the server")
+            return result
 
     try:
         send({"id": 1, "method": "initialize", "params": {
@@ -114,8 +124,12 @@ def list_tools(command: str, args: list[str], timeout: float) -> list[dict]:
         while True:
             send({"id": id_, "method": "tools/list", "params": {"cursor": cursor} if cursor else {}})
             result = answer(id_)
+            if not isinstance(result.get("tools", []), list):
+                raise ValueError("a malformed tools list from the server")
             tools += [t for t in result.get("tools", []) if isinstance(t, dict) and isinstance(t.get("name"), str)]
             cursor, id_ = result.get("nextCursor"), id_ + 1
+            if cursor is not None and not isinstance(cursor, str):
+                raise ValueError("a malformed cursor from the server")
             if not cursor:
                 return tools
     except (BrokenPipeError, ConnectionError) as e:
@@ -154,17 +168,39 @@ def check(servers: dict, budget: float) -> dict[str, list[str] | str]:
     return {n: results.get(n, "timeout") for n in sorted(servers) if isinstance(servers[n], dict)}
 
 
-def message(results: dict) -> dict | None:
+def _shown(change: str) -> str:
+    """`changed <name>` with a name the server chose: shown only if it is a plain identifier,
+    since it lands in the model's context under brainrc's warning."""
+    verb, _, name = change.partition(" ")
+    return f"{verb} {name}" if SAFE_NAME.fullmatch(name) else f"{verb} a tool with an unusual name"
+
+
+def message(results: dict, unchecked: list[str] | tuple = ()) -> dict | None:
+    """The hook's output: a warning to the session and the model for changed tools, and a note
+    to the session alone for servers that went unchecked MISSES sessions in a row."""
     changed = {n: r for n, r in results.items() if isinstance(r, list) and r}
-    if not changed:
+    lines = []
+    if changed:
+        parts = []
+        for n, r in changed.items():
+            more = f", and {len(r) - SHOWN} more" if len(r) > SHOWN else ""
+            parts.append(f"{n}: {', '.join(map(_shown, r[:SHOWN]))}{more}")
+        what = "; ".join(parts)
+        lines.append(f"brainrc: MCP tools changed since you approved them ({what}). Review and "
+                     "re-approve with `brainrc pin-mcp`.")
+    if unchecked:
+        lines.append(f"brainrc couldn't check the tools of {', '.join(unchecked)} in the last {MISSES} "
+                     f"sessions (no answer within {BUDGET:g}s, or it didn't start). `brainrc pin-mcp` "
+                     "shows why.")
+    if not lines:
         return None
-    what = "; ".join(f"{n}: {', '.join(r)}" for n, r in changed.items())
-    return {"systemMessage": f"brainrc: MCP tools changed since you approved them ({what}). "
-                             "Review and re-approve with `brainrc pin-mcp`.",
-            "hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": (
-                f"brainrc warning: these MCP tools changed since the user approved them: {what}. Their "
-                "definitions may now ask for something else. Don't call them until the user has "
-                "reviewed them and run `brainrc pin-mcp`.")}}
+    out: dict = {"systemMessage": " ".join(lines)}
+    if changed:
+        out["hookSpecificOutput"] = {"hookEventName": "SessionStart", "additionalContext": (
+            f"brainrc warning: these MCP tools changed since the user approved them: {what}. Their "
+            "definitions may now ask for something else. Don't call them until the user has "
+            "reviewed them and run `brainrc pin-mcp`.")}
+    return out
 
 
 def main() -> int:
@@ -178,12 +214,19 @@ def main() -> int:
     if not isinstance(servers, dict) or not servers:
         return 0
     results = check(servers, BUDGET)
-    out = message(results)
+    try:
+        before = json.loads((home / LAST).read_text(encoding="utf-8")).get("misses", {})
+    except (OSError, ValueError, AttributeError):
+        before = {}
+    misses = {n: (before.get(n, 0) if isinstance(before.get(n), int) else 0) + 1
+              for n, r in results.items() if isinstance(r, str)}
+    out = message(results, sorted(n for n, k in misses.items() if k % MISSES == 0))
     if out:
         print(json.dumps(out))
     try:
         record = {"elapsed_ms": round((time.monotonic() - start) * 1000),
-                  "servers": {n: r if isinstance(r, str) else ("changed" if r else "same") for n, r in results.items()}}
+                  "servers": {n: r if isinstance(r, str) else ("changed" if r else "same") for n, r in results.items()},
+                  "misses": misses}
         tmp = home / (LAST + ".tmp")
         tmp.write_text(json.dumps(record, indent=2) + "\n")
         tmp.replace(home / LAST)

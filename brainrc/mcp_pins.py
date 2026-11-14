@@ -15,6 +15,7 @@ from pathlib import Path
 from . import config
 from .config import ConfigError, settings_home, tilde
 from .mcp import check_servers, mcp_plan
+from .packs import printable
 from .sources import sources
 
 HOOK = Path("overrides") / "claude" / "hooks" / "check_mcp_pins.py"
@@ -85,6 +86,20 @@ def report_unpinned(servers: dict[str, dict]) -> None:
         print(f"{'MCP-PIN':9} {note}; `{config.command('pin-mcp')}` approves them")
 
 
+def _shown(s: dict) -> str:
+    return printable(" ".join([str(s.get("command", "?")), *map(str, s.get("args", []))]))
+
+
+def prune(servers: dict[str, dict]) -> None:
+    """apply: drop the pins of servers it no longer installs, so the hook stops starting them."""
+    pins = read()
+    gone = sorted(set(pins) - {n for n, s in servers.items() if "command" in s})
+    if gone:
+        write({n: p for n, p in pins.items() if n not in gone})
+        for name in gone:
+            print(f"{'UNPIN':9} {name}: no longer installed")
+
+
 def _confirm(added: int, yes: bool) -> bool:
     from .permissions import interactive
     if yes:
@@ -140,8 +155,12 @@ def cmd_pin_mcp(names: list[str], yes: bool = False) -> int:
         lines += [("~", n, "  (definition changed)") for n in sorted(set(hashes) & set(was)) if hashes[n] != was[n]]
         lines += [("-", n, "") for n in sorted(set(was) - set(hashes))]
         for sign, n, why in sorted(lines, key=lambda x: x[1]):
-            print(f"{'PIN':9} {name:9} {sign} tool   {n}{why}")
-        if not lines and spec(s) == {k: old[k] for k in SPEC if k in old}:
+            print(f"{'PIN':9} {name:9} {sign} tool   {printable(n)}{why}")
+        before = {k: old[k] for k in SPEC if k in old}
+        if old and before != spec(s):  # the same tools from another command is still a new approval
+            print(f"{'PIN':9} {name:9} ~ command {_shown(before)} -> {_shown(spec(s))}")
+            approve += 1
+        elif not lines:
             print(f"{'CURRENT':9} {name}: {len(hashes)} tool(s), unchanged")
         approve += sum(sign != "-" for sign, _, _ in lines)
         new[name] = {**spec(s), "tools": hashes}

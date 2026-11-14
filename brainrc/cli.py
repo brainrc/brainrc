@@ -31,7 +31,8 @@ from .sources import (
 from .init import cmd_init
 from .uninstall import cmd_uninstall, finish_purge
 from .opencode import rendered_agents
-from .packs import adopt_record, describe, fetch_pack, git_packs, needs_fetch
+from .packs import adopt_record, describe, fetch_pack, git_packs, pinned, to_fetch
+from . import update as pin_update
 from .plan import hooks_copy_current, invalid_fragments, link_target, old_root, plan, stale_hooks_copy
 from .mcp import check_servers, mcp_change, mcp_plan, record_owned, write_mcp
 from .settings import FileChanged, read_current, settings_change, write_settings
@@ -144,12 +145,16 @@ def _old_roots(srcs, roots: list[Path]) -> tuple[list[Path], list[Path]]:
     return trusted, list(dict.fromkeys(prune))
 
 
-def _sync(apply: bool, repair: bool = False, relock: bool = True) -> int:
+def _sync(apply: bool, repair: bool = False, relock: bool = True, moved: frozenset[str] = frozenset()) -> int:
+    """moved: git packs `update` just refetched, which keep the commit they are at; every other
+    git pack is held at the commit brainrc.lock pins (#288)."""
     try:
         for w in check_config():
             print(f"WARN {w}")
         packs = git_packs()
-        pending = [(key, cfg, root) for key, cfg, root in packs if needs_fetch(cfg, root)]
+        locked = lock.read(lock.user_lock_path()) if relock else None
+        pins = {key: None if key in moved else pinned(locked, key, cfg) for key, cfg, _ in packs}
+        pending = [(key, cfg, root) for key, cfg, root in packs if to_fetch(cfg, root, pins[key])]
     except ConfigError as e:
         print(f"ERROR {e}")
         return 1
@@ -157,14 +162,16 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True) -> int:
         for key, cfg, root in packs:
             adopt_record(cfg, root)
     for key, cfg, root in pending:
-        print(describe(key, cfg))
+        print(describe(key, cfg, pins[key]))
         if apply:
             try:
-                fetch_pack(key, cfg, root)
+                fetch_pack(key, cfg, root, pins[key])
             except ConfigError as e:
                 print(f"ERROR {e}")
+                gone = (f" If they're right, the locked commit may be gone from the remote: "
+                        f"`{config.command('update ' + key)}` moves the pin.") if pins[key] else ""
                 print(f"\nNothing written. Check the pack's `git` and `ref`, then re-run, or set "
-                      f"`enabled = false` for [{key}] in packs.local.toml.")
+                      f"`enabled = false` for [{key}] in packs.local.toml.{gone}")
                 return 1
     try:
         srcs = sources()
@@ -339,15 +346,14 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True) -> int:
 
 
 def _user_lock(srcs, apply: bool) -> int:
-    """apply writes the user scope's brainrc.lock; both report a ref that moved to another commit."""
+    """apply writes the user scope's brainrc.lock. Its git packs are already at the commits it
+    pins, or at the ones `update` moved them to, so no commit moves here."""
     path = lock.user_lock_path()
     try:
-        old = lock.read(path)
         new = lock.user_lock(srcs)
     except ConfigError as e:
         print(f"ERROR {e}")
         return 1
-    lock.report_moved(old, new, "apply relocks it" if not apply else f"relocked in {tilde(path)}")
     if apply:
         lock.write(path, new)
     return 0
@@ -379,17 +385,22 @@ def cmd_check(scope: str | None = None) -> int:
     return drift.project(root) if scope == "project" else drift.user()
 
 
-def cmd_update() -> int:
-    """Refetch every git pack at its `ref`, then apply."""
-    try:
-        for key, cfg, root in git_packs():
-            print(describe(key, cfg))
-            fetch_pack(key, cfg, root)
-    except ConfigError as e:
-        print(f"ERROR {e}")
-        print("\nNothing applied. Fix it, then re-run update.")
-        return 1
-    return cmd_sync(apply=True)
+def cmd_update(names: list[str] | None = None) -> int:
+    """Move git packs (all, or the ones named) to what their `ref` resolves to now: refetch, show
+    the commits and installed files that change, then apply and relock (brainrc/update.py)."""
+    def run() -> int:  # under apply.lock, so an apply can't put a clone back between fetch and relock
+        moved = pin_update.fetch(names or [])
+        if isinstance(moved, int):
+            return moved
+        return _update_sync(*moved)
+
+    return _locked(run)
+
+
+def _update_sync(user: frozenset[str], proj: frozenset[str]) -> int:
+    code = _sync(True, moved=user)
+    root = find_project()
+    return max(code, project_sync(root, True, moved=proj)) if root else code
 
 
 def refuse_unmigrated() -> int | None:
@@ -487,7 +498,13 @@ def _parser() -> argparse.ArgumentParser:
             "MCP servers (mcp/servers.toml) into its settings files.")
     p.add_argument("--only", action="append", type=_harness_list, metavar="HARNESS", help=only_help)
     p.add_argument("--repair", action="store_true", help=repair_help)
-    add("update", "refetch packs named by `git` URL at their `ref`, then apply")
+    p = add("update", "move git packs to what their `ref` points at now, show what changes, then apply",
+            "Refetch git packs (every one, or the ones named) at their `ref`, print the commits and "
+            "installed files that change between the commit brainrc.lock pins and the new one, then "
+            "apply and relock. apply and install keep each git pack at its locked commit, so this is "
+            "the one way a pin moves, apart from editing `git` or `ref`. In a repo with brainrc.toml "
+            "the project's packs of that name move too.")
+    p.add_argument("packs", nargs="*", metavar="PACK", help="the packs to move (default: every git pack)")
     p = add("install", "apply; with --frozen, install exactly what brainrc.lock records",
             "Without --frozen, the same as apply. With --frozen, install exactly what brainrc.lock "
             "records: each git pack at its locked commit (never its ref), every file checked against "
@@ -576,7 +593,7 @@ def _dispatch(argv: list[str]) -> int:
     if cmd == "doctor":
         return cmd_doctor()
     if cmd == "update":
-        return cmd_update()
+        return cmd_update(args.packs)
     if cmd == "check":
         return cmd_check(args.scope)
     if cmd == "install":

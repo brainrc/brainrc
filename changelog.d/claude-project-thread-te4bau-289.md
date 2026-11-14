@@ -1,5 +1,5 @@
 ---
-bump: patch
+bump: minor
 ---
 - Permission diff (#289): `brainrc.lock` now records what each pack can do: the hooks it adds, its
   MCP servers, its tool grants (agents' `tools`, skills' `allowed-tools`, settings it sets) and the
@@ -9,4 +9,5 @@ bump: patch
   nothing. A machine's first lock lists them once and records them as the baseline; a lock from
   before this release counts as the baseline while the pack's files are unchanged. `check` fails
   when a lock's permission record doesn't match its packs. The lock spec gains
-  `[packs.<key>.permissions]` (additive; schema and fixtures updated).
+  `[packs.<key>.permissions]` and goes to version 2: brainrc reads versions 1 and 2 and writes 2, so
+  brainrc 0.7.6 and older refuse a new lock with "upgrade brainrc" instead of a schema error.

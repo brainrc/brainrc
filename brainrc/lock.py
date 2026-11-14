@@ -13,7 +13,7 @@ from .sources import Source, core_version, installed_items, markdown_files, tree
 
 NAME = "brainrc.lock"
 HEADER = "# brainrc.lock: written by brainrc. Don't edit it by hand."
-VERSION = 1
+VERSION = 2  # 2 adds [packs.<key>.permissions] (#289); brainrc reads 1 and 2 and writes 2
 BARE_KEY = re.compile(r"[A-Za-z0-9_-]+")
 PACK_KEYS = ("git", "ref", "commit", "path")
 ESCAPES = {'"': '\\"', "\\": "\\\\", "\b": "\\b", "\t": "\\t", "\n": "\\n", "\f": "\\f", "\r": "\\r"}
@@ -77,7 +77,7 @@ def loads(text: str, where: str = NAME) -> dict:
         raise toml_error(Path(where), text, e) from None
     if isinstance(data.get("version"), int) and not isinstance(data["version"], bool) and data["version"] > VERSION:
         raise ConfigError(f"{where}: lock version {data['version']} is newer than this brainrc reads "
-                          f"({VERSION}); upgrade brainrc")
+                          f"({VERSION}); upgrade brainrc to the version that wrote it, {data.get('brainrc', '?')}, or later")
     problems = schema.errors(data, schema.load("brainrc.lock"))
     if problems:
         raise ConfigError(f"{where}: " + "; ".join(problems))

@@ -1,5 +1,5 @@
 # brainrc.lock: written by brainrc. Don't edit it by hand.
-version = 1
+version = 2
 brainrc = "0.7.7"
 scope = "user"
 

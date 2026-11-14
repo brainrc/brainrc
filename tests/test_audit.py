@@ -77,11 +77,42 @@ class PackAuditTest(PinCase):
         self.assertIsNone(data["lock"])
         self.assertNotIn("permissions", data["sources"]["acme"])
 
-    def test_a_secret_in_the_server_url_is_not_printed(self):
-        self.add_servers('[servers.acme-docs]\nurl = "https://user:s3cret@docs.acme.example/mcp"\n')
+    def test_a_secret_in_the_server_url_or_args_is_not_printed(self):
+        self.add_servers('[servers.acme-docs]\nurl = "https://user:s3cret@docs.acme.example/mcp?api_key=k3y"\n\n'
+                         '[servers.acme-cli]\ncommand = "acme"\nargs = ["serve", "--token", "t0ken", "--api-key=k3y2"]\n')
         code, out = quiet(brainrc.main, ["brainrc", "audit", "--json"])
-        self.assertNotIn("s3cret", out)
-        self.assertEqual(json.loads(out)["tools"]["claude"][-1]["server"], {"url": "https://docs.acme.example/mcp"})
+        for secret in ("s3cret", "k3y", "t0ken"):
+            self.assertNotIn(secret, out)
+        data = json.loads(out)
+        self.assertEqual(self.entry(data, "claude", "mcp", "acme-docs")["server"], {"url": "https://docs.acme.example/mcp?…"})
+        self.assertEqual(self.entry(data, "claude", "mcp", "acme-cli")["server"]["args"], ["serve", "--token", "…", "--api-key=…"])
+
+    def test_a_server_of_yours_with_the_same_name_is_not_counted_as_installed(self):
+        claude_json = self.home / ".claude.json"
+        data = json.loads(claude_json.read_text())
+        owned = self.settings_home / "mcp-owned.json"
+        record = json.loads(owned.read_text())
+        record[str(claude_json)] = []  # as if apply had found your own acme-local there and left it
+        owned.write_text(json.dumps(record))
+        self.assertFalse(self.entry(self.audit_json(), "claude", "mcp", "acme-local")["installed"])
+        self.assertIn("acme-local", data["mcpServers"])
+
+    def test_a_rule_added_since_apply_is_not_installed(self):
+        (self.pack / "rules/60-acme-new.md").write_text("# New\n\n- A new acme rule.\n")
+        data = self.audit_json()
+        self.assertFalse(self.entry(data, "claude", "rule", "60-acme-new")["installed"])
+        self.assertTrue(self.entry(data, "claude", "rule", "50-acme")["installed"])
+
+    def test_cursor_hooks_and_hooks_without_a_command_are_listed(self):
+        fragment = {"hooks": {"Stop": [{"hooks": [{"type": "prompt", "prompt": "Check the work."}]}]}}
+        (self.pack / "overrides/claude/settings.fragment.json").write_text(json.dumps(fragment))
+        data = self.audit_json()
+        self.entry(data, "claude", "hook", "Stop [*] prompt")
+        self.entry(data, "cursor", "hook", "beforeShellExecution [*] guard.py")  # Cursor lists hooks flat
+
+    def test_the_home_directory_is_replaced_only_as_a_whole_path(self):
+        home = Path.home().as_posix()
+        self.assertEqual(audit._scrub([f"{home}/x", f"{home}ice/y", home]), ["~/x", f"{home}ice/y", "~"])
 
 
 class GitPackAuditTest(GitLockCase):

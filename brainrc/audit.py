@@ -7,22 +7,26 @@ name or password, and an MCP server's environment is named, never read.
 """
 from __future__ import annotations
 
+import functools
 import json
 import re
 from pathlib import Path
 
 from . import config, lock, mcp_pins
 from .config import ConfigError, load_harnesses, tilde
-from .mcp import _registry, check_servers, mcp_plan
+from .mcp import _owned, _registry, check_servers, mcp_plan
 from .packs import head
 from .plan import Link, plan, render_fragment
-from .sources import Source, core_version, item_name, markdown_files, sources, tree_files
+from .sources import Source, core_version, item_name, local_rules, markdown_files, rule_text, sources, tree_files
 
 KIND = {"skills": "skill", "agents": "agent", "commands": "command"}
 ORDER = ("skill", "agent", "command", "rule", "hook", "mcp")
 SCRIPT = re.compile(r"\{\{hooks_dir\}\}/([^\"'\s]+)")
+SECRET_FLAG = re.compile(r"(?i)^-{1,2}[\w-]*(token|key|secret|passw|auth|credential)[\w-]*$")
+SECRET_PAIR = re.compile(r"(?i)^(-{1,2}[\w-]*(?:token|key|secret|passw|auth|credential)[\w-]*=).+$")
 
 
+@functools.lru_cache(maxsize=None)
 def _hash(path: Path) -> str:
     """A file's sha256, or a directory's: the sha256 of each file's path and hash, one per line."""
     if path.is_dir():
@@ -82,18 +86,17 @@ def _items(harness: str, links: list[Link], srcs: list[Source], roots: list[Path
     return found
 
 
-def _rules(srcs: list[Source], installed: bool, dest: str) -> list[dict]:
-    """Every rule in the instructions file the harness loads, as render_instructions joins them."""
-    found, local = [], []
-    for src in srcs:
-        for p in markdown_files("rules", src):
-            found.append({"kind": "rule", "name": p.stem, "source": src.key or src.name, "file": src.rel(p),
-                          "hash": _hash(p), "path": dest, "installed": installed})
-        rules_dir = (config.local_dir() if src.is_core else src.root) / "rules"
-        local += sorted(rules_dir.glob("*.local.md")) if rules_dir.is_dir() else []
-    found += [{"kind": "rule", "name": p.stem, "source": "local", "file": tilde(p), "hash": _hash(p),
-               "path": dest, "installed": installed} for p in local]
-    return found
+def _rules(srcs: list[Source], linked: bool, dest: str) -> list[dict]:
+    """Every rule in the instructions file the harness loads, as render_instructions joins them;
+    installed when the link is in place and the rendered file holds the rule's text."""
+    try:
+        rendered = config.rendered_instructions().read_text(encoding="utf-8") if linked else ""
+    except OSError:
+        rendered = ""
+    rules = [(src.key or src.name, src.rel(p), p) for src in srcs for p in markdown_files("rules", src)]
+    rules += [("local", tilde(p), p) for p in local_rules(srcs)]
+    return [{"kind": "rule", "name": p.stem, "source": source, "file": file, "hash": _hash(p), "path": dest,
+             "installed": bool(rendered) and rule_text(p) in rendered} for source, file, p in rules]
 
 
 def _hooks(harness: str, merges, srcs: list[Source]) -> list[dict]:
@@ -116,14 +119,20 @@ def _hooks(harness: str, merges, srcs: list[Source]) -> list[dict]:
             except (OSError, ValueError, ConfigError):
                 continue
             for event, groups in (raw.get("hooks") or {}).items():
-                for g, group in enumerate(groups):
-                    for h, hook in enumerate(group.get("hooks", [])):
-                        command = str(hook.get("command", ""))
+                for g, group in enumerate(groups if isinstance(groups, list) else []):
+                    if not isinstance(group, dict):
+                        continue
+                    nested = isinstance(group.get("hooks"), list)  # Claude Code nests; Cursor lists each hook
+                    for h, hook in enumerate(group["hooks"] if nested else [group]):
+                        if not isinstance(hook, dict):
+                            continue
+                        command = str(hook.get("command") or hook.get("type", "?"))
                         script = SCRIPT.search(command)
                         path = fragment.parent / "hooks" / script[1] if script else None
-                        done = rendered["hooks"][event][g]["hooks"][h]["command"]
+                        done_group = rendered["hooks"][event][g]
+                        done = str((done_group["hooks"][h] if nested else done_group).get("command") or command)
                         found.append({"kind": "hook", "name": f"{event} [{group.get('matcher', '*')}] "
-                                      f"{script[1] if script else command}",
+                                      f"{script[1] if script else _redact_cmd(command)}",
                                       "source": src.key or src.name, "file": src.rel(path if path and path.is_file() else fragment),
                                       "hash": _hash(path) if path and path.is_file() else lock.digest(command.encode()),
                                       "path": tilde(merge.dest), "installed": json.dumps(done)[1:-1] in current})
@@ -132,23 +141,23 @@ def _hooks(harness: str, merges, srcs: list[Source]) -> list[dict]:
 
 def _servers(harness: str, srcs: list[Source]) -> list[dict]:
     found = []
-    pins = mcp_pins.read()
+    pins, owned = mcp_pins.read(), _owned()
     defined = {name: src for src in srcs for name in _registry(src)}
     for sync in mcp_plan(srcs):
         if sync.harness != harness:
             continue
-        try:
-            current = sync.dest.read_text(encoding="utf-8")
-        except OSError:
-            current = ""
         for name, s in sorted(sync.servers.items()):
             src = defined.get(name)
-            spec = mcp_pins.spec(s) if "command" in s else {"url": lock.clean_url(s["url"])}
+            spec = mcp_pins.spec(s) if "command" in s else {"url": s["url"]}
+            shown = {**spec, "args": [*_redact(spec["args"])]} if spec.get("args") else dict(spec)
+            if "url" in shown:
+                shown["url"] = _bare_url(shown["url"])
             entry = {"kind": "mcp", "name": name, "source": (src.key or src.name) if src else "?",
                      "file": src.rel(src.root / "mcp/servers.toml") if src else "",
                      "hash": lock.digest(json.dumps(spec, sort_keys=True).encode()),
-                     "path": tilde(sync.dest), "installed": f'"{name}"' in current or f"[mcp_servers.{name}]" in current,
-                     "server": spec}
+                     # brainrc's record of the servers it wrote: a server of yours with the name doesn't count
+                     "path": tilde(sync.dest), "installed": name in owned.get(str(sync.dest), []),
+                     "server": shown}
             pin = pins.get(name)
             if "command" not in s:
                 entry["pin"] = "http: not pinned"
@@ -161,11 +170,39 @@ def _servers(harness: str, srcs: list[Source]) -> list[dict]:
     return found
 
 
+def _bare_url(url: str) -> str:
+    """A URL without user name, password, query or fragment: where tokens ride along."""
+    url = lock.clean_url(url)
+    base = re.split(r"[?#]", url, maxsplit=1)[0]
+    return base + ("?…" if base != url else "")
+
+
+def _redact(args: list[str]):
+    """Arguments with the value of a token, key, secret, password or auth flag shown as `…`."""
+    hide = False
+    for a in args:
+        if hide:
+            yield "…"
+            hide = False
+        elif m := SECRET_PAIR.match(a):
+            yield m[1] + "…"
+        else:
+            hide = bool(SECRET_FLAG.match(a))
+            yield a
+
+
+def _redact_cmd(command: str) -> str:
+    return " ".join(_redact(command.split(" ")))
+
+
 def _scrub(value):
-    """Every string with the home directory written as ~ (an MCP server's args, a path pack's path)."""
-    home = Path.home().as_posix()
+    """Every string with the home directory written as ~ (an MCP server's args, a path pack's path),
+    in either separator, and only where the home directory is a whole path prefix."""
+    homes = {Path.home().as_posix(), str(Path.home())} - {"", "/", "\\"}
     if isinstance(value, str):
-        return value.replace(home, "~") if home not in ("", "/") else value
+        for home in sorted(homes, key=len, reverse=True):
+            value = re.sub(re.escape(home) + r"(?=[/\\]|$)", "~", value)
+        return value
     if isinstance(value, list):
         return [_scrub(v) for v in value]
     if isinstance(value, dict):
@@ -174,6 +211,7 @@ def _scrub(value):
 
 
 def collect() -> dict:
+    _hash.cache_clear()  # one run's cache: files change between runs
     srcs = sources()
     errors = check_servers(srcs)
     if errors:

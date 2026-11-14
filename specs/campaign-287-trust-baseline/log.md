@@ -75,3 +75,21 @@ Draft PR #354 (base `main`). `validate` and the full suite passed before the pus
   without credentials, env named not read. User scope only.
 - Plan: `brainrc/audit.py` (new) on top of `plan()`, `mcp_plan()` and the lock; `cli.py`; tests in
   `tests/test_audit.py`.
+
+## engine · gh:291 · verified
+Draft PR #355 (base `main`). `validate` and the full suite passed before the push.
+
+## review · code-review (high) on each PR, fixes on the PR they belong to
+- #352: update runs under apply.lock; a broken project config doesn't stop user-scope updates; a
+  new `git`/`ref` isn't reported as rewritten history; update's file lines are printable; a
+  pinned commit that can't be fetched names `update <pack>`. Left for Jacob: project clones are
+  shared per URL and ref, so two projects pinning different commits of one ref take turns.
+- #353: removing a deny/ask rule widens; `sets <key> = <value>`; commands' `allowed-tools` and the
+  validator recorded; YAML list frontmatter; old locks never vouch for MCP servers; frozen
+  install names apply; a refused update restores the clones. Left for Jacob: 0.7.6 rejects a lock
+  with `permissions` (schema error, no upgrade hint); validators run before the question.
+- #354: server requests reusing our id, malformed answers, reader-owned stdout, home cwd, plain
+  tool names only, three-miss note, resume, command changes ask, apply unpins. Left for Jacob: the
+  hook starts its own copy of each server beside Claude Code's.
+- #355: Cursor's flat hooks, hooks without a command, URL query and secret args hidden, whole-path
+  home scrub, rules and servers installed only when really there, one rule-discovery function.

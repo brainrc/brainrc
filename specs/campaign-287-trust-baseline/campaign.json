@@ -42,10 +42,10 @@
       "ref": "gh:291",
       "order": 4,
       "depends_on": [],
-      "status": "in_progress",
+      "status": "in_review",
       "slug": "291-audit",
       "branch": "claude/project-thread-te4bau-291",
-      "pr": null
+      "pr": 355
     }
   ]
 }

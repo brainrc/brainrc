@@ -55,6 +55,15 @@ since brainrc has no network code; `apply` names every stdio server whose tools 
 All three are stdlib Python, tested in `tests/test_hooks.py` and `tests/test_mcp_pins.py`.
 Harness permission modes still apply.
 
+## Auditing what agents load
+
+`brainrc audit` lists, per harness, every skill, agent, command, rule, hook and MCP server brainrc
+puts there: the pack it came from, that pack's commit, the item's sha256 (a directory's is the hash
+of its files' paths and hashes), and whether it's installed now. Then come each pack's permissions
+from `brainrc.lock` and each MCP server's tool pins. `--json` prints the same for a security
+review or a script. It reads only (no network, nothing written); paths under ~ are written with ~,
+URLs lose any user name or password, and server environments are named, never read.
+
 ## Known gaps
 
 The hooks match command text. They catch accidents and skipped gates, not a model (or a

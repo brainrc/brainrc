@@ -51,6 +51,7 @@ from . import check as drift
 from . import lock
 from . import permissions
 from . import mcp_pins
+from .audit import cmd_audit
 
 
 CHANGED_HINT = "(changed during apply; close Claude Code and re-run)"
@@ -550,6 +551,13 @@ def _parser() -> argparse.ArgumentParser:
             "brainrc.toml it checks the project; elsewhere the user scope.")
     p.add_argument("--scope", choices=("user", "project"),
                    help="which lock to check against (default: the project's when there is one)")
+    p = add("audit", "list every skill, agent, rule, hook and MCP server each tool loads, with its "
+            "source, commit and hash (no network, writes nothing)",
+            "List, per harness, every skill, agent, command, rule, hook and MCP server brainrc puts "
+            "there: the pack it came from, that pack's commit, the item's sha256, and whether it is "
+            "installed now. Then each pack's permissions from brainrc.lock and each MCP server's tool "
+            "pins. Paths under ~ are written with ~, and no URL keeps a user name or password.")
+    p.add_argument("--json", action="store_true", help="print it as JSON")
     p = add("uninstall", "remove everything apply put into the harnesses",
             "Remove the links brainrc made (broken ones too), its hooks in each settings file and "
             "the MCP servers it added, then the files and directories that leaves empty. Your own "
@@ -621,6 +629,8 @@ def _dispatch(argv: list[str]) -> int:
         return cmd_update(args.packs, args.yes)
     if cmd == "check":
         return cmd_check(args.scope)
+    if cmd == "audit":
+        return cmd_audit(args.json)
     if cmd == "pin-mcp":
         return _locked(lambda: mcp_pins.cmd_pin_mcp(args.servers, args.yes))
     if cmd == "install":

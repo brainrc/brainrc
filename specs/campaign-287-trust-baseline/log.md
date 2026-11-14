@@ -50,3 +50,28 @@ Draft PR #352 (base `main`). `validate` and the full suite passed before the pus
 - Plan: `brainrc/permissions.py` (new), lock writer arrays, schema `permissions`, `cli.py` and
   `project.py` call the diff before writing, `check.py` compares records; tests in
   `tests/test_permissions.py`, fixtures in `tests/fixtures/lockfile/`.
+
+## engine · gh:289 · verified
+Draft PR #353 (base `main`). `validate` and the full suite passed before the push.
+
+## engine · gh:290 · Spec and Plan (logged under the Campaign gate)
+- Spec: `brainrc pin-mcp` starts each stdio server brainrc installs for Claude Code, lists its
+  tools over stdio JSON-RPC, prints `PIN + ~ -` per tool and, on a yes (or `--yes`), records a
+  sha256 per tool definition in `$BRAINRC_HOME/mcp-pins.json` with the server's command and
+  `env_from` names. A SessionStart (`startup`) hook, `check_mcp_pins.py`, re-lists the pinned
+  servers in parallel within 4 s and warns the session and the model on any change; it fails open
+  and writes `elapsed_ms` to `mcp-pins.last.json` for #299. HTTP servers aren't pinned (no network
+  code). `apply` notes unpinned stdio servers; `status` stays clean.
+- Plan: `brainrc/mcp_pins.py` (new), the hook (new), the fragment entry, `cli.py`; tests in
+  `tests/test_mcp_pins.py` with a fake stdio server.
+
+## engine · gh:290 · verified
+Draft PR #354 (base `main`). `validate` and the full suite passed before the push.
+
+## engine · gh:291 · Spec and Plan (logged under the Campaign gate)
+- Spec: `brainrc audit [--json]` lists per harness every skill, agent, command, rule, hook and MCP
+  server brainrc places, with source, the source's commit, the item's sha256 and whether it's
+  installed, plus the lock's permissions and the MCP pins. Reads only; home paths as ~, URLs
+  without credentials, env named not read. User scope only.
+- Plan: `brainrc/audit.py` (new) on top of `plan()`, `mcp_plan()` and the lock; `cli.py`; tests in
+  `tests/test_audit.py`.

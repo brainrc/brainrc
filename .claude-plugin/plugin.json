@@ -28,6 +28,18 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"${CLAUDE_PLUGIN_ROOT}/overrides/claude/hooks/check_mcp_pins.py\"; [ ! -f \"$f\" ] || python3 \"$f\"",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   }
 }

@@ -56,13 +56,30 @@ in the current directory, under its own `Project <dir> (brainrc.toml)` heading.
   updated or removed as its pack changes. A file brainrc didn't write, or one you changed after
   it was removed from the packs, is a `CONFLICT` and is left alone.
 
-## Moved tags and branches
+## Pinned commits and `update`
 
-`apply` resolves each git pack's `ref` and records the commit; `update` refetches every ref. When
-a ref the lock already has now resolves to another commit (a tag was moved, a branch moved on),
-`apply` and `update` print `MOVED <pack> <ref>: <old> -> <new>` and relock it. `status` never
-fetches, so it reports a move only once this machine's clone has the new commit; it then names
-both commits and writes nothing.
+`apply` resolves each git pack's `ref` once and records the commit in the lock. After that the
+commit is pinned: `apply`, `status` and `install` keep the pack at the lock's commit, on this
+machine and on a teammate's, even when the tag is moved or the branch (or the remote's default
+branch, for a pack with no `ref`) moves on. A clone found at another commit is put back
+(`FETCH <pack> <url> (<ref>, locked at <commit>)`). Changing `git` or `ref` in the config is a
+deliberate move, so the next `apply` fetches the new ref and relocks.
+
+`brainrc update [<pack> ...]` is the one command that moves a pin to what the ref resolves to now.
+It refetches the named packs (every git pack when none is named; in a project, the project's packs
+of that name too) and, before anything is relinked or relocked, prints for each pack:
+
+```
+MOVED     gatework  v0.7.1: 753b9960c5e0 -> 8c41d2f0a9b3  (user scope)
+          commit    8c41d2f Tighten the review checklist
+          added     skills/brainrc-new/SKILL.md
+          changed   skills/brainrc-work/SKILL.md
+```
+
+The commits are the ones between the old pin and the new one (up to 50; an older pin that isn't in
+them is named, as a rewritten history or a longer gap), and the files are the pack's installed files
+whose hash changed. `CURRENT` says nothing moved. Then it runs `apply`, which relocks. A failed fetch
+applies nothing, and the next `apply` puts the pack back at its pin.
 
 ## Installing from the lock
 
@@ -83,7 +100,8 @@ The scope is the project when there is a `brainrc.toml` here or above, else the 
 in `brainrc.toml` the lock doesn't have (or the reverse), a pack file this machine has that hashes
 differently, a file brainrc owns in the repo that was edited, removed or added to, and its block in
 `AGENTS.md`. It uses no network and writes nothing. A git pack not fetched on this machine is checked
-through the repo's files; a tag that moved under a clone is reported as `MOVED` and doesn't fail.
+through the repo's files; a clone at another commit than the lock's is reported as `MOVED` and
+doesn't fail (`apply` puts it back).
 
 ```yaml
 - uses: actions/checkout@v4
@@ -173,6 +191,7 @@ path = "tools/agent-pack"
 | `packs.<key>.commit` | string | The commit that ref resolved to: 40 or 64 lowercase hex digits. Git packs only. |
 | `packs.<key>.path` | string | A path pack's directory as the config wrote it; under the home directory it is written with `~`. Path packs have no `commit`. |
 | `packs.<key>.files` | table | Every installed file of the pack (below): its path in the pack, using `/`, to its hash. |
+| `packs.<key>.permissions` | table | What the pack can do in this scope ([permissions](#permissions)): `hooks`, `mcp`, `tools`, `domains`, each a sorted array of strings, present only when not empty. |
 | `outputs` | table | Project scope: every file `brainrc` wrote into the repo, repo-relative, to its hash. |
 | `blocks` | table | Project scope: files `brainrc` shares with you (`AGENTS.md`): the hash of its marked block. |
 
@@ -190,12 +209,38 @@ directories are skipped.
 **Determinism.** The lock is UTF-8 with `\n` line endings and ends with one newline. The first
 line is the comment above. Then come `version`, `brainrc` and `scope`, in that order. Then one
 `[packs.<key>]` table per pack sorted by key, its keys in the order `git`, `ref`, `commit`, or
-`path`, each followed by its `[packs.<key>.files]` table. Then `[outputs]` and `[blocks]`. Every
+`path`, each followed by its `[packs.<key>.files]` table and its
+`[packs.<key>.permissions]` table (arrays written one string per line, sorted). Then `[outputs]` and `[blocks]`. Every
 table's entries are sorted by key (by Unicode code point). Keys that aren't bare keys
 (`A-Za-z0-9_-`) are written as basic strings. Strings escape `"`, `\` and control characters as
 TOML basic strings do. The lock holds no timestamps, no host or user names, no credentials and
 no absolute path to the home directory.
 
-**Ready for more.** Future keys (pinned commands, permission records) are added inside
+**Ready for more.** Future keys (pinned commands, more permission records) are added inside
 `packs.<key>` or as new top-level tables, with a `version` bump only for a change an old reader
 would misread.
+
+## Permissions
+
+The lock records what each pack can do in its scope, so a pack can't widen it unseen:
+
+| Field | Entries |
+| --- | --- |
+| `hooks` | Each hook its `overrides/<harness>/settings.fragment.json` adds: `<harness> <event> [<matcher>] <command>`. User scope, when the profile installs hooks. Also `brainrc validator <file>` when `pack.toml` names a validator, in both scopes. |
+| `mcp` | Each MCP server in its `mcp/servers.toml`: name, URL or command and arguments, the variables it reads and its harnesses. User scope, `full` profile. |
+| `tools` | Each installed agent's `tools` (an agent without them gets `(every tool)`), each skill's and command's `allowed-tools`, the fragment's `permissions` (`<harness> allow <rule>`, `deny`, `ask`), and any other key it sets with its value (`<harness> sets statusLine = {...}`; a sha256 when over 200 characters). |
+| `domains` | Each host the pack's MCP URLs and `domain:` grants name. |
+
+`status` prints `PERMS <pack> + <kind> <entry>` for what apply would add and `-` for what it would
+remove. `apply` (and `update`, and `install` without `--frozen`) asks before writing anything when
+any entry is added or a `deny` or `ask` rule is removed, and `--yes` accepts them. Without a terminal
+to ask in (CI, a script, a pipe) and without `--yes`, it refuses and writes nothing; there is no
+variable that skips the question. Removing any other entry never asks. When `update` is refused,
+the git packs it moved go back to the commits the lock pins, since the harnesses link into them.
+
+A machine's first lock has nothing to widen from: its permissions are listed once as `PERMS` lines
+and recorded as the baseline. A pack added to an existing lock is a widening. A pack entry in a lock
+written before permissions were recorded has none; it counts as the baseline only while the pack's files
+still hash as that lock says, and never for MCP servers and their hosts, since `mcp/servers.toml`
+isn't among the hashed files. `install --frozen` installs only what the lock records, so it never
+asks and takes no `--yes`: a widening fails it, and `apply` is where to review and accept it.

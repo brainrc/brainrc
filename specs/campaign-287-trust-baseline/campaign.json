@@ -1,0 +1,19 @@
+{
+  "ref": "gh:287",
+  "shape": "ordered",
+  "dependency_source": "none",
+  "started_at": "2026-11-14T05:30:00Z",
+  "delivery": "sequential",
+  "gates": {
+    "campaign": {
+      "presented_at": "2026-11-14T05:30:00Z",
+      "approved_at": "2026-11-14T05:30:00Z"
+    }
+  },
+  "members": [
+    {"ref": "gh:288", "order": 1, "depends_on": [], "status": "in_progress", "slug": "288-pin-git-packs", "branch": "claude/project-thread-te4bau", "pr": null},
+    {"ref": "gh:289", "order": 2, "depends_on": [], "status": "todo", "slug": "289-permission-diff", "branch": "claude/project-thread-te4bau-289", "pr": null},
+    {"ref": "gh:290", "order": 3, "depends_on": [], "status": "todo", "slug": "290-mcp-tool-pins", "branch": "claude/project-thread-te4bau-290", "pr": null},
+    {"ref": "gh:291", "order": 4, "depends_on": [], "status": "todo", "slug": "291-audit", "branch": "claude/project-thread-te4bau-291", "pr": null}
+  ]
+}

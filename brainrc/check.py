@@ -3,8 +3,8 @@
 In a project it checks, in order: brainrc.toml names the packs the lock does, from the same places;
 each pack this machine has (a path pack, or a git clone at the locked commit) hashes as the lock
 says; and every file brainrc owns in the repo, and its block in AGENTS.md, hashes as the lock says.
-A git pack not fetched here is checked only through the repo's files. A tag or branch whose clone
-is now at another commit is reported as MOVED and doesn't fail: the lock still says what to install.
+A git pack not fetched here is checked only through the repo's files. A clone at another commit
+than the lock's is reported as MOVED and doesn't fail: apply and install put it back at the pin.
 """
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ def _pack(key: str, cfg: dict, root: Path, entry: dict, files_of, notes: list[st
         commit = head(root)
         if commit != entry["commit"]:
             lock.report_moved({"packs": {key: entry}}, {"packs": {key: {**entry, "commit": commit or "?"}}},
-                              "install --frozen keeps the lock's")
+                              "apply and install --frozen restore the lock's")
             return [], None
     elif not root.is_dir():
         return [f"pack {key}: no directory at {tilde(root)}"], None

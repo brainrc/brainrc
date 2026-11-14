@@ -56,13 +56,30 @@ in the current directory, under its own `Project <dir> (brainrc.toml)` heading.
   updated or removed as its pack changes. A file brainrc didn't write, or one you changed after
   it was removed from the packs, is a `CONFLICT` and is left alone.
 
-## Moved tags and branches
+## Pinned commits and `update`
 
-`apply` resolves each git pack's `ref` and records the commit; `update` refetches every ref. When
-a ref the lock already has now resolves to another commit (a tag was moved, a branch moved on),
-`apply` and `update` print `MOVED <pack> <ref>: <old> -> <new>` and relock it. `status` never
-fetches, so it reports a move only once this machine's clone has the new commit; it then names
-both commits and writes nothing.
+`apply` resolves each git pack's `ref` once and records the commit in the lock. After that the
+commit is pinned: `apply`, `status` and `install` keep the pack at the lock's commit, on this
+machine and on a teammate's, even when the tag is moved or the branch (or the remote's default
+branch, for a pack with no `ref`) moves on. A clone found at another commit is put back
+(`FETCH <pack> <url> (<ref>, locked at <commit>)`). Changing `git` or `ref` in the config is a
+deliberate move, so the next `apply` fetches the new ref and relocks.
+
+`brainrc update [<pack> ...]` is the one command that moves a pin to what the ref resolves to now.
+It refetches the named packs (every git pack when none is named; in a project, the project's packs
+of that name too) and, before anything is relinked or relocked, prints for each pack:
+
+```
+MOVED     gatework  v0.7.1: 753b9960c5e0 -> 8c41d2f0a9b3  (user scope)
+          commit    8c41d2f Tighten the review checklist
+          added     skills/brainrc-new/SKILL.md
+          changed   skills/brainrc-work/SKILL.md
+```
+
+The commits are the ones between the old pin and the new one (up to 50; an older pin that isn't in
+them is named, as a rewritten history or a longer gap), and the files are the pack's installed files
+whose hash changed. `CURRENT` says nothing moved. Then it runs `apply`, which relocks. A failed fetch
+applies nothing, and the next `apply` puts the pack back at its pin.
 
 ## Installing from the lock
 
@@ -83,7 +100,8 @@ The scope is the project when there is a `brainrc.toml` here or above, else the 
 in `brainrc.toml` the lock doesn't have (or the reverse), a pack file this machine has that hashes
 differently, a file brainrc owns in the repo that was edited, removed or added to, and its block in
 `AGENTS.md`. It uses no network and writes nothing. A git pack not fetched on this machine is checked
-through the repo's files; a tag that moved under a clone is reported as `MOVED` and doesn't fail.
+through the repo's files; a clone at another commit than the lock's is reported as `MOVED` and
+doesn't fail (`apply` puts it back).
 
 ```yaml
 - uses: actions/checkout@v4

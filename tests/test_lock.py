@@ -75,7 +75,7 @@ class UserLockTest(GitLockCase):
         self.status()
         self.assertFalse(self.user_lock.exists())
 
-    def test_a_moved_tag_is_relocked_by_update_and_reported_by_status(self):
+    def test_a_moved_tag_is_relocked_by_update_only(self):
         self.apply()
         old_text = self.user_lock.read_text()
         a, b = rev(self.bare, "v1"), rev(self.bare, "v2")
@@ -84,11 +84,13 @@ class UserLockTest(GitLockCase):
         self.assertNotIn("MOVED", out)  # status never fetches, so it can't know yet
         code, out = quiet(brainrc.cmd_update)
         self.assertEqual(code, 0, out)
-        self.assertIn(f"MOVED     gatework  v1: {a[:12]} -> {b[:12]}", out)
+        self.assertIn(f"MOVED     gatework  v1: {a[:12]} -> {b[:12]}  (user scope)", out)
         self.assertEqual(lock.read(self.user_lock)["packs"]["gatework"]["commit"], b)
         self.user_lock.write_text(old_text)  # e.g. the lock from before, restored
         out = self.status()
-        self.assertIn(f"MOVED     gatework  v1: {a[:12]} -> {b[:12]}  (apply relocks it)", out)
+        self.assertIn(f"(v1, locked at {a[:12]})", out)  # apply goes back to the pin, not forward
+        self.apply()
+        self.assertEqual(lock.read(self.user_lock)["packs"]["gatework"]["commit"], a)
 
     def test_a_changed_ref_is_not_a_move(self):
         self.apply()
@@ -161,7 +163,7 @@ class ProjectLockTest(GitLockCase):
         self.assertEqual(changed, {"skills/team-deploy/SKILL.md"})
         self.assertEqual(after["packs"]["gatework"], before["packs"]["gatework"])
 
-    def test_a_moved_tag_is_reported_for_the_project(self):
+    def test_a_moved_tag_under_the_clone_goes_back_to_the_pin(self):
         self.manifest()
         self.apply()
         teammates = (self.proj / "brainrc.lock").read_text()
@@ -171,10 +173,15 @@ class ProjectLockTest(GitLockCase):
         git("fetch", "-q", "--depth", "1", self.url, "v1", cwd=clone)  # this machine saw the new tag
         git("checkout", "-q", "--detach", "FETCH_HEAD", cwd=clone)
         out = self.status()
-        self.assertIn(f"MOVED     gatework  v1: {a[:12]} -> {b[:12]}  (apply relocks it)", out)
+        self.assertIn(f"(v1, locked at {a[:12]})", out)
         self.assertEqual((self.proj / "brainrc.lock").read_text(), teammates)
         out = self.apply()
-        self.assertIn("MOVED     gatework  v1", out)
+        self.assertNotIn("MOVED", out)
+        self.assertNotIn("brainrc-new", self.skills())
+        self.assertEqual((self.proj / "brainrc.lock").read_text(), teammates)
+        code, out = quiet(brainrc.cmd_update, ["gatework"])
+        self.assertEqual(code, 0, out)
+        self.assertIn(f"MOVED     gatework  v1: {a[:12]} -> {b[:12]}  (project, brainrc.toml)", out)
         self.assertIn("brainrc-new", self.skills())
         self.assertEqual(lock.read(self.proj / "brainrc.lock")["packs"]["gatework"]["commit"], b)
 

@@ -150,7 +150,7 @@ class LockVersionTest(GitLockCase):
         data = lock.read(self.user_lock)
         data["version"] = 1
         for pack in data["packs"].values():
-            pack.pop("permissions", None)  # as brainrc 0.7.6 wrote it
+            pack.pop("permissions", None)  # as brainrc 0.7.7 wrote it
         self.user_lock.write_bytes(lock.dumps(data).encode())
         self.apply()
         again = lock.read(self.user_lock)
@@ -160,7 +160,7 @@ class LockVersionTest(GitLockCase):
     def test_an_older_brainrc_names_the_upgrade(self):
         self.apply()
         text = self.user_lock.read_text()
-        with mock.patch.object(lock, "VERSION", 1):  # brainrc 0.7.6
+        with mock.patch.object(lock, "VERSION", 1):  # brainrc 0.7.7
             with self.assertRaisesRegex(ConfigError, r"lock version 2 is newer than this brainrc reads \(1\); "
                                         r"upgrade brainrc"):
                 lock.loads(text)

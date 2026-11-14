@@ -182,7 +182,7 @@ path = "tools/agent-pack"
 
 | Key | Type | Meaning |
 |---|---|---|
-| `version` | integer | Format version, `2`. Version 2 adds `packs.<key>.permissions`; brainrc reads `1` and `2` and writes `2`. A reader refuses a newer version and names the brainrc that wrote it, so brainrc 0.7.6 and older say to upgrade instead of failing on `permissions`. |
+| `version` | integer | Format version, `2`. Version 2 adds `packs.<key>.permissions`; brainrc reads `1` and `2` and writes `2`. A reader refuses a newer version and names the brainrc that wrote it, so brainrc 0.7.7 and older say to upgrade instead of failing on `permissions`. |
 | `brainrc` | string | The brainrc version that wrote it, `MAJOR.MINOR.PATCH`. |
 | `scope` | string | `user` or `project`. |
 | `packs.<key>` | table | Every enabled pack, and nothing for a disabled one. |

@@ -226,19 +226,21 @@ The lock records what each pack can do in its scope, so a pack can't widen it un
 
 | Field | Entries |
 | --- | --- |
-| `hooks` | Each hook its `overrides/<harness>/settings.fragment.json` adds: `<harness> <event> [<matcher>] <command>`. User scope, when the profile installs hooks. |
+| `hooks` | Each hook its `overrides/<harness>/settings.fragment.json` adds: `<harness> <event> [<matcher>] <command>`. User scope, when the profile installs hooks. Also `brainrc validator <file>` when `pack.toml` names a validator, in both scopes. |
 | `mcp` | Each MCP server in its `mcp/servers.toml`: name, URL or command and arguments, the variables it reads and its harnesses. User scope, `full` profile. |
-| `tools` | Each installed agent's `tools` (an agent without them gets `(every tool)`), each skill's `allowed-tools`, and any other key the fragment sets (`<harness> allow <rule>` for `permissions`). |
+| `tools` | Each installed agent's `tools` (an agent without them gets `(every tool)`), each skill's and command's `allowed-tools`, the fragment's `permissions` (`<harness> allow <rule>`, `deny`, `ask`), and any other key it sets with its value (`<harness> sets statusLine = {...}`; a sha256 when over 200 characters). |
 | `domains` | Each host the pack's MCP URLs and `domain:` grants name. |
 
 `status` prints `PERMS <pack> + <kind> <entry>` for what apply would add and `-` for what it would
 remove. `apply` (and `update`, and `install` without `--frozen`) asks before writing anything when
-any entry is added, and `--yes` accepts them. Without a terminal to ask in (CI, a script, a pipe)
-and without `--yes`, it refuses and writes nothing; there is no variable that skips the question.
-Removing entries never asks.
+any entry is added or a `deny` or `ask` rule is removed, and `--yes` accepts them. Without a terminal
+to ask in (CI, a script, a pipe) and without `--yes`, it refuses and writes nothing; there is no
+variable that skips the question. Removing any other entry never asks. When `update` is refused,
+the git packs it moved go back to the commits the lock pins, since the harnesses link into them.
 
 A machine's first lock has nothing to widen from: its permissions are listed once as `PERMS` lines
 and recorded as the baseline. A pack added to an existing lock is a widening. A pack entry in a lock
 written before permissions were recorded has none; it counts as the baseline only while the pack's files
-still hash as that lock says. `install --frozen` installs only what the lock records, so it never
-asks and takes no `--yes`.
+still hash as that lock says, and never for MCP servers and their hosts, since `mcp/servers.toml`
+isn't among the hashed files. `install --frozen` installs only what the lock records, so it never
+asks and takes no `--yes`: a widening fails it, and `apply` is where to review and accept it.

@@ -63,8 +63,8 @@ def _repo(root: Path, locked: dict, tops: list[str]) -> list[str]:
         m = BLOCK.search(data.decode("utf-8")) if data is not None else None
         if m is None:
             errors.append(f"{rel}: brainrc's block is missing")
-        elif lock.digest(m.group(0).encode("utf-8")) != want:
-            ours = lock.digest(m.group(0).encode("utf-8")) == mine["blocks"].get(rel)
+        elif (got := lock.digest(m.group(0).replace("\r\n", "\n").encode("utf-8"))) != want:
+            ours = got == mine["blocks"].get(rel)
             errors.append(f"{rel}: brainrc's block differs from {lock.NAME}" + (stale if ours else foreign))
     return errors
 

@@ -69,6 +69,11 @@ class ProjectCheckTest(CheckCase):
         agents.write_text("# Mine\n")
         self.assertIn("DRIFT AGENTS.md: brainrc's block is missing", self.check(code=1))
 
+    def test_a_block_with_only_windows_line_endings_matches_the_lock(self):
+        agents = self.proj / "AGENTS.md"
+        agents.write_bytes(agents.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
+        self.check()
+
     def test_a_changed_pack_without_apply(self):
         rule = self.proj / "tools/team-pack/rules/50-team.md"
         rule.write_text(rule.read_text() + "- New rule.\n")

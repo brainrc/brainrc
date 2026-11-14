@@ -11,6 +11,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 import retro_ccusage  # noqa: E402
+from support import rmtree, stub_command  # noqa: E402
 
 SINCE, UNTIL = date(2026, 10, 1), date(2026, 10, 20)
 
@@ -25,12 +26,10 @@ class CcusageTest(unittest.TestCase):
 
     def tearDown(self):
         os.environ["PATH"] = self.old_path
-        shutil.rmtree(self.root)
+        rmtree(self.root)
 
     def stub(self, body: str):
-        path = self.bin / "ccusage"
-        path.write_text(f"#!{sys.executable}\n{body}\n")
-        path.chmod(0o755)
+        stub_command(self.bin, "ccusage", body)
 
     def test_missing_is_unavailable(self):
         r = retro_ccusage.period_totals(SINCE, UNTIL)

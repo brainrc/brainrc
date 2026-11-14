@@ -1,0 +1,76 @@
+"""Helpers the tests share so they run the same on Windows as on macOS and Linux (#342)."""
+import os
+import shutil
+import stat
+import sys
+
+# Path.home() reads USERPROFILE on Windows and HOME elsewhere, so a fake home sets both.
+HOME_KEYS = ("HOME", "USERPROFILE")
+
+
+def home_env(path) -> dict[str, str]:
+    """The environment entries that make `path` the home directory, for os.environ or a child."""
+    return {k: str(path) for k in HOME_KEYS}
+
+
+def saved_home() -> dict[str, str | None]:
+    """The current home variables, for restore_home()."""
+    return {k: os.environ.get(k) for k in HOME_KEYS}
+
+
+def restore_home(old: dict[str, str | None]) -> None:
+    for k, v in old.items():
+        if v is None:
+            os.environ.pop(k, None)
+        else:
+            os.environ[k] = v
+
+
+def _writable_retry(func, path, _exc):
+    """Git marks its object files read-only, and Windows won't delete a read-only file."""
+    os.chmod(path, stat.S_IWRITE)
+    func(path)
+
+
+def rmtree(path, ignore_errors: bool = False) -> None:
+    """shutil.rmtree that also removes read-only files (a git checkout's objects on Windows)."""
+    handler = {"onexc" if sys.version_info >= (3, 12) else "onerror": _writable_retry}
+    try:
+        shutil.rmtree(path, **handler)
+    except OSError:
+        if not ignore_errors:
+            raise
+
+
+def bare_env(home, **extra: str) -> dict[str, str]:
+    """A near-empty child environment with `home` as its home. Windows can't start a process
+    without SYSTEMROOT, so that one is kept when set."""
+    keep = {k: os.environ[k] for k in ("PATH", "SYSTEMROOT") if k in os.environ}
+    return {**keep, **home_env(home), **extra}
+
+
+def symlink(link, target) -> None:
+    """link.symlink_to(target), marked as a directory link when target is a directory: Windows
+    treats a file link to a directory as broken."""
+    os.symlink(target, link, target_is_directory=os.path.isdir(os.path.join(os.path.dirname(link), target)))
+
+
+def readlink(link) -> str:
+    """os.readlink without the \\\\?\\ prefix Windows puts on an absolute target."""
+    target = os.readlink(link)
+    return target[4:] if target.startswith("\\\\?\\") and not target.startswith("\\\\?\\UNC\\") else target
+
+
+def stub_command(bin_dir, name: str, body: str) -> None:
+    """A command `name` in bin_dir that runs the Python `body`. Windows runs no #! script and
+    finds commands by PATHEXT, so there it is a .cmd that hands its arguments to Python."""
+    if os.name == "nt":
+        with open(os.path.join(bin_dir, f"{name}.py"), "w", encoding="utf-8") as f:
+            f.write(body + "\n")
+        with open(os.path.join(bin_dir, f"{name}.cmd"), "w") as f:
+            f.write(f'@"{sys.executable}" "%~dp0{name}.py" %*\n')
+        return
+    path = os.path.join(bin_dir, name)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(f"#!{sys.executable}\n{body}\n")
+    os.chmod(path, 0o755)

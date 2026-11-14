@@ -11,14 +11,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import TempRepoCase, brainrc, quiet  # noqa: E402
 from brainrc import naming  # noqa: E402
 from brainrc.sources import Source  # noqa: E402
+from support import rmtree  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 
 
 class NamingCase(unittest.TestCase):
     def setUp(self):
-        self.root = Path(tempfile.mkdtemp())
-        self.addCleanup(shutil.rmtree, self.root)
+        self.root = Path(tempfile.mkdtemp()).resolve()
+        self.addCleanup(rmtree, self.root)
 
     def errors(self, name="acme", prefix=None, pack_id=None):
         meta = {"name": name} | ({"id": pack_id} if pack_id is not None else {})
@@ -152,8 +153,8 @@ class ValidateTest(TempRepoCase):
 
     def setUp(self):
         super().setUp()
-        self.pack = Path(tempfile.mkdtemp())
-        self.addCleanup(shutil.rmtree, self.pack)
+        self.pack = Path(tempfile.mkdtemp()).resolve()
+        self.addCleanup(rmtree, self.pack)
         shutil.copytree(ROOT / "examples/pack-acme", self.pack, dirs_exist_ok=True)
 
     def validate(self):

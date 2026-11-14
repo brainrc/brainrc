@@ -9,6 +9,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from support import rmtree, stub_command
+
 SCRIPT = Path(__file__).resolve().parent.parent / "scripts" / "retro_report.py"
 
 COMPLETE = {
@@ -42,7 +44,7 @@ class ReportTest(unittest.TestCase):
         self.calls = self.tmp / "calls.txt"
 
     def tearDown(self):
-        shutil.rmtree(self.tmp)
+        rmtree(self.tmp)
 
     def run_dir(self, root: Path, slug: str, state, raw: str | None = None) -> Path:
         d = root / "specs" / slug
@@ -56,13 +58,11 @@ class ReportTest(unittest.TestCase):
         self.run_dir(root, "003-wip", INPROG)
         d = self.run_dir(root, "004-blocked", BLOCKED)
         (d / "log.md").write_text("## implementer · T1 · blocked\n**Open issues:** earlier snag\n\n"
-                                    "## implementer · T2 · blocked\n**Open issues:** needs decision\n")
+                                    "## implementer · T2 · blocked\n**Open issues:** needs decision\n", encoding="utf-8")
         self.run_dir(root, "005-bad", None, raw="{not json")
 
     def stub(self, body: str):
-        p = self.bin / "ccusage"
-        p.write_text(f"#!{sys.executable}\n{body}\n")
-        p.chmod(0o755)
+        stub_command(self.bin, "ccusage", body)
 
     def cli(self, *args, cwd=None, path=None):
         env = {**os.environ, "PATH": path if path is not None else str(self.bin)}

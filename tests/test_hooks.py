@@ -492,7 +492,7 @@ class FailOpenTest(unittest.TestCase):
 
     def test_claude_commands_behave_like_the_guards_when_present(self):
         d = self.hooks_dir("claude")
-        commands = fragment_commands("claude", d)
+        commands = [c for c in fragment_commands("claude", d) if "guard_" in c]  # check_mcp_pins: test_mcp_pins
         self.assertEqual(len(commands), 2)
         for command, script in zip(commands, ["guard_outward.py", "guard_secrets.py"]):
             for payload in (RISKY, SAFE):

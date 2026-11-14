@@ -203,7 +203,8 @@ class MergeSettingsTest(unittest.TestCase):
         current = {"tui": "fullscreen", "hooks": {"SessionStart": [FOREIGN], "PreToolUse": [FOREIGN]}}
         merged = brainrc.merge_settings(current, self.fragment)
         self.assertEqual(merged["tui"], "fullscreen")
-        self.assertEqual(merged["hooks"]["SessionStart"], [FOREIGN])
+        self.assertEqual(merged["hooks"]["SessionStart"][0], FOREIGN)  # ours (#290) come after it
+        self.assertEqual(len(merged["hooks"]["SessionStart"]), 1 + len(self.fragment["hooks"]["SessionStart"]))
         self.assertEqual(merged["hooks"]["PreToolUse"][0], FOREIGN)
         self.assertEqual(len(merged["hooks"]["PreToolUse"]), 1 + len(self.fragment["hooks"]["PreToolUse"]))
 
@@ -476,7 +477,8 @@ class SyncFakeHomeTest(TempRepoCase):
         self.assertTrue((self.home / ".claude/hooks/brainrc/guard_outward.py").is_file())
 
         merged = json.loads(settings.read_text())
-        self.assertEqual(merged["hooks"]["SessionStart"], [FOREIGN])
+        self.assertEqual(merged["hooks"]["SessionStart"][0], FOREIGN)
+        self.assertFalse(any(brainrc._owned(g) for g in merged["hooks"]["SessionStart"][:1]))
         self.assertTrue(any(brainrc._owned(g) for g in merged["hooks"]["PreToolUse"]))
         self.assertEqual(len(list(settings.parent.glob("settings.json.bak-brainrc-*"))), 1)
 

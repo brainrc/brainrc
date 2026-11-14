@@ -79,6 +79,9 @@ moves with its harness's variable ([install](install.md)). `env_from` becomes a 
 conflict and left alone. Claude Code rewrites `~/.claude.json` while it runs, so apply MCP changes
 with it closed. Cursor and Antigravity aren't supported yet.
 
+`brainrc pin-mcp` records a hash of each stdio server's tool definitions, and a Claude Code
+SessionStart hook warns when one changes ([guardrails](guardrails.md#claude-code-hooks)).
+
 ## Packs: `pack.toml`
 
 A separate repo with the same layout plus a `pack.toml`, layered on top of this one per

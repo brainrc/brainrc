@@ -8,6 +8,7 @@ is taken as that baseline only while the pack's files still hash as the lock say
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import sys
@@ -21,6 +22,10 @@ LABEL = {"hooks": "hook", "mcp": "mcp", "tools": "tool", "domains": "domain"}
 DOMAIN_GRANT = re.compile(r"\bdomain:([A-Za-z0-9.*-]+)")
 URL_HOST = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*://(?:[^/@?#]*@)?(\[[^\]/]*\]|[^/:?#]+)")
 ASSUME_YES = False  # the test suite sets it; there is no flag or variable for it
+
+
+def digest(text: str) -> str:
+    return "sha256:" + hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
 def _hooks(src: Source) -> tuple[list[str], list[str]]:
@@ -49,8 +54,9 @@ def _hooks(src: Source) -> tuple[list[str], list[str]]:
                 for kind, rules in sorted(value.items()):
                     for rule in rules if isinstance(rules, list) else [rules]:
                         grants.append(f"{harness} {kind} {rule}")
-            else:
-                grants.append(f"{harness} sets {key}")
+            else:  # the value too, so a changed command (statusLine, apiKeyHelper) shows as a change
+                text = json.dumps(value, sort_keys=True, ensure_ascii=False)
+                grants.append(f"{harness} sets {key} = " + (text if len(text) <= 200 else digest(text)))
     return hooks, grants
 
 
@@ -71,13 +77,16 @@ def _servers(src: Source) -> list[str]:
 
 
 def _tools(items: list[Path]) -> list[str]:
-    """Each agent's `tools` (an agent without them gets every tool) and each skill's `allowed-tools`."""
+    """Each agent's `tools` (an agent without them gets every tool), and each skill's and
+    command's `allowed-tools`."""
     found = []
     for path in items:
         if path.is_dir():
             meta, kind, key = frontmatter(path / "SKILL.md"), "skill", "allowed-tools"
         elif path.parent.name == "agents":
             meta, kind, key = frontmatter(path), "agent", "tools"
+        elif path.parent.name == "commands":
+            meta, kind, key = frontmatter(path), "command", "allowed-tools"
         else:
             continue
         value = meta.get(key, "")
@@ -103,6 +112,8 @@ def _domains(servers: dict, grants: list[str]) -> list[str]:
 def of_pack(src: Source, items: list[Path], hooks: bool, mcp: bool) -> dict[str, list[str]]:
     """The pack's permissions as the lock records them: only what this scope installs."""
     hook_entries, settings = _hooks(src) if hooks else ([], [])
+    if isinstance(src.meta.get("validator"), str):  # pack code brainrc itself runs, in every scope
+        hook_entries.append(f"brainrc validator {src.meta['validator']}")
     from .mcp import _registry
     servers = _registry(src) if mcp else {}
     tools = _tools(items) + settings
@@ -124,7 +135,12 @@ def baseline(old: dict | None, key: str, entry: dict) -> dict[str, list[str]]:
         return {}
     if "permissions" in was:
         return was["permissions"]
-    return entry.get("permissions", {}) if was.get("files") == entry.get("files") else {}
+    if was.get("files") != entry.get("files"):
+        return {}
+    # mcp/servers.toml isn't among the hashed files, so servers and their hosts are never vouched for
+    perms = entry.get("permissions", {})
+    hosts = {e for e in perms.get("domains", []) if any(f"domain:{e}" in t for t in perms.get("tools", []))}
+    return {k: v for k, v in {**perms, "mcp": [], "domains": sorted(hosts)}.items() if v}
 
 
 def diff(old_lock: dict | None, packs: dict[str, dict]) -> list[tuple[str, str, str, str]]:
@@ -146,7 +162,8 @@ def diff(old_lock: dict | None, packs: dict[str, dict]) -> list[tuple[str, str, 
 
 def report(changes: list[tuple[str, str, str, str]], label: str = "") -> None:
     for key, sign, field, entry in changes:
-        print(f"{'PERMS':9} {key:9} {sign} {LABEL[field]:6} {entry}" + (f"  ({label})" if label else ""))
+        note = "  (a removed restriction: it widens)" if sign == "-" and _widening(sign, field, entry) else ""
+        print(f"{'PERMS':9} {key:9} {sign} {LABEL[field]:6} {entry}{note}" + (f"  ({label})" if label else ""))
 
 
 def first(packs: dict[str, dict], label: str) -> None:
@@ -163,7 +180,14 @@ def interactive() -> bool:
 
 
 def widens(changes) -> bool:
-    return any(sign == "+" for _, sign, _, _ in changes)
+    """An added entry, or a removed deny or ask rule: either lets the pack do more."""
+    return any(_widening(sign, field, entry) for _, sign, field, entry in changes)
+
+
+def _widening(sign: str, field: str, entry: str) -> bool:
+    if sign == "+":
+        return True
+    return field == "tools" and len(entry.split(" ", 2)) == 3 and entry.split(" ", 2)[1] in ("deny", "ask")
 
 
 def confirm(changes, yes: bool, where: str) -> bool:
@@ -171,13 +195,13 @@ def confirm(changes, yes: bool, where: str) -> bool:
     terminal (CI, a script, a pipe) and without --yes refuses."""
     if yes or ASSUME_YES:
         return True
-    added = sum(sign == "+" for _, sign, _, _ in changes)
+    added = sum(_widening(sign, field, entry) for _, sign, field, entry in changes)
     if not interactive():
-        print(f"\nNothing written{where}. The packs would add {added} permission(s) (PERMS + above), and "
+        print(f"\nNothing written{where}. The packs would widen {added} permission(s) (PERMS above), and "
               "there is no terminal to ask in. Re-run with --yes to accept them.")
         return False
     try:
-        answer = input(f"\nThe packs add {added} permission(s) (PERMS + above). Apply them? [y/N] ")
+        answer = input(f"\nThe packs widen {added} permission(s) (PERMS above). Apply them? [y/N] ")
     except EOFError:
         answer = ""
     if answer.strip().lower() in ("y", "yes"):

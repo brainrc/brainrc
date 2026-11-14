@@ -236,6 +236,11 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True, moved: frozens
         permissions.first(new_lock.get("packs", {}), "first lock: recorded as the baseline" if apply
                           else "no brainrc.lock yet: apply records these")
     permissions.report(perms)
+    if apply and not relock and permissions.widens(perms):
+        print(f"\nNothing written. The packs would widen permissions that {lock.NAME} doesn't record "
+              f"(PERMS above), and install --frozen installs only what it records. Run "
+              f"`{config.command('apply')}` to review and accept them.")
+        return 1
     if apply and permissions.widens(perms) and not permissions.confirm(perms, yes, ""):
         return 1
 
@@ -402,7 +407,10 @@ def cmd_update(names: list[str] | None = None, yes: bool = False) -> int:
         moved = pin_update.fetch(names or [])
         if isinstance(moved, int):
             return moved
-        return _update_sync(*moved, yes)
+        code = _update_sync(*moved, yes)
+        if code:  # refused or failed: the harnesses link into the clones, so put them back
+            pin_update.restore(*moved)
+        return code
 
     return _locked(run)
 

@@ -158,6 +158,15 @@ class DefaultBranchPinTest(PinCase):
         self.assertEqual(got, 1, out)
         self.assertIn("update gatework` moves the pin.", out)
 
+    def test_a_refused_update_puts_the_clone_back(self):
+        later = SKILL("brainrc-later").replace("description:", "allowed-tools: Bash\ndescription:")
+        self.commit("v3", **{"skills__brainrc-later__SKILL.md": later})
+        out = self.update(code=1)  # no terminal and no --yes: the new grant is refused
+        self.assertIn("PERMS     gatework  + tool   skill brainrc-later: Bash", out)
+        self.assertIn(f"RESTORE   gatework  back at {self.a[:12]}", out)
+        self.assertEqual(rev(self.clone, "HEAD"), self.a)
+        self.assertEqual(self.pin(), self.a)
+
     def test_a_failed_update_leaves_apply_on_the_pin(self):
         self.commit("v3", **{"skills__brainrc-later__SKILL.md": SKILL("brainrc-later")})
         (self.repo / "packs.toml").write_text(f'[gatework]\ngit = "{(self.tmp / "gone.git").as_uri()}"\n')

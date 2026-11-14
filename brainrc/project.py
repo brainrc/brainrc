@@ -201,7 +201,7 @@ def foreign(root: Path, locked: dict, files: dict[str, bytes], blocks: dict[str,
     for rel in sorted(blocks):
         data = _read(root / rel)
         m = BLOCK.search(data.decode("utf-8")) if data is not None else None
-        if m and lock.digest(m.group(0).encode("utf-8")) not in (locked.get("blocks", {}).get(rel),
+        if m and lock.digest(m.group(0).replace("\r\n", "\n").encode("utf-8")) not in (locked.get("blocks", {}).get(rel),
                                                                 mine["blocks"].get(rel)):
             found.append(f"{rel}: brainrc's block was edited by hand")
     return found

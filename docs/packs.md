@@ -42,6 +42,10 @@ refuse a clone with local changes, and stop any git call after 60s. Pin a tag, a
 upgrade. `doctor` reports a git pack that hasn't been fetched yet or whose clone doesn't match its
 `git` and `ref`.
 
+The lock also records what each pack can do: its hooks, MCP servers, tool grants and network
+domains. `status` lists any added (`PERMS ... +`) or removed, and `apply` asks before adding any
+unless you pass `--yes` ([permissions](project.md#permissions)).
+
 ## Layout
 
 Same as this repo. Every folder is optional.

@@ -143,7 +143,7 @@ class ProjectLockTest(GitLockCase):
         self.assertEqual(schema.errors(data, schema.load("brainrc.lock")), [])
         gw, team = data["packs"]["gatework"], data["packs"]["team"]
         self.assertEqual((gw["ref"], gw["commit"]), ("v1", rev(self.bare, "v1")))
-        self.assertEqual(team, {"path": "tools/team-pack", "files": team["files"]})
+        self.assertEqual(team, {"path": "tools/team-pack", "files": team["files"], "permissions": {}})
         self.assertIn("rules/50-team.md", team["files"])
         self.assertNotIn("agents/team-reviewer.md", team["files"])  # project scope installs no agents yet
         self.assertEqual(data["outputs"][".agents/skills/team-deploy/SKILL.md"],

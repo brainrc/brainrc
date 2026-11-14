@@ -45,6 +45,8 @@ def _value(value) -> str:
         return "true" if value else "false"
     if isinstance(value, int):
         return str(value)
+    if isinstance(value, list):  # one string per line, sorted, with a trailing comma
+        return "[\n" + "".join(f"  {_string(v)},\n" for v in sorted(value)) + "]"
     return _string(value)
 
 
@@ -59,6 +61,8 @@ def dumps(data: dict) -> str:
         pack = data["packs"][key]
         lines += ["", f"[packs.{_key(key)}]"] + [f"{k} = {_value(pack[k])}" for k in PACK_KEYS if k in pack]
         _table(lines, f"packs.{_key(key)}.files", pack.get("files", {}))
+        if "permissions" in pack:
+            _table(lines, f"packs.{_key(key)}.permissions", pack["permissions"])
     for name in ("outputs", "blocks"):
         if data.get(name):
             _table(lines, name, data[name])
@@ -142,15 +146,17 @@ def pack_files(src: Source, items: list[Path], hooks: bool) -> dict[str, str]:
     return {rel: digest(f.read_bytes()) for rel, f in sorted(found)}
 
 
-def pack_entry(cfg: dict, root: Path, files: dict[str, str]) -> dict:
-    """One `[packs.<key>]` table: git, ref and the commit checked out, or the path."""
+def pack_entry(cfg: dict, root: Path, files: dict[str, str], permissions: dict | None = None) -> dict:
+    """One `[packs.<key>]` table: git, ref and the commit checked out, or the path; its files, and
+    what it can do (brainrc/permissions.py)."""
+    perms = {"permissions": permissions} if permissions is not None else {}
     if "git" in cfg:
         commit = head(root)
         if commit is None:
             raise ConfigError(f"{tilde(root)}: can't read the commit checked out (git rev-parse HEAD)")
         return {"git": clean_url(str(cfg["git"])), "ref": str(cfg.get("ref", "HEAD")), "commit": commit,
-                "files": files}
-    return {"path": shown_path(str(cfg["path"])), "files": files}
+                "files": files, **perms}
+    return {"path": shown_path(str(cfg["path"])), "files": files, **perms}
 
 
 def new_lock(scope: str, packs: dict[str, dict], **tables: dict) -> dict:
@@ -179,8 +185,15 @@ def user_lock(srcs: list[Source]) -> dict:
     packs = {}
     for src in srcs:
         if not src.is_core:
-            packs[src.key] = pack_entry(layered[src.key], src.root, user_pack_files(src))
+            packs[src.key] = pack_entry(layered[src.key], src.root, user_pack_files(src), user_permissions(src))
     return new_lock("user", packs)
+
+
+def user_permissions(src: Source) -> dict[str, list[str]]:
+    """What the user scope lets a pack do: its installed items' tool grants, and its hooks and MCP
+    servers when the profile installs them."""
+    from . import permissions
+    return permissions.of_pack(src, permissions.user_items(src), config.installs("hooks"), config.installs("mcp"))
 
 
 def user_pack_files(src: Source) -> dict[str, str]:

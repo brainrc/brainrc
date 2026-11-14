@@ -167,7 +167,7 @@ def _tripwire_files(src: Source, patterns: list[str]) -> list[Path]:
         dirs[:] = [d for d in dirs if not d.startswith(".") and d not in ("dist", "node_modules")]
         for f in files:
             p = Path(dirpath) / f
-            rel = str(p.relative_to(src.root))
+            rel = p.relative_to(src.root).as_posix()
             if any(fnmatch.fnmatch(rel, pat) for pat in patterns):
                 found.append(p)
     return sorted(found)
@@ -186,7 +186,7 @@ def _check_tripwires(src: Source) -> list[str]:
             continue
         exclude = t.get("exclude", ["tripwires.toml"])
         for p in _tripwire_files(src, t.get("paths", ["*.md"])):
-            rel = str(p.relative_to(src.root))
+            rel = p.relative_to(src.root).as_posix()
             if any(fnmatch.fnmatch(rel, pat) for pat in exclude):
                 continue
             for n, line in enumerate(p.read_text(errors="replace").splitlines(), 1):
@@ -235,7 +235,7 @@ def _check_local_tripwires(src: Source) -> list[str]:
         errors += [f"{rel}: local tripwire: the file name contains \"{t}\" ({LOCAL_TRIPWIRES})"
                    for t, n in needles if n in rel.casefold()]
         if p.is_symlink():  # git commits the link's target path, not the file it points at
-            target = os.readlink(p).casefold()
+            target = config.readlink(p).casefold()
             errors += [f"{rel}: local tripwire: the link target contains \"{t}\" ({LOCAL_TRIPWIRES})"
                        for t, n in needles if n in target]
             continue

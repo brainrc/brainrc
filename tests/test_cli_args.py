@@ -16,6 +16,7 @@ sys.path.insert(0, str(REPO))
 sys.path.insert(0, str(REPO / "tests"))
 import brainrc  # noqa: E402
 from test_brainrc import TempRepoCase, copy_repo, home_files, install_harnesses, quiet  # noqa: E402
+from support import home_env, restore_home, rmtree, saved_home  # noqa: E402
 
 
 def run(*args: str) -> tuple[int, str, str]:
@@ -80,14 +81,14 @@ class HelpTest(unittest.TestCase):
 class OnlyTest(TempRepoCase):
     def setUp(self):
         super().setUp()
-        self.home = Path(tempfile.mkdtemp())
-        self.old_home = os.environ["HOME"]
-        os.environ["HOME"] = str(self.home)
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
         install_harnesses(self.home)
 
     def tearDown(self):
-        os.environ["HOME"] = self.old_home
-        shutil.rmtree(self.home)
+        restore_home(self.old_home)
+        rmtree(self.home)
         super().tearDown()
 
     def touched(self) -> set[str]:
@@ -135,7 +136,7 @@ class OnlyTest(TempRepoCase):
 
     def test_other_harnesses_keep_their_links_and_hooks(self):
         quiet(brainrc.cmd_sync, True)
-        shutil.rmtree(self.repo / "packs/gatework/skills/spec-agent")
+        rmtree(self.repo / "packs/gatework/skills/spec-agent")
         code, out, _ = run("apply", "--only", "codex")
         self.assertEqual(code, 0, out)
         self.assertFalse((self.home / ".codex/skills/spec-agent").is_symlink())  # pruned in codex
@@ -161,20 +162,20 @@ class OnlyInstalledTest(TempRepoCase):
 
     def setUp(self):
         super().setUp()
-        self.pkg = Path(tempfile.mkdtemp()) / "brainrc"
+        self.pkg = Path(tempfile.mkdtemp()).resolve() / "brainrc"
         copy_repo(self.pkg / "_core")
         brainrc.config.REPO = self.pkg / "_core"
         pack = self.pkg / "_core/packs/gatework"  # a relative path is read beside packs.local.toml
-        (self.pkg / "_core/packs.toml").write_text(f'[gatework]\npath = "{pack}"\n')
-        self.home = Path(tempfile.mkdtemp())
-        self.old_home = os.environ["HOME"]
-        os.environ["HOME"] = str(self.home)
+        (self.pkg / "_core/packs.toml").write_text(f'[gatework]\npath = \'{pack}\'\n')
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
         install_harnesses(self.home)
 
     def tearDown(self):
-        os.environ["HOME"] = self.old_home
-        shutil.rmtree(self.home)
-        shutil.rmtree(self.pkg.parent)
+        restore_home(self.old_home)
+        rmtree(self.home)
+        rmtree(self.pkg.parent)
         super().tearDown()
 
     def test_only_a_harness_without_hooks_keeps_the_hooks_copy(self):

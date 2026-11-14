@@ -7,6 +7,7 @@ built in `_parser`; `brainrc --help` and `brainrc <command> --help` print them.
 from __future__ import annotations
 
 import argparse
+import errno
 import os
 import shutil
 import sys
@@ -28,7 +29,7 @@ from .sources import (
     check_packs, collisions, core_version, duplicate_packs, render_instructions, sources,
 )
 from .init import cmd_init
-from .uninstall import cmd_uninstall
+from .uninstall import cmd_uninstall, finish_purge
 from .opencode import rendered_agents
 from .packs import adopt_record, describe, fetch_pack, git_packs, needs_fetch
 from .plan import hooks_copy_current, invalid_fragments, link_target, old_root, plan, stale_hooks_copy
@@ -256,7 +257,7 @@ def _sync(apply: bool, repair: bool = False) -> int:
             link.dest.parent.mkdir(parents=True, exist_ok=True)
             if link.dest.is_symlink():
                 link.dest.unlink()
-            link.dest.symlink_to(link.source)
+            config.symlink(link.dest, link.source)
     for p in stale:
         changes += 1
         print(f"{'PRUNE':9} {'':9} {tilde(p)}")
@@ -372,7 +373,10 @@ def main(argv: list[str]) -> int:
         code = _dispatch(argv)
         sys.stdout.flush()  # inside the try: a closed pipe fails here, not at interpreter exit
         return code
-    except BrokenPipeError:
+    except OSError as e:
+        # A closed pipe: BrokenPipeError, or EINVAL from Windows' flush.
+        if not isinstance(e, BrokenPipeError) and e.errno != errno.EINVAL:
+            raise
         os.dup2(os.open(os.devnull, os.O_WRONLY), sys.stdout.fileno())  # so the final flush can't fail
         return 0
 
@@ -488,7 +492,8 @@ def _dispatch(argv: list[str]) -> int:
             return cmd_uninstall(dry_run=True, purge=args.purge)
         if not settings_home().exists():  # nothing to lock against, and the lock would create it
             return cmd_uninstall(purge=args.purge)
-        return _locked(lambda: cmd_uninstall(purge=args.purge))
+        code = _locked(lambda: cmd_uninstall(purge=args.purge))
+        return finish_purge() or code
     if cmd == "init":
         named = [n for names in args.harness or [] for n in names] if args.harness else None
         return cmd_init(yes=args.yes, harnesses=named, adopt=not args.no_adopt, dry_run=args.dry_run,

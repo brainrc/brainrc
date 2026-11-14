@@ -46,7 +46,7 @@ class Source:
         return not self.is_core and (self.key or self.name) in default_packs()
 
     def rel(self, path: Path) -> str:
-        rel = str(path.relative_to(self.root))
+        rel = path.relative_to(self.root).as_posix()
         return rel if self.is_core else f"{self.name}:{rel}"
 
 

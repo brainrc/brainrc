@@ -4,7 +4,6 @@ Every case runs against a fresh temp HOME with an explicit env, never the real h
 """
 import contextlib
 import errno
-import fcntl
 import io
 import os
 import subprocess
@@ -16,8 +15,11 @@ from unittest import mock
 
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO / "tests"))
+from brainrc import cli  # noqa: E402
+from support import bare_env, home_env, readlink, symlink  # noqa: E402
 from test_brainrc import default_pack_env  # noqa: E402
-HOME_VARS = ("HOME", "BRAINRC_HOME", "AICFG_HOME", "XDG_CONFIG_HOME", "CLAUDE_CONFIG_DIR", "CODEX_HOME", "PYTHONWARNINGS")
+
+HOME_VARS = ("HOME", "USERPROFILE", "BRAINRC_HOME", "AICFG_HOME", "XDG_CONFIG_HOME", "CLAUDE_CONFIG_DIR", "CODEX_HOME", "PYTHONWARNINGS")
 LOCAL_FILES = {
     "packs.local.toml": "# no packs\n",
     "harnesses.local.toml": "# no overrides\n",
@@ -29,7 +31,7 @@ class MigrateCase(unittest.TestCase):
     def setUp(self):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
-        self.tmp = Path(tmp.name)
+        self.tmp = Path(tmp.name).resolve()
         self.home = self.tmp / "home"
         self.home.mkdir()
         (self.home / ".claude").mkdir()  # an installed harness, so apply links into it (#126)
@@ -39,7 +41,7 @@ class MigrateCase(unittest.TestCase):
     def run_cli(self, *args, **env_vars):
         env = {k: v for k, v in os.environ.items() if k not in HOME_VARS}
         env.update(default_pack_env())  # the default pack comes from a local stand-in, not GitHub
-        env["HOME"] = str(self.home)
+        env.update(home_env(self.home))
         env.update(env_vars)
         return subprocess.run([sys.executable, "scripts/brainrc.py", *args], cwd=REPO, env=env,
                               capture_output=True, text=True, timeout=120)
@@ -57,12 +59,12 @@ class MigrateCase(unittest.TestCase):
         for base, dirs, files in os.walk(self.home):
             for name in dirs + files:
                 p = Path(base, name)
-                if p.is_symlink() and os.readlink(p).startswith(str(directory)):
+                if p.is_symlink() and readlink(p).startswith(str(directory)):
                     found.append(p)
         return found
 
     def snapshot(self):
-        return sorted(str(p.relative_to(self.tmp)) for p in self.tmp.rglob("*"))
+        return sorted(p.relative_to(self.tmp).as_posix() for p in self.tmp.rglob("*"))
 
 
 class TestMigrate(MigrateCase):
@@ -84,11 +86,11 @@ class TestMigrate(MigrateCase):
         real.mkdir()
         (real / "packs.local.toml").write_text("# x\n")
         self.old.parent.mkdir(parents=True)
-        self.old.symlink_to(real)
+        symlink(self.old, real)
         proc = self.run_cli("migrate")
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
         self.assertTrue(self.new.is_symlink())
-        self.assertEqual(os.readlink(self.new), str(real))
+        self.assertEqual(readlink(self.new), str(real))
         self.assertTrue((real / "packs.local.toml").is_file())
         self.assertFalse(os.path.lexists(self.old))
 
@@ -97,7 +99,7 @@ class TestMigrate(MigrateCase):
         real.mkdir(parents=True)
         (real / "packs.local.toml").write_text("# x\n")
         self.old.parent.mkdir(parents=True)
-        self.old.symlink_to(Path("..") / "dotfiles" / "brainrc-settings")
+        symlink(self.old, Path("..") / "dotfiles" / "brainrc-settings")
         brainrc_home = self.home / "elsewhere" / "brainrc"
         brainrc_home.mkdir(parents=True)  # an existing empty target (AC8)
         proc = self.run_cli("migrate", BRAINRC_HOME=str(brainrc_home))
@@ -130,7 +132,7 @@ class TestMigrate(MigrateCase):
         before = self.snapshot()
         proc = self.run_cli("migrate", "--dry-run")
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
-        self.assertIn(str(self.old).replace(str(self.home), "~"), proc.stdout)
+        self.assertIn(self.old.as_posix().replace(self.home.as_posix(), "~"), proc.stdout)
         self.assertIn("~/.config/brainrc", proc.stdout)
         self.assertEqual(self.snapshot(), before)
 
@@ -176,7 +178,7 @@ class TestMigrate(MigrateCase):
     def test_ac12_held_lock_blocks_move(self):
         self.old.mkdir(parents=True)
         with open(self.old / "apply.lock", "a") as f:
-            fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            self.assertTrue(cli._try_lock(f))  # flock or msvcrt, as apply takes it
             proc = self.run_cli("migrate")
         self.assertNotEqual(proc.returncode, 0)
         self.assertTrue(self.old.is_dir())
@@ -206,7 +208,7 @@ class TestCrossDevice(MigrateCase):
                 raise OSError(errno.EXDEV, "cross-device")
             return real_rename(src, dst, *a, **kw)
 
-        env = {"HOME": str(self.home), "PATH": os.environ.get("PATH", "")}
+        env = bare_env(self.home)
         with mock.patch.dict(os.environ, env, clear=True), \
                 mock.patch("os.rename", side_effect=rename), \
                 mock.patch.object(cli, "cmd_sync", return_value=0):
@@ -231,7 +233,7 @@ def exdev_rename(old):
 class TestCrossDeviceSafety(MigrateCase):
     def migrate_in_process(self, rename, sync=0, **env_vars):
         from brainrc import cli, migrate
-        env = {"HOME": str(self.home), "PATH": os.environ.get("PATH", ""), **env_vars}
+        env = bare_env(self.home, **env_vars)
         out = io.StringIO()
         with mock.patch.dict(os.environ, env, clear=True), mock.patch("os.rename", side_effect=rename), \
                 mock.patch.object(cli, "cmd_sync", return_value=sync) as synced, \
@@ -244,11 +246,11 @@ class TestCrossDeviceSafety(MigrateCase):
         real.mkdir()
         (real / "packs.local.toml").write_text("# x\n")
         self.old.parent.mkdir(parents=True)
-        self.old.symlink_to(real)
+        symlink(self.old, real)
         code, out, _ = self.migrate_in_process(exdev_rename(self.old))
         self.assertEqual(code, 0, out)
         self.assertTrue(self.new.is_symlink())
-        self.assertEqual(os.readlink(self.new), str(real))
+        self.assertEqual(readlink(self.new), str(real))
         self.assertFalse(os.path.lexists(self.old))
         self.assertEqual(sorted(os.listdir(real)), ["apply.lock", "packs.local.toml"])
 
@@ -256,7 +258,7 @@ class TestCrossDeviceSafety(MigrateCase):
         real = self.old.parent / "real"
         real.mkdir(parents=True)
         (real / "packs.local.toml").write_text("# x\n")
-        self.old.symlink_to("real")
+        symlink(self.old, "real")
         code, out, _ = self.migrate_in_process(exdev_rename(self.old))
         self.assertEqual(code, 0, out)
         self.assertTrue(self.new.is_symlink())
@@ -284,6 +286,7 @@ class TestCrossDeviceSafety(MigrateCase):
         self.assertIn("Nothing moved", out)
         self.assertEqual(self.snapshot(), before)
 
+    @unittest.skipIf(os.name == "nt", "Windows has no Unix mode bits to copy")
     def test_temp_dir_has_the_source_mode(self):
         self.legacy_install()
         os.chmod(self.old, 0o700)
@@ -312,7 +315,7 @@ class TestCrossDeviceSafety(MigrateCase):
         self.assertEqual(code, 1)
         self.assertIn("the copy is in place", out)
         self.assertIn("could not be fully removed", out)
-        self.assertIn(str(old).replace(str(self.home), "~"), out)
+        self.assertIn(old.as_posix().replace(self.home.as_posix(), "~"), out)
         self.assertIn("denied", out)
         self.assertTrue((self.new / "packs.local.toml").is_file())
         synced.assert_called_once()
@@ -337,7 +340,8 @@ class TestPathSanity(MigrateCase):
         self.refused("home directory", AICFG_HOME=str(self.home), BRAINRC_HOME=str(self.tmp / "dst"))
 
     def test_root_as_source_refused(self):
-        self.refused("home directory", AICFG_HOME="/", BRAINRC_HOME=str(self.tmp / "dst"))
+        self.refused("home directory", AICFG_HOME=self.tmp.anchor,  # "/", or "C:\\" on Windows
+                     BRAINRC_HOME=str(self.tmp / "dst"))
 
     def test_ancestor_of_target_refused(self):
         src = self.tmp / "src"
@@ -377,7 +381,7 @@ class TestPathSanity(MigrateCase):
         self.new.parent.mkdir(parents=True, exist_ok=True)
         empty = self.tmp / "empty"
         empty.mkdir()
-        self.new.symlink_to(empty)
+        symlink(self.new, empty)
         before = self.snapshot()
         proc = self.run_cli("migrate")
         self.assertNotEqual(proc.returncode, 0)
@@ -391,7 +395,7 @@ class TestLocks(MigrateCase):
         (src / "packs.local.toml").write_text("# x\n")
         dst.mkdir()
         with open(dst / "apply.lock", "a") as f:  # what a running apply holds with BRAINRC_HOME set
-            fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            self.assertTrue(cli._try_lock(f))
             proc = self.run_cli("migrate", AICFG_HOME=str(src), BRAINRC_HOME=str(dst))
         self.assertNotEqual(proc.returncode, 0)
         self.assertIn("another brainrc apply", proc.stdout)
@@ -414,8 +418,8 @@ class TestLinkRepoint(unittest.TestCase):
         old.mkdir(parents=True)
         new.mkdir(parents=True)
         dest = tmp / "dest"
-        dest.symlink_to(old / link_to)
-        env = {"HOME": str(tmp), "PATH": os.environ.get("PATH", "")}
+        symlink(dest, old / link_to)
+        env = bare_env(tmp)
         with mock.patch.dict(os.environ, env, clear=True):
             return plan.Link("claude", dest, new / desired_rel).state()
 

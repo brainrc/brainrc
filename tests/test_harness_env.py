@@ -15,6 +15,7 @@ from test_uninstall import run  # noqa: E402
 
 from brainrc import config, jsonc  # noqa: E402
 from brainrc.mcp import McpSync, mcp_change, mcp_file  # noqa: E402
+from support import home_env, rmtree  # noqa: E402
 
 # harness -> (env var, its default dir under ~, the dir under the var, MCP file relative to ~ / the var)
 HARNESSES = {
@@ -25,19 +26,21 @@ HARNESSES = {
 }
 
 
+OPT = "C:/opt" if os.name == "nt" else "/opt"  # an absolute path outside home on this OS
+
 class EnvDirTest(unittest.TestCase):
     def setUp(self):
         self.home = tempfile.mkdtemp()
-        patcher = mock.patch.dict(os.environ, {"HOME": self.home})
+        patcher = mock.patch.dict(os.environ, home_env(self.home))
         patcher.start()
         self.addCleanup(patcher.stop)
-        self.addCleanup(shutil.rmtree, self.home)
+        self.addCleanup(rmtree, self.home)
         for var in config.HARNESS_VARS:
             os.environ.pop(var, None)
 
     def test_set_to_an_absolute_path_wins(self):
-        os.environ["CODEX_HOME"] = "/opt/codex/"
-        self.assertEqual(config.env_default("${CODEX_HOME:-~/.codex}/skills"), "/opt/codex/skills")
+        os.environ["CODEX_HOME"] = f"{OPT}/codex/"
+        self.assertEqual(config.env_default("${CODEX_HOME:-~/.codex}/skills"), f"{OPT}/codex/skills")
 
     def test_a_path_under_home_is_written_with_a_tilde(self):
         os.environ["CLAUDE_CONFIG_DIR"] = os.path.join(self.home, "alt", "claude")
@@ -58,8 +61,8 @@ class EnvDirTest(unittest.TestCase):
 
     def test_claude_dir(self):
         self.assertEqual(config.claude_dir(), Path(self.home) / ".claude")
-        os.environ["CLAUDE_CONFIG_DIR"] = "/opt/claude"
-        self.assertEqual(config.claude_dir(), Path("/opt/claude"))
+        os.environ["CLAUDE_CONFIG_DIR"] = f"{OPT}/claude"
+        self.assertEqual(config.claude_dir(), Path(f"{OPT}/claude"))
 
 
 class HarnessEnvCase(TempRepoCase):
@@ -69,11 +72,11 @@ class HarnessEnvCase(TempRepoCase):
         super().setUp()
         self.home = Path(tempfile.mkdtemp()).resolve()
         self.elsewhere = Path(tempfile.mkdtemp()).resolve()  # outside HOME
-        patcher = mock.patch.dict(os.environ, {"HOME": str(self.home)})
+        patcher = mock.patch.dict(os.environ, home_env(self.home))
         patcher.start()
         self.addCleanup(patcher.stop)
-        self.addCleanup(shutil.rmtree, self.home)
-        self.addCleanup(shutil.rmtree, self.elsewhere)
+        self.addCleanup(rmtree, self.home)
+        self.addCleanup(rmtree, self.elsewhere)
         (self.repo / "mcp").mkdir(exist_ok=True)
         (self.repo / "mcp/servers.toml").write_text('[servers.docs]\nurl = "https://example.com/mcp"\n')
 
@@ -131,7 +134,7 @@ class SetTest(HarnessEnvCase):
         d, _ = self.configure("claude", str(self.elsewhere / "claude"))
         run("apply", "--only", "claude")
         settings = (d / "settings.json").read_text()
-        self.assertIn(str(d / "hooks" / "brainrc"), settings)
+        self.assertIn((d / "hooks" / "brainrc").as_posix(), settings)
         self.assertTrue((d / "hooks" / "brainrc").is_symlink())
 
     def test_codex_home_under_home(self):
@@ -156,7 +159,7 @@ class UnsetTest(HarnessEnvCase):
             with self.subTest(harness=harness):
                 d, _ = self.lifecycle(harness, None)
                 self.assertTrue(str(d).startswith(str(self.home)))
-                shutil.rmtree(d)  # uninstalled: the next harness's doctor run sees only itself
+                rmtree(d)  # uninstalled: the next harness's doctor run sees only itself
 
 
 class EmptyTest(HarnessEnvCase):
@@ -165,7 +168,7 @@ class EmptyTest(HarnessEnvCase):
             with self.subTest(harness=harness):
                 d, _ = self.lifecycle(harness, "")
                 self.assertEqual(d, self.home / HARNESSES[harness][1])
-                shutil.rmtree(d)  # uninstalled: the next harness's doctor run sees only itself
+                rmtree(d)  # uninstalled: the next harness's doctor run sees only itself
 
 
 class RelativeTest(HarnessEnvCase):

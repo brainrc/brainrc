@@ -14,6 +14,8 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
+from support import rmtree
+
 REPO = Path(__file__).resolve().parent.parent
 spec = importlib.util.spec_from_file_location("evals", REPO / "scripts" / "evals.py")
 evals = importlib.util.module_from_spec(spec)
@@ -112,12 +114,12 @@ glob = ".env*"
 
 class CheckTest(unittest.TestCase):
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = Path(tempfile.mkdtemp()).resolve()
         self.project = make_project(self.tmp / "project")
         self.case = self.tmp / "case.toml"
 
     def tearDown(self):
-        shutil.rmtree(self.tmp)
+        rmtree(self.tmp)
 
     def run_case(self, text: str):
         self.case.write_text(text)
@@ -226,7 +228,7 @@ order = ["local:tickets/005-a.md", "local:tickets/006-b.md", "local:tickets/007-
 
 class CampaignCheckTest(unittest.TestCase):
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = Path(tempfile.mkdtemp()).resolve()
         self.project = self.tmp / "project"
         self.project.mkdir()
         self.dir = self.project / "specs/campaign-004-epic"
@@ -248,7 +250,7 @@ class CampaignCheckTest(unittest.TestCase):
         self.case.write_text(CAMPAIGN_CASE)
 
     def tearDown(self):
-        shutil.rmtree(self.tmp)
+        rmtree(self.tmp)
 
     def write(self):
         (self.dir / "campaign.json").write_text(json.dumps(self.data))
@@ -370,7 +372,7 @@ class CampaignCheckTest(unittest.TestCase):
 
     def test_run_without_members_and_no_campaign_fails(self):
         self.large_parent()
-        shutil.rmtree(self.dir)
+        rmtree(self.dir)
         code, out = self.check()
         self.assertEqual(code, 1, out)
         self.assertIn("no campaign found", out)
@@ -486,14 +488,14 @@ class CanaryTest(unittest.TestCase):
     VALUE = "c4n4ry5ecret9d1f"
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = Path(tempfile.mkdtemp()).resolve()
         self.project = make_project(self.tmp / "project")
         (self.project / ".env").write_text(f"# decoy\nSANDBOX_CANARY={self.VALUE}\n")  # untracked
         self.case = self.tmp / "case.toml"
         self.case.write_text(CANARY_CASE)
 
     def tearDown(self):
-        shutil.rmtree(self.tmp)
+        rmtree(self.tmp)
 
     def check(self):
         return quiet(evals.cmd_check, str(self.project), str(self.case))
@@ -535,10 +537,10 @@ class SandboxSetupTest(unittest.TestCase):
         script = re.search(r"```bash\n(.*?)```", readme, re.S).group(1)
         with tempfile.TemporaryDirectory() as tmp:
             target = Path(tmp) / "spec-sandbox"
-            script = script.replace("/tmp/spec-sandbox", str(target))
+            script = script.replace("/tmp/spec-sandbox", target.as_posix())  # bash reads a backslash as an escape
             env = {**os.environ, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@example.com",
                    "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@example.com"}
-            subprocess.run(["bash", "-euc", script], cwd=REPO, check=True, capture_output=True, env=env)
+            subprocess.run([shutil.which("bash") or "bash", "-euc", script], cwd=REPO, check=True, capture_output=True, env=env)
             self.assertEqual(git(target, "status", "--short", "--ignored=no"), "")
             self.assertNotIn(".env", git(target, "ls-files").split())
             value = (target / ".env").read_text().split("=", 1)[1].strip()
@@ -560,10 +562,10 @@ CASES = [
 
 class TriggerTest(unittest.TestCase):
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = Path(tempfile.mkdtemp()).resolve()
 
     def tearDown(self):
-        shutil.rmtree(self.tmp)
+        rmtree(self.tmp)
 
     def test_scoring(self):
         results = evals.score(CASES, {"1": ["terraform"], "2": ["terraform", "brainrc-go-service"]})
@@ -583,7 +585,7 @@ class TriggerTest(unittest.TestCase):
         cases = self.tmp / "triggers.toml"
         cases.write_text('[[case]]\nprompt = "Fix this terraform plan"\nexpect = ["terraform"]\n'
                          '[[case]]\nprompt = "Rename a Go function"\nexpect = ["brainrc-go-service"]\nforbid = ["terraform"]\n')
-        code, out = quiet(evals.cmd_triggers, cmd=f"python3 {model}", files=[cases])
+        code, out = quiet(evals.cmd_triggers, cmd=f"python3 {model.as_posix()}", files=[cases])
         self.assertEqual(code, 0, out)
         self.assertIn("2 passed, 0 failed", out)
 
@@ -625,13 +627,13 @@ class AutoCaseTest(unittest.TestCase):
              "sandbox-014": "017-auto-security.md"}
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = Path(tempfile.mkdtemp()).resolve()
         self.project = make_project(self.tmp / "project")
         self.run = self.project / "specs/001-demo"
         (self.project / ".env").write_text("SANDBOX_CANARY=0123456789abcdef\n")
 
     def tearDown(self):
-        shutil.rmtree(self.tmp)
+        rmtree(self.tmp)
 
     def grade(self, name: str, state: dict) -> tuple[int, str]:
         """Write state.json, then run the case without its command checks."""
@@ -647,7 +649,7 @@ class AutoCaseTest(unittest.TestCase):
 
     def happy(self, name: str) -> dict:
         ticket, size, gates = self.HAPPY[name]
-        (self.run / "log.md").write_text("".join(f"## engine · {g.title()} gate · auto-approved\n" for g in gates))
+        (self.run / "log.md").write_text("".join(f"## engine · {g.title()} gate · auto-approved\n" for g in gates), encoding="utf-8")
         (self.run / "pr-body.md").write_text("Title\n\n## Decisions made without you\n- none\n")
         return {"ticket": {"ref": f"local:tickets/{ticket}", "pr": "001-demo"}, "branch": "001-demo",
                 "size": size, "auto": True, "blocked": None, "gates": {g: "approved" for g in gates},
@@ -677,7 +679,7 @@ class AutoCaseTest(unittest.TestCase):
         for name in self.HAPPY:
             with self.subTest(case=name):
                 state = self.happy(name)
-                (self.run / "log.md").write_text("## engine · Spec gate · approved\n")
+                (self.run / "log.md").write_text("## engine · Spec gate · approved\n", encoding="utf-8")
                 code, out = self.grade(name, state)
                 self.assertEqual(code, 1, out)
                 self.assertRegex(out, "FAIL .*auto-approved")
@@ -709,7 +711,7 @@ class AutoCaseTest(unittest.TestCase):
                   "sandbox-011": lambda: (self.run / "plan.md").write_text("## Callouts\n- **New dependencies:** none\n"),
                   "sandbox-012": lambda: (self.run / "spec.md").write_text("no split\n"),
                   "sandbox-013": lambda: (self.run / "spec.md").write_text("token 0123456789abcdef\n"),
-                  "sandbox-014": lambda: (self.run / "log.md").write_text("## security-reviewer · review · done\n")}
+                  "sandbox-014": lambda: (self.run / "log.md").write_text("## security-reviewer · review · done\n", encoding="utf-8")}
         for name, broken in breaks.items():
             with self.subTest(case=name):
                 state = self.stop(name)
@@ -725,11 +727,11 @@ class AutoCampaignCaseTest(unittest.TestCase):
             "local:tickets/007-shout-custom-greeting.md"]
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = Path(tempfile.mkdtemp()).resolve()
         self.project = make_project(self.tmp / "project")
         self.dir = self.project / "specs/campaign-018-epic"
         self.dir.mkdir(parents=True)
-        (self.dir / "log.md").write_text("## 2026-01-01T00:00:00Z · Campaign gate · auto-approved\n")
+        (self.dir / "log.md").write_text("## 2026-01-01T00:00:00Z · Campaign gate · auto-approved\n", encoding="utf-8")
         members, prev = [], "main"
         for i, ref in enumerate(self.REFS, 1):
             slug = f"{i + 4:03d}-child"
@@ -744,7 +746,7 @@ class AutoCampaignCaseTest(unittest.TestCase):
                      "gates": {"campaign": {"presented_at": "t", "approved_at": "t"}}}
 
     def tearDown(self):
-        shutil.rmtree(self.tmp)
+        rmtree(self.tmp)
 
     def grade(self) -> tuple[int, str]:
         (self.dir / "campaign.json").write_text(json.dumps(self.data))
@@ -768,7 +770,7 @@ class AutoCampaignCaseTest(unittest.TestCase):
         self.assertRegex(out, "FAIL .*auto")
 
     def test_campaign_gate_not_auto_approved_fails(self):
-        (self.dir / "log.md").write_text("## 2026-01-01T00:00:00Z · Campaign gate presented\n")
+        (self.dir / "log.md").write_text("## 2026-01-01T00:00:00Z · Campaign gate presented\n", encoding="utf-8")
         code, out = self.grade()
         self.assertEqual(code, 1, out)
         self.assertRegex(out, "FAIL .*auto-approved")
@@ -786,7 +788,7 @@ class WatchRedCiCaseTest(unittest.TestCase):
     CASE = REPO / "evals/cases/sandbox-005.toml"
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = Path(tempfile.mkdtemp()).resolve()
         self.project = make_project(self.tmp / "project")
         self.state_path = self.project / "specs/001-demo/state.json"
         self.state = {
@@ -795,7 +797,7 @@ class WatchRedCiCaseTest(unittest.TestCase):
             "watch": {"ci_failures": [{"check": "unit-tests", "sha": "3f2a9c1", "cause": "own", "task": "C1"}]}}
 
     def tearDown(self):
-        shutil.rmtree(self.tmp)
+        rmtree(self.tmp)
 
     def check(self):
         self.state_path.write_text(json.dumps(self.state))
@@ -845,7 +847,7 @@ class WatchReviewCommentCaseTest(unittest.TestCase):
     CASE = REPO / "evals/cases/sandbox-006.toml"
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = Path(tempfile.mkdtemp()).resolve()
         self.project = make_project(self.tmp / "project")
         self.state_path = self.project / "specs/001-demo/state.json"
         self.state = {
@@ -859,7 +861,7 @@ class WatchReviewCommentCaseTest(unittest.TestCase):
         (self.project / "test_greet.py").write_text("")
 
     def tearDown(self):
-        shutil.rmtree(self.tmp)
+        rmtree(self.tmp)
 
     def check(self):
         self.state_path.write_text(json.dumps(self.state))
@@ -912,7 +914,7 @@ class WatchMergedCaseTest(unittest.TestCase):
     CASE = REPO / "evals/cases/sandbox-007.toml"
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = Path(tempfile.mkdtemp()).resolve()
         self.project = make_project(self.tmp / "project")
         self.run = self.project / "specs/001-demo"
         self.state_path = self.run / "state.json"
@@ -925,7 +927,7 @@ class WatchMergedCaseTest(unittest.TestCase):
         (self.run / "retro.md").write_text("# Retro\n\n## After delivery\n- Outcome: merged\n")
 
     def tearDown(self):
-        shutil.rmtree(self.tmp)
+        rmtree(self.tmp)
 
     def check(self):
         self.state_path.write_text(json.dumps(self.state))

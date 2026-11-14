@@ -9,6 +9,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import PACK_TOML, TempRepoCase, brainrc, install_harnesses, make_pack, quiet, set_core_version  # noqa: E402
+from support import home_env, restore_home, rmtree, saved_home  # noqa: E402
 
 LEGACY_TOML = PACK_TOML.replace("[extensions.gatework]", "[extensions]").replace("extensions.gatework.", "extensions.")
 
@@ -16,17 +17,17 @@ LEGACY_TOML = PACK_TOML.replace("[extensions.gatework]", "[extensions]").replace
 class SplitCase(TempRepoCase):
     def setUp(self):
         super().setUp()
-        self.home = Path(tempfile.mkdtemp())
-        self.old_home = os.environ["HOME"]
-        os.environ["HOME"] = str(self.home)
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
         install_harnesses(self.home)
         set_core_version(self.repo, "1.2.3")
         self.pack = Path(tempfile.mkdtemp()).resolve() / "acme-pack"
 
     def tearDown(self):
-        os.environ["HOME"] = self.old_home
-        shutil.rmtree(self.home)
-        shutil.rmtree(self.pack.parent)
+        restore_home(self.old_home)
+        rmtree(self.home)
+        rmtree(self.pack.parent)
         super().tearDown()
 
     def packs(self, text: str) -> None:
@@ -34,7 +35,7 @@ class SplitCase(TempRepoCase):
 
     def acme(self, pack_toml: str = PACK_TOML, extra: str = "") -> None:
         make_pack(self.pack, pack_toml)
-        self.packs(f'[acme]\npath = "{self.pack}"\n{extra}')
+        self.packs(f'[acme]\npath = \'{self.pack}\'\n{extra}')
 
 
 class ZeroPacksTest(SplitCase):
@@ -126,7 +127,7 @@ class PluginTrustTest(SplitCase):
         code, out = quiet(brainrc.cmd_validate)
         self.assertNotIn("plugin ran", out)
         self.assertIn("ships a validator that brainrc doesn't run; set `run_validator = true` for [acme]", out)
-        self.packs(f'[acme]\npath = "{self.pack}"\nrun_validator = true\n')
+        self.packs(f'[acme]\npath = \'{self.pack}\'\nrun_validator = true\n')
         code, out = quiet(brainrc.cmd_validate)
         self.assertEqual(code, 1, out)
         self.assertIn("ERROR acme: plugin ran", out)
@@ -196,7 +197,7 @@ class DefaultPackTest(SplitCase):
     def test_a_local_path_replaces_the_default_packs_git(self):
         (self.repo / "packs.toml").write_text('[gatework]\ngit = "https://example.com/g.git"\nref = "v1.0.0"\n')
         clone = self.repo / "packs/gatework"
-        self.packs(f'[gatework]\npath = "{clone}"\n')
+        self.packs(f'[gatework]\npath = \'{clone}\'\n')
         cfg = brainrc.config._layered("packs")["gatework"]
         self.assertEqual(cfg, {"path": str(clone)})
         self.assertEqual(brainrc.sources()[1].root, clone)
@@ -226,7 +227,7 @@ class DefaultPackTest(SplitCase):
         self.assertNotIn("duplicate", out.lower())
 
     def test_validate_pack_names_a_missing_local_path(self):
-        self.packs(f'[gatework]\npath = "{self.pack.parent / "nowhere"}"\n')
+        self.packs(f"[gatework]\npath = '{self.pack.parent / 'nowhere'}'\n")
         make_pack(self.pack)
         code, out = quiet(brainrc.cmd_validate, str(self.pack))
         self.assertIn("default pack `gatework`: no directory at", out)

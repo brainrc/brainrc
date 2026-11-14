@@ -174,8 +174,10 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True, moved: frozens
                 fetch_pack(key, cfg, root, pins[key])
             except ConfigError as e:
                 print(f"ERROR {e}")
+                gone = (f" If they're right, the locked commit may be gone from the remote: "
+                        f"`{config.command('update ' + key)}` moves the pin.") if pins[key] else ""
                 print(f"\nNothing written. Check the pack's `git` and `ref`, then re-run, or set "
-                      f"`enabled = false` for [{key}] in packs.local.toml.")
+                      f"`enabled = false` for [{key}] in packs.local.toml.{gone}")
                 return 1
     try:
         srcs = sources()
@@ -236,11 +238,17 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True, moved: frozens
         permissions.first(new_lock.get("packs", {}), "first lock: recorded as the baseline" if apply
                           else "no brainrc.lock yet: apply records these")
     permissions.report(perms)
+    if apply and not relock and permissions.widens(perms):
+        print(f"\nNothing written. The packs would widen permissions that {lock.NAME} doesn't record "
+              f"(PERMS above), and install --frozen installs only what it records. Run "
+              f"`{config.command('apply')}` to review and accept them.")
+        return 1
     if apply and permissions.widens(perms) and not permissions.confirm(perms, yes, ""):
         return 1
-    if apply:  # a note, not a change: status stays "Everything in sync."
-        mcp_pins.report_unpinned({n: s for sync in mcp_plan(srcs) if sync.harness == "claude"
-                                  for n, s in sync.servers.items()})
+    claude_mcp = [sync for sync in mcp_plan(srcs) if sync.harness == "claude"]  # none under --only codex
+    if apply and claude_mcp:  # a note, not a change: status stays "Everything in sync."
+        mcp_pins.prune(claude_mcp[0].servers)
+        mcp_pins.report_unpinned(claude_mcp[0].servers)
 
     if apply:
         rendered = rendered_instructions()
@@ -401,11 +409,16 @@ def cmd_check(scope: str | None = None) -> int:
 def cmd_update(names: list[str] | None = None, yes: bool = False) -> int:
     """Move git packs (all, or the ones named) to what their `ref` resolves to now: refetch, show
     the commits and installed files that change, then apply and relock (brainrc/update.py)."""
-    moved = pin_update.fetch(names or [])
-    if isinstance(moved, int):
-        return moved
-    user, proj = moved
-    return _locked(lambda: _update_sync(user, proj, yes))
+    def run() -> int:  # under apply.lock, so an apply can't put a clone back between fetch and relock
+        moved = pin_update.fetch(names or [])
+        if isinstance(moved, int):
+            return moved
+        code = _update_sync(*moved, yes)
+        if code:  # refused or failed: the harnesses link into the clones, so put them back
+            pin_update.restore(*moved)
+        return code
+
+    return _locked(run)
 
 
 def _update_sync(user: frozenset[str], proj: frozenset[str], yes: bool) -> int:

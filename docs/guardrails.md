@@ -42,15 +42,19 @@ as a real run.
 - ask before reading or grepping them, including Bash commands that name one (`cat .env`,
   `--env-file=.env`)
 
-**`check_mcp_pins.py`** (SessionStart, on startup) → warns when an MCP server's tools changed
+**`check_mcp_pins.py`** (SessionStart, on startup and resume) → warns when an MCP server's tools changed
 after you approved them, the "rug pull" case. `brainrc pin-mcp` starts each stdio server brainrc
 installs for Claude Code, lists its tools, shows what changed, and on your yes records a hash of
 each tool definition in `$BRAINRC_HOME/mcp-pins.json`. At session start the hook lists the
 pinned servers' tools again and, for any tool changed, added or removed, shows a warning and
 tells the model not to call those tools until you re-run `pin-mcp`. It fails open: no pins, a
 server that won't start, or one that doesn't answer within 4 seconds (all servers in parallel)
-warns nothing. Each run writes its duration to `mcp-pins.last.json`. HTTP servers aren't pinned,
-since brainrc has no network code; `apply` names every stdio server whose tools aren't pinned.
+warns nothing, but a server left unchecked three sessions running is named to you. Each run
+writes its duration to `mcp-pins.last.json`. Tool names reach the model only when they are plain
+identifiers. Servers start in your home directory for both `pin-mcp` and the hook, so a check
+doesn't depend on the project. HTTP servers aren't pinned, since brainrc has no network code;
+`apply` names every stdio server whose tools aren't pinned and drops the pins of servers it no
+longer installs. The hook starts its own copy of each pinned server next to Claude Code's.
 
 All three are stdlib Python, tested in `tests/test_hooks.py` and `tests/test_mcp_pins.py`.
 Harness permission modes still apply.

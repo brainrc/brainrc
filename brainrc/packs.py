@@ -114,7 +114,7 @@ def fetch_pack(key: str, cfg: dict, root: Path, commit: str | None = None, depth
     want = commit or ref
     if root.exists():
         if _git("status", "--porcelain", cwd=root).strip():
-            raise ConfigError(f"pack {key}: {root} has local changes; commit or discard them, then update")
+            raise ConfigError(f"pack {key}: {root} has local changes; commit or discard them, then re-run")
         if not (commit and has_commit(root, commit)):
             _git("fetch", "-q", "--depth", str(depth), url, want, cwd=root)
         _git("checkout", "-q", "--detach", commit or "FETCH_HEAD", cwd=root)

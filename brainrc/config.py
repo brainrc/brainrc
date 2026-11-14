@@ -5,6 +5,8 @@ import contextlib
 import operator
 import os
 import re
+import shutil
+import stat
 import sys
 
 try:
@@ -324,8 +326,39 @@ def expand(path: str) -> Path:
     return Path(os.path.expandvars(os.path.expanduser(path)))
 
 
+def rmtree(path, ignore_errors: bool = False) -> None:
+    """shutil.rmtree that also deletes read-only files: Windows won't, and git marks its objects
+    read-only, so a fetched pack's .git would stay behind."""
+    def writable_retry(func, p, _exc):
+        os.chmod(p, stat.S_IWRITE)
+        func(p)
+    handler = {"onexc" if sys.version_info >= (3, 12) else "onerror": writable_retry}
+    try:
+        shutil.rmtree(path, **handler)
+    except OSError:
+        if not ignore_errors:
+            raise
+
+
+def readlink(path) -> str:
+    """os.readlink without the \\\\?\\ prefix Windows puts on an absolute target, so the
+    target compares equal to the path it was made from."""
+    target = os.readlink(path)
+    if target.startswith("\\\\?\\UNC\\"):
+        return "\\\\" + target[8:]
+    return target[4:] if target.startswith("\\\\?\\") else target
+
+
+def symlink(link: Path, target) -> None:
+    """Make link point at target. Windows needs to know whether the target is a directory: a
+    file link to a directory looks broken there."""
+    os.symlink(target, link, target_is_directory=os.path.isdir(os.path.join(link.parent, target)))
+
+
 def tilde(path: Path) -> str:
-    return str(path).replace(str(Path.home()), "~", 1)
+    """path for messages: under ~ written with ~, and with / as separator on every OS, so a
+    path reads (and pastes into a shell) the same on Windows as elsewhere."""
+    return Path(path).as_posix().replace(Path.home().as_posix(), "~", 1)
 
 
 HARNESS_VARS = ("CLAUDE_CONFIG_DIR", "CODEX_HOME", "XDG_CONFIG_HOME")  # read by harnesses.toml (#110)
@@ -340,7 +373,7 @@ def env_dir(var: str, default: str) -> str:
     value = os.path.expanduser(os.environ.get(var, ""))
     if not value or not os.path.isabs(value):
         return default
-    value, home = os.path.normpath(value), str(Path.home())
+    value, home = Path(os.path.normpath(value)).as_posix(), Path.home().as_posix()
     if value == home or value.startswith(home.rstrip("/") + "/"):
         return "~" + value[len(home.rstrip("/")):]
     return value
@@ -454,7 +487,10 @@ def hooks_copy_root() -> Path:
 
 
 def hook_command_dir(hooks_dir: str) -> str:
-    """hooks_dir as written into hook commands: `~` becomes `$HOME` so the shell expands it."""
+    """hooks_dir as written into hook commands: `~` becomes `$HOME` so the shell expands it, and
+    on Windows `\\` becomes `/` (a shell reads a backslash as an escape; Windows takes either)."""
+    if os.name == "nt":
+        hooks_dir = hooks_dir.replace("\\", "/")
     return "$HOME" + hooks_dir[1:] if hooks_dir.startswith("~") else hooks_dir
 
 

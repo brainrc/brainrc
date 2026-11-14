@@ -13,6 +13,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import TempRepoCase, brainrc, copy_repo, install_harnesses, quiet  # noqa: E402
+from support import home_env, readlink, restore_home, rmtree, saved_home, symlink  # noqa: E402
 
 BACKUP = re.compile(r"\.bak-brainrc-\d{8}T\d{6}Z$")
 SETTINGS = {"theme": "dark", "hooks": {"PreToolUse": [
@@ -30,11 +31,11 @@ def snapshot(home: Path) -> dict[str, object]:
     """Every dir, file and link under home, JSON files parsed; brainrc's backups left out."""
     found: dict[str, object] = {}
     for p in sorted(home.rglob("*")):
-        rel = str(p.relative_to(home))
+        rel = p.relative_to(home).as_posix()
         if BACKUP.search(p.name):
             continue
         if p.is_symlink():
-            found[rel] = ("link", os.readlink(p))
+            found[rel] = ("link", readlink(p))
         elif p.is_dir():
             found[rel] = "dir"
         elif p.suffix == ".json":
@@ -49,9 +50,9 @@ class UninstallTest(TempRepoCase):
 
     def setUp(self):
         super().setUp()
-        self.home = Path(tempfile.mkdtemp())
-        self.old_home = os.environ["HOME"]
-        os.environ["HOME"] = str(self.home)
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
         install_harnesses(self.home)
         (self.repo / "mcp").mkdir(exist_ok=True)
         (self.repo / "mcp/servers.toml").write_text('[servers.docs]\nurl = "https://example.com/mcp"\n')
@@ -61,11 +62,11 @@ class UninstallTest(TempRepoCase):
         (self.home / ".codex/config.toml").write_text('model = "o3"\n')
         (self.home / ".claude/skills/my-skill").mkdir(parents=True)
         (self.home / ".claude/skills/my-skill/SKILL.md").write_text("mine\n")
-        (self.home / ".claude/skills/my-link").symlink_to(self.home / ".claude/skills/my-skill")
+        symlink(self.home / ".claude/skills/my-link", self.home / ".claude/skills/my-skill")
 
     def tearDown(self):
-        os.environ["HOME"] = self.old_home
-        shutil.rmtree(self.home)
+        restore_home(self.old_home)
+        rmtree(self.home)
         super().tearDown()
 
     def links(self) -> list[Path]:
@@ -118,11 +119,11 @@ class UninstallTest(TempRepoCase):
         self.assertEqual(sorted(self.settings_home.rglob("*")), files)
 
     def test_works_after_the_checkout_is_deleted(self):
-        old = Path(tempfile.mkdtemp()) / "brainrc"
+        old = Path(tempfile.mkdtemp()).resolve() / "brainrc"
         copy_repo(old)
         brainrc.config.REPO = old
         quiet(brainrc.cmd_sync, True)
-        shutil.rmtree(old.parent)
+        rmtree(old.parent)
         brainrc.config.REPO = self.repo
         dangling = [p for p in self.links() if not p.exists()]
         self.assertTrue(dangling)

@@ -4,6 +4,7 @@ Runs `ccusage daily --json --since D --until D` (argument list, timeout, no shel
 period totals. Any failure yields an "unavailable" result; nothing is raised to the caller.
 """
 import json
+import shutil
 import subprocess
 from datetime import date
 
@@ -37,7 +38,10 @@ def _totals(data) -> tuple:
 
 
 def period_totals(since: date, until: date, timeout: float = 30) -> dict:
-    cmd = ["ccusage", "daily", "--json",
+    exe = shutil.which("ccusage")  # also finds ccusage.cmd, the npm shim on Windows
+    if exe is None:
+        return _unavailable(since, until, "ccusage not found on PATH")
+    cmd = [exe, "daily", "--json",
            "--since", since.strftime("%Y%m%d"), "--until", until.strftime("%Y%m%d")]
     try:
         proc = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, check=False)

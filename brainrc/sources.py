@@ -244,6 +244,24 @@ def excluded(src: Source, path: Path, exclude: list[str]) -> bool:
     return any(fnmatch.fnmatchcase(r, pat.rstrip("/")) for pat in exclude for r in (rel, f"{src.name}:{rel}"))
 
 
+def tree_files(top: Path) -> list[tuple[str, Path]]:
+    """(path under top with /, file) for every file under top, links followed, sorted.
+    __pycache__ is skipped, and a directory reached twice through links is read once."""
+    found, seen = [], set()
+    for dirpath, dirs, files in os.walk(top, followlinks=True):
+        real = os.path.realpath(dirpath)
+        if real in seen:
+            dirs[:] = []
+            continue
+        seen.add(real)
+        dirs[:] = sorted(d for d in dirs if d != "__pycache__")
+        for f in files:
+            p = Path(dirpath) / f
+            if p.is_file() and not f.endswith(".pyc"):
+                found.append((p.relative_to(top).as_posix(), p))
+    return sorted(found)
+
+
 def item_name(path: Path) -> str:
     return path.name if path.is_dir() else path.stem
 

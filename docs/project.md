@@ -43,6 +43,14 @@ in the current directory, under its own `Project <dir> (brainrc.toml)` heading.
   updated or removed as its pack changes. A file brainrc didn't write, or one you changed after
   it was removed from the packs, is a `CONFLICT` and is left alone.
 
+## Moved tags and branches
+
+`apply` resolves each git pack's `ref` and records the commit; `update` refetches every ref. When
+a ref the lock already has now resolves to another commit (a tag was moved, a branch moved on),
+`apply` and `update` print `MOVED <pack> <ref>: <old> -> <new>` and relock it. `status` never
+fetches, so it reports a move only once this machine's clone has the new commit; it then names
+both commits and writes nothing.
+
 ## `brainrc.toml`
 
 ```toml

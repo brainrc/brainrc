@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 from pathlib import Path
 
@@ -83,6 +84,21 @@ def _git(*args: str, cwd: Path) -> str:
         detail = (result.stderr.strip().splitlines() or [f"exit {result.returncode}"])[-1]
         raise ConfigError(f"git {args[0]} failed: {detail}")
     return result.stdout
+
+
+def head(root: Path) -> str | None:
+    """The commit a clone has checked out, or None. brainrc's clones are detached, so .git/HEAD
+    holds it; anything else asks `git rev-parse HEAD` (local, no network)."""
+    try:
+        text = (root / ".git/HEAD").read_text().strip()
+    except OSError:
+        text = ""
+    if re.fullmatch(r"[0-9a-f]{40}|[0-9a-f]{64}", text):
+        return text
+    try:
+        return _git("rev-parse", "HEAD", cwd=root).strip() or None
+    except (ConfigError, OSError):
+        return None
 
 
 def fetch_pack(key: str, cfg: dict, root: Path) -> None:

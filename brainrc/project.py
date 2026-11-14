@@ -18,7 +18,7 @@ from .config import ConfigError, _read_toml, settings_home, tilde, toml_error
 from .packs import describe, fetch_pack, needs_fetch
 from .sources import (
     Source, check_packs, collisions, default_packs, duplicate_packs, excluded, items, load_pack,
-    markdown_files, rule_text,
+    markdown_files, rule_text, tree_files,
 )
 
 MANIFEST = "brainrc.toml"
@@ -106,24 +106,6 @@ def load(root: Path) -> Project:
     if problems:
         raise ConfigError(f"{where}: " + "; ".join(problems))
     return Project(root, data)
-
-
-def tree_files(top: Path) -> list[tuple[str, Path]]:
-    """(path under top with /, file) for every file under top, links followed, sorted.
-    __pycache__ is skipped, and a directory reached twice through links is read once."""
-    found, seen = [], set()
-    for dirpath, dirs, files in os.walk(top, followlinks=True):
-        real = os.path.realpath(dirpath)
-        if real in seen:
-            dirs[:] = []
-            continue
-        seen.add(real)
-        dirs[:] = sorted(d for d in dirs if d != "__pycache__")
-        for f in files:
-            p = Path(dirpath) / f
-            if p.is_file() and not f.endswith(".pyc"):
-                found.append((p.relative_to(top).as_posix(), p))
-    return sorted(found)
 
 
 def project_items(src: Source, kind: str, exclude: list[str]) -> list[Path]:
@@ -235,10 +217,18 @@ def sync(root: Path, apply: bool) -> int:
         print("\nNothing written in the project. Fix the packs, then re-run.")
         return 1
     files, blocks = outputs(project, srcs)
-    return _write(project, old, files, blocks, apply)
+    try:
+        locked = {p.key: lock.pack_entry(p.cfg, p.root, lock.pack_files(src, project_items(src, "skills", project.exclude), False))
+                  for p, src in zip(packs, srcs)}
+    except ConfigError as e:
+        print(f"ERROR {e}\n\nNothing written in the project.")
+        return 1
+    lock.report_moved(old, {"packs": locked}, "relocked" if apply else "apply relocks it")
+    return _write(project, old, files, blocks, apply, locked)
 
 
-def _write(project: Project, old: dict, files: dict[str, bytes], blocks: dict[str, str], apply: bool) -> int:
+def _write(project: Project, old: dict, files: dict[str, bytes], blocks: dict[str, str], apply: bool,
+           locked: dict[str, dict]) -> int:
     owned = old.get("outputs", {})
     states: dict[str, str] = {}
     written: dict[str, str] = {}
@@ -285,8 +275,7 @@ def _write(project: Project, old: dict, files: dict[str, bytes], blocks: dict[st
     for unit, state in sorted(states.items()):
         detail = "  (changed since brainrc wrote it, or not brainrc's; move it, then re-run)" if state == "conflict" else ""
         print(f"{state.upper():9} {'project':9} {unit}{detail}")
-    new_lock = {"version": lock.VERSION, "brainrc": ".".join(map(str, _core_version())), "scope": "project",
-                "outputs": written, "blocks": block_hashes}
+    new_lock = lock.new_lock("project", locked, outputs=written, blocks=block_hashes)
     current_lock = project.lock_path.read_bytes() if project.lock_path.is_file() else None
     lock_changes = lock.dumps(new_lock).encode("utf-8") != current_lock
     if apply:
@@ -317,7 +306,3 @@ def _remove_empty_parents(d: Path, top: Path) -> None:
         d.rmdir()
         d = d.parent
 
-
-def _core_version() -> tuple[int, ...]:
-    from .sources import core_version
-    return core_version()

@@ -1,12 +1,12 @@
 """`brainrc check` (#285): drift between the repo, the packs and brainrc.lock fails, offline."""
 import os
 import re
-import shutil
 import sys
 from pathlib import Path
 from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from support import rmtree  # noqa: E402
 from test_brainrc import git, quiet  # noqa: E402
 from test_frozen import FrozenCase  # noqa: E402
 from test_lock import rev  # noqa: E402
@@ -88,7 +88,7 @@ class ProjectCheckTest(CheckCase):
         self.assertIn("pack team: skills/team-deploy/SKILL.md is in brainrc.lock but not in the pack", out)
 
     def test_a_fresh_checkout_without_the_git_pack_is_checked_through_its_files(self):
-        shutil.rmtree(self.settings_home / "project-packs")
+        rmtree(self.settings_home / "project-packs")
         out = self.check()
         self.assertIn("NOTE pack gatework: not fetched on this machine", out)
         (self.proj / ".agents/skills/brainrc-work/SKILL.md").write_text("changed\n")

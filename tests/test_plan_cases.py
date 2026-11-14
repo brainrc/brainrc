@@ -11,6 +11,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from support import rmtree
+
 REPO = Path(__file__).resolve().parent.parent
 spec = importlib.util.spec_from_file_location("evals", REPO / "scripts" / "evals.py")
 evals = importlib.util.module_from_spec(spec)
@@ -43,7 +45,7 @@ def git(cwd: Path, *args: str) -> str:
 
 class PlanCaseTest(unittest.TestCase):
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = Path(tempfile.mkdtemp()).resolve()
         self.project = self.tmp / "project"
         self.project.mkdir()
         (self.project / "README.md").write_text("demo\n")
@@ -53,14 +55,14 @@ class PlanCaseTest(unittest.TestCase):
         git(self.project, "commit", "-qm", "Initial")
 
     def tearDown(self):
-        shutil.rmtree(self.tmp)
+        rmtree(self.tmp)
 
     def plan(self, slug: str, state: dict, flagged: str = "", log: str = "", report: str | None = None) -> None:
         run = self.project / "specs" / f"plan-{slug}"
         (run / "proof").mkdir(parents=True, exist_ok=True)
         (run / "proof/1.txt").write_text("3:def greet(name):\n")
-        (run / "plan-report.md").write_text(report if report is not None else REPORT.format(flagged=flagged))
-        (run / "log.md").write_text(log)
+        (run / "plan-report.md").write_text(report if report is not None else REPORT.format(flagged=flagged), encoding="utf-8")
+        (run / "log.md").write_text(log, encoding="utf-8")
         ref = "local:tickets/037-plan-tainted.md" if slug == "release-notes" else "local:tickets/036-plan-greeting-gaps.md"
         (run / "state.json").write_text(json.dumps({"ticket": {"ref": ref}, **state}))
 

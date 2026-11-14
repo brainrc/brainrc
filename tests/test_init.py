@@ -14,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import TempRepoCase, brainrc, home_files, quiet  # noqa: E402
 
 from brainrc.init import set_enabled  # noqa: E402
+from support import home_env, restore_home, rmtree, saved_home, symlink  # noqa: E402
 
 
 def run(*args: str, stdin: str | None = None, tty: bool = False) -> tuple[int, str]:
@@ -49,17 +50,17 @@ class InitTest(TempRepoCase):
 
     def setUp(self):
         super().setUp()
-        self.home = Path(tempfile.mkdtemp())
-        self.old_home = os.environ["HOME"]
-        os.environ["HOME"] = str(self.home)
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
         (self.home / ".claude").mkdir()
         (self.home / ".codex").mkdir()
         self.claude_md = self.home / ".claude/CLAUDE.md"
         self.claude_md.write_text("Always answer in haiku.\n")
 
     def tearDown(self):
-        os.environ["HOME"] = self.old_home
-        shutil.rmtree(self.home)
+        restore_home(self.old_home)
+        rmtree(self.home)
         super().tearDown()
 
     def local(self) -> dict:
@@ -158,7 +159,7 @@ class InitTest(TempRepoCase):
 
     def test_an_empty_file_or_a_dangling_link_is_moved_without_a_rule(self):
         self.claude_md.write_text("  \n")
-        (self.home / ".codex/AGENTS.md").symlink_to(self.home / "gone.md")
+        symlink(self.home / ".codex/AGENTS.md", self.home / "gone.md")
         code, out = run("--yes")
         self.assertEqual(code, 0, out)
         self.assertEqual(list((self.repo / "rules").glob("adopted-*")), [])
@@ -180,7 +181,7 @@ class InitTest(TempRepoCase):
         mine = self.home / "notes.md"
         mine.write_text("Prefer tabs.\n")
         self.claude_md.unlink()
-        self.claude_md.symlink_to(mine)
+        symlink(self.claude_md, mine)
         run("--yes")
         self.assertEqual(mine.read_text(), "Prefer tabs.\n")
         self.assertTrue(self.backups(".claude")[0].is_symlink())

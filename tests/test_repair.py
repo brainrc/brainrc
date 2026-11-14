@@ -10,6 +10,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import TempRepoCase, brainrc, install_harnesses, quiet  # noqa: E402
+from support import home_env, readlink, restore_home, rmtree, saved_home, symlink  # noqa: E402
 
 
 def run(*args: str) -> tuple[int, str]:
@@ -22,28 +23,28 @@ def run(*args: str) -> tuple[int, str]:
 class RepairTest(TempRepoCase):
     def setUp(self):
         super().setUp()
-        self.home = Path(tempfile.mkdtemp())
-        self.old_home = os.environ["HOME"]
-        os.environ["HOME"] = str(self.home)
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
         install_harnesses(self.home)
         self.skill = self.home / ".claude/skills/spec-agent"
 
     def tearDown(self):
-        os.environ["HOME"] = self.old_home
-        shutil.rmtree(self.home)
+        restore_home(self.old_home)
+        rmtree(self.home)
         super().tearDown()
 
     def move_checkout(self) -> Path:
         old = self.repo
-        new = Path(tempfile.mkdtemp()) / "moved"
+        new = Path(tempfile.mkdtemp()).resolve() / "moved"
         shutil.move(str(old), str(new))
-        self.addCleanup(shutil.rmtree, new.parent, True)
+        self.addCleanup(rmtree, new.parent, True)
         self.repo = new
         brainrc.config.REPO = new
         return old
 
     def links_into(self, root: Path) -> list[Path]:
-        return [p for p in self.home.rglob("*") if p.is_symlink() and str(root) in os.readlink(p)]
+        return [p for p in self.home.rglob("*") if p.is_symlink() and str(root) in readlink(p)]
 
     def test_a_moved_checkout_is_back_in_sync_after_repair(self):
         quiet(brainrc.cmd_sync, True)
@@ -57,7 +58,7 @@ class RepairTest(TempRepoCase):
         self.assertIn("REPAIR", out)
         self.assertNotIn("CONFLICT", out)
         self.assertEqual(self.links_into(old), [])
-        self.assertEqual(os.readlink(self.skill), str(self.repo / "packs/gatework/skills/spec-agent"))
+        self.assertEqual(readlink(self.skill), str(self.repo / "packs/gatework/skills/spec-agent"))
         self.assertTrue((self.home / ".claude/hooks/brainrc").resolve().is_dir())
         code, out = run("status")
         self.assertEqual(code, 0, out)
@@ -102,20 +103,20 @@ class RepairTest(TempRepoCase):
 
     def test_a_broken_link_to_another_item_stays_a_conflict(self):
         self.skill.parent.mkdir(parents=True, exist_ok=True)
-        self.skill.symlink_to(self.home / "gone/somewhere-else")
+        symlink(self.skill, self.home / "gone/somewhere-else")
         code, out = run("apply", "--repair")
         self.assertEqual(code, 1)
         self.assertIn("CONFLICT", out)
-        self.assertEqual(os.readlink(self.skill), str(self.home / "gone/somewhere-else"))
+        self.assertEqual(readlink(self.skill), str(self.home / "gone/somewhere-else"))
 
     def test_a_working_link_to_the_users_own_copy_stays_a_conflict(self):
         mine = self.home / "mine/skills/spec-agent"
         mine.mkdir(parents=True)
         self.skill.parent.mkdir(parents=True, exist_ok=True)
-        self.skill.symlink_to(mine)
+        symlink(self.skill, mine)
         code, out = run("apply", "--repair")
         self.assertEqual(code, 1)
-        self.assertEqual(os.readlink(self.skill), str(mine))
+        self.assertEqual(readlink(self.skill), str(mine))
         self.assertNotIn("apply --repair` relinks", out)
 
     def test_doctor_suggests_repair_for_a_moved_checkout(self):
@@ -138,22 +139,22 @@ class RepairTest(TempRepoCase):
         notes.mkdir(parents=True)
         (notes / "SKILL.md").write_text("x\n")
         mine = self.home / ".claude/skills/my-notes"
-        mine.symlink_to(notes)
+        symlink(mine, notes)
         self.skill.unlink()
-        self.skill.symlink_to(self.home / "dotfiles/skills/spec-agent")  # the user's own, broken
+        symlink(self.skill, self.home / "dotfiles/skills/spec-agent")  # the user's own, broken
         code, out = run("apply", "--repair")
         self.assertEqual(code, 0, out)
         self.assertNotIn("PRUNE", out)
-        self.assertEqual(os.readlink(mine), str(notes))
-        self.assertEqual(os.readlink(self.skill), str(self.repo / "packs/gatework/skills/spec-agent"))
+        self.assertEqual(readlink(mine), str(notes))
+        self.assertEqual(readlink(self.skill), str(self.repo / "packs/gatework/skills/spec-agent"))
 
     def test_a_shallow_broken_link_never_makes_home_a_root(self):
         quiet(brainrc.cmd_sync, True)
         (self.home / "skills/my-notes").mkdir(parents=True)
         mine = self.home / ".claude/skills/my-notes"
-        mine.symlink_to(self.home / "skills/my-notes")  # a live link of the user's
+        symlink(mine, self.home / "skills/my-notes")  # a live link of the user's
         self.skill.unlink()
-        self.skill.symlink_to(self.home / "skills/spec-agent")  # broken: its derived root is ~
+        symlink(self.skill, self.home / "skills/spec-agent")  # broken: its derived root is ~
         (trusted, prune), _ = quiet(brainrc.cli._old_roots, brainrc.sources(), [self.repo])
         self.assertNotIn(self.home, trusted + prune)
         code, out = run("apply", "--repair")

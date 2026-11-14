@@ -93,3 +93,10 @@ Draft PR #355 (base `main`). `validate` and the full suite passed before the pus
   hook starts its own copy of each server beside Claude Code's.
 - #355: Cursor's flat hooks, hooks without a command, URL query and secret args hidden, whole-path
   home scrub, rules and servers installed only when really there, one rule-discovery function.
+
+## merge · Jacob: "Merge, bump to v2"
+- #353 moved brainrc.lock to version 2 (reads 1 and 2, writes 2), so brainrc 0.7.7 and older ask
+  for an upgrade instead of failing the schema on `permissions`.
+- Merged in order: #352 (v0.7.7), #353 (v0.8.0), #354 (v0.8.1). Core 0.8.0 fell outside Gatework
+  v0.7.1's `requires_core <0.8`; brainrc/gatework#11 widened it to `<0.9` (Gatework v0.7.2), and
+  #354 moved the default pack to v0.7.2 and the example pins to `<0.9`. #355 merges last.

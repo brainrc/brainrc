@@ -1,0 +1,2 @@
+# expect: exclude: must be an array
+exclude = "skills/x"

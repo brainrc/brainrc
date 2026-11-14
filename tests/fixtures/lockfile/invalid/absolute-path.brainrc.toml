@@ -1,0 +1,3 @@
+# expect: packs.team.path
+[packs.team]
+path = "/opt/agent-pack"

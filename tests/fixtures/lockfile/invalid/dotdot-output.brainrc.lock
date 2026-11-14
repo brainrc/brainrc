@@ -1,0 +1,8 @@
+# expect: key "../AGENTS.md" is not allowed
+# brainrc.lock: written by brainrc. Don't edit it by hand.
+version = 1
+brainrc = "0.7.3"
+scope = "project"
+
+[outputs]
+"../AGENTS.md" = "sha256:3e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d"

@@ -1,0 +1,3 @@
+# expect: key "Acme" is not allowed
+[packs.Acme]
+path = "tools/a"

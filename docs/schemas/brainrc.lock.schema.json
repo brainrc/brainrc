@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/brainrc/brainrc/blob/main/docs/schemas/brainrc.lock.schema.json",
+  "title": "brainrc.lock",
+  "description": "A user or project lock written by brainrc, after it is parsed as TOML (docs/project.md).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "brainrc",
+    "scope"
+  ],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "const": 1
+    },
+    "brainrc": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "user",
+        "project"
+      ]
+    },
+    "packs": {
+      "type": "object",
+      "propertyNames": {
+        "minLength": 1
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/pack"
+      }
+    },
+    "outputs": {
+      "$ref": "#/$defs/hashes"
+    },
+    "blocks": {
+      "$ref": "#/$defs/hashes"
+    }
+  },
+  "$defs": {
+    "hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "hashes": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/relPath"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/hash"
+      }
+    },
+    "relPath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?![/~$\\\\])(?![A-Za-z]:)(?!(.*/)?\\.\\.(/|$))[^\\\\]+$"
+    },
+    "pack": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "files"
+      ],
+      "properties": {
+        "git": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!https?://[^/@]*@)(?![^/]*://[^/@:]*:[^/@]*@)[^-]"
+        },
+        "ref": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[^-]"
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^([0-9a-f]{40}|[0-9a-f]{64})$"
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "files": {
+          "$ref": "#/$defs/hashes"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "git",
+            "ref",
+            "commit"
+          ],
+          "not": {
+            "required": [
+              "path"
+            ]
+          }
+        },
+        {
+          "required": [
+            "path"
+          ],
+          "not": {
+            "anyOf": [
+              {
+                "required": [
+                  "git"
+                ]
+              },
+              {
+                "required": [
+                  "ref"
+                ]
+              },
+              {
+                "required": [
+                  "commit"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

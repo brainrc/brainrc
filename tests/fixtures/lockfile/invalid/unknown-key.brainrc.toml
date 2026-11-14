@@ -1,0 +1,4 @@
+# expect: unknown key `branch`
+[packs.acme]
+git = "https://example.com/a.git"
+branch = "main"

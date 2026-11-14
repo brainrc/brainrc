@@ -1,0 +1,4 @@
+# expect: `brainrc` is required
+# brainrc.lock: written by brainrc. Don't edit it by hand.
+version = 1
+scope = "user"

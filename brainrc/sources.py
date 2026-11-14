@@ -234,13 +234,14 @@ def installed_items(src: Source, kind: str) -> list[Path]:
     (`skills/brainrc-aws`) or that path after the pack's name (`gatework:skills/brainrc-aws`)."""
     if not config.installs("items"):
         return []
-    _, exclude = config.install_profile()
-    found = []
-    for p in items(src, kind):
-        rel = p.relative_to(src.root).as_posix()
-        if not any(fnmatch.fnmatchcase(r, pat.rstrip("/")) for pat in exclude for r in (rel, f"{src.name}:{rel}")):
-            found.append(p)
-    return found
+    return [p for p in items(src, kind) if not excluded(src, p, config.install_profile()[1])]
+
+
+def excluded(src: Source, path: Path, exclude: list[str]) -> bool:
+    """True if an `exclude` pattern matches the item's path in its source (`skills/brainrc-aws`)
+    or that path after the pack's name (`gatework:skills/brainrc-aws`)."""
+    rel = path.relative_to(src.root).as_posix()
+    return any(fnmatch.fnmatchcase(r, pat.rstrip("/")) for pat in exclude for r in (rel, f"{src.name}:{rel}"))
 
 
 def item_name(path: Path) -> str:

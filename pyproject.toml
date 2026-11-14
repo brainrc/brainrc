@@ -32,3 +32,4 @@ packages = ["brainrc"]
 "packs.toml" = "brainrc/_core/packs.toml"
 "VERSION" = "brainrc/_core/VERSION"
 "CHANGELOG.md" = "brainrc/_core/CHANGELOG.md"
+"docs/schemas" = "brainrc/_core/docs/schemas"

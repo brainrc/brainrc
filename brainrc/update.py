@@ -12,7 +12,7 @@ from pathlib import Path
 from . import lock
 from .config import ConfigError
 from .packs import (
-    UPDATE_DEPTH, commits_between, describe, fetch_pack, git_packs, head, pinned,
+    UPDATE_DEPTH, commits_between, describe, fetch_pack, git_packs, head, pinned, printable,
 )
 from .project import MANIFEST, find_project, load, project_pack_files
 from .sources import load_pack
@@ -27,9 +27,14 @@ def _targets() -> list[tuple[str, str, dict, Path, dict | None, object]]:
         found.append(("user", key, cfg, root, user_lock, lock.user_pack_files))
     here = find_project()
     if here:
-        proj = load(here)
-        proj_lock = lock.read(proj.lock_path)
-        for p in proj.packs():
+        try:  # a broken project config mustn't stop the user scope's packs from moving
+            proj = load(here)
+            proj_lock = lock.read(proj.lock_path)
+            proj_packs = proj.packs()
+        except ConfigError as e:
+            print(f"WARN the project's packs aren't updated: {e}")
+            return found
+        for p in proj_packs:
             if "git" in p.cfg:
                 found.append(("project", p.key, p.cfg, p.root, proj_lock,
                               lambda src, proj=proj: project_pack_files(proj, src)))
@@ -54,7 +59,9 @@ def fetch(names: list[str]) -> tuple[frozenset[str], frozenset[str]] | int:
     for scope, key, cfg, root, locked, files_of in targets:
         if names and key not in names:
             continue
-        old = pinned(locked, key, cfg) or (head(root) if root.is_dir() else None)
+        pin = pinned(locked, key, cfg)
+        recorded = key in (locked or {}).get("packs", {})  # with another git or ref: nothing to compare
+        old = pin or (None if recorded else head(root) if root.is_dir() else None)
         print(describe(key, cfg))
         try:
             fetch_pack(key, cfg, root, depth=UPDATE_DEPTH)
@@ -63,18 +70,21 @@ def fetch(names: list[str]) -> tuple[frozenset[str], frozenset[str]] | int:
             print("\nNothing applied. Fix it, then re-run update; apply keeps every pack at its locked commit.")
             return 1
         entry = (locked or {}).get("packs", {}).get(key)
-        report(scope, key, cfg, root, old, entry if pinned(locked, key, cfg) else None, files_of)
+        report(scope, key, cfg, root, old, entry if pin else None, files_of, recorded and not pin)
         moved[scope].add(key)
     return frozenset(moved["user"]), frozenset(moved["project"])
 
 
-def report(scope: str, key: str, cfg: dict, root: Path, old: str | None, entry: dict | None, files_of) -> None:
-    """The lines update prints for one pack before apply relocks it."""
+def report(scope: str, key: str, cfg: dict, root: Path, old: str | None, entry: dict | None, files_of,
+           repointed: bool = False) -> None:
+    """The lines update prints for one pack before apply relocks it. repointed: the lock pins
+    another `git` or `ref`, so there are no commits or files to compare with."""
     new = head(root) or "?"
-    ref = str(cfg.get("ref", "HEAD"))
+    ref = printable(str(cfg.get("ref", "HEAD")))
     where = f"({scope} scope)" if scope == "user" else f"(project, {MANIFEST})"
     if old is None:
-        print(f"{'PIN':9} {key:9} {ref} at {new[:12]}  {where}")
+        note = ", a new `git` or `ref` since brainrc.lock" if repointed else ""
+        print(f"{'PIN':9} {key:9} {ref} at {new[:12]}{note}  {where}")
         return
     if old == new:
         print(f"{'CURRENT':9} {key:9} {ref} at {new[:12]}, no change  {where}")
@@ -91,14 +101,14 @@ def report(scope: str, key: str, cfg: dict, root: Path, old: str | None, entry: 
     try:
         now = files_of(load_pack(root, key))
     except ConfigError as e:
-        print(f"{'':9} {'files':9} can't list them: {e}")
+        print(f"{'':9} {'files':9} can't list them: {printable(str(e))}")
         return
     was = entry.get("files", {})
     for rel in sorted(set(was) | set(now)):
         if rel not in was:
-            print(f"{'':9} {'added':9} {rel}")
+            print(f"{'':9} {'added':9} {printable(rel)}")
         elif rel not in now:
-            print(f"{'':9} {'removed':9} {rel}")
+            print(f"{'':9} {'removed':9} {printable(rel)}")
         elif was[rel] != now[rel]:
-            print(f"{'':9} {'changed':9} {rel}")
+            print(f"{'':9} {'changed':9} {printable(rel)}")
 

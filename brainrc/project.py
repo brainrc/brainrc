@@ -350,8 +350,10 @@ def sync(root: Path, apply: bool, moved: frozenset[str] = frozenset()) -> int:
             try:
                 fetch_pack(p.key, p.cfg, p.root, pins[p.key])
             except ConfigError as e:
+                gone = (f" If they're right, the locked commit may be gone from the remote: "
+                        f"`{config.command('update ' + p.key)}` moves the pin.") if pins[p.key] else ""
                 print(f"ERROR {e}\n\nNothing written in the project. Check the pack's `git` and `ref` "
-                      f"in {MANIFEST}, then re-run.")
+                      f"in {MANIFEST}, then re-run.{gone}")
                 return 1
     if pending and not apply:
         print("\nDry run. Run `apply` to fetch, then `status` lists the project's files.")

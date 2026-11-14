@@ -26,7 +26,7 @@ SKILLS_DIR = ".agents/skills"
 INSTRUCTIONS = "AGENTS.md"
 BEGIN = "<!-- brainrc:begin"
 END = "<!-- brainrc:end -->"
-BLOCK = re.compile(r"<!-- brainrc:begin\b[^\n]*-->\n.*?<!-- brainrc:end -->", re.S)
+BLOCK = re.compile(r"<!-- brainrc:begin\b[^\r\n]*-->\r?\n.*?<!-- brainrc:end -->", re.S)
 ORIGIN_KEYS = ("git", "path")
 
 
@@ -134,10 +134,10 @@ def with_block(text: str | None, block: str | None) -> str | None:
     if block is not None:
         if m:
             return text[:m.start()] + block + text[m.end():]
-        return (text.rstrip("\n") + "\n\n" if text.strip() else "") + block + "\n"
+        return (text.rstrip("\r\n") + "\n\n" if text.strip() else "") + block + "\n"
     if not m:
         return text or None
-    before, after = text[:m.start()].rstrip("\n"), text[m.end():].lstrip("\n")
+    before, after = text[:m.start()].rstrip("\r\n"), text[m.end():].lstrip("\r\n")
     rest = before + ("\n\n" if before and after else "\n" if before else "") + after
     return rest if rest.strip() else None
 

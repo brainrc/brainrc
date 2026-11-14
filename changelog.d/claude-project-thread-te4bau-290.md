@@ -9,3 +9,5 @@ bump: patch
   stdio servers whose tools aren't pinned (#290).
 - The example packs, the tutorial and the pack docs pin `requires_core` below 0.9, so they
   validate against core 0.8.
+- The default pack moves to Gatework v0.7.2, which allows core 0.8. Gatework v0.7.1 allowed only
+  core below 0.8, so `apply` on core 0.8.0 refused it and wrote nothing.

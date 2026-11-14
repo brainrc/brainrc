@@ -13,7 +13,10 @@
   "properties": {
     "version": {
       "type": "integer",
-      "const": 1
+      "enum": [
+        1,
+        2
+      ]
     },
     "brainrc": {
       "type": "string",

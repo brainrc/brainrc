@@ -172,8 +172,10 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True, moved: frozens
                 fetch_pack(key, cfg, root, pins[key])
             except ConfigError as e:
                 print(f"ERROR {e}")
+                gone = (f" If they're right, the locked commit may be gone from the remote: "
+                        f"`{config.command('update ' + key)}` moves the pin.") if pins[key] else ""
                 print(f"\nNothing written. Check the pack's `git` and `ref`, then re-run, or set "
-                      f"`enabled = false` for [{key}] in packs.local.toml.")
+                      f"`enabled = false` for [{key}] in packs.local.toml.{gone}")
                 return 1
     try:
         srcs = sources()
@@ -396,11 +398,13 @@ def cmd_check(scope: str | None = None) -> int:
 def cmd_update(names: list[str] | None = None, yes: bool = False) -> int:
     """Move git packs (all, or the ones named) to what their `ref` resolves to now: refetch, show
     the commits and installed files that change, then apply and relock (brainrc/update.py)."""
-    moved = pin_update.fetch(names or [])
-    if isinstance(moved, int):
-        return moved
-    user, proj = moved
-    return _locked(lambda: _update_sync(user, proj, yes))
+    def run() -> int:  # under apply.lock, so an apply can't put a clone back between fetch and relock
+        moved = pin_update.fetch(names or [])
+        if isinstance(moved, int):
+            return moved
+        return _update_sync(*moved, yes)
+
+    return _locked(run)
 
 
 def _update_sync(user: frozenset[str], proj: frozenset[str], yes: bool) -> int:

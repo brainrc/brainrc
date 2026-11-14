@@ -1,6 +1,7 @@
 """Git packs pinned to a commit (#288): apply and install keep each git pack at the commit
 brainrc.lock records, and only `brainrc update <pack>` moves it, printing the commits and the
 installed files that change first. Gatework, the default git pack, is the main case."""
+import os
 import sys
 import unittest
 from pathlib import Path
@@ -124,6 +125,38 @@ class DefaultBranchPinTest(PinCase):
         out = self.update()
         self.assertNotIn("\x1b", out)
         self.assertIn("bad ?]0;owned? subject", out)
+
+    def test_a_new_ref_is_pinned_without_a_false_history_warning(self):
+        (self.repo / "packs.toml").write_text(f'[gatework]\ngit = "{self.url}"\nref = "v1"\n')
+        out = self.update()
+        self.assertIn("a new `git` or `ref` since brainrc.lock", out)
+        self.assertNotIn("isn't in the last", out)
+        self.assertEqual(self.pin(), rev(self.bare, "v1"))
+
+    @unittest.skipIf(os.name == "nt", "Windows file names can't hold control characters")
+    def test_a_terminal_escape_in_a_file_name_is_not_printed(self):
+        self.commit("odd name", **{"skills__brainrc-later__SKILL.md": SKILL("brainrc-later"),
+                                   "skills__brainrc-later__x\x1b[2Jy.md": "x\n"})
+        out = self.update()
+        self.assertNotIn("\x1b", out)
+        self.assertIn("skills/brainrc-later/x?[2Jy.md", out)
+
+    def test_a_broken_project_config_still_updates_the_user_scope(self):
+        b = self.commit("v3", **{"skills__brainrc-later__SKILL.md": SKILL("brainrc-later")})
+        self.manifest("[packs.gatework\n")
+        got, out = quiet(brainrc.cmd_update, [])
+        self.assertIn("WARN the project's packs aren't updated", out)
+        self.assertEqual(self.pin(), b)
+
+    def test_a_pinned_commit_that_cant_be_fetched_names_update(self):
+        rmtree(self.clone)
+        (self.repo / "packs.toml").write_text(f'[gatework]\ngit = "{(self.tmp / "gone.git").as_uri()}"\n')
+        lock_data = lock.read(self.user_lock)
+        lock_data["packs"]["gatework"]["git"] = (self.tmp / "gone.git").as_uri()
+        lock.write(self.user_lock, lock_data)
+        got, out = quiet(brainrc.cmd_sync, True)
+        self.assertEqual(got, 1, out)
+        self.assertIn("update gatework` moves the pin.", out)
 
     def test_a_failed_update_leaves_apply_on_the_pin(self):
         self.commit("v3", **{"skills__brainrc-later__SKILL.md": SKILL("brainrc-later")})

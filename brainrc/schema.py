@@ -100,7 +100,7 @@ _SCHEMAS: dict[str, dict] = {}
 def load(name: str) -> dict:
     """docs/schemas/<name>.schema.json from core (bundled with an installed package)."""
     if name not in _SCHEMAS:
-        _SCHEMAS[name] = json.loads((schema_dir() / f"{name}.schema.json").read_text())
+        _SCHEMAS[name] = json.loads((schema_dir() / f"{name}.schema.json").read_text(encoding="utf-8"))
     return _SCHEMAS[name]
 
 

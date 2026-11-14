@@ -13,8 +13,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import TempRepoCase, brainrc, quiet  # noqa: E402
 
 from brainrc.doctor import _double_install_findings, _plugin_findings, cmd_doctor  # noqa: E402
+from support import home_env, restore_home, rmtree, saved_home, symlink  # noqa: E402
 
-HOME_VARS = ("HOME", "BRAINRC_HOME", "AICFG_HOME", "XDG_CONFIG_HOME", "CLAUDE_CONFIG_DIR", "CODEX_HOME")
+HOME_VARS = ("HOME", "USERPROFILE", "BRAINRC_HOME", "AICFG_HOME", "XDG_CONFIG_HOME", "CLAUDE_CONFIG_DIR", "CODEX_HOME")
 
 
 class TestPluginFindings(unittest.TestCase):
@@ -28,7 +29,7 @@ class TestPluginFindings(unittest.TestCase):
 
     def findings(self):
         env = {k: v for k, v in os.environ.items() if k not in HOME_VARS}
-        env["HOME"] = str(self.home)
+        env.update(home_env(self.home))
         with mock.patch.dict(os.environ, env, clear=True):
             return _plugin_findings()
 
@@ -103,8 +104,8 @@ class TestPluginFindings(unittest.TestCase):
         self.assertEqual(seen, ["utf-8"])
 
     def test_cursor_unsearchable_parent_no_finding_and_no_error(self):
-        if os.geteuid() == 0:
-            self.skipTest("chmod 000 does not restrict root")
+        if os.name == "nt" or os.geteuid() == 0:
+            self.skipTest("chmod 000 restricts neither root nor anyone on Windows")
         (self.cursor / "ai-config").mkdir(parents=True)
         self.cursor.chmod(0)
         self.addCleanup(self.cursor.chmod, 0o755)
@@ -130,7 +131,7 @@ class TestPluginFindings(unittest.TestCase):
 
     def test_cursor_old_symlink_warns_even_when_broken(self):
         self.cursor.mkdir(parents=True)
-        (self.cursor / "ai-config").symlink_to(self.home / "gone")
+        symlink(self.cursor / "ai-config", self.home / "gone")
         self.assert_cursor_warn(self.findings())
 
     def test_cursor_old_next_to_new_still_warns(self):
@@ -155,7 +156,7 @@ class TestPluginFindings(unittest.TestCase):
     def test_warnings_do_not_change_exit_code(self):
         self.write_installed({"plugins": {"ai-config@ai-config": []}})
         env = {k: v for k, v in os.environ.items() if k not in HOME_VARS}
-        env["HOME"] = str(self.home)
+        env.update(home_env(self.home))
         with mock.patch.dict(os.environ, env, clear=True), \
                 mock.patch("brainrc.doctor.doctor_findings", return_value=_plugin_findings()), \
                 mock.patch("builtins.print"):
@@ -179,7 +180,7 @@ class DoubleInstallTest(unittest.TestCase):
 
     def findings(self, linked):
         env = {k: v for k, v in os.environ.items() if k not in HOME_VARS}
-        env["HOME"] = str(self.home)
+        env.update(home_env(self.home))
         with mock.patch.dict(os.environ, env, clear=True):
             return _double_install_findings(set(linked))
 
@@ -217,7 +218,7 @@ class DoubleInstallTest(unittest.TestCase):
 
     def test_cursor_plugin_and_links_warn(self):
         self.cursor_plugin.parent.mkdir(parents=True)
-        self.cursor_plugin.symlink_to(self.home / "src/brainrc")
+        symlink(self.cursor_plugin, self.home / "src/brainrc")
         [(level, what, fix)] = self.findings({"cursor"})
         self.assertEqual(level, "WARN")
         self.assertIn("~/.cursor/plugins/local/brainrc", what)
@@ -230,16 +231,16 @@ class DoubleInstallDoctorTest(TempRepoCase):
 
     def setUp(self):
         super().setUp()
-        self.home = Path(tempfile.mkdtemp())
-        self.old_home = os.environ["HOME"]
-        os.environ["HOME"] = str(self.home)
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
         (self.home / ".claude/plugins").mkdir(parents=True)
         (self.home / ".claude/plugins/installed_plugins.json").write_text(
             json.dumps({"version": 2, "plugins": {"brainrc@brainrc": [{"scope": "user"}]}}))
 
     def tearDown(self):
-        os.environ["HOME"] = self.old_home
-        shutil.rmtree(self.home)
+        restore_home(self.old_home)
+        rmtree(self.home)
         super().tearDown()
 
     def double(self):

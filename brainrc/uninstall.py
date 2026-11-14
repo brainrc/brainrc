@@ -13,7 +13,6 @@ from __future__ import annotations
 import json
 import os
 import re
-import shutil
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -118,7 +117,7 @@ def _fragment_extras(name: str) -> dict:
 def _set_aside(path: Path) -> None:
     """Delete a file that holds nothing of the user's, keeping it as a backup like apply does."""
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    os.rename(path, path.with_name(f"{path.name}.bak-brainrc-{stamp}"))
+    os.replace(path, path.with_name(f"{path.name}.bak-brainrc-{stamp}"))  # rename's POSIX behaviour, on Windows too
 
 
 def _settings_steps(name: str, h: dict, problems: list[str]) -> list[Step]:
@@ -175,7 +174,7 @@ def _generated() -> list[Path]:
 
 def _remove(path: Path) -> None:
     if path.is_dir() and not path.is_symlink():
-        shutil.rmtree(path)
+        config.rmtree(path)
     else:
         path.unlink()
 
@@ -221,10 +220,33 @@ def _purge_refusal(home: Path, configs: list[tuple[str, dict]]) -> str | None:
     return None
 
 
+_held_lock: list[Path] = []  # a purged home whose apply.lock this run still holds open (Windows)
+
+
 def _purge(home: Path) -> None:
+    held = os.name == "nt" and (home / "apply.lock").exists()  # Windows can't delete a file held open
     for p in sorted(home.iterdir()):
-        _remove(p)
-    home.rmdir()
+        if not (held and p.name == "apply.lock"):
+            _remove(p)
+    if held:
+        _held_lock.append(home)  # finish_purge() deletes the lock and the home
+    else:
+        home.rmdir()
+
+
+def finish_purge() -> int:
+    """After the lock is let go: delete the apply.lock and settings home --purge had to leave."""
+    while _held_lock:
+        home = _held_lock.pop()
+        if [p.name for p in home.iterdir()] != ["apply.lock"]:
+            continue  # something new arrived since the purge; leave it
+        try:
+            (home / "apply.lock").unlink()
+            home.rmdir()
+        except OSError as e:
+            print(f"{'FAILED':9} {'':9} {tilde(home)}  ({e.strerror or e}; left alone)")
+            return 1
+    return 0
 
 
 def plan_uninstall(purge: bool = False) -> tuple[list[Step], list[str], list[str]]:

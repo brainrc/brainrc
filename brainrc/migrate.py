@@ -63,22 +63,36 @@ def _refusal(source: Path, target: Path) -> str | None:
     return None
 
 
+def _rename_into(source: Path, target: Path) -> None:
+    """os.rename onto a target that is missing or an empty dir. Windows won't rename onto even an
+    empty dir, so there the empty target goes first, and comes back if the rename fails."""
+    if os.name == "nt" and target.is_dir() and not target.is_symlink():
+        target.rmdir()
+        try:
+            os.rename(source, target)
+        except BaseException:
+            target.mkdir(exist_ok=True)
+            raise
+        return
+    os.rename(source, target)
+
+
 def _move(source: Path, target: Path) -> OSError | None:
     """Put source at target: one rename, or across devices a copy beside the target renamed into
     place. Raises OSError while the target is not in place; returns the error if only removing the
     source failed."""
     target.parent.mkdir(parents=True, exist_ok=True)
     if source.is_symlink():  # move the link, not what it points at, on any device
-        link = os.readlink(source)
+        link = config.readlink(source)
         if not os.path.isabs(link):
             link = os.path.normpath(os.path.join(source.parent, link))
         if target.is_dir() and not target.is_symlink():
             target.rmdir()  # empty, checked by the caller
-        os.symlink(link, target)
+        config.symlink(target, link)
         removed = source.unlink
     else:
         try:
-            os.rename(source, target)
+            _rename_into(source, target)
             return None
         except OSError as e:
             if e.errno != errno.EXDEV:
@@ -87,11 +101,11 @@ def _move(source: Path, target: Path) -> OSError | None:
         try:
             os.chmod(tmp, os.stat(source).st_mode & 0o7777)
             shutil.copytree(source, tmp, symlinks=True, dirs_exist_ok=True)
-            os.rename(tmp, target)
+            _rename_into(tmp, target)
         except BaseException:
-            shutil.rmtree(tmp, ignore_errors=True)
+            config.rmtree(tmp, ignore_errors=True)
             raise
-        removed = lambda: shutil.rmtree(source)
+        removed = lambda: config.rmtree(source)
     try:
         removed()
     except OSError as e:
@@ -155,6 +169,10 @@ def cmd_migrate(dry_run: bool) -> int:
                 print(f"ERROR another brainrc apply is running (lock: {tilde(busy)})")
                 print("\nNothing moved. Let it finish, then re-run.")
                 return 1
+            if os.name == "nt":
+                # Windows won't rename or delete a dir with an open file in it, so let go of the
+                # locks first. An apply that starts now holds its lock open, and the move fails safely.
+                stack.close()
             if own:
                 own.unlink(missing_ok=True)  # the target must be empty for the rename
             if _occupied(target):

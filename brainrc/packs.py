@@ -3,10 +3,10 @@ from __future__ import annotations
 
 import json
 import re
-import shutil
 import subprocess
 from pathlib import Path
 
+from . import config
 from .config import ConfigError, _layered
 from .sources import _pack_root
 
@@ -116,7 +116,7 @@ def fetch_pack(key: str, cfg: dict, root: Path) -> None:
         _record(root, cfg)
         return
     tmp = root.with_name(f".{root.name}.fetching")
-    shutil.rmtree(tmp, ignore_errors=True)
+    config.rmtree(tmp, ignore_errors=True)
     tmp.mkdir(parents=True)
     try:
         _git("init", "-q", cwd=tmp)
@@ -124,6 +124,6 @@ def fetch_pack(key: str, cfg: dict, root: Path) -> None:
         _git("checkout", "-q", "--detach", "FETCH_HEAD", cwd=tmp)
         _record(tmp, cfg)
     except ConfigError:
-        shutil.rmtree(tmp, ignore_errors=True)
+        config.rmtree(tmp, ignore_errors=True)
         raise
     tmp.rename(root)

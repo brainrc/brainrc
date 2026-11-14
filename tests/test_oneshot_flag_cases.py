@@ -7,6 +7,7 @@ import unittest
 from pathlib import Path
 
 from test_evals import REPO, evals, make_project, quiet
+from support import rmtree
 
 BODY = "Title\n\n## Decisions made without you\n- colorama: not added\n- delete test_greet.py: skipped (destructive)\n"
 
@@ -17,13 +18,13 @@ class OneshotFlagCaseTest(unittest.TestCase):
                "sandbox-031": "035-oneshot-resume.md"}
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = Path(tempfile.mkdtemp()).resolve()
         self.project = make_project(self.tmp / "project")
         self.run = self.project / "specs/001-demo"
         (self.project / "test_greet.py").write_text("import unittest\n\nclass GreetTest(unittest.TestCase):\n    pass\n")
 
     def tearDown(self):
-        shutil.rmtree(self.tmp)
+        rmtree(self.tmp)
 
     def grade(self, name: str, state: dict) -> tuple[int, str]:
         """Write state.json, then run the case without its command checks."""
@@ -53,7 +54,7 @@ class OneshotFlagCaseTest(unittest.TestCase):
             state.pop("oneshot")
             state.pop("auto")
             state["gates"] = {"spec": "approved", "plan": "pending"}
-            (self.run / "log.md").write_text("## engine · Spec gate · auto-approved\n## engine · resume\n")
+            (self.run / "log.md").write_text("## engine · Spec gate · auto-approved\n## engine · resume\n", encoding="utf-8")
         else:
             state.pop("oneshot")
             state.pop("auto")
@@ -154,7 +155,7 @@ class OneshotFlagCaseTest(unittest.TestCase):
         self.assert_breaks(n, lambda s: s.update(auto=True), "state.json")
         self.assert_breaks(n, lambda s: s["gates"].update(plan="approved"), "gates.plan")
         state = self.good(n)
-        (self.run / "log.md").write_text("## engine · Plan gate · auto-approved\n")
+        (self.run / "log.md").write_text("## engine · Plan gate · auto-approved\n", encoding="utf-8")
         code, out = self.grade(n, state)
         self.assertEqual(code, 1, out)
         self.assertRegex(out, "FAIL .*log.md")
@@ -162,7 +163,7 @@ class OneshotFlagCaseTest(unittest.TestCase):
     def test_resume_case_fails_when_the_first_run_was_not_oneshot(self):
         n = "sandbox-031"
         state = self.good(n)
-        (self.run / "log.md").write_text("## engine · Spec gate · approved\n## engine · resume\n")
+        (self.run / "log.md").write_text("## engine · Spec gate · approved\n## engine · resume\n", encoding="utf-8")
         code, out = self.grade(n, state)
         self.assertEqual(code, 1, out)
         self.assertRegex(out, "FAIL .*log.md")

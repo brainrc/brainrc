@@ -11,6 +11,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
 from retro_metrics import RunRecord, Skipped, load_run  # noqa: E402
+from support import rmtree  # noqa: E402
 
 COMPLETE = {
     "version": 1,
@@ -52,7 +53,7 @@ class RetroMetricsTest(unittest.TestCase):
         self.root = Path(tempfile.mkdtemp()).resolve()
 
     def tearDown(self):
-        shutil.rmtree(self.root)
+        rmtree(self.root)
 
     def write(self, state, slug="001-demo", raw=None) -> Path:
         run = self.root / "specs" / slug
@@ -305,7 +306,7 @@ class RetroMetricsTest(unittest.TestCase):
         run = self.write(state)
         for name, text in (("verify.md", verify), ("retro.md", retro), ("log.md", log)):
             if text is not None:
-                (run / name).write_text(text)
+                (run / name).write_text(text, encoding="utf-8")
         rec = load_run(run)
         self.assertIsInstance(rec, RunRecord, rec)
         return rec

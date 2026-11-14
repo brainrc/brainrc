@@ -35,3 +35,18 @@ next branch first (Retarget rule).
 - Plan: `packs.py` (`pinned`, `to_fetch`, `fetch_pack(commit=, depth=)`, `commits_between`),
   `update.py` (new), `cli.py` and `project.py` pass the pins; tests in `tests/test_pins.py` and the
   two moved-tag tests in `tests/test_lock.py`.
+
+## engine · gh:288 · verified
+Draft PR #352 (base `main`). `validate` and the full suite passed before the push.
+
+## engine · gh:289 · Spec and Plan (logged under the Campaign gate)
+- Spec: record per pack, in the lock, `permissions` = `hooks` (fragment hook commands), `mcp`
+  (servers), `tools` (agent `tools`, skill `allowed-tools`, other fragment keys) and `domains`
+  (MCP URL hosts, `domain:` grants), only what the scope installs. `status` prints added and
+  removed entries; `apply`/`update`/`install` ask before any added entry unless `--yes`, and
+  refuse without a terminal. Decisions: a machine's first lock is the baseline (listed, not
+  asked); a pre-permissions lock entry is the baseline only while the pack's files are unchanged;
+  `install --frozen` never asks; no environment variable skips the question.
+- Plan: `brainrc/permissions.py` (new), lock writer arrays, schema `permissions`, `cli.py` and
+  `project.py` call the diff before writing, `check.py` compares records; tests in
+  `tests/test_permissions.py`, fixtures in `tests/fixtures/lockfile/`.

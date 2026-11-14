@@ -1,0 +1,12 @@
+# expect: permissions.tools: must be an array
+version = 1
+brainrc = "0.7.7"
+scope = "user"
+
+[packs.acme]
+path = "~/src/acme-pack"
+
+[packs.acme.files]
+
+[packs.acme.permissions]
+tools = "Bash"

@@ -14,11 +14,13 @@ from . import lock
 from .config import ConfigError, _layered, tilde
 from .frozen import compare_config, diff_files, diff_outputs
 from .packs import head
-from .project import BLOCK, MANIFEST, _read, _unit, last_written, load, outputs, planned, project_pack_files
+from .project import (
+    BLOCK, MANIFEST, _read, _unit, last_written, load, outputs, planned, project_pack_files, project_permissions,
+)
 from .sources import _pack_root, load_pack, tree_files
 
 
-def _pack(key: str, cfg: dict, root: Path, entry: dict, files_of, notes: list[str]):
+def _pack(key: str, cfg: dict, root: Path, entry: dict, files_of, notes: list[str], perms_of=None):
     """(errors, the loaded pack or None when it can't be checked on this machine)."""
     if "git" in cfg:
         if not root.is_dir():
@@ -35,7 +37,10 @@ def _pack(key: str, cfg: dict, root: Path, entry: dict, files_of, notes: list[st
         src = load_pack(root, key)
     except ConfigError as e:
         return [str(e)], None
-    return diff_files(key, entry["files"], files_of(src)), src
+    errors = diff_files(key, entry["files"], files_of(src))
+    if not errors and perms_of and "permissions" in entry and perms_of(src) != entry["permissions"]:
+        errors.append(f"pack {key}: its permissions differ from what {lock.NAME} records")
+    return errors, src
 
 
 def _repo(root: Path, locked: dict, tops: list[str]) -> list[str]:
@@ -101,7 +106,7 @@ def project(root: Path) -> int:
         errors += planned(proj, locked)  # brainrc.toml's `harnesses`, checked from the lock alone
         for p in packs:
             found, src = _pack(p.key, p.cfg, p.root, locked["packs"][p.key],
-                               lambda s: project_pack_files(proj, s), notes)
+                               lambda s: project_pack_files(proj, s), notes, lambda s: project_permissions(proj, s))
             errors += found
             srcs.append(src)
     if srcs and all(srcs) and not errors:  # every pack is here at its locked state: the lock's outputs too
@@ -127,5 +132,6 @@ def user() -> int:
     errors = compare_config(cfgs, locked.get("packs", {}), "packs.toml")
     if not errors:
         for key, cfg in cfgs.items():
-            errors += _pack(key, cfg, _pack_root(cfg, key), locked["packs"][key], lock.user_pack_files, notes)[0]
+            errors += _pack(key, cfg, _pack_root(cfg, key), locked["packs"][key], lock.user_pack_files, notes,
+                            lock.user_permissions)[0]
     return _report(errors, notes, "Run `apply` to relock, or `install --frozen` to restore the locked packs.")

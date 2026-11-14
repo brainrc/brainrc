@@ -75,6 +75,23 @@ def fetch(names: list[str]) -> tuple[frozenset[str], frozenset[str]] | int:
     return frozenset(moved["user"]), frozenset(moved["project"])
 
 
+def restore(user: frozenset[str], proj: frozenset[str]) -> None:
+    """After an update that was refused or failed: each clone it moved goes back to the commit
+    brainrc.lock pins, since harnesses link into the clone and would load the new commit."""
+    try:
+        targets = _targets()
+    except ConfigError:
+        return
+    for scope, key, cfg, root, locked, _ in targets:
+        pin = pinned(locked, key, cfg)
+        if key in (user if scope == "user" else proj) and pin and root.is_dir() and head(root) != pin:
+            try:
+                fetch_pack(key, cfg, root, pin)
+                print(f"{'RESTORE':9} {key:9} back at {pin[:12]}, the commit {lock.NAME} pins")
+            except ConfigError as e:
+                print(f"ERROR {e}")
+
+
 def report(scope: str, key: str, cfg: dict, root: Path, old: str | None, entry: dict | None, files_of,
            repointed: bool = False) -> None:
     """The lines update prints for one pack before apply relocks it. repointed: the lock pins

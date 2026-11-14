@@ -13,7 +13,10 @@
   "properties": {
     "version": {
       "type": "integer",
-      "const": 1
+      "enum": [
+        1,
+        2
+      ]
     },
     "brainrc": {
       "type": "string",
@@ -88,6 +91,9 @@
         },
         "files": {
           "$ref": "#/$defs/hashes"
+        },
+        "permissions": {
+          "$ref": "#/$defs/permissions"
         }
       },
       "oneOf": [
@@ -128,6 +134,31 @@
           }
         }
       ]
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "permissions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "hooks": {
+          "$ref": "#/$defs/entries"
+        },
+        "mcp": {
+          "$ref": "#/$defs/entries"
+        },
+        "tools": {
+          "$ref": "#/$defs/entries"
+        },
+        "domains": {
+          "$ref": "#/$defs/entries"
+        }
+      }
     }
   }
 }

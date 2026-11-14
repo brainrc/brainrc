@@ -349,7 +349,15 @@ def frontmatter(path: Path) -> dict[str, str]:
         m = FM_KEY.match(line)
         if not m:
             continue
-        key, value = m[1], m[2].strip()
+        key, value = m[1], (m[2] or "").strip()
+        if not value:  # a YAML block sequence: `key:` then indented `- item` lines, kept as `[a, b]`
+            seq = []
+            while i < len(lines) and re.match(r"^\s+-\s", lines[i]):
+                seq.append(lines[i].split("-", 1)[1].split(" #", 1)[0].strip())
+                i += 1
+            if seq:
+                meta[key] = "[" + ", ".join(seq) + "]"
+                continue
         if block := FM_BLOCK.fullmatch(value.split(" #", 1)[0].strip()):
             body, i = _block_lines(lines, i, int(block[2] or block[4] or 0))
             meta[key] = _block_scalar(body, block[1] == "|", block[3] or block[5] or "")

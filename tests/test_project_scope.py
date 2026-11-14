@@ -9,9 +9,11 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from support import home_env, restore_home, rmtree, saved_home, symlink  # noqa: E402
 from test_brainrc import PACK_TOML, TempRepoCase, brainrc, install_harnesses, make_pack, quiet  # noqa: E402
 
 from brainrc import lock, project  # noqa: E402
+from brainrc.config import tilde  # noqa: E402
 from brainrc.project import import_block  # noqa: E402
 
 TEAM_TOML = PACK_TOML.replace('name = "acme"', 'name = "team"').replace('prefix = "acme-"', 'prefix = "team-"') \
@@ -66,8 +68,8 @@ class ProjectCase(TempRepoCase):
     def setUp(self):
         super().setUp()
         self.home = Path(tempfile.mkdtemp()).resolve()
-        self.old_home = os.environ["HOME"]
-        os.environ["HOME"] = str(self.home)
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
         install_harnesses(self.home)
         self.proj = Path(tempfile.mkdtemp()).resolve() / "app"
         (self.proj / ".git").mkdir(parents=True)
@@ -76,9 +78,9 @@ class ProjectCase(TempRepoCase):
 
     def tearDown(self):
         os.chdir(self.old_cwd)
-        os.environ["HOME"] = self.old_home
-        shutil.rmtree(self.home)
-        shutil.rmtree(self.proj.parent)
+        restore_home(self.old_home)
+        rmtree(self.home)
+        rmtree(self.proj.parent)
         super().tearDown()
 
     def manifest(self, text: str = "") -> None:
@@ -134,7 +136,7 @@ class ApplyTest(ProjectCase):
     def test_default_packs_are_on_and_both_scopes_apply(self):
         self.manifest()
         out = self.apply()
-        self.assertIn(f"Project {self.proj} (brainrc.toml)", out)
+        self.assertIn(f"Project {tilde(self.proj)} (brainrc.toml)", out)
         self.assertIn("CREATE    project   .agents/skills/brainrc-work/", out)
         self.assertEqual(self.skills(), FIXTURE_SKILLS)
         self.assertTrue((self.home / ".claude/skills/brainrc-work").is_symlink())  # user scope too
@@ -230,7 +232,7 @@ class OwnershipTest(ProjectCase):
     def test_nothing_is_written_through_a_linked_directory(self):
         outside = self.proj.parent / "outside"
         outside.mkdir()
-        (self.proj / ".agents").symlink_to(outside)
+        symlink(self.proj / ".agents", outside)
         self.manifest()
         out = self.apply(code=1)
         self.assertIn("CONFLICT  project   .agents/skills/brainrc-work/", out)
@@ -314,8 +316,8 @@ class GitPackProjectTest(ProjectCase):
         self.url = (self.tmp / "team.git").as_uri()
 
     def tearDown(self):
-        shutil.rmtree(self.tmp)
         super().tearDown()
+        rmtree(self.tmp)
 
     def test_status_does_not_fetch_and_apply_does(self):
         self.manifest(f'[packs.team]\ngit = "{self.url}"\nref = "v1"\n')

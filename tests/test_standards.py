@@ -2,11 +2,11 @@
 tool's own files only where harnesses.toml says it can't read those. Golden trees in
 tests/fixtures/project-golden/; BRAINRC_REGOLDEN=1 rewrites them (then read the diff)."""
 import os
-import shutil
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from support import rmtree  # noqa: E402
 from test_project_scope import ProjectCase, make_team_pack  # noqa: E402
 
 GOLDEN = Path(__file__).resolve().parent / "fixtures/project-golden"
@@ -28,7 +28,7 @@ class StandardsTest(ProjectCase):
         want = GOLDEN / name
         got = self.generated()
         if os.environ.get("BRAINRC_REGOLDEN"):
-            shutil.rmtree(want, ignore_errors=True)
+            rmtree(want, ignore_errors=True)
             for rel, data in got.items():
                 (want / rel).parent.mkdir(parents=True, exist_ok=True)
                 (want / rel).write_bytes(data)

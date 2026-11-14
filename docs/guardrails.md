@@ -59,6 +59,18 @@ longer installs. The hook starts its own copy of each pinned server next to Clau
 All three are stdlib Python, tested in `tests/test_hooks.py` and `tests/test_mcp_pins.py`.
 Harness permission modes still apply.
 
+## Auditing what agents load
+
+`brainrc audit` lists, per harness, every skill, agent, command, rule, hook and MCP server brainrc
+puts there: the pack it came from, that pack's commit, the item's sha256 (a directory's is the hash
+of its files' paths and hashes), and whether it's installed now. Then come each pack's permissions
+from `brainrc.lock` and each MCP server's tool pins. `--json` prints the same for a security
+review or a script. It reads only (no network, nothing written); paths under ~ are written with ~,
+URLs lose any user name, password, query and fragment, the value after a token, key, secret,
+password or auth flag in a server's arguments is shown as `…`, and server environments are named,
+never read. A rule counts as installed once the rendered instructions hold it, and an MCP server
+once brainrc's own record says it wrote it.
+
 ## Known gaps
 
 The hooks match command text. They catch accidents and skipped gates, not a model (or a

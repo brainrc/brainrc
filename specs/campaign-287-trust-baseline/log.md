@@ -50,3 +50,53 @@ Draft PR #352 (base `main`). `validate` and the full suite passed before the pus
 - Plan: `brainrc/permissions.py` (new), lock writer arrays, schema `permissions`, `cli.py` and
   `project.py` call the diff before writing, `check.py` compares records; tests in
   `tests/test_permissions.py`, fixtures in `tests/fixtures/lockfile/`.
+
+## engine · gh:289 · verified
+Draft PR #353 (base `main`). `validate` and the full suite passed before the push.
+
+## engine · gh:290 · Spec and Plan (logged under the Campaign gate)
+- Spec: `brainrc pin-mcp` starts each stdio server brainrc installs for Claude Code, lists its
+  tools over stdio JSON-RPC, prints `PIN + ~ -` per tool and, on a yes (or `--yes`), records a
+  sha256 per tool definition in `$BRAINRC_HOME/mcp-pins.json` with the server's command and
+  `env_from` names. A SessionStart (`startup`) hook, `check_mcp_pins.py`, re-lists the pinned
+  servers in parallel within 4 s and warns the session and the model on any change; it fails open
+  and writes `elapsed_ms` to `mcp-pins.last.json` for #299. HTTP servers aren't pinned (no network
+  code). `apply` notes unpinned stdio servers; `status` stays clean.
+- Plan: `brainrc/mcp_pins.py` (new), the hook (new), the fragment entry, `cli.py`; tests in
+  `tests/test_mcp_pins.py` with a fake stdio server.
+
+## engine · gh:290 · verified
+Draft PR #354 (base `main`). `validate` and the full suite passed before the push.
+
+## engine · gh:291 · Spec and Plan (logged under the Campaign gate)
+- Spec: `brainrc audit [--json]` lists per harness every skill, agent, command, rule, hook and MCP
+  server brainrc places, with source, the source's commit, the item's sha256 and whether it's
+  installed, plus the lock's permissions and the MCP pins. Reads only; home paths as ~, URLs
+  without credentials, env named not read. User scope only.
+- Plan: `brainrc/audit.py` (new) on top of `plan()`, `mcp_plan()` and the lock; `cli.py`; tests in
+  `tests/test_audit.py`.
+
+## engine · gh:291 · verified
+Draft PR #355 (base `main`). `validate` and the full suite passed before the push.
+
+## review · code-review (high) on each PR, fixes on the PR they belong to
+- #352: update runs under apply.lock; a broken project config doesn't stop user-scope updates; a
+  new `git`/`ref` isn't reported as rewritten history; update's file lines are printable; a
+  pinned commit that can't be fetched names `update <pack>`. Left for Jacob: project clones are
+  shared per URL and ref, so two projects pinning different commits of one ref take turns.
+- #353: removing a deny/ask rule widens; `sets <key> = <value>`; commands' `allowed-tools` and the
+  validator recorded; YAML list frontmatter; old locks never vouch for MCP servers; frozen
+  install names apply; a refused update restores the clones. Left for Jacob: 0.7.6 rejects a lock
+  with `permissions` (schema error, no upgrade hint); validators run before the question.
+- #354: server requests reusing our id, malformed answers, reader-owned stdout, home cwd, plain
+  tool names only, three-miss note, resume, command changes ask, apply unpins. Left for Jacob: the
+  hook starts its own copy of each server beside Claude Code's.
+- #355: Cursor's flat hooks, hooks without a command, URL query and secret args hidden, whole-path
+  home scrub, rules and servers installed only when really there, one rule-discovery function.
+
+## merge · Jacob: "Merge, bump to v2"
+- #353 moved brainrc.lock to version 2 (reads 1 and 2, writes 2), so brainrc 0.7.7 and older ask
+  for an upgrade instead of failing the schema on `permissions`.
+- Merged in order: #352 (v0.7.7), #353 (v0.8.0), #354 (v0.8.1). Core 0.8.0 fell outside Gatework
+  v0.7.1's `requires_core <0.8`; brainrc/gatework#11 widened it to `<0.9` (Gatework v0.7.2), and
+  #354 moved the default pack to v0.7.2 and the example pins to `<0.9`. #355 merges last.

@@ -50,6 +50,7 @@ from . import frozen as frozen_install
 from . import check as drift
 from . import lock
 from . import permissions
+from . import mcp_pins
 
 
 CHANGED_HINT = "(changed during apply; close Claude Code and re-run)"
@@ -236,6 +237,9 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True, moved: frozens
     permissions.report(perms)
     if apply and permissions.widens(perms) and not permissions.confirm(perms, yes, ""):
         return 1
+    if apply:  # a note, not a change: status stays "Everything in sync."
+        mcp_pins.report_unpinned({n: s for sync in mcp_plan(srcs) if sync.harness == "claude"
+                                  for n, s in sync.servers.items()})
 
     if apply:
         rendered = rendered_instructions()
@@ -515,6 +519,15 @@ def _parser() -> argparse.ArgumentParser:
             "the project's packs of that name move too.")
     p.add_argument("packs", nargs="*", metavar="PACK", help="the packs to move (default: every git pack)")
     p.add_argument("--yes", "-y", action="store_true", help=yes_help)
+    p = add("pin-mcp", "approve the tools of the MCP servers brainrc installs; Claude Code warns when "
+            "one changes", "Start each stdio MCP server that apply installs for Claude Code (or the ones "
+            "named), list its tools, print what changed since they were pinned, and on your yes record "
+            "a hash of each tool definition in $BRAINRC_HOME/mcp-pins.json. A SessionStart hook in "
+            "Claude Code then warns, in the session and to the model, when a pinned tool changes. "
+            "HTTP servers aren't pinned. It runs the servers' own commands, which may download them.")
+    p.add_argument("servers", nargs="*", metavar="SERVER", help="the servers to pin (default: every one)")
+    p.add_argument("--yes", "-y", action="store_true",
+                   help="approve the new and changed tool definitions without asking")
     p = add("install", "apply; with --frozen, install exactly what brainrc.lock records",
             "Without --frozen, the same as apply. With --frozen, install exactly what brainrc.lock "
             "records: each git pack at its locked commit (never its ref), every file checked against "
@@ -579,7 +592,7 @@ def _dispatch(argv: list[str]) -> int:
     cmd = args.cmd or "status"
     if cmd == "migrate":
         return cmd_migrate(dry_run=args.dry_run)
-    if cmd in ("init", "status", "apply", "update", "install", "uninstall") and (code := refuse_unmigrated()):
+    if cmd in ("init", "status", "apply", "update", "install", "uninstall", "pin-mcp") and (code := refuse_unmigrated()):
         return code
     if cmd == "uninstall":
         if args.dry_run:
@@ -608,6 +621,8 @@ def _dispatch(argv: list[str]) -> int:
         return cmd_update(args.packs, args.yes)
     if cmd == "check":
         return cmd_check(args.scope)
+    if cmd == "pin-mcp":
+        return _locked(lambda: mcp_pins.cmd_pin_mcp(args.servers, args.yes))
     if cmd == "install":
         if (args.scope or args.force) and not args.frozen:
             print(f"ERROR {'--scope' if args.scope else '--force'} needs --frozen", file=sys.stderr)

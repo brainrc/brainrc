@@ -52,7 +52,7 @@ class PackAuditTest(PinCase):
         hook = self.entry(data, "claude", "hook", "PreToolUse [Bash] guard_acme.py")
         self.assertEqual(hook["hash"], lock.digest((self.pack / "overrides/claude/hooks/guard_acme.py").read_bytes()))
         self.assertTrue(hook["installed"])
-        self.entry(data, "claude", "hook", "SessionStart [startup] check_mcp_pins.py")
+        self.entry(data, "claude", "hook", "SessionStart [startup|resume] check_mcp_pins.py")
         server = self.entry(data, "claude", "mcp", "acme-local")
         self.assertEqual((server["source"], server["pin"], server["installed"]), ("acme", "not pinned", True))
         self.assertEqual(server["server"]["command"], Path(sys.executable).as_posix().replace(self.home.as_posix(), "~"))

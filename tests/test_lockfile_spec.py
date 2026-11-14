@@ -16,7 +16,7 @@ SCHEMAS = {".toml": "brainrc.toml", ".lock": "brainrc.lock"}
 
 
 def check(path: Path) -> list[str]:
-    return schema.errors(tomllib.loads(path.read_text()), schema.load(SCHEMAS[path.suffix]))
+    return schema.errors(tomllib.loads(path.read_text(encoding="utf-8")), schema.load(SCHEMAS[path.suffix]))
 
 
 class ConformanceTest(unittest.TestCase):
@@ -33,7 +33,7 @@ class ConformanceTest(unittest.TestCase):
     def test_invalid_fixtures_fail_with_their_error(self):
         for path in sorted((FIXTURES / "invalid").iterdir()):
             with self.subTest(path.name):
-                expect = re.match(r"# expect: (.+)\n", path.read_text())
+                expect = re.match(r"# expect: (.+)\n", path.read_text(encoding="utf-8"))
                 self.assertIsNotNone(expect, "an invalid fixture starts with `# expect: <error>`")
                 found = check(path)
                 self.assertTrue(found, "accepted")
@@ -42,9 +42,9 @@ class ConformanceTest(unittest.TestCase):
 
 class SchemaFilesTest(unittest.TestCase):
     def test_schemas_are_draft_2020_12_and_documented(self):
-        doc = (REPO / "docs/project.md").read_text()
+        doc = (REPO / "docs/project.md").read_text(encoding="utf-8")
         for name in SCHEMAS.values():
-            data = json.loads((REPO / f"docs/schemas/{name}.schema.json").read_text())
+            data = json.loads((REPO / f"docs/schemas/{name}.schema.json").read_text(encoding="utf-8"))
             self.assertEqual(data["$schema"], "https://json-schema.org/draft/2020-12/schema")
             self.assertIn(f"schemas/{name}.schema.json", doc)
 
@@ -68,7 +68,7 @@ class SchemaFilesTest(unittest.TestCase):
             self.assertEqual(used - known, set(), name)
 
     def test_doc_examples_conform(self):
-        doc = (REPO / "docs/project.md").read_text()
+        doc = (REPO / "docs/project.md").read_text(encoding="utf-8")
         blocks = re.findall(r"```toml\n(.*?)```", doc, re.S)
         self.assertEqual(len(blocks), 2)
         manifest = tomllib.loads(blocks[0])

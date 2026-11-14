@@ -8,6 +8,7 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from support import home_env, rmtree  # noqa: E402
 from test_brainrc import home_files, install_harnesses, quiet  # noqa: E402
 from test_lock import GitLockCase, rev  # noqa: E402
 from test_project_scope import make_team_pack  # noqa: E402
@@ -35,12 +36,12 @@ class FrozenCase(GitLockCase):
     def new_machine(self) -> None:
         """A second machine: a fresh HOME and settings home, the same core checkout."""
         self.home = Path(tempfile.mkdtemp()).resolve()
-        os.environ["HOME"] = str(self.home)
+        os.environ.update(home_env(self.home))
         install_harnesses(self.home)
         self.settings_home = Path(tempfile.mkdtemp()) / "brainrc"
         os.environ["BRAINRC_HOME"] = str(self.settings_home)
-        self.addCleanup(shutil.rmtree, self.home, True)
-        self.addCleanup(shutil.rmtree, self.settings_home.parent, True)
+        self.addCleanup(rmtree, self.home, True)
+        self.addCleanup(rmtree, self.settings_home.parent, True)
         self.user_lock = self.settings_home / "brainrc.lock"
 
     def edit_lock(self, path: Path, fn) -> None:
@@ -117,7 +118,7 @@ class UserFrozenTest(FrozenCase):
     def test_an_existing_clone_at_the_locked_commit_is_reused_offline(self):
         clone = self.settings_home / "packs/gatework"
         before = clone.stat().st_ino
-        shutil.rmtree(self.bare)  # no remote at all
+        rmtree(self.bare)  # no remote at all
         self.frozen()
         self.assertEqual(clone.stat().st_ino, before)
 
@@ -136,7 +137,7 @@ class ProjectFrozenTest(FrozenCase):
         none of the generated files."""
         self.new_machine()
         other = Path(tempfile.mkdtemp()).resolve() / "app"
-        self.addCleanup(shutil.rmtree, other.parent, True)
+        self.addCleanup(rmtree, other.parent, True)
         (other / ".git").mkdir(parents=True)
         for rel in ("brainrc.toml", "brainrc.lock"):
             shutil.copy(self.proj / rel, other / rel)

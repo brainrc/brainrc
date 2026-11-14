@@ -9,6 +9,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from support import rmtree  # noqa: E402
 from test_brainrc import DEFAULT_PACK, git, quiet  # noqa: E402
 from test_project_scope import ProjectCase, gatework_remote, make_team_pack, use_git_gatework  # noqa: E402
 
@@ -35,8 +36,8 @@ class GitLockCase(ProjectCase):
         self.user_lock = self.settings_home / "brainrc.lock"
 
     def tearDown(self):
-        shutil.rmtree(self.tmp)
         super().tearDown()
+        rmtree(self.tmp)
 
     def move_tag(self, tag: str, to: str) -> None:
         git("tag", "-f", tag, rev(self.bare, to), cwd=self.bare)
@@ -101,7 +102,7 @@ class UserLockTest(GitLockCase):
     def test_a_path_override_is_locked_as_a_path_with_hashes(self):
         checkout = self.home / "src/gatework"
         shutil.copytree(DEFAULT_PACK, checkout, symlinks=True)
-        (self.repo / "packs.local.toml").write_text(f'[gatework]\npath = "{checkout}"\n')
+        (self.repo / "packs.local.toml").write_text(f'[gatework]\npath = "{checkout.as_posix()}"\n')
         self.apply()
         gw = lock.read(self.user_lock)["packs"]["gatework"]
         self.assertEqual(gw["path"], "~/src/gatework")

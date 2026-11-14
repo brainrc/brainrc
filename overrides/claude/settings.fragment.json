@@ -21,6 +21,18 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"{{hooks_dir}}/check_mcp_pins.py\"; [ ! -f \"$f\" ] || python3 \"$f\"",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   }
 }

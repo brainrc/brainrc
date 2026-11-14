@@ -34,8 +34,8 @@ class StandardsTest(ProjectCase):
                 (want / rel).write_bytes(data)
         expected = {p.relative_to(want).as_posix(): p.read_bytes() for p in sorted(want.rglob("*")) if p.is_file()}
         self.assertEqual(sorted(got), sorted(expected))
-        for rel in expected:
-            self.assertEqual(got[rel], expected[rel], rel)
+        for rel in expected:  # Windows checks the goldens out with CRLF, so compare line ends as LF
+            self.assertEqual(got[rel].replace(b"\r\n", b"\n"), expected[rel].replace(b"\r\n", b"\n"), rel)
 
     def test_default_writes_the_standard_files_and_claude_s_own(self):
         self.manifest(TEAM)

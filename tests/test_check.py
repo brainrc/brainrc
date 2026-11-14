@@ -95,7 +95,7 @@ class ProjectCheckTest(CheckCase):
         self.assertIn("DRIFT .agents/skills/brainrc-work/SKILL.md", self.check(code=1))
 
     def test_harnesses_changed_without_apply_fails_even_without_the_git_pack(self):
-        shutil.rmtree(self.settings_home / "project-packs")  # CI: nothing fetched
+        rmtree(self.settings_home / "project-packs")  # CI: nothing fetched
         self.manifest('harnesses = []\n\n[packs.team]\npath = "tools/team-pack"\n')
         out = self.check(code=1)
         self.assertIn("DRIFT .claude/skills/brainrc-work/: in brainrc.lock, but brainrc.toml no longer asks for it", out)

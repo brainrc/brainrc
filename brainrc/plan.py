@@ -85,11 +85,12 @@ class FragmentError(ConfigError):
 def render_fragment(fragment: Path, hooks_dir: str | None) -> dict:
     text = fragment.read_text()
     if hooks_dir:
-        text = text.replace(HOOKS_DIR_PLACEHOLDER, hook_command_dir(hooks_dir))
+        # The placeholder sits inside a JSON string, so the path goes in JSON-escaped.
+        text = text.replace(HOOKS_DIR_PLACEHOLDER, json.dumps(hook_command_dir(hooks_dir))[1:-1])
     try:
         return json.loads(text)
     except json.JSONDecodeError as e:
-        shown = fragment.relative_to(config.REPO) if fragment.is_relative_to(config.REPO) else tilde(fragment)
+        shown = fragment.relative_to(config.REPO).as_posix() if fragment.is_relative_to(config.REPO) else tilde(fragment)
         raise FragmentError(f"{shown}: invalid JSON ({e})") from None
 
 
@@ -132,7 +133,7 @@ class SettingsMerge:
 
 def link_target(link: Path) -> Path:
     """Where a symlink points, with relative targets resolved against the link's directory."""
-    target = Path(os.readlink(link))
+    target = Path(config.readlink(link))
     return target if target.is_absolute() else link.parent / target
 
 

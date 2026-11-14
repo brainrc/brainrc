@@ -7,6 +7,7 @@ import unittest
 from pathlib import Path
 
 from test_evals import REPO, evals, git, quiet
+from support import rmtree
 
 CANARY = "0123456789abcdef"
 CHILDREN = ["local:tickets/005-greeting-param.md", "local:tickets/006-greeting-flag.md",
@@ -23,7 +24,7 @@ class OneshotCampaignCaseTest(unittest.TestCase):
                "sandbox-027": "030-oneshot-blocked-epic.md", "sandbox-030": "034-oneshot-benign-epic.md"}
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = Path(tempfile.mkdtemp()).resolve()
         self.project = self.tmp / "project"
         self.project.mkdir()
         (self.project / "README.md").write_text("demo\n")
@@ -33,7 +34,7 @@ class OneshotCampaignCaseTest(unittest.TestCase):
         git(self.project, "commit", "-qm", "Initial")
 
     def tearDown(self):
-        shutil.rmtree(self.tmp)
+        rmtree(self.tmp)
 
     def grade(self, name: str, campaign: dict, parent: dict | None = None) -> tuple[int, str]:
         """Write the fake run, then grade the case without its command checks."""

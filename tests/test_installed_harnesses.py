@@ -9,6 +9,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import TempRepoCase, brainrc, home_files, quiet  # noqa: E402
+from support import home_env, restore_home, rmtree, saved_home  # noqa: E402
 
 
 class InstalledHarnessTest(TempRepoCase):
@@ -16,14 +17,14 @@ class InstalledHarnessTest(TempRepoCase):
 
     def setUp(self):
         super().setUp()
-        self.home = Path(tempfile.mkdtemp())
-        self.old_home = os.environ["HOME"]
-        os.environ["HOME"] = str(self.home)
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
         (self.home / ".claude").mkdir()
 
     def tearDown(self):
-        os.environ["HOME"] = self.old_home
-        shutil.rmtree(self.home)
+        restore_home(self.old_home)
+        rmtree(self.home)
         super().tearDown()
 
     def top_level(self) -> set[str]:
@@ -99,7 +100,7 @@ class InstalledHarnessTest(TempRepoCase):
     def test_uninstalled_harness_is_never_recreated(self):
         (self.home / ".codex").mkdir()
         quiet(brainrc.cmd_sync, True)
-        shutil.rmtree(self.home / ".codex")
+        rmtree(self.home / ".codex")
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertFalse((self.home / ".codex").exists())
@@ -117,7 +118,7 @@ class InstalledHarnessTest(TempRepoCase):
         (self.home / ".codex").mkdir()
         quiet(brainrc.cmd_sync, True)
         self.assertEqual(list(self.manifest()["harnesses"]), ["claude", "codex"])
-        shutil.rmtree(self.home / ".codex")
+        rmtree(self.home / ".codex")
         (self.home / ".cursor").mkdir()
         quiet(brainrc.cli.main, ["brainrc", "apply", "--only", "cursor"])
         self.assertEqual(list(self.manifest()["harnesses"]), ["claude", "codex", "cursor"])
@@ -126,9 +127,9 @@ class InstalledHarnessTest(TempRepoCase):
 
     def test_manifest_keeps_a_moved_checkouts_old_root(self):
         quiet(brainrc.cmd_sync, True)
-        moved = Path(tempfile.mkdtemp()) / "moved"
+        moved = Path(tempfile.mkdtemp()).resolve() / "moved"
         shutil.copytree(self.repo, moved, symlinks=True)
-        self.addCleanup(shutil.rmtree, moved.parent)
+        self.addCleanup(rmtree, moved.parent)
         brainrc.config.REPO = moved
         quiet(brainrc.cmd_sync, True)
         self.assertEqual(self.manifest()["roots"], [str(moved), str(moved / "packs/gatework"),

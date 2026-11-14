@@ -46,7 +46,7 @@ class Source:
         return not self.is_core and (self.key or self.name) in default_packs()
 
     def rel(self, path: Path) -> str:
-        rel = str(path.relative_to(self.root))
+        rel = path.relative_to(self.root).as_posix()
         return rel if self.is_core else f"{self.name}:{rel}"
 
 
@@ -237,7 +237,7 @@ def installed_items(src: Source, kind: str) -> list[Path]:
     _, exclude = config.install_profile()
     found = []
     for p in items(src, kind):
-        rel = str(p.relative_to(src.root))
+        rel = p.relative_to(src.root).as_posix()
         if not any(fnmatch.fnmatchcase(r, pat.rstrip("/")) for pat in exclude for r in (rel, f"{src.name}:{rel}")):
             found.append(p)
     return found

@@ -12,6 +12,14 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.8.2 (2026-11-14)
+
+- `brainrc audit` lists, per harness, every skill, agent, command, rule, hook and MCP server
+  brainrc puts there, with the pack it came from, the pack's commit, the item's sha256 and
+  whether it's installed now, then each pack's permissions from brainrc.lock and the MCP tool
+  pins. `--json` prints the same as JSON. It makes no network calls, writes nothing, and writes
+  home paths with ~ (#291).
+
 ## 0.8.1 (2026-11-14)
 
 - `brainrc pin-mcp` approves the tools of the stdio MCP servers brainrc installs for Claude Code:

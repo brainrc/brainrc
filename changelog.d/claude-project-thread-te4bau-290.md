@@ -7,3 +7,5 @@ bump: patch
   session and to the model when a pinned tool is changed, added or removed. It fails open within
   a 4-second budget and records each run's duration in `mcp-pins.last.json`. `apply` names the
   stdio servers whose tools aren't pinned (#290).
+- The example packs, the tutorial and the pack docs pin `requires_core` below 0.9, so they
+  validate against core 0.8.

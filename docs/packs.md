@@ -107,7 +107,7 @@ publishes it. Official packs are owned by `brainrc`:
 name = "acme"
 prefix = "acme-"          # default: "<name>-"
 id = "acme/acme-ai-pack"  # optional: the <owner>/<pack> ID it's published under (see Naming)
-requires_core = ">=0.7, <0.8"   # core versions this pack works with (see Compatibility)
+requires_core = ">=0.7, <0.9"   # core versions this pack works with (see Compatibility)
 max_always_tokens = 800   # optional budget for rules + descriptions (see Context cost)
 
 [extensions.gatework]      # what the gatework pack (spec-agent) reads; see Extensions

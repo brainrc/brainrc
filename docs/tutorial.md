@@ -35,7 +35,7 @@ mkdir -p ~/src/myteam-ai-pack/skills/myteam-protobuf
 cat > ~/src/myteam-ai-pack/pack.toml <<'EOF'
 name = "myteam"
 prefix = "myteam-"
-requires_core = ">=0.6, <0.8"
+requires_core = ">=0.6, <0.9"
 
 [[extensions.gatework.domains]]
 files = "`*.proto`, `buf.yaml`"

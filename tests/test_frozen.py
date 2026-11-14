@@ -228,6 +228,14 @@ class ProjectFrozenTest(FrozenCase):
         self.frozen(force=True)
         self.assertIn("- Team rule.", agents.read_text())
 
+    def test_a_block_with_only_windows_line_endings_is_not_a_hand_edit(self):
+        other = self.second_checkout()
+        self.frozen()
+        agents = other / "AGENTS.md"
+        agents.write_bytes(agents.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
+        self.frozen()
+        self.assertEqual(agents.read_text().count("<!-- brainrc:begin"), 1)
+
     def test_a_linked_block_file_fails_even_when_forced(self):
         other = self.second_checkout()
         (other / "notes.md").write_text("someone else's file\n")

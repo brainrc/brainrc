@@ -27,7 +27,7 @@ SKILLS_DIR = ".agents/skills"
 INSTRUCTIONS = "AGENTS.md"
 BEGIN = "<!-- brainrc:begin"
 END = "<!-- brainrc:end -->"
-BLOCK = re.compile(r"<!-- brainrc:begin\b[^\n]*-->\n.*?<!-- brainrc:end -->", re.S)
+BLOCK = re.compile(r"<!-- brainrc:begin\b[^\r\n]*-->\r?\n.*?<!-- brainrc:end -->", re.S)
 ORIGIN_KEYS = ("git", "path")
 PROJECT_KEYS = ("project_skills", "project_instructions")  # harnesses.toml: where a tool needs its own
 
@@ -200,10 +200,10 @@ def with_block(text: str | None, block: str | None) -> str | None:
     if block is not None:
         if m:
             return text[:m.start()] + block + text[m.end():]
-        return (text.rstrip("\n") + "\n\n" if text.strip() else "") + block + "\n"
+        return (text.rstrip("\r\n") + "\n\n" if text.strip() else "") + block + "\n"
     if not m:
         return text or None
-    before, after = text[:m.start()].rstrip("\n"), text[m.end():].lstrip("\n")
+    before, after = text[:m.start()].rstrip("\r\n"), text[m.end():].lstrip("\r\n")
     rest = before + ("\n\n" if before and after else "\n" if before else "") + after
     return rest if rest.strip() else None
 
@@ -299,7 +299,7 @@ def foreign(root: Path, locked: dict, files: dict[str, bytes], blocks: dict[str,
     for rel in sorted(blocks):
         data = _read(root / rel)
         m = BLOCK.search(data.decode("utf-8")) if data is not None else None
-        if m and lock.digest(m.group(0).encode("utf-8")) not in (locked.get("blocks", {}).get(rel),
+        if m and lock.digest(m.group(0).replace("\r\n", "\n").encode("utf-8")) not in (locked.get("blocks", {}).get(rel),
                                                                 mine["blocks"].get(rel)):
             found.append(f"{rel}: brainrc's block was edited by hand")
     return found

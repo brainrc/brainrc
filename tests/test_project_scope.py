@@ -288,6 +288,18 @@ class AgentsBlockTest(ProjectCase):
         self.assertTrue(text.startswith("# My repo\n\nBuild with make.\n\n<!-- brainrc:begin"))
         self.assertTrue(text.endswith("<!-- brainrc:end -->\n\n## After\n\nMore of mine.\n"))
 
+    def test_a_file_saved_with_windows_line_endings_keeps_one_block(self):
+        agents = self.proj / "AGENTS.md"
+        agents.write_bytes(b"# My repo\r\n")
+        self.apply()
+        agents.write_bytes(agents.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
+        (self.proj / "tools/team-pack/rules/50-team.md").write_text("# Team\n\n- Changed rule.\n")
+        self.apply()
+        text = agents.read_bytes().decode("utf-8")
+        self.assertEqual(text.count("<!-- brainrc:begin"), 1)
+        self.assertIn("- Changed rule.", text)
+        self.assertNotIn("- Team rule.", text)
+
     def test_turning_the_pack_off_removes_only_the_block(self):
         (self.proj / "AGENTS.md").write_text("# My repo\n")
         self.apply()

@@ -12,6 +12,19 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.8.1 (2026-11-14)
+
+- `brainrc pin-mcp` approves the tools of the stdio MCP servers brainrc installs for Claude Code:
+  it lists them, shows what changed, and on your yes records a hash of each tool definition in
+  `$BRAINRC_HOME/mcp-pins.json`. A new SessionStart hook, `check_mcp_pins.py`, warns in the
+  session and to the model when a pinned tool is changed, added or removed. It fails open within
+  a 4-second budget and records each run's duration in `mcp-pins.last.json`. `apply` names the
+  stdio servers whose tools aren't pinned (#290).
+- The example packs, the tutorial and the pack docs pin `requires_core` below 0.9, so they
+  validate against core 0.8.
+- The default pack moves to Gatework v0.7.2, which allows core 0.8. Gatework v0.7.1 allowed only
+  core below 0.8, so `apply` on core 0.8.0 refused it and wrote nothing.
+
 ## 0.8.0 (2026-11-14)
 
 - Permission diff (#289): `brainrc.lock` now records what each pack can do: the hooks it adds, its

@@ -12,6 +12,43 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.7.6 (2026-11-14)
+
+- Project scope (#282): in a repo with a `brainrc.toml`, `apply` also writes the repo's own agent
+  files: its packs' skills, copied to `.agents/skills/`, and their rules, in a marked block in
+  `AGENTS.md` that leaves your own text alone. Default packs (Gatework) are on unless
+  `brainrc.toml` turns them off, and it can pin them or add packs by `git` or by a `path` in the
+  repo. `status` shows the user scope and then the project. `brainrc.lock` records the files brainrc
+  wrote, so a file it didn't write is reported as a conflict and left alone. Nothing machine-local
+  reaches the project. Without a `brainrc.toml`, nothing changes.
+- `apply` writes `brainrc.lock` (#283): in the settings home for the user scope, and next to
+  `brainrc.toml` for a project. For each pack it records where it came from, the commit a git
+  pack's `ref` resolved to, and the SHA-256 of every file it installed, so a changed pack file
+  changes its hash. A second `apply` with no change to any source leaves the lock byte-identical.
+  A tag or branch that moved to another commit shows as `MOVED`, in `status` too once the clone
+  has it. Credentials in a git URL never reach the lock.
+- `brainrc install --frozen` (#284) installs exactly what `brainrc.lock` records: each git pack at
+  its locked commit, never its ref, and every file checked against its hash before anything is
+  written. Any mismatch (a pack only in the config or the lock, another URL, ref or path, a commit
+  that can't be fetched, a file that differs) is named, nothing is written and it exits 1. It
+  defaults to the project when there is a `brainrc.toml`, else the user scope; `--scope` picks one.
+- `install --frozen` won't overwrite a file in the repo that brainrc didn't write (its hash is
+  neither the lock's nor what brainrc last wrote there on this machine) or a hand-edited block:
+  it names each one and writes nothing. `--force` overwrites them. It never writes through an
+  `AGENTS.md` that is a link, even with `--force`.
+- `brainrc check` (#285) exits 1 when anything drifted from `brainrc.lock`, naming each difference:
+  a pack added or removed in `brainrc.toml`, a pack file that changed, or an agent file brainrc owns
+  in the repo (or its block in `AGENTS.md`) that was edited, removed or added to. It uses no network
+  and writes nothing, so CI can run it on a fresh checkout; docs/project.md has a sample Actions
+  step. A moved tag is reported as `MOVED` and doesn't fail.
+- `check` says whether a drifted file is brainrc's own output for another lock, which
+  `install --frozen` updates, or isn't brainrc's, which it refuses without `--force`.
+- Project output is standards-first (#286): every tool gets `.agents/skills/` and the rules block in
+  `AGENTS.md`, which Codex, OpenCode, Cursor and Antigravity read. A tool that can't read them names
+  its own places in `harnesses.toml` (`project_skills`, `project_instructions`); today that is
+  Claude Code, which also gets `.claude/skills/` and a `CLAUDE.md` block importing `AGENTS.md`.
+  `harnesses` in `brainrc.toml` picks which tools get their own files. Golden tests pin both trees.
+
 ## 0.7.5 (2026-11-14)
 
 - Docs: the spec for a project's `brainrc.toml` and its `brainrc.lock` (#281), in

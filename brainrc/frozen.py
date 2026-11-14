@@ -8,11 +8,10 @@ files get written. The lock itself is never rewritten here.
 from __future__ import annotations
 
 import os
-import shutil
 from pathlib import Path
 
 from . import lock
-from .config import ConfigError, _layered, tilde
+from .config import ConfigError, _layered, rmtree, tilde
 from .packs import _git, _record, head
 from .project import (
     MANIFEST, Project, _linked, _read, _unit, foreign, load, outputs, project_pack_files, remember, with_block,
@@ -72,7 +71,7 @@ class Stage:
         if final.is_dir() and head(final) == commit and not _git("status", "--porcelain", cwd=final).strip():
             return final
         tmp = final.with_name(f".{final.name}.frozen-{os.getpid()}")
-        shutil.rmtree(tmp, ignore_errors=True)
+        rmtree(tmp, ignore_errors=True)
         tmp.mkdir(parents=True)
         self.moves.append((tmp, final))
         try:
@@ -88,16 +87,16 @@ class Stage:
 
     def discard(self) -> None:
         for tmp, _ in self.moves:
-            shutil.rmtree(tmp, ignore_errors=True)
+            rmtree(tmp, ignore_errors=True)
 
     def commit(self) -> None:
         for tmp, final in self.moves:
             old = final.with_name(f".{final.name}.old-{os.getpid()}")
-            shutil.rmtree(old, ignore_errors=True)
+            rmtree(old, ignore_errors=True)
             if final.exists():
                 final.rename(old)
             tmp.rename(final)
-            shutil.rmtree(old, ignore_errors=True)
+            rmtree(old, ignore_errors=True)
 
 
 def _fail(errors: list[str], stage: Stage, what: str) -> int:
@@ -211,7 +210,7 @@ def _write_frozen(proj: Project, files: dict[str, bytes], blocks: dict[str, str]
         if new != current:
             changes[rel] = new.encode("utf-8")
     tmp = proj.root / f".brainrc-install-{os.getpid()}"
-    shutil.rmtree(tmp, ignore_errors=True)
+    rmtree(tmp, ignore_errors=True)
     try:
         for n, (rel, data) in enumerate(sorted(changes.items())):
             (tmp / str(n)).parent.mkdir(parents=True, exist_ok=True)
@@ -224,7 +223,7 @@ def _write_frozen(proj: Project, files: dict[str, bytes], blocks: dict[str, str]
             dest.parent.mkdir(parents=True, exist_ok=True)
             os.replace(tmp / str(n), dest)
     finally:
-        shutil.rmtree(tmp, ignore_errors=True)
+        rmtree(tmp, ignore_errors=True)
     for unit, state in sorted(states.items()):
         print(f"{state.upper():9} {'project':9} {unit}")
     print(f"Project installed from {lock.NAME}." if states else "Project in sync with its lock.")

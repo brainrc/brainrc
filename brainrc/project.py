@@ -14,9 +14,9 @@ import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from . import config, lock, schema
+from . import config, lock, permissions, schema
 from .config import ConfigError, _read_toml, settings_home, tilde, toml_error
-from .packs import describe, fetch_pack, needs_fetch
+from .packs import describe, fetch_pack, pinned, to_fetch
 from .sources import (
     Source, check_packs, collisions, default_packs, duplicate_packs, excluded, items, load_pack,
     markdown_files, rule_text, tree_files,
@@ -171,6 +171,11 @@ def load(root: Path) -> Project:
 
 def project_items(src: Source, kind: str, exclude: list[str]) -> list[Path]:
     return [p for p in items(src, kind) if not excluded(src, p, exclude)]
+
+
+def project_permissions(project: Project, src: Source) -> dict[str, list[str]]:
+    """What a project lets a pack do: the tool grants of the skills it copies (no hooks or MCP)."""
+    return permissions.of_pack(src, project_items(src, "skills", project.exclude), False, False)
 
 
 def project_pack_files(project: Project, src: Source) -> dict[str, str]:
@@ -331,25 +336,30 @@ def _unit(rel: str, tops: list[str]) -> str:
 RANK = {"create": 0, "update": 1, "prune": 2, "conflict": 3}
 
 
-def sync(root: Path, apply: bool) -> int:
-    """status (apply=False) or apply for the project at root. Prints its own section."""
+def sync(root: Path, apply: bool, moved: frozenset[str] = frozenset(), yes: bool = False) -> int:
+    """status (apply=False) or apply for the project at root. Prints its own section. Each git
+    pack is held at the commit brainrc.lock pins, except the ones `update` just moved."""
     print(f"\nProject {tilde(root)} ({MANIFEST})")
     try:
         project = load(root)
         packs = project.packs()
-        old = lock.read(project.lock_path) or {}
+        first = lock.read(project.lock_path)
     except ConfigError as e:
         print(f"ERROR {e}\n\nNothing written in the project. Fix it, then re-run.")
         return 1
-    pending = [p for p in packs if "git" in p.cfg and needs_fetch(p.cfg, p.root)]
+    old = first or {}
+    pins = {p.key: None if p.key in moved else pinned(old, p.key, p.cfg) for p in packs}
+    pending = [p for p in packs if "git" in p.cfg and to_fetch(p.cfg, p.root, pins[p.key])]
     for p in pending:
-        print(describe(p.key, p.cfg))
+        print(describe(p.key, p.cfg, pins[p.key]))
         if apply:
             try:
-                fetch_pack(p.key, p.cfg, p.root)
+                fetch_pack(p.key, p.cfg, p.root, pins[p.key])
             except ConfigError as e:
+                gone = (f" If they're right, the locked commit may be gone from the remote: "
+                        f"`{config.command('update ' + p.key)}` moves the pin.") if pins[p.key] else ""
                 print(f"ERROR {e}\n\nNothing written in the project. Check the pack's `git` and `ref` "
-                      f"in {MANIFEST}, then re-run.")
+                      f"in {MANIFEST}, then re-run.{gone}")
                 return 1
     if pending and not apply:
         print("\nDry run. Run `apply` to fetch, then `status` lists the project's files.")
@@ -372,11 +382,18 @@ def sync(root: Path, apply: bool) -> int:
         return 1
     files, blocks = outputs(project, srcs)
     try:
-        locked = {p.key: lock.pack_entry(p.cfg, p.root, project_pack_files(project, src)) for p, src in zip(packs, srcs)}
+        locked = {p.key: lock.pack_entry(p.cfg, p.root, project_pack_files(project, src),
+                                         project_permissions(project, src)) for p, src in zip(packs, srcs)}
     except ConfigError as e:
         print(f"ERROR {e}\n\nNothing written in the project.")
         return 1
-    lock.report_moved(old, {"packs": locked}, "relocked" if apply else "apply relocks it")
+    perms = permissions.diff(first, locked)
+    if first is None:
+        permissions.first(locked, "first lock: recorded as the baseline" if apply
+                          else f"no {lock.NAME} yet: apply records these")
+    permissions.report(perms)
+    if apply and permissions.widens(perms) and not permissions.confirm(perms, yes, " in the project"):
+        return 1
     return _write(project, old, files, blocks, apply, locked)
 
 

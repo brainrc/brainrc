@@ -234,13 +234,32 @@ def installed_items(src: Source, kind: str) -> list[Path]:
     (`skills/brainrc-aws`) or that path after the pack's name (`gatework:skills/brainrc-aws`)."""
     if not config.installs("items"):
         return []
-    _, exclude = config.install_profile()
-    found = []
-    for p in items(src, kind):
-        rel = p.relative_to(src.root).as_posix()
-        if not any(fnmatch.fnmatchcase(r, pat.rstrip("/")) for pat in exclude for r in (rel, f"{src.name}:{rel}")):
-            found.append(p)
-    return found
+    return [p for p in items(src, kind) if not excluded(src, p, config.install_profile()[1])]
+
+
+def excluded(src: Source, path: Path, exclude: list[str]) -> bool:
+    """True if an `exclude` pattern matches the item's path in its source (`skills/brainrc-aws`)
+    or that path after the pack's name (`gatework:skills/brainrc-aws`)."""
+    rel = path.relative_to(src.root).as_posix()
+    return any(fnmatch.fnmatchcase(r, pat.rstrip("/")) for pat in exclude for r in (rel, f"{src.name}:{rel}"))
+
+
+def tree_files(top: Path) -> list[tuple[str, Path]]:
+    """(path under top with /, file) for every file under top, links followed, sorted.
+    __pycache__ is skipped, and a directory reached twice through links is read once."""
+    found, seen = [], set()
+    for dirpath, dirs, files in os.walk(top, followlinks=True):
+        real = os.path.realpath(dirpath)
+        if real in seen:
+            dirs[:] = []
+            continue
+        seen.add(real)
+        dirs[:] = sorted(d for d in dirs if d != "__pycache__")
+        for f in files:
+            p = Path(dirpath) / f
+            if p.is_file() and not f.endswith(".pyc"):
+                found.append((p.relative_to(top).as_posix(), p))
+    return sorted(found)
 
 
 def item_name(path: Path) -> str:

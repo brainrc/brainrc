@@ -18,3 +18,10 @@ The coordinator's brief for this run (passing on the maintainer's yes to buildin
 dry-run, then build the children in order as stacked draft PRs. Recorded as approved on that
 basis; per-child Spec and Plan gates are logged here rather than stopped on, and delivery is
 draft PRs only. Merging and retargeting stay with the maintainer.
+
+## engine · Delivered · 2026-11-13
+All six children built in order and opened as stacked draft PRs: #346 (#281, base `main`),
+#347 (#282), #348 (#283), #349 (#284), #350 (#285), #351 (#286), each on the one before.
+`validate` and the full test suite passed before each push. The epic's acceptance tests are
+`test_two_machines_*` and `test_apply_on_two_fresh_machines_is_byte_identical` in
+`tests/test_frozen.py`, and `test_a_moved_tag_*` there and in `tests/test_check.py`.

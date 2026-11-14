@@ -56,7 +56,8 @@ class Step:
 # What brainrc keeps in the settings home. --purge deletes these and nothing else.
 SETTINGS_HOME_ENTRIES = re.compile(
     r".*\.local\.(toml|md)|rules|packs|instructions\.md|extensions\.md|harnesses\.json|"
-    r"\.harnesses\.json\.tmp|mcp-owned\.json|apply\.lock|active-run|opencode|hooks")
+    r"\.harnesses\.json\.tmp|mcp-owned\.json|apply\.lock|active-run|opencode|hooks|"
+    r"\.?brainrc\.lock(\.tmp)?|project-packs|project-state")
 
 
 def _harness_configs(manifest: dict, warnings: list[str]) -> list[tuple[str, dict]]:
@@ -167,7 +168,7 @@ def _mcp_file_steps(name: str, dest: Path, problems: list[str]) -> list[Step]:
 
 def _generated() -> list[Path]:
     """What apply generates in the settings home; local config and fetched packs stay."""
-    return [p for p in (rendered_instructions(), home_extensions_file(), manifest_file())
+    return [p for p in (rendered_instructions(), home_extensions_file(), manifest_file(), settings_home() / "brainrc.lock")
             if p.is_file()] + [d for d in (rendered_agents_dir(), hooks_copy_root()) if d.is_dir()]
 
 

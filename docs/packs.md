@@ -37,7 +37,9 @@ fetches again (`status` shows the `FETCH` line first). A branch `ref` that hasn'
 refetched: `brainrc update` (or `python3 scripts/brainrc.py update`) refetches every git pack at its
 `ref`, then applies. Both refuse a clone with local changes, and stop any git call after 60s.
 Pin a tag, and bump `ref` to upgrade. `doctor` reports a git pack that hasn't been fetched yet or
-whose clone doesn't match its `git` and `ref`.
+whose clone doesn't match its `git` and `ref`. `apply` records the commit each ref resolved to,
+and a hash of every file it installed, in `~/.config/brainrc/brainrc.lock`; a tag or branch that
+moved shows as `MOVED` ([lockfile](project.md)).
 
 ## Layout
 

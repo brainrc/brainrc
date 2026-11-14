@@ -24,6 +24,75 @@ fixtures are in `tests/fixtures/lockfile/`.
 Both scopes apply together. The user's own config still layers on top of a project's at run
 time, because harnesses read the user's home and the repo.
 
+## What `apply` writes in a project
+
+`brainrc apply` (and `status`, which writes nothing) runs the user scope first, then the project
+in the current directory, under its own `Project <dir> (brainrc.toml)` heading.
+
+- **Skills** are copied, not linked, to `.agents/skills/<name>/`, so the repo works on every
+  machine and in CI. A link inside a skill (Gatework's `roles/`) is copied as the files it points to.
+- **Rules** from the project's packs go into a marked block in `AGENTS.md`:
+  `<!-- brainrc:begin: … -->` to `<!-- brainrc:end -->`. Your own text above and below the block
+  stays. With no rules, there is no block, and a file that held only the block is removed.
+- **Standard files first.** Codex, OpenCode, Cursor and Antigravity read `.agents/skills/` and
+  `AGENTS.md` themselves, so they get nothing else. A tool that can't read them names its own
+  places in `harnesses.toml` (`project_skills`, `project_instructions`). Today that is Claude Code
+  only: skills are copied to `.claude/skills/` too, and `CLAUDE.md` gets a marked block holding
+  `@AGENTS.md`, unless it already reads `AGENTS.md` (a link to it, or its own `@AGENTS.md` line).
+  `harnesses` in `brainrc.toml` picks which tools get their own files; drop one and its files and
+  block are removed.
+
+| Tool | Skills | Instructions |
+| --- | --- | --- |
+| Codex, OpenCode, Cursor, Antigravity | `.agents/skills/` | `AGENTS.md` |
+| Claude Code | `.claude/skills/` (copy) | `CLAUDE.md` block importing `AGENTS.md` |
+
+- **Only the project's packs**: core's rules and guard hooks, MCP servers and anything
+  machine-local (`packs.local.toml`, `brainrc.local.toml`, `*.local.md`) stay in the user scope,
+  so they never change a project's files.
+- **Git packs** are fetched by `apply`, never by `status`, into
+  `$BRAINRC_HOME/project-packs/<key>-<id>`, one clone per URL and ref.
+- **Ownership**: `brainrc.lock` lists every file `brainrc` wrote (`outputs`). A file there is
+  updated or removed as its pack changes. A file brainrc didn't write, or one you changed after
+  it was removed from the packs, is a `CONFLICT` and is left alone.
+
+## Moved tags and branches
+
+`apply` resolves each git pack's `ref` and records the commit; `update` refetches every ref. When
+a ref the lock already has now resolves to another commit (a tag was moved, a branch moved on),
+`apply` and `update` print `MOVED <pack> <ref>: <old> -> <new>` and relock it. `status` never
+fetches, so it reports a move only once this machine's clone has the new commit; it then names
+both commits and writes nothing.
+
+## Installing from the lock
+
+`brainrc install --frozen` installs exactly what `brainrc.lock` records, for CI and teammates. It
+fetches each git pack's locked `commit`, never its `ref`, so a moved tag changes nothing. Every
+check runs before anything is written: the packs in `brainrc.toml` (or `packs.toml`) and the lock
+must match by key, URL, ref and path, and every file must hash as the lock says, outputs included.
+On any mismatch it names each one, writes nothing and exits 1. It never rewrites the lock and
+never removes files. It won't overwrite a file brainrc didn't write either: one at a locked path
+whose hash is neither the lock's nor what brainrc last wrote there on this machine (kept in
+`$BRAINRC_HOME/project-state/`), or a hand-edited block in `AGENTS.md`. It names each one and
+writes nothing; `--force` overwrites them. Neither writes through an `AGENTS.md` that is a link.
+The scope is the project when there is a `brainrc.toml` here or above, else the user; `--scope user|project` picks one. `brainrc install` without `--frozen` is `apply`.
+
+## Checking for drift in CI
+
+`brainrc check` exits 1 when anything differs from `brainrc.lock`, naming each difference: a pack
+in `brainrc.toml` the lock doesn't have (or the reverse), a pack file this machine has that hashes
+differently, a file brainrc owns in the repo that was edited, removed or added to, and its block in
+`AGENTS.md`. It uses no network and writes nothing. A git pack not fetched on this machine is checked
+through the repo's files; a tag that moved under a clone is reported as `MOVED` and doesn't fail.
+
+```yaml
+- uses: actions/checkout@v4
+- name: Agent files match brainrc.lock
+  run: pipx run --spec git+https://github.com/brainrc/brainrc brainrc check
+```
+
+`brainrc install --frozen` after it also fetches each git pack at its locked commit and checks it.
+
 ## `brainrc.toml`
 
 ```toml
@@ -46,7 +115,7 @@ path = "tools/agent-pack"   # relative to the repo root
 |---|---|---|
 | `version` | integer | Format version. `1`, the default. |
 | `exclude` | array of strings | Items not to install, as a path in the pack (`skills/brainrc-aws`) or after its name (`gatework:skills/brainrc-aws`); `*` and `?` match. |
-| `harnesses` | array of strings | Harnesses (from `harnesses.toml`) that get tool-specific files besides the standard ones. Default: every harness in core's `harnesses.toml`. |
+| `harnesses` | array of strings | Harnesses (from `harnesses.toml`) that get tool-specific files besides the standard ones. Default: every enabled harness in core's `harnesses.toml` (never `harnesses.local.toml`); `[]` for the standard files only. |
 | `packs.<key>` | table | One pack. `<key>` is lowercase letters, digits and `-`. |
 | `packs.<key>.enabled` | boolean | Default `true`. `false` turns a default pack off. |
 | `packs.<key>.git` | string | A URL to fetch. Can't start with `-`. |

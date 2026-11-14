@@ -44,6 +44,10 @@ from .doctor import cmd_doctor
 from .manifest import checked_manifest, updated_manifest, write_manifest
 from .moved import move_warnings
 from .migrate import cmd_migrate
+from .project import MANIFEST as PROJECT_MANIFEST, find_project, sync as project_sync
+from . import frozen as frozen_install
+from . import check as drift
+from . import lock
 
 
 CHANGED_HINT = "(changed during apply; close Claude Code and re-run)"
@@ -67,7 +71,14 @@ def cmd_sync(apply: bool, only: list[str] | None = None, repair: bool = False) -
 
 
 def _locked_sync(apply: bool, repair: bool = False) -> int:
-    return _locked(lambda: _sync(True, repair)) if apply else _sync(False, repair)
+    return _locked(lambda: _both_scopes(True, repair)) if apply else _both_scopes(False, repair)
+
+
+def _both_scopes(apply: bool, repair: bool = False) -> int:
+    """User scope, then the project in the current directory, if it has a brainrc.toml."""
+    code = _sync(apply, repair)
+    root = find_project()
+    return max(code, project_sync(root, apply)) if root else code
 
 
 def _locked(run) -> int:
@@ -133,7 +144,7 @@ def _old_roots(srcs, roots: list[Path]) -> tuple[list[Path], list[Path]]:
     return trusted, list(dict.fromkeys(prune))
 
 
-def _sync(apply: bool, repair: bool = False) -> int:
+def _sync(apply: bool, repair: bool = False, relock: bool = True) -> int:
     try:
         for w in check_config():
             print(f"WARN {w}")
@@ -303,6 +314,7 @@ def _sync(apply: bool, repair: bool = False) -> int:
     managed = {n: h for n, h in config.load_harnesses().items() if config.in_scope(n)}
     for w in move_warnings(managed):
         print(f"WARN {w}")
+    lock_code = _user_lock(srcs, apply and relock)
     if apply:
         write_manifest(updated_manifest(managed, [s.root for s in srcs], config.harness_scope()))
     missing = {n: home for n, home in config.missing_harnesses().items() if config.in_scope(n)}
@@ -323,7 +335,48 @@ def _sync(apply: bool, repair: bool = False) -> int:
     if changed:
         print(f"\n{changed} file(s) changed while apply ran, so they were left alone. "
               f"Close Claude Code (it rewrites {tilde(config.claude_json())} while running), then re-run.")
-    return 1 if conflicts or changed else 0
+    return 1 if conflicts or changed or lock_code else 0
+
+
+def _user_lock(srcs, apply: bool) -> int:
+    """apply writes the user scope's brainrc.lock; both report a ref that moved to another commit."""
+    path = lock.user_lock_path()
+    try:
+        old = lock.read(path)
+        new = lock.user_lock(srcs)
+    except ConfigError as e:
+        print(f"ERROR {e}")
+        return 1
+    lock.report_moved(old, new, "apply relocks it" if not apply else f"relocked in {tilde(path)}")
+    if apply:
+        lock.write(path, new)
+    return 0
+
+
+def cmd_install(frozen: bool, scope: str | None = None, force: bool = False) -> int:
+    """install = apply. install --frozen installs exactly what the lock records (brainrc/frozen.py):
+    the project's when the current directory has one (or --scope project), else the user scope's."""
+    if not frozen:
+        return cmd_sync(apply=True)
+    root = find_project()
+    scope = scope or ("project" if root else "user")
+    if scope == "project" and root is None:
+        print(f"ERROR no {PROJECT_MANIFEST} here or above, up to the repo root")
+        return 2
+    if scope == "project":
+        return _locked(lambda: frozen_install.project(root, force))
+    return _locked(lambda: frozen_install.user(lambda: _sync(True, relock=False)))
+
+
+def cmd_check(scope: str | None = None) -> int:
+    """Exit 1 when the project's files or the packs drifted from brainrc.lock (brainrc/check.py).
+    No network and no writes, so CI can run it on a fresh checkout."""
+    root = find_project()
+    scope = scope or ("project" if root else "user")
+    if scope == "project" and root is None:
+        print(f"ERROR no {PROJECT_MANIFEST} here or above, up to the repo root")
+        return 2
+    return drift.project(root) if scope == "project" else drift.user()
 
 
 def cmd_update() -> int:
@@ -435,6 +488,27 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--only", action="append", type=_harness_list, metavar="HARNESS", help=only_help)
     p.add_argument("--repair", action="store_true", help=repair_help)
     add("update", "refetch packs named by `git` URL at their `ref`, then apply")
+    p = add("install", "apply; with --frozen, install exactly what brainrc.lock records",
+            "Without --frozen, the same as apply. With --frozen, install exactly what brainrc.lock "
+            "records: each git pack at its locked commit (never its ref), every file checked against "
+            "its hash. Any difference between the config, the lock and the packs fails, names the "
+            "item and writes nothing. In a repo with brainrc.toml it installs the project's lock; "
+            "elsewhere the user scope's ($BRAINRC_HOME/brainrc.lock).")
+    p.add_argument("--frozen", action="store_true", help="install exactly what brainrc.lock records, or fail")
+    p.add_argument("--scope", choices=("user", "project"),
+                   help="which lock --frozen installs (default: the project's when there is one)")
+    p.add_argument("--force", action="store_true",
+                   help="with --frozen in a project: overwrite files at the lock's paths that brainrc "
+                   "didn't write (by default they fail the install)")
+    p = add("check", "exit 1 when the repo's agent files or the packs drifted from brainrc.lock (no "
+            "network, writes nothing)",
+            "Compare brainrc.toml with brainrc.lock, every pack this machine has with the hashes the lock "
+            "records, and every file brainrc owns in the repo (and its block in AGENTS.md) with the lock. "
+            "Each difference is named; any one exits 1. A git pack not fetched here is checked through "
+            "the repo's files, and a moved tag is reported as MOVED without failing. In a repo with "
+            "brainrc.toml it checks the project; elsewhere the user scope.")
+    p.add_argument("--scope", choices=("user", "project"),
+                   help="which lock to check against (default: the project's when there is one)")
     p = add("uninstall", "remove everything apply put into the harnesses",
             "Remove the links brainrc made (broken ones too), its hooks in each settings file and "
             "the MCP servers it added, then the files and directories that leaves empty. Your own "
@@ -477,7 +551,7 @@ def _dispatch(argv: list[str]) -> int:
     cmd = args.cmd or "status"
     if cmd == "migrate":
         return cmd_migrate(dry_run=args.dry_run)
-    if cmd in ("init", "status", "apply", "update", "uninstall") and (code := refuse_unmigrated()):
+    if cmd in ("init", "status", "apply", "update", "install", "uninstall") and (code := refuse_unmigrated()):
         return code
     if cmd == "uninstall":
         if args.dry_run:
@@ -503,4 +577,11 @@ def _dispatch(argv: list[str]) -> int:
         return cmd_doctor()
     if cmd == "update":
         return cmd_update()
+    if cmd == "check":
+        return cmd_check(args.scope)
+    if cmd == "install":
+        if (args.scope or args.force) and not args.frozen:
+            print(f"ERROR {'--scope' if args.scope else '--force'} needs --frozen", file=sys.stderr)
+            return 2
+        return cmd_install(args.frozen, args.scope, args.force)
     return cmd_tokens()

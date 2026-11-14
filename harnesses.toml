@@ -20,6 +20,12 @@
 #   mcp          the harness's MCP config file; servers from mcp/servers.toml are merged in
 #                (claude, codex, opencode only; your own servers are never overwritten)
 #
+# Project scope (a repo's brainrc.toml, docs/project.md) writes the standard .agents/skills/ and
+# AGENTS.md, which Codex, OpenCode, Cursor and Antigravity read. These two keys, paths in the repo,
+# are for a tool that can't read them:
+#   project_skills       directory; each skill is copied here too
+#   project_instructions file; gets a marked block that imports AGENTS.md (`@AGENTS.md`)
+#
 # Paths expand ~ and $ENV_VARS. `${VAR:-default}` reads VAR when it holds an absolute path and
 # uses default when VAR is unset, empty or relative: that is how each harness's own variable
 # (CLAUDE_CONFIG_DIR, CODEX_HOME, XDG_CONFIG_HOME) moves its paths. Override per machine in
@@ -34,6 +40,8 @@ instructions = "${CLAUDE_CONFIG_DIR:-~/.claude}/CLAUDE.md"
 hooks_dir = "${CLAUDE_CONFIG_DIR:-~/.claude}/hooks/brainrc"
 settings = "${CLAUDE_CONFIG_DIR:-~/.claude}/settings.json"
 mcp = "${CLAUDE_CONFIG_DIR:-~}/.claude.json"  # Claude Code keeps it inside CLAUDE_CONFIG_DIR when set
+project_skills = ".claude/skills"  # Claude Code reads neither .agents/skills nor AGENTS.md beside a CLAUDE.md
+project_instructions = "CLAUDE.md"
 
 [codex]
 enabled = true

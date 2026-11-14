@@ -7,6 +7,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from support import rmtree  # noqa: E402
@@ -14,6 +15,7 @@ from test_brainrc import DEFAULT_PACK, git, quiet  # noqa: E402
 from test_project_scope import ProjectCase, gatework_remote, make_team_pack, use_git_gatework  # noqa: E402
 
 from brainrc import lock, schema  # noqa: E402
+from brainrc.config import ConfigError  # noqa: E402
 import brainrc  # noqa: E402
 
 
@@ -132,6 +134,42 @@ class UserLockTest(GitLockCase):
         (self.repo / "packs.local.toml").write_text("[gatework]\nenabled = false\n")
         self.apply()
         self.assertNotIn("packs", lock.read(self.user_lock))
+
+
+class LockVersionTest(GitLockCase):
+    """Version 2 adds `[packs.<key>.permissions]` (#289). brainrc reads 1 and 2 and writes 2, so a
+    brainrc that knows only 1 refuses a version 2 lock with an upgrade hint, not a schema error."""
+
+    def test_apply_writes_version_2(self):
+        self.apply()
+        self.assertEqual(lock.read(self.user_lock)["version"], 2)
+        self.assertIn(b"\nversion = 2\n", self.user_lock.read_bytes())
+
+    def test_a_version_1_lock_is_read_and_rewritten_as_version_2(self):
+        self.apply()
+        data = lock.read(self.user_lock)
+        data["version"] = 1
+        for pack in data["packs"].values():
+            pack.pop("permissions", None)  # as brainrc 0.7.7 wrote it
+        self.user_lock.write_bytes(lock.dumps(data).encode())
+        self.apply()
+        again = lock.read(self.user_lock)
+        self.assertEqual(again["version"], 2)
+        self.assertIn("permissions", again["packs"]["gatework"])
+
+    def test_an_older_brainrc_names_the_upgrade(self):
+        self.apply()
+        text = self.user_lock.read_text()
+        with mock.patch.object(lock, "VERSION", 1):  # brainrc 0.7.7
+            with self.assertRaisesRegex(ConfigError, r"lock version 2 is newer than this brainrc reads \(1\); "
+                                        r"upgrade brainrc"):
+                lock.loads(text)
+
+    def test_a_newer_lock_is_refused_with_the_version_that_wrote_it(self):
+        text = '# brainrc.lock\nversion = 3\nbrainrc = "9.0.0"\nscope = "user"\n'
+        with self.assertRaisesRegex(ConfigError, r"lock version 3 is newer than this brainrc reads \(2\); "
+                                    r"upgrade brainrc to the version that wrote it, 9\.0\.0, or later"):
+            lock.loads(text)
 
 
 class ProjectLockTest(GitLockCase):

@@ -12,6 +12,42 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.8.1 (2026-11-14)
+
+- `brainrc pin-mcp` approves the tools of the stdio MCP servers brainrc installs for Claude Code:
+  it lists them, shows what changed, and on your yes records a hash of each tool definition in
+  `$BRAINRC_HOME/mcp-pins.json`. A new SessionStart hook, `check_mcp_pins.py`, warns in the
+  session and to the model when a pinned tool is changed, added or removed. It fails open within
+  a 4-second budget and records each run's duration in `mcp-pins.last.json`. `apply` names the
+  stdio servers whose tools aren't pinned (#290).
+- The example packs, the tutorial and the pack docs pin `requires_core` below 0.9, so they
+  validate against core 0.8.
+- The default pack moves to Gatework v0.7.2, which allows core 0.8. Gatework v0.7.1 allowed only
+  core below 0.8, so `apply` on core 0.8.0 refused it and wrote nothing.
+
+## 0.8.0 (2026-11-14)
+
+- Permission diff (#289): `brainrc.lock` now records what each pack can do: the hooks it adds, its
+  MCP servers, its tool grants (agents' `tools`, skills' `allowed-tools`, settings it sets) and the
+  network domains those name. `status` prints `PERMS <pack> + <kind> <entry>` for what apply would
+  add and `-` for what it would remove. `apply`, `update` and `install` ask before adding any, and
+  `--yes` accepts them; without a terminal to ask in and without `--yes` they refuse and write
+  nothing. A machine's first lock lists them once and records them as the baseline; a lock from
+  before this release counts as the baseline while the pack's files are unchanged. `check` fails
+  when a lock's permission record doesn't match its packs. The lock spec gains
+  `[packs.<key>.permissions]` and goes to version 2: brainrc reads versions 1 and 2 and writes 2, so
+  brainrc 0.7.7 and older refuse a new lock with "upgrade brainrc" instead of a schema error.
+
+## 0.7.7 (2026-11-14)
+
+- Git packs are pinned to a commit (#288): once `brainrc.lock` records the commit a pack's `ref`
+  resolved to, `apply`, `status` and `install` keep the pack there, on every machine, even when its
+  tag is moved or its branch (or the remote's default branch) moves on. A clone found at another
+  commit is put back. `brainrc update [<pack> ...]` is the one way to move a pin: it refetches the
+  named packs (all when none is named, the project's too), prints the commits between the old and
+  new pin and the installed files added, changed or removed, then applies and relocks. Changing
+  `git` or `ref` still moves the pack on the next `apply`.
+
 ## 0.7.6 (2026-11-14)
 
 - Project scope (#282): in a repo with a `brainrc.toml`, `apply` also writes the repo's own agent

@@ -5,6 +5,7 @@ import re
 from dataclasses import dataclass
 
 from ..scaffold import Rule, slugify
+from ..sources import parse_frontmatter
 
 HEADING = re.compile(r"^ {0,3}(#{1,6})[ \t]+(.*?)[ \t#]*$")
 FENCE_OPEN = re.compile(r"^ {0,3}(`{3,}|~{3,})")
@@ -95,40 +96,34 @@ def rules_from_lines(lines: list[tuple[str, int, str]], fallback: str) -> list[R
             for s in sections]
 
 
-def simple_frontmatter(text: str) -> tuple[dict[str, str], int]:
-    """`key: value` frontmatter as Cursor and Copilot write it (`globs: *.ts` is not valid YAML, so no
-    YAML parser), and the index of the first body line."""
-    lines = text.splitlines()
-    if not lines or lines[0].strip() != "---":
-        return {}, 0
-    meta = {}
-    for i, line in enumerate(lines[1:], 1):
-        if line.strip() == "---":
-            return meta, i + 1
-        key, sep, value = line.partition(":")
-        if sep and key.strip():
-            meta[key.strip()] = value.strip()
-    return {}, 0  # never closed: all of it is body
-
-
 def unquote(value: str) -> str:
     value = value.strip()
     return value[1:-1] if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'" else value
 
 
 def globs(value: str) -> list[str]:
-    """`*.py, scripts/**/*.py`, `"**/*.ts,**/*.tsx"` or `["src/**/*.tsx", ...]` -> the globs."""
+    """`*.py, scripts/**/*.py`, `"*.py, *.pyi"`, `["src/**/*.tsx", ...]` or `src/*.{ts,tsx}` -> the
+    globs: split at commas outside `{}` and `[]`, each unquoted."""
     value = unquote(value)
     if value.startswith("[") and value.endswith("]"):
         value = value[1:-1]
-    return [g for g in (unquote(part) for part in value.split(",")) if g]
+    parts, depth, cur = [], 0, ""
+    for ch in value:
+        if ch == "," and depth == 0:
+            parts.append(cur)
+            cur = ""
+            continue
+        depth += {"{": 1, "[": 1, "}": -1, "]": -1}.get(ch, 0)
+        cur += ch
+    parts.append(cur)
+    return [g for g in (unquote(part) for part in parts) if g]
 
 
 def whole_body(text: str) -> tuple[dict[str, str], str, int, int] | None:
     """(frontmatter, body, first line, last line) of a rule file kept whole, or None when it has
     no text after its frontmatter."""
-    meta, start = simple_frontmatter(text)
     lines = text.splitlines()
+    meta, start = parse_frontmatter(lines)  # brainrc's YAML subset: block lists, folded text, quotes
     sections = split("\n".join(lines[start:]), start + 1)
     if not sections:
         return None

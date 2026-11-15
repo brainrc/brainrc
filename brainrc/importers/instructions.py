@@ -31,7 +31,7 @@ def _lines(path: Path, out: Imported, depth: int = 0, chain: tuple[Path, ...] = 
     label = tilde(path)
     me = path.resolve()
     out.read.add(me)
-    text = BLOCK.sub(lambda m: "\n" * m[0].count("\n"), path.read_text(encoding="utf-8"))  # keep line numbers
+    text = BLOCK.sub(lambda m: "\n" * m[0].count("\n"), path.read_text(encoding="utf-8-sig"))  # keep line numbers
     lines = text.splitlines()
     result = []
     for i, (line, in_fence) in enumerate(zip(lines, fenced(lines))):

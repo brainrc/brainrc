@@ -344,15 +344,20 @@ def frontmatter(path: Path) -> dict[str, str]:
     single- and double-quoted scalars, plain scalars continued on indented lines, and `|` and `>`
     block scalars with their chomping (`-`, `+`) and indentation indicators. Flow values such as
     `[a, b]` stay as written."""
-    lines = path.read_text().splitlines()
-    if not lines or lines[0].strip() != "---":
-        return {}
+    return parse_frontmatter(path.read_text().splitlines())[0]
+
+
+def parse_frontmatter(lines: list[str]) -> tuple[dict[str, str], int]:
+    """frontmatter() of a file's lines, and the index of the first line after it (0 when there is
+    none). A byte order mark before the first `---` is ignored."""
+    if not lines or lines[0].lstrip("\ufeff").strip() != "---":
+        return {}, 0
     meta: dict[str, str] = {}
     i = 1
     while i < len(lines):
         line = lines[i]
         if line.strip() == "---":
-            return meta
+            return meta, i + 1
         i += 1
         m = FM_KEY.match(line)
         if not m:
@@ -378,7 +383,7 @@ def frontmatter(path: Path) -> dict[str, str]:
                 value = f"{value} {lines[i].split(' #', 1)[0].strip()}".strip()
                 i += 1
             meta[key] = value
-    return {}  # unterminated frontmatter
+    return {}, 0  # unterminated frontmatter
 
 
 FM_KEY = re.compile(r"^([^\s#][^:]*?):(?:\s+(.*)|$)")

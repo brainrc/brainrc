@@ -11,7 +11,7 @@ from pathlib import Path
 
 from ..config import tilde
 from ..scaffold import Rule, slugify
-from .markdown import globs, split, to_rules, unquote, whole_body
+from .markdown import globs, split, to_rules, whole_body
 from .model import Imported
 
 NAMES = ("copilot-instructions.md",)
@@ -27,19 +27,19 @@ def detect(path: Path) -> bool:
 
 
 def _path_specific(path: Path, root: Path, label: str, out: Imported) -> None:
-    whole = whole_body(path.read_text(encoding="utf-8"))
+    whole = whole_body(path.read_text(encoding="utf-8-sig"))
     if not whole:
         out.warnings.append(f"{label}: no text to import")
         return
     meta, body, first, last = whole
     provenance = f"imported by brainrc from {label}, lines {first}-{last}"
     name = path.relative_to(root).as_posix()[:-len(SUFFIX)].replace("/", "-")
-    slug = slugify(name, "instructions")
+    slug = out.unique(slugify(name, "instructions"))
     scoped = globs(meta.get("applyTo", ""))
     if scoped and all(g in EVERYWHERE for g in scoped):
         out.rules.append(Rule(slug, body, provenance))
         return
-    out.add_skill(slug, unquote(meta.get("description", "")), scoped, body, provenance, label,
+    out.add_skill(slug, " ".join(meta.get("description", "").split()), scoped, body, provenance, label,
                   f"Copilot instructions `{path.name}`; use when asked to apply them.")
 
 
@@ -47,7 +47,7 @@ def read(path: Path) -> Imported:
     out = Imported()
     if path.is_file() and path.name in NAMES:
         out.read.add(path.resolve())
-        out.rules += to_rules(split(path.read_text(encoding="utf-8")), tilde(path), "copilot")
+        out.rules += to_rules(split(path.read_text(encoding="utf-8-sig")), tilde(path), "copilot")
         if not out.rules:
             out.warnings.append(f"{tilde(path)}: no text to import")
         return out

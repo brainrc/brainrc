@@ -64,3 +64,44 @@ def split(text: str, first_line: int = 1) -> list[Section]:
 def to_rules(sections: list[Section], label: str, fallback: str = "rules") -> list[Rule]:
     return [Rule(slugify(s.title, fallback), s.text,
                  f"imported by brainrc from {label}, lines {s.first}-{s.last}") for s in sections]
+
+
+def simple_frontmatter(text: str) -> tuple[dict[str, str], int]:
+    """`key: value` frontmatter as Cursor and Copilot write it (`globs: *.ts` is not valid YAML, so no
+    YAML parser), and the index of the first body line."""
+    lines = text.splitlines()
+    if not lines or lines[0].strip() != "---":
+        return {}, 0
+    meta = {}
+    for i, line in enumerate(lines[1:], 1):
+        if line.strip() == "---":
+            return meta, i + 1
+        key, sep, value = line.partition(":")
+        if sep and key.strip():
+            meta[key.strip()] = value.strip()
+    return {}, 0  # never closed: all of it is body
+
+
+def unquote(value: str) -> str:
+    value = value.strip()
+    return value[1:-1] if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'" else value
+
+
+def globs(value: str) -> list[str]:
+    """`*.py, scripts/**/*.py`, `"**/*.ts,**/*.tsx"` or `["src/**/*.tsx", ...]` -> the globs."""
+    value = unquote(value)
+    if value.startswith("[") and value.endswith("]"):
+        value = value[1:-1]
+    return [g for g in (unquote(part) for part in value.split(",")) if g]
+
+
+def whole_body(text: str) -> tuple[dict[str, str], str, int, int] | None:
+    """(frontmatter, body, first line, last line) of a rule file kept whole, or None when it has
+    no text after its frontmatter."""
+    meta, start = simple_frontmatter(text)
+    lines = text.splitlines()
+    sections = split("\n".join(lines[start:]), start + 1)
+    if not sections:
+        return None
+    first, last = sections[0].first, sections[-1].last
+    return meta, "\n".join(lines[first - 1:last]), first, last

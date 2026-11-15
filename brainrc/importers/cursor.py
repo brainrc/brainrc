@@ -11,8 +11,8 @@ from __future__ import annotations
 from pathlib import Path
 
 from ..config import tilde
-from ..scaffold import Rule, Skill, slugify
-from .markdown import split, to_rules
+from ..scaffold import Rule, slugify
+from .markdown import globs, split, to_rules, unquote, whole_body
 from .model import Imported
 
 NAMES = (".cursorrules",)
@@ -25,60 +25,20 @@ def detect(path: Path) -> bool:
     return path.is_dir() and path.name == "rules" and path.parent.name == ".cursor"
 
 
-def _frontmatter(text: str) -> tuple[dict[str, str], int]:
-    """Cursor's frontmatter as written (`globs: *.ts` is not valid YAML, so no YAML parser), and the
-    index of the first body line."""
-    lines = text.splitlines()
-    if not lines or lines[0].strip() != "---":
-        return {}, 0
-    meta = {}
-    for i, line in enumerate(lines[1:], 1):
-        if line.strip() == "---":
-            return meta, i + 1
-        key, sep, value = line.partition(":")
-        if sep and key.strip():
-            meta[key.strip()] = value.strip()
-    return {}, 0  # never closed: all of it is body
-
-
-def _unquote(value: str) -> str:
-    value = value.strip()
-    return value[1:-1] if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'" else value
-
-
-def globs(value: str) -> list[str]:
-    """`*.py, scripts/**/*.py` or `["src/**/*.tsx", ...]` -> the globs."""
-    value = value.strip()
-    if value.startswith("[") and value.endswith("]"):
-        value = value[1:-1]
-    return [g for g in (_unquote(part) for part in value.split(",")) if g]
-
-
 def _rule_file(path: Path, slug: str, label: str, out: Imported) -> None:
-    text = path.read_text(encoding="utf-8")
-    meta, start = _frontmatter(text)
-    lines = text.splitlines()
-    sections = split("\n".join(lines[start:]), start + 1)
-    if not sections:
+    whole = whole_body(path.read_text(encoding="utf-8"))
+    if not whole:
         out.warnings.append(f"{label}: no text to import")
         return
-    first, last = sections[0].first, sections[-1].last
-    body = "\n".join(lines[first - 1:last])  # the file stays whole: Cursor loads it whole
+    meta, body, first, last = whole  # the file stays one rule or skill: Cursor loads it whole
     provenance = f"imported by brainrc from {label}, lines {first}-{last}"
     scoped = globs(meta.get("globs", ""))
-    description = _unquote(meta.get("description", ""))
+    description = unquote(meta.get("description", ""))
     if meta.get("alwaysApply", "").lower() == "true":
         out.rules.append(Rule(slug, body, provenance))
         return
-    if scoped:
-        where = ", ".join(f"`{g}`" for g in scoped)
-        description = (f"{description.rstrip('.')}. " if description else "") + f"Use when working on {where}."
-        out.domains.append({"files": where, "skills": [slug]})
-    elif not description:
-        description = f"Cursor's manual rule `{path.stem}`; use when asked to apply it."
-        out.warnings.append(f"{label}: has no description, globs or alwaysApply, so it becomes a skill "
-                            "the model loads only when asked")
-    out.skills.append(Skill(slug, description, body, provenance))
+    out.add_skill(slug, description, scoped, body, provenance, label,
+                  f"Cursor's manual rule `{path.stem}`; use when asked to apply it.")
 
 
 def _slug(path: Path, root: Path) -> str:

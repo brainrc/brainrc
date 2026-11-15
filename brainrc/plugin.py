@@ -41,8 +41,9 @@ def npm_package(version: str) -> dict:
 
 def plugin_manifests() -> dict[str, str]:
     """The plugin manifests for core, built from the repo: Claude Code's plugin and marketplace
-    (Codex reads them too), Cursor's plugin, and Antigravity's root plugin.json. The repo root is
-    the plugin. Core ships no skills or agents: Gatework's are in its own repo and plugin."""
+    (Codex reads them too), Cursor's plugin, Antigravity's root plugin.json, and package.json for
+    `npx github:brainrc/brainrc` (#278). The repo root is the plugin. Core ships no skills or
+    agents: Gatework's are in its own repo and plugin."""
     version = ".".join(map(str, core_version()))
     hooks_dir = "${CLAUDE_PLUGIN_ROOT}/overrides/claude/hooks"
     hooks = render_fragment(config.REPO / "overrides" / "claude" / "settings.fragment.json", hooks_dir)["hooks"]
@@ -62,7 +63,9 @@ def plugin_manifests() -> dict[str, str]:
     manifests[f"{CURSOR_PLUGIN_DIR}/hooks.json"] = json.dumps(cursor_hooks, indent=2) + "\n"
     # Antigravity loads `rules/` and `skills/` at the root; its schema requires `name` and rejects unknown keys.
     manifests["plugin.json"] = json.dumps({"name": PLUGIN_NAME}, indent=2) + "\n"
-    if (config.REPO / NPX_SHIM).is_file():  # core has the shim; a pack that publishes a plugin doesn't
+    # Core has the shim and package.json; a pack that publishes a plugin has neither. Either one
+    # keeps package.json checked, so deleting the shim can't quietly stop the check.
+    if (config.REPO / NPX_SHIM).is_file() or (config.REPO / "package.json").is_file():
         manifests["package.json"] = json.dumps(npm_package(version), indent=2) + "\n"
     return manifests
 
@@ -76,6 +79,8 @@ def check_plugin() -> list[str]:
     except FragmentError:
         return []  # validate reports the fragment itself
     errors = []
+    if "package.json" in manifests and not (config.REPO / NPX_SHIM).is_file():
+        errors.append(f"{NPX_SHIM}: missing; package.json's bin runs it for `npx github:brainrc/brainrc`")
     for rel, text in manifests.items():
         path = config.REPO / rel
         if not path.is_file():

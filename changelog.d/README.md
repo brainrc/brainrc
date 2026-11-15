@@ -3,7 +3,7 @@
 Each PR adds one file here instead of editing `VERSION` or `CHANGELOG.md`. On merge to `main`,
 the release workflow runs `python3 scripts/brainrc.py release`. That folds every fragment into
 `CHANGELOG.md` under the next version, bumps `VERSION` by the largest `bump`, regenerates the
-plugin manifests, and tags `v<VERSION>`.
+plugin manifests and package.json, and tags `v<VERSION>`.
 
 Name the file after your branch (`living-specs.md`). Format:
 

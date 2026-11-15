@@ -73,9 +73,11 @@ With Homebrew, `brew install brainrc/tap/brainrc` installs the latest release fr
 
 From Node, `npx github:brainrc/brainrc status` runs brainrc at the version in the repo's
 `VERSION` through `uvx`, so it needs uv but no Python; without uv it says how to get it. brainrc is
-not on npm: npx installs the repo itself, which works once it is public. Pin a release that
-ships the shim with `npx github:brainrc/brainrc#v<X.Y.Z>`. Like `uvx`, it suits `status` and other
-one-off runs; install the command for `apply`.
+not on npm: npx installs the repo itself, which works once it is public. Keep the `github:`:
+`npx brainrc` would run whatever someone else publishes to npm under that name. npx may reuse a
+copy it fetched before, so pin a release that ships the shim with
+`npx github:brainrc/brainrc#v<X.Y.Z>`. Like `uvx`, it suits `status` and other one-off runs;
+install the command for `apply`.
 
 Pin a release with `uv tool install brainrc==<X.Y.Z>` (`pipx install brainrc==<X.Y.Z>`,
 `uvx brainrc@<X.Y.Z>`). Run `apply` from the installed command, not `uvx`: links point into the

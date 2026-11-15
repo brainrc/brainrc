@@ -32,7 +32,7 @@ terms = ["Initech", "initech.internal"]
 3. Add a changelog fragment, `changelog.d/<branch>.md`, with its `bump` (`patch` or `minor`,
    policy at the top of `CHANGELOG.md`) and your entry ([format](changelog.d/README.md)).
    Don't edit `VERSION` or `CHANGELOG.md`; the release does. If `validate` says the plugin
-   manifests are stale (you changed hooks), run `python3 scripts/brainrc.py plugin`.
+   manifests or package.json are stale (you changed hooks), run `python3 scripts/brainrc.py plugin`.
 4. Run the checks:
 
    ```bash
@@ -53,7 +53,7 @@ branch's checkpoint commits stay on the branch; its `specs/<slug>/` folder carri
 
 Every merge to `main` is a release. `.github/workflows/release.yml` runs
 `python3 scripts/brainrc.py release`, which folds the fragments into `CHANGELOG.md`, bumps
-`VERSION` by the largest `bump`, and regenerates the plugin manifests. It then commits
+`VERSION` by the largest `bump`, and regenerates the plugin manifests and package.json. It then commits
 `Release vX.Y.Z` and tags `vX.Y.Z`, then creates a GitHub Release for the tag with that version's
 `CHANGELOG.md` section as its notes (`python3 scripts/brainrc.py release --notes X.Y.Z` prints them).
 It then builds the sdist and wheel from the tag (`scripts/check_dist.py` checks them), attaches

@@ -6,6 +6,7 @@
 
 const { spawnSync } = require("node:child_process");
 const fs = require("node:fs");
+const os = require("node:os");
 const path = require("node:path");
 
 const UV_INSTALL = "https://docs.astral.sh/uv/getting-started/installation/";
@@ -14,8 +15,9 @@ const version = fs.readFileSync(path.join(root, "VERSION"), "utf8").trim();
 const declared = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8")).version;
 
 if (declared !== version) {
-  console.error(`brainrc: package.json says ${declared} but VERSION says ${version}; ` +
-                "run `python3 scripts/brainrc.py plugin` in the checkout.");
+  console.error(`brainrc: this copy is inconsistent (package.json says ${declared}, VERSION says ` +
+                `${version}), so it stops rather than guess. Pin a release: ` +
+                "npx github:brainrc/brainrc#v<X.Y.Z>.");
   process.exit(1);
 }
 
@@ -30,6 +32,8 @@ if (run.error) {
   process.exit(1);
 }
 if (run.signal) {
+  // Die of the same signal; one Node ignores (like SIGPIPE) gets the shell's 128 + number instead.
   process.kill(process.pid, run.signal);
+  process.exit(128 + (os.constants.signals[run.signal] || 0));
 }
 process.exit(run.status === null ? 1 : run.status);

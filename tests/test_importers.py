@@ -133,7 +133,7 @@ class ScaffoldTest(unittest.TestCase):
         self.assertEqual(list(target.iterdir()), [])
 
     def test_write_refuses_paths_outside_the_folder(self):
-        for rel in ("../escape.md", "/abs.md"):
+        for rel in ("../escape.md", "/abs.md", "C:/abs.md", "a\\..\\..\\b.md", "\\abs.md"):
             with self.assertRaises(brainrc.config.ConfigError):
                 write_pack(self.tmp / "pack", {rel: "x"})
         self.assertFalse((self.tmp / "pack").exists())

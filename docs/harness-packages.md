@@ -128,5 +128,5 @@ community [`cursor-hooks`](https://www.npmjs.com/package/cursor-hooks) package.
 3. Antigravity plugin: root `plugin.json`, rule triggers (done, unverified); hooks after a live test.
 4. OpenCode: agent transform (#19, done); guard plugin (deny only) done in 0.3.25.
 5. Cursor: `.cursor-plugin/` plugin and guard hooks (deny only) done in 0.3.26; unverified in a real Cursor.
-6. Installable `brainrc` (`uv tool install` or `pipx install` from GitHub, core bundled): done in
+6. Installable `brainrc` (`uv tool install` or `pipx install`, from GitHub and later PyPI, core bundled): done in
    0.3.22. Packs by git URL, fetched by `brainrc` (`git` + `ref`, `brainrc update`): done in 0.3.23.

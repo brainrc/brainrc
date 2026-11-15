@@ -7,6 +7,9 @@ and agents reach only some so far. Guard hooks run in Claude Code, OpenCode, and
 only in the last two), and MCP servers sync to Claude Code, Codex, and OpenCode.
 Details per harness: [harness support](formats.md#harness-support).
 
+To use brainrc without editing it, [install without a clone](#install-without-a-clone). Clone it
+when you want to change the config itself.
+
 ## Install with a clone
 
 ```bash
@@ -67,8 +70,9 @@ brainrc apply
 
 Pin a release with `uv tool install brainrc==<X.Y.Z>` (`pipx install brainrc==<X.Y.Z>`,
 `uvx brainrc@<X.Y.Z>`). Run `apply` from the installed command, not `uvx`: links point into the
-package, and uvx runs it from a cache that uv may clear. Releases from before PyPI publishing
-(0.8.2 and older), and commits between releases, install from git:
+package, and uvx runs it from a cache that uv may clear. If `brainrc` isn't found after the
+install, run `uv tool update-shell` (or `pipx ensurepath`) and open a new shell. Releases from
+before PyPI publishing, and commits between releases, install from git:
 `uv tool install git+https://github.com/brainrc/brainrc@v<X.Y.Z>` (0.4.0 or later installs as
 `brainrc`).
 

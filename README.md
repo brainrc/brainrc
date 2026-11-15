@@ -53,7 +53,7 @@ paths, platform notes, and pinning: [docs/install.md](docs/install.md).
 |---|---|---|
 | [chezmoi](https://www.chezmoi.io/) | manages your dotfiles across multiple machines, securely | not a dotfile manager; it targets AI-tool config and their formats |
 | [GNU Stow](https://www.gnu.org/software/stow/) | a dotfile organizer that symlinks separate directories into your home directory | links skills and similar files the same way, but also renders rules and merges hooks and MCP servers per tool |
-| [Harness plugins](https://code.claude.com/docs/en/plugins) | a Claude Code plugin is a directory of skills, agents, hooks, and MCP servers installed as one unit | ships as one too; the syncer covers the other four tools |
+| [Harness plugins](https://code.claude.com/docs/en/plugins) | a Claude Code plugin is a directory of skills, agents, hooks, and MCP servers installed as one unit | ships as one too; `brainrc` covers the other four tools |
 | [rulesync](https://github.com/dyoshikawa/rulesync) | a Node.js CLI that generates config files for many AI tools from unified rule files | ships guard hooks and installs Gatework (spec-agent) as its default pack; rulesync is a Node tool, brainrc a Python one |
 | brainrc's limits | | best on Claude Code; Codex, Antigravity, Cursor are best effort; needs uv (or Python 3.11+) outside Claude Code |
 

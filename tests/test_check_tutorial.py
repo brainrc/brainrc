@@ -225,6 +225,41 @@ class ReadmeCheckTest(unittest.TestCase):
         self.assertEqual(code, 0, out)
         self.assertIn("PASS step 1 quickstart", out)
 
+    @unittest.skipIf(os.name == "nt", "the uv stand-ins are POSIX scripts run from bash")
+    def test_a_brainrc_already_on_path_does_not_hide_a_failed_install(self):
+        bin_dir, stray = tempfile.mkdtemp(prefix="readme-bin-"), tempfile.mkdtemp(prefix="stray-bin-")
+        self.addCleanup(rmtree, bin_dir, True)
+        self.addCleanup(rmtree, stray, True)
+        stub_command(bin_dir, "uvx", UVX)
+        stub_command(bin_dir, "uv", "pass")  # "installs" nothing
+        stub_command(stray, "brainrc", UVX.replace('assert sys.argv[1] == "brainrc", sys.argv\n', "")
+                     .replace("sys.argv[2:]", "sys.argv[1:]"))  # a working brainrc from elsewhere
+        code, out = self.run_readme((REPO / "README.md").read_text(encoding="utf-8"),
+                                    path=os.pathsep.join([stray, bin_dir]))
+        self.assertEqual(code, 1, out)
+        self.assertIn("FAIL step 1 quickstart", out)
+
+    def test_path_without_brainrc_only_drops_when_asked(self):
+        d = tempfile.mkdtemp(prefix="stray-bin-")
+        self.addCleanup(rmtree, d, True)
+        stub_command(d, "brainrc", "pass")
+        path = os.pathsep.join([d, str(REPO)])
+        self.assertEqual(check_tutorial.path_without_brainrc(path, True), [str(REPO)])
+        self.assertEqual(check_tutorial.path_without_brainrc(path, False), [d, str(REPO)])
+
+    @unittest.skipIf(os.name == "nt", "the block is a bash command")
+    def test_run_drops_outside_settings_and_adds_extra_env(self):
+        old = os.environ.get("UV_INDEX_URL")
+        os.environ["UV_INDEX_URL"] = "https://index.acme.example/simple"
+        self.addCleanup(lambda: os.environ.pop("UV_INDEX_URL") if old is None
+                        else os.environ.__setitem__("UV_INDEX_URL", old))
+        block = 'echo "index=${UV_INDEX_URL:-none} links=$UV_FIND_LINKS home=$HOME"'
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            ok = check_tutorial.run({1: ("env", block)}, {1: [r"index=none links=/\S+wheels home=/"]},
+                                    in_home=True, extra_env=check_tutorial.local_wheels("wheels"))
+        self.assertTrue(ok, out.getvalue())
+
     def test_find_links_installs_from_local_wheels_offline(self):
         env = check_tutorial.local_wheels("wheels")
         self.assertEqual(env["UV_OFFLINE"], "1")

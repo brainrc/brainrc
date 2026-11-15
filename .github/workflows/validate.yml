@@ -64,8 +64,8 @@ jobs:
       # and pip resolving brainrc to a wheel of this checkout, offline, instead of PyPI.
       - name: Run the README quickstart
         run: |
-          python3 -m pip install uv==0.13.8
-          python3 -m pip wheel --no-deps --wheel-dir "$RUNNER_TEMP/wheel" .
+          python3 -m pip install uv==0.13.8 hatchling==1.33.0
+          python3 -m pip wheel --no-deps --no-build-isolation --wheel-dir "$RUNNER_TEMP/wheel" .
           python3 scripts/check_tutorial.py --readme --find-links "$RUNNER_TEMP/wheel"
       - run: python3 -m unittest -q
         working-directory: examples/sandbox

@@ -132,17 +132,21 @@ class HomebrewJobTest(unittest.TestCase):
     def test_runs_after_pypi_publishing(self):
         self.assertIn("needs: [release, dist, pypi]", self.brew)
 
-    def test_skips_with_a_notice_without_the_deploy_key(self):
-        self.assertIn("secrets.HOMEBREW_TAP_DEPLOY_KEY", self.brew)
+    def test_skips_with_a_notice_without_the_token(self):
+        self.assertIn("secrets.HOMEBREW_TAP_TOKEN", self.brew)
+        self.assertNotIn("DEPLOY_KEY", self.text)
         self.assertIn("::notice title=Homebrew tap not updated::", self.brew)
         self.assertNotRegex(self.brew, r"if: .*secrets\.")  # secrets can't gate `if:`; the step output does
         steps = self.brew.split("      - ")[2:]
         self.assertTrue(all("if: steps.key.outputs.present == 'true'" in s for s in steps), steps)
 
-    def test_pushes_over_ssh_with_pinned_host_keys_and_no_token_in_the_tap(self):
-        self.assertIn("StrictHostKeyChecking=yes", self.brew)
-        self.assertIn("gh api meta", self.brew)
-        self.assertIn("git@github.com:${TAP}.git", self.brew)
+    def test_pushes_over_https_with_the_token_kept_out_of_urls_and_config(self):
+        self.assertIn('git clone --depth 1 "https://github.com/${TAP}.git"', self.brew)
+        self.assertIn("GIT_CONFIG_KEY_0: credential.helper", self.brew)
+        self.assertIn('password=${TAP_TOKEN}', self.brew)
+        self.assertNotRegex(self.brew, r"https://[^/\s\"]*@github\.com")  # no token in a URL
+        self.assertNotIn("git config credential", self.brew)  # nothing written to .git/config
+        self.assertNotIn("ssh", self.brew)
         self.assertIn("TAP: brainrc/homebrew-tap", self.brew)
         self.assertIn("--pypi-json", self.brew)
         self.assertNotIn("id-token", self.brew)

@@ -1,0 +1,71 @@
+name: install-time
+
+# E26's target: install to the first `brainrc status` in under 60 seconds on a clean Mac or Linux
+# box (#279). Each route (uvx, pipx, npx, brew) runs from scratch on a fresh runner, timed by
+# scripts/check_install_time.py; the route's own tool (uv, pipx, Node, Homebrew) is there first and
+# isn't timed. Pull requests and pushes install this checkout's build: wheel, sdist, packed repo,
+# and a formula for the local sdist. The weekly run, and a manual run with source `published`,
+# install what users get (PyPI, `npx github:brainrc/brainrc`, the brainrc/homebrew-tap tap) and
+# skip a route whose source doesn't exist yet. Not a required check: a slow route shows red here
+# without blocking a merge.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      source:
+        description: Install what's published, or this branch's build
+        type: choice
+        options: [published, local]
+        default: published
+
+permissions:
+  contents: read
+
+concurrency:
+  group: install-time-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  install-time:
+    name: install-time (${{ matrix.os }}, ${{ matrix.route }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        route: [uvx, pipx, npx, brew]
+    env:
+      SOURCE: ${{ (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.source == 'published')) && 'published' || 'local' }}
+      ROUTE: ${{ matrix.route }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Install the route's tool (not timed)
+        run: |
+          case "$ROUTE" in
+            uvx|npx) python3 -m pip install uv==0.13.8 ;;
+            pipx) python3 -m pip install pipx==1.18.16 ;;
+            brew) ;; # Homebrew comes with the runner image; the check skips where it doesn't
+          esac
+      - name: Build this checkout (not timed)
+        if: env.SOURCE == 'local'
+        run: |
+          python3 -m pip install build==1.6.1
+          python3 -m build --outdir "$RUNNER_TEMP/dist"
+      - name: Time ${{ matrix.route }} to the first status
+        run: |
+          if [ "$SOURCE" = local ]; then
+            python3 scripts/check_install_time.py --path "$ROUTE" --local "$RUNNER_TEMP/dist"
+          else
+            python3 scripts/check_install_time.py --path "$ROUTE" --published
+          fi

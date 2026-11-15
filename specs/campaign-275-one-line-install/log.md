@@ -70,3 +70,18 @@ network calls (`tests/test_project_files.py`).
 - Plan: `bin/brainrc.js` (new), `brainrc/plugin.py`, `package.json` (generated), `release.yml`,
   `validate.yml` (npm pack + npx on the packed file, uv offline on the checkout's wheel),
   AGENTS.md, docs/install.md; tests in `tests/test_npx_shim.py`.
+
+## engine · gh:278 · verified
+Draft PR #362 (base `main`, stacked on #361). `validate` and the full suite passed before the push.
+
+## engine · gh:279 · Spec and Plan (logged under the Campaign gate)
+- Spec: `scripts/check_install_time.py` times each route (uvx, pipx, npx, brew) from the install
+  command to the end of the first `status` in a fresh temp HOME; over `--limit` (60 s) is FAIL; a
+  missing tool or published source is SKIP. `--local DIST` installs the checkout's build, uv and
+  pip offline (pipx uses uv when it can, so both are set), npx from `npm pack`, brew from a scratch
+  tap whose formula points at the local sdist by `file://`. `--published` checks PyPI with `pip
+  index`, and whether the repo and tap are public with a credential-free `git ls-remote`.
+  Homebrew runs without auto-update.
+- Workflow `install-time`: matrix ubuntu/macOS × four routes; PRs and pushes `--local`, weekly and
+  manual `--published`. Not required, so a slow route is visible without blocking merges.
+- Plan: script and workflow (new), docs/install.md; tests in `tests/test_install_time.py`.

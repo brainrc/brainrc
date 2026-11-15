@@ -74,6 +74,9 @@ not on npm: npx installs the repo itself, which works once it is public. Pin a r
 ships the shim with `npx github:brainrc/brainrc#v<X.Y.Z>`. Like `uvx`, it suits `status` and other
 one-off runs; install the command for `apply`.
 
+CI times each of these routes from scratch to the first `brainrc status` on Linux and macOS, and
+fails one that takes over 60 seconds (`scripts/check_install_time.py`, workflow `install-time`).
+
 Pin a release with `uv tool install brainrc==<X.Y.Z>` (`pipx install brainrc==<X.Y.Z>`,
 `uvx brainrc@<X.Y.Z>`). Run `apply` from the installed command, not `uvx`: links point into the
 package, and uvx runs it from a cache that uv may clear. Releases from before PyPI publishing

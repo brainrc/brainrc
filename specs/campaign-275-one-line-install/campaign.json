@@ -1,0 +1,25 @@
+{
+  "ref": "gh:275",
+  "shape": "ordered",
+  "dependency_source": "none",
+  "started_at": "2026-11-15T00:10:00Z",
+  "delivery": "sequential",
+  "gates": {
+    "campaign": {
+      "presented_at": "2026-11-15T00:10:00Z",
+      "approved_at": "2026-11-15T00:10:00Z"
+    }
+  },
+  "members": [
+    {"ref": "gh:108", "order": 1, "depends_on": [], "status": "in_progress", "slug": "108-pypi-publish",
+     "branch": "claude/project-thread-g9cuz3", "pr": null, "base": "main", "merged": false},
+    {"ref": "gh:276", "order": 2, "depends_on": [], "status": "pending", "slug": "276-uvx-quickstart",
+     "branch": "claude/project-thread-g9cuz3-276", "pr": null, "base": "main", "merged": false},
+    {"ref": "gh:277", "order": 3, "depends_on": [], "status": "pending", "slug": "277-homebrew-tap",
+     "branch": "claude/project-thread-g9cuz3-277", "pr": null, "base": "main", "merged": false},
+    {"ref": "gh:278", "order": 4, "depends_on": [], "status": "pending", "slug": "278-npx-shim",
+     "branch": "claude/project-thread-g9cuz3-278", "pr": null, "base": "main", "merged": false},
+    {"ref": "gh:279", "order": 5, "depends_on": [], "status": "pending", "slug": "279-install-time-check",
+     "branch": "claude/project-thread-g9cuz3-279", "pr": null, "base": "main", "merged": false}
+  ]
+}

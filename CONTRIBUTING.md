@@ -56,8 +56,12 @@ Every merge to `main` is a release. `.github/workflows/release.yml` runs
 `VERSION` by the largest `bump`, and regenerates the plugin manifests. It then commits
 `Release vX.Y.Z` and tags `vX.Y.Z`, then creates a GitHub Release for the tag with that version's
 `CHANGELOG.md` section as its notes (`python3 scripts/brainrc.py release --notes X.Y.Z` prints them).
-A tag without a release gets one on the next run, or when you run the workflow by hand
-(**Actions → release → Run workflow**). Users pin a tag ([install](docs/install.md)). If `main` is
+It then builds the sdist and wheel from the tag (`scripts/check_dist.py` checks them), attaches
+them to the GitHub Release, and publishes them to [PyPI](https://pypi.org/project/brainrc/) by
+trusted publishing: the `pypi` job runs in GitHub environment `pypi` with an OIDC token, and the
+workflow holds no PyPI token. A tag without a release, an asset or a PyPI upload gets it on the next
+run, or when you run the workflow by hand (**Actions → release → Run workflow**). Users pin a tag
+([install](docs/install.md)). If `main` is
 protected, add GitHub Actions to the rule's bypass list so the workflow can push its release
 commit and tag.
 

@@ -499,16 +499,26 @@ def _parser() -> argparse.ArgumentParser:
             "harnesses.local.toml. A harness instructions file you wrote (~/.claude/CLAUDE.md, "
             "~/.codex/AGENTS.md, ...) would be a CONFLICT for apply, so init copies its text into "
             "rules/adopted-<harness>.local.md, which every harness loads, and moves the original "
-            "aside as <file>.bak-brainrc-<time>. It doesn't run apply.")
+            "aside as <file>.bak-brainrc-<time>. It offers to import the CLAUDE.md, AGENTS.md, Cursor "
+            "and Copilot files in the folder it runs from into a pack, asks for a starter profile, "
+            "and shows the file, hook and token counts before it writes. It doesn't run apply.")
     p.add_argument("--yes", "-y", action="store_true",
                    help="ask nothing: manage every installed harness and adopt every instruction file")
     p.add_argument("--harness", action="append", type=_harness_list, metavar="HARNESS",
                    help="manage exactly these harnesses (repeat it, or separate names with commas); "
                    "asks nothing")
     p.add_argument("--no-adopt", action="store_true", help="leave instruction files where they are")
-    p.add_argument("--profile", choices=("minimal", "recommended", "full"),
-                   help="what this machine installs, in brainrc.local.toml: minimal is rules only, "
-                   "recommended adds skills, agents, commands and hooks, full adds MCP servers")
+    which = p.add_mutually_exclusive_group()
+    which.add_argument("--profile", choices=("minimal", "recommended", "full"),
+                       help="what this machine installs, in brainrc.local.toml: minimal is rules only, "
+                       "recommended adds skills, agents, commands and hooks, full adds MCP servers")
+    which.add_argument("--starter", choices=("minimal", "app", "infra"),
+                       help="a starter profile instead (init asks when it asks questions): minimal is "
+                       "rules only; app is recommended without the infrastructure domain skills; infra "
+                       "is full")
+    p.add_argument("--import", dest="import_files", action="store_true",
+                   help="import the CLAUDE.md, AGENTS.md, Cursor and Copilot files in this folder into "
+                   "the pack `imported` without asking (init asks when it asks questions)")
     p.add_argument("--dry-run", action="store_true", help="print what init would do, write nothing")
     p = add("import", "turn CLAUDE.md, AGENTS.md and other tools' instruction files into a pack",
             "Read instruction files other tools load and write them as a pack: one rule per "
@@ -641,7 +651,7 @@ def _dispatch(argv: list[str]) -> int:
     if cmd == "init":
         named = [n for names in args.harness or [] for n in names] if args.harness else None
         return cmd_init(yes=args.yes, harnesses=named, adopt=not args.no_adopt, dry_run=args.dry_run,
-                        profile=args.profile)
+                        profile=args.profile, starter=args.starter, import_files=args.import_files)
     if cmd in ("status", "apply"):
         only = [n for names in getattr(args, "only", None) or [] for n in names]
         return cmd_sync(apply=cmd == "apply", only=only or None, repair=args.repair,

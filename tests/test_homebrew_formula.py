@@ -43,10 +43,12 @@ class RenderTest(unittest.TestCase):
         self.assertNotIn("resource ", text)
         self.assertIn('"brainrc #{version}"', text)
         self.assertIn("class Brainrc < Formula", text)
+        self.assertIn("brainrc apply --repair", text)  # caveats: links break on upgrade
 
     def test_bad_inputs_are_refused(self):
         for url, sha in (("http://x/brainrc-1.2.3.tar.gz", SHA), ('https://x/"brainrc-1.2.3.tar.gz', SHA),
-                         ("https://x/brainrc-9.9.9.tar.gz", SHA), (URL, "abc")):
+                         ("https://x/brainrc-9.9.9.tar.gz", SHA), (URL, "abc"),
+                         ("https://x/#{system('id')}/brainrc-1.2.3.tar.gz", SHA)):
             with self.assertRaises(hf.FormulaError, msg=url):
                 hf.render("1.2.3", url, sha)
 
@@ -69,8 +71,14 @@ class PypiUrlTest(unittest.TestCase):
         self.assertEqual(hf.pypi_url(listing(), "1.2.3", SHA), URL)
 
     def test_a_different_sha_on_pypi_fails(self):
-        with self.assertRaisesRegex(hf.FormulaError, "has sha256 c+, the release built a+"):
+        with self.assertRaisesRegex(hf.ShaMismatch, "has sha256 c+, the release built a+"):
             hf.pypi_url(listing(sha256="c" * 64), "1.2.3", SHA)
+
+    def test_odd_json_shapes_are_format_errors(self):
+        for odd in ([], {"info": None, "urls": None}, {"urls": [{"packagetype": "sdist", "digests": None}]},
+                    {"urls": [{"packagetype": "sdist", "digests": {"sha256": SHA}}]}):
+            with self.assertRaises(hf.FormulaError, msg=odd):
+                hf.pypi_url(odd, "1.2.3", SHA)
 
     def test_no_sdist_or_another_version_fails(self):
         with self.assertRaisesRegex(hf.FormulaError, "lists no sdist"):
@@ -93,6 +101,9 @@ class PypiUrlTest(unittest.TestCase):
         with contextlib.redirect_stderr(err):
             self.assertEqual(hf.main([str(sdist), "--pypi-json", str(d / "pypi.json")]), 1)
         self.assertIn("ERROR", err.getvalue())
+        (d / "pypi.json").write_text(json.dumps(listing(sha256="c" * 64)))
+        with contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(hf.main([str(sdist), "--pypi-json", str(d / "pypi.json")]), 3)
 
 
 class MainTest(unittest.TestCase):
@@ -135,6 +146,10 @@ class HomebrewJobTest(unittest.TestCase):
         self.assertIn("TAP: brainrc/homebrew-tap", self.brew)
         self.assertIn("--pypi-json", self.brew)
         self.assertNotIn("id-token", self.brew)
+
+    def test_a_sha_mismatch_is_not_retried_and_brew_tests_the_formula_before_the_push(self):
+        self.assertIn('[ "$rc" -eq 3 ] && exit 1', self.brew)
+        self.assertLess(self.brew.index("brew test "), self.brew.index("git push"))
 
 
 if __name__ == "__main__":

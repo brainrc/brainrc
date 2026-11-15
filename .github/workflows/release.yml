@@ -154,7 +154,7 @@ jobs:
   homebrew:
     needs: [release, dist, pypi]
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     permissions:
       contents: read
     env:
@@ -183,19 +183,35 @@ jobs:
           name: dist
           path: dist/
       # The formula downloads the sdist from the URL PyPI lists for it, once PyPI's copy has the
-      # sha256 of the file this run built and published. A fresh upload can take a moment to list.
+      # sha256 of the file this run built and published. A fresh upload can take a moment to list;
+      # another sha256 on PyPI (exit 3) is final, so it isn't retried.
       - name: Write the formula
         if: steps.key.outputs.present == 'true'
         run: |
           for try in 1 2 3 4 5 6; do
-            if curl -fsSL -o "$RUNNER_TEMP/pypi.json" "https://pypi.org/pypi/brainrc/${VERSION}/json" &&
-               python3 scripts/homebrew_formula.py "dist/brainrc-${VERSION}.tar.gz" \
-                 --pypi-json "$RUNNER_TEMP/pypi.json" --out "$RUNNER_TEMP/brainrc.rb"; then
-              exit 0
+            if curl -fsSL -o "$RUNNER_TEMP/pypi.json" "https://pypi.org/pypi/brainrc/${VERSION}/json"; then
+              rc=0
+              python3 scripts/homebrew_formula.py "dist/brainrc-${VERSION}.tar.gz" \
+                --pypi-json "$RUNNER_TEMP/pypi.json" --out "$RUNNER_TEMP/brainrc.rb" || rc=$?
+              [ "$rc" -eq 0 ] && exit 0
+              [ "$rc" -eq 3 ] && exit 1
             fi
             sleep 10
           done
           exit 1
+      # Install and test the formula with Homebrew before the tap gets it, from a scratch tap
+      # (Homebrew installs formulae only from taps). ubuntu-latest ships Homebrew, off PATH.
+      - name: Install and test the formula
+        if: steps.key.outputs.present == 'true'
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+          HOMEBREW_NO_ANALYTICS: "1"
+        run: |
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+          brew tap-new --no-git brainrc-release/check
+          cp "$RUNNER_TEMP/brainrc.rb" "$(brew --repository brainrc-release/check)/Formula/brainrc.rb"
+          brew install --formula brainrc-release/check/brainrc
+          brew test brainrc-release/check/brainrc
       - name: Push it to the tap
         if: steps.key.outputs.present == 'true'
         env:

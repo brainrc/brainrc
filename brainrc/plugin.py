@@ -1,4 +1,5 @@
-"""Plugin manifests: Claude Code (also read by Codex), Cursor, and Antigravity."""
+"""Plugin manifests: Claude Code (also read by Codex), Cursor, and Antigravity; and the root
+package.json that `npx github:brainrc/brainrc` installs."""
 from __future__ import annotations
 
 import json
@@ -25,6 +26,19 @@ PLUGIN_DESCRIPTION = ("Guard hooks for AI coding harnesses. Gatework, the spec-d
                       "is its own plugin: brainrc/gatework.")
 
 
+NPX_SHIM = "bin/brainrc.js"
+
+
+def npm_package(version: str) -> dict:
+    """package.json for `npx github:brainrc/brainrc` (#278): the shim and VERSION only. `private`
+    keeps it off npm, which brainrc doesn't publish to; the shim runs the PyPI release at `version`."""
+    return {"name": PLUGIN_NAME, "version": version,
+            "description": "Runs brainrc (a Python CLI, from PyPI) through uv: npx github:brainrc/brainrc",
+            "license": "MIT", "private": True,
+            "repository": {"type": "git", "url": "git+https://github.com/brainrc/brainrc.git"},
+            "bin": {PLUGIN_NAME: NPX_SHIM}, "files": [NPX_SHIM, "VERSION"], "engines": {"node": ">=18"}}
+
+
 def plugin_manifests() -> dict[str, str]:
     """The plugin manifests for core, built from the repo: Claude Code's plugin and marketplace
     (Codex reads them too), Cursor's plugin, and Antigravity's root plugin.json. The repo root is
@@ -48,6 +62,8 @@ def plugin_manifests() -> dict[str, str]:
     manifests[f"{CURSOR_PLUGIN_DIR}/hooks.json"] = json.dumps(cursor_hooks, indent=2) + "\n"
     # Antigravity loads `rules/` and `skills/` at the root; its schema requires `name` and rejects unknown keys.
     manifests["plugin.json"] = json.dumps({"name": PLUGIN_NAME}, indent=2) + "\n"
+    if (config.REPO / NPX_SHIM).is_file():  # core has the shim; a pack that publishes a plugin doesn't
+        manifests["package.json"] = json.dumps(npm_package(version), indent=2) + "\n"
     return manifests
 
 

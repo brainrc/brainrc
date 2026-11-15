@@ -53,7 +53,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if [ -n "$(git status --porcelain)" ]; then
-            git add -A VERSION CHANGELOG.md changelog.d .claude-plugin .cursor-plugin plugin.json
+            git add -A VERSION CHANGELOG.md changelog.d .claude-plugin .cursor-plugin plugin.json package.json
             git commit -m "Release v${version}"
           fi
           if git rev-parse -q --verify "refs/tags/v${version}" >/dev/null; then

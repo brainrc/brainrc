@@ -68,6 +68,12 @@ brainrc apply
 With Homebrew, `brew install brainrc/tap/brainrc` installs the latest release from the
 [brainrc/homebrew-tap](https://github.com/brainrc/homebrew-tap) tap; `brew upgrade brainrc` moves it on.
 
+From Node, `npx github:brainrc/brainrc status` runs brainrc at the version in the repo's
+`VERSION` through `uvx`, so it needs uv but no Python; without uv it says how to get it. brainrc is
+not on npm: npx installs the repo itself, which works once it is public. Pin a release that
+ships the shim with `npx github:brainrc/brainrc#v<X.Y.Z>`. Like `uvx`, it suits `status` and other
+one-off runs; install the command for `apply`.
+
 Pin a release with `uv tool install brainrc==<X.Y.Z>` (`pipx install brainrc==<X.Y.Z>`,
 `uvx brainrc@<X.Y.Z>`). Run `apply` from the installed command, not `uvx`: links point into the
 package, and uvx runs it from a cache that uv may clear. Releases from before PyPI publishing

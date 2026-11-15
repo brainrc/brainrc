@@ -1,0 +1,21 @@
+{
+  "name": "brainrc",
+  "version": "0.8.2",
+  "description": "Runs brainrc (a Python CLI, from PyPI) through uv: npx github:brainrc/brainrc",
+  "license": "MIT",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brainrc/brainrc.git"
+  },
+  "bin": {
+    "brainrc": "bin/brainrc.js"
+  },
+  "files": [
+    "bin/brainrc.js",
+    "VERSION"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
+}

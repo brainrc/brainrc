@@ -31,4 +31,5 @@ These rules apply to human contributors too. Setup and PR workflow: [CONTRIBUTIN
 - After changes, run `python3 scripts/brainrc.py validate` and `python3 -m unittest discover -s tests`.
 - Every PR adds one fragment, `changelog.d/<branch>.md` (`bump:` + bullets, see its README).
   Don't edit `VERSION` or `CHANGELOG.md`: the release workflow folds fragments in and tags on merge.
-- Don't edit `dist/`, `.claude-plugin/`, `.cursor-plugin/`, or the root `plugin.json`; they're generated.
+- Don't edit `dist/`, `.claude-plugin/`, `.cursor-plugin/`, or the root `plugin.json` and
+  `package.json`; they're generated (`python3 scripts/brainrc.py plugin`).

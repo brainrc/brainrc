@@ -53,17 +53,24 @@ first, and the last 5 backups are kept).
 
 ## Install without a clone
 
-`brainrc` also installs as a command, with core's rules and hooks bundled (`apply` fetches
-Gatework, the default pack):
+`brainrc` also installs as a command from [PyPI](https://pypi.org/project/brainrc/), with core's
+rules and hooks bundled (`apply` fetches Gatework, the default pack). uv fetches a Python 3.11+
+if the machine has none:
 
 ```bash
-uv tool install git+https://github.com/brainrc/brainrc   # or: pipx install git+https://github.com/brainrc/brainrc
+uvx brainrc status          # try it without installing: a dry run that writes nothing
+uv tool install brainrc     # or: pipx install brainrc
 brainrc init
 brainrc status
 brainrc apply
 ```
 
-Pin a release with `git+https://github.com/brainrc/brainrc@v<X.Y.Z>` (0.4.0 or later installs as `brainrc`).
+Pin a release with `uv tool install brainrc==<X.Y.Z>` (`pipx install brainrc==<X.Y.Z>`,
+`uvx brainrc@<X.Y.Z>`). Run `apply` from the installed command, not `uvx`: links point into the
+package, and uvx runs it from a cache that uv may clear. Releases from before PyPI publishing
+(0.8.2 and older), and commits between releases, install from git:
+`uv tool install git+https://github.com/brainrc/brainrc@v<X.Y.Z>` (0.4.0 or later installs as
+`brainrc`).
 
 Already have the old `ai-config` package installed? Run `uv tool uninstall ai-config`
 (or `pipx uninstall ai-config`): its `aicfg` command is outdated and works on the old settings home.

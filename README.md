@@ -6,31 +6,31 @@ reach only some, because the tools differ ([harness support](docs/formats.md#har
 
 ## Quickstart
 
-Needs Python 3.11+ and git.
+Needs [uv](https://docs.astral.sh/uv/getting-started/installation/) and git; uv fetches a Python
+if you have none.
 
 ```bash
-git clone https://github.com/brainrc/brainrc ~/brainrc
-cd ~/brainrc
-python3 scripts/brainrc.py status
-python3 scripts/brainrc.py apply
-python3 scripts/brainrc.py status
+uvx brainrc status
+uv tool install brainrc     # or: pipx install brainrc
+brainrc apply
+brainrc status
 ```
 
 The first `status` previews what `apply` would write and writes nothing. It worked when the last
 `status` prints `Everything in sync.`
 
 ```text
-$ python3 scripts/brainrc.py status
+$ uvx brainrc status
 CREATE    claude    ~/.claude/skills/brainrc-aws
 ...                 (about 160 lines, one per file)
 MERGE     cursor    ~/.cursor/hooks.json  (hooks)
 
 Dry run. Run `apply` to write.
-$ python3 scripts/brainrc.py apply
+$ brainrc apply
 CREATE    claude    ~/.claude/skills/brainrc-aws
 ...
 MERGE     cursor    ~/.cursor/hooks.json  (hooks)
-$ python3 scripts/brainrc.py status
+$ brainrc status
 Everything in sync.
 ```
 
@@ -44,7 +44,7 @@ In Claude Code, the quickest path:
 ```
 
 It carries the guard hooks; Gatework (spec-agent) is its own plugin, `gatework@gatework`. Plugins cover
-Claude Code only. For the other tools, rules and private packs, use the syncer above. All install
+Claude Code only. For the other tools, rules and private packs, use the `brainrc` command above. All install
 paths, platform notes, and pinning: [docs/install.md](docs/install.md).
 
 ## Why not …
@@ -54,8 +54,8 @@ paths, platform notes, and pinning: [docs/install.md](docs/install.md).
 | [chezmoi](https://www.chezmoi.io/) | manages your dotfiles across multiple machines, securely | not a dotfile manager; it targets AI-tool config and their formats |
 | [GNU Stow](https://www.gnu.org/software/stow/) | a dotfile organizer that symlinks separate directories into your home directory | links skills and similar files the same way, but also renders rules and merges hooks and MCP servers per tool |
 | [Harness plugins](https://code.claude.com/docs/en/plugins) | a Claude Code plugin is a directory of skills, agents, hooks, and MCP servers installed as one unit | ships as one too; the syncer covers the other four tools |
-| [rulesync](https://github.com/dyoshikawa/rulesync) | a Node.js CLI that generates config files for many AI tools from unified rule files | ships guard hooks and installs Gatework (spec-agent) as its default pack; rulesync is a Node tool, brainrc needs Python |
-| brainrc's limits | | best on Claude Code; Codex, Antigravity, Cursor are best effort; needs Python 3.11+ and a clone outside Claude Code |
+| [rulesync](https://github.com/dyoshikawa/rulesync) | a Node.js CLI that generates config files for many AI tools from unified rule files | ships guard hooks and installs Gatework (spec-agent) as its default pack; rulesync is a Node tool, brainrc a Python one |
+| brainrc's limits | | best on Claude Code; Codex, Antigravity, Cursor are best effort; needs uv (or Python 3.11+) outside Claude Code |
 
 Also see [ruler](https://github.com/intellectronica/ruler) and [dotagents](https://github.com/getsentry/dotagents).
 

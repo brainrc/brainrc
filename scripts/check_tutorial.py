@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """Run the commands of docs/tutorial.md (steps 1-5) in a temporary HOME and checkout copy.
 
-Usage: python3 scripts/check_tutorial.py [--doc PATH | --readme [PATH]]
-With --readme, runs the bash block under "## Quickstart" of the README the same way.
+Usage: python3 scripts/check_tutorial.py [--doc PATH | --readme [PATH]] [--find-links DIR]
+With --readme, runs the bash block under "## Quickstart" of the README the same way, from the temp
+HOME, with ~/.local/bin (where `uv tool install` and pipx put commands) first on PATH.
+--find-links DIR makes uv and pip install brainrc from the wheels in DIR, offline, instead of PyPI:
+CI passes a wheel built from the checkout, so the quickstart runs as written against this code.
 The commands are read from the doc, so a changed command is run as changed. Step 1's `git clone`
 line is replaced by a copy of this checkout at <tmp>/home/brainrc (the tutorial's ~/brainrc), so
 the real checkout and HOME are never written. Prints one PASS/FAIL line per step; exits 1 on any FAIL.
@@ -88,8 +91,22 @@ def parse_readme(text: str) -> dict[int, tuple[str, str]]:
     raise ValueError("README has no bash block under '## Quickstart'")
 
 
-def run(parsed: dict[int, tuple[str, str]], expected: dict[int, list[str]]) -> bool:
-    """Run each block in a temp HOME and checkout copy; print PASS/FAIL per block. True if all pass."""
+# Settings that would point uv, pipx or a harness outside the temp HOME.
+ENV_DROP = ("XDG_CONFIG_HOME", "XDG_DATA_HOME", "XDG_BIN_HOME", "XDG_CACHE_HOME", "CLAUDE_CONFIG_DIR",
+            "CODEX_HOME", "PYTHONPATH", "UV_TOOL_DIR", "UV_TOOL_BIN_DIR", "UV_CACHE_DIR", "PIPX_HOME",
+            "PIPX_BIN_DIR")
+
+
+def local_wheels(find_links: str) -> dict[str, str]:
+    """Environment that makes uv and pip install from the wheels in find_links, never an index."""
+    d = str(Path(find_links).resolve())
+    return {"UV_FIND_LINKS": d, "UV_OFFLINE": "1", "PIP_FIND_LINKS": d, "PIP_NO_INDEX": "1"}
+
+
+def run(parsed: dict[int, tuple[str, str]], expected: dict[int, list[str]], *, in_home: bool = False,
+        extra_env: dict[str, str] | None = None) -> bool:
+    """Run each block in a temp HOME and checkout copy; print PASS/FAIL per block. True if all pass.
+    in_home runs the blocks from the temp HOME instead of the checkout copy."""
     failed = False
     work = tempfile.mkdtemp(prefix="check-tutorial-")
     try:
@@ -98,13 +115,15 @@ def run(parsed: dict[int, tuple[str, str]], expected: dict[int, list[str]]) -> b
         shutil.copytree(REPO, checkout, symlinks=True, ignore=COPY_IGNORE)
         (home / ".claude").mkdir()  # apply only touches installed harnesses, so install one
         env = {**os.environ, "HOME": str(home), "USERPROFILE": str(home),
-               "BRAINRC_HOME": str(home / ".config" / "brainrc")}
-        for k in ("XDG_CONFIG_HOME", "CLAUDE_CONFIG_DIR", "CODEX_HOME", "PYTHONPATH"):
+               "BRAINRC_HOME": str(home / ".config" / "brainrc"), **(extra_env or {})}
+        env["PATH"] = os.pathsep.join([str(home / ".local" / "bin"), env.get("PATH", "")])
+        for k in ENV_DROP:
             env.pop(k, None)
         for n, (title, block) in parsed.items():
             name = f"step {n} {title}"
             try:
-                r = subprocess.run([BASH, "-e", "-o", "pipefail", "-c", block], cwd=checkout, env=env,
+                r = subprocess.run([BASH, "-e", "-o", "pipefail", "-c", block], cwd=home if in_home else checkout,
+                                   env=env,
                                    capture_output=True, text=True, timeout=120)
             except subprocess.TimeoutExpired:
                 report(name, False, "timed out after 120 s")
@@ -130,7 +149,10 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--doc", default=str(REPO / "docs" / "tutorial.md"), help="tutorial to run")
     ap.add_argument("--readme", nargs="?", const=str(REPO / "README.md"), default=None, metavar="PATH",
                     help="run the README quickstart instead of the tutorial")
+    ap.add_argument("--find-links", metavar="DIR",
+                    help="install brainrc with uv or pip from the wheels in DIR, offline, not from PyPI")
     args = ap.parse_args(argv)
+    extra_env = local_wheels(args.find_links) if args.find_links else {}
     try:
         if args.readme is not None:
             parsed, expected = parse_readme(Path(args.readme).read_text(encoding="utf-8")), EXPECTED_README
@@ -139,7 +161,7 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as e:  # a crash is a FAIL line, never a traceback
         report("check_tutorial", False, f"{type(e).__name__}: {e}")
         return 1
-    return 0 if run(parsed, expected) else 1
+    return 0 if run(parsed, expected, in_home=args.readme is not None, extra_env=extra_env) else 1
 
 
 if __name__ == "__main__":

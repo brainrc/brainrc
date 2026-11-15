@@ -20,7 +20,24 @@ spec.loader.exec_module(check_tutorial)
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import default_pack_env  # noqa: E402
-from support import rmtree  # noqa: E402
+from support import rmtree, stub_command  # noqa: E402
+
+# Stand-ins for uv and uvx that run the checkout copy check_tutorial makes at ~/brainrc, so the
+# real README's quickstart runs offline here; CI runs it with real uv on a wheel of the checkout.
+UVX = """import os, subprocess, sys
+assert sys.argv[1] == "brainrc", sys.argv
+script = os.path.join(os.environ["HOME"], "brainrc", "scripts", "brainrc.py")
+sys.exit(subprocess.call([sys.executable, script, *sys.argv[2:]]))"""
+UV = """import os, sys
+assert sys.argv[1:] == ["tool", "install", "brainrc"], sys.argv
+bin_dir = os.path.join(os.environ["HOME"], ".local", "bin")
+os.makedirs(bin_dir, exist_ok=True)
+path = os.path.join(bin_dir, "brainrc")
+with open(path, "w") as f:
+    f.write("#!" + sys.executable + "\\n" + "import os, subprocess, sys\\n"
+            "script = os.path.join(os.environ['HOME'], 'brainrc', 'scripts', 'brainrc.py')\\n"
+            "sys.exit(subprocess.call([sys.executable, script, *sys.argv[1:]]))\\n")
+os.chmod(path, 0o755)"""
 
 
 def setUpModule():
@@ -116,6 +133,7 @@ README_FIXTURE = """# brainrc
 
 ```bash
 git clone https://example.invalid/brainrc.git ~/brainrc
+cd ~/brainrc
 python3 scripts/brainrc.py status
 python3 scripts/brainrc.py apply
 python3 scripts/brainrc.py status
@@ -160,10 +178,12 @@ class ReadmeCheckTest(unittest.TestCase):
         p.write_text(text, encoding="utf-8")
         return str(p)
 
-    def run_readme(self, text: str) -> tuple[int, str]:
+    def run_readme(self, text: str, path: str | None = None) -> tuple[int, str]:
         with tempfile.TemporaryDirectory(prefix="readme-home-") as fake_home:
-            old = {k: os.environ.get(k) for k in ("HOME", "USERPROFILE")}
+            old = {k: os.environ.get(k) for k in ("HOME", "USERPROFILE", "PATH")}
             os.environ["HOME"] = os.environ["USERPROFILE"] = fake_home
+            if path:
+                os.environ["PATH"] = os.pathsep.join([path, old["PATH"] or ""])
             try:
                 code, out = run_main(["--readme", self.readme(text)])
             finally:
@@ -195,10 +215,22 @@ class ReadmeCheckTest(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn("FAIL", out)
 
+    @unittest.skipIf(os.name == "nt", "the uv stand-ins are POSIX scripts run from bash")
     def test_real_readme_passes_and_stays_sandboxed(self):
-        code, out = self.run_readme((REPO / "README.md").read_text(encoding="utf-8"))
+        bin_dir = tempfile.mkdtemp(prefix="readme-bin-")
+        self.addCleanup(rmtree, bin_dir, True)
+        stub_command(bin_dir, "uvx", UVX)
+        stub_command(bin_dir, "uv", UV)
+        code, out = self.run_readme((REPO / "README.md").read_text(encoding="utf-8"), path=bin_dir)
         self.assertEqual(code, 0, out)
         self.assertIn("PASS step 1 quickstart", out)
+
+    def test_find_links_installs_from_local_wheels_offline(self):
+        env = check_tutorial.local_wheels("wheels")
+        self.assertEqual(env["UV_OFFLINE"], "1")
+        self.assertEqual(env["PIP_NO_INDEX"], "1")
+        self.assertEqual(env["UV_FIND_LINKS"], env["PIP_FIND_LINKS"])
+        self.assertTrue(Path(env["UV_FIND_LINKS"]).is_absolute())
 
 
 class RealReadmeTest(unittest.TestCase):
@@ -209,10 +241,13 @@ class RealReadmeTest(unittest.TestCase):
         for pattern in check_tutorial.EXPECTED_README[1]:
             self.assertRegex(self.text, pattern)
 
-    def test_quickstart_commands_are_status_apply_status(self):
+    def test_quickstart_previews_with_uvx_then_installs_and_applies(self):
         block = check_tutorial.parse_readme(self.text)[1][1]
-        cmds = [l for l in block.splitlines() if "scripts/brainrc.py" in l]
-        self.assertEqual([c.split()[-1] for c in cmds], ["status", "apply", "status"])
+        cmds = [l.split("#")[0].strip() for l in block.splitlines() if l.strip()]
+        self.assertEqual(cmds, ["uvx brainrc status", "uv tool install brainrc", "brainrc apply",
+                                "brainrc status"])
+        self.assertIn("pipx install brainrc", block)
+        self.assertNotIn("git clone", block)
 
     def test_no_absolute_home_paths_or_emails(self):
         for bad in ("/home/", "/Users/", "/root/"):

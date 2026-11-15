@@ -26,3 +26,16 @@
 - Plan: `.github/workflows/release.yml`, `pyproject.toml` (`[tool.hatch.build.targets.sdist]`),
   `scripts/check_dist.py` (new), a step in `validate.yml`, CONTRIBUTING.md § Releases; tests in
   `tests/test_release_dist.py`.
+
+## engine · gh:108 · verified
+Draft PR #359 (base `main`). `validate` and the full suite passed before the push.
+
+## engine · gh:276 · Spec and Plan (logged under the Campaign gate)
+- Spec: the README quickstart is `uvx brainrc status`, `uv tool install brainrc` (or pipx),
+  `brainrc apply`, `brainrc status`; needs uv and git. `check_tutorial.py --readme` runs it from
+  the temp HOME with `~/.local/bin` first on PATH; `--find-links DIR` sets uv and pip to install
+  offline from DIR, so CI tests this checkout's wheel before (and after) PyPI has a release.
+  docs/install.md leads with PyPI and keeps git for releases before publishing; `apply` runs from
+  the installed command, not uvx (uv's cache can be cleared under the links).
+- Plan: README.md, docs/install.md, `scripts/check_tutorial.py`, `validate.yml` (uv 0.13.8, a wheel
+  of the checkout); tests in `tests/test_check_tutorial.py` with uv stand-ins.

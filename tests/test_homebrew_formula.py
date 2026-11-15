@@ -142,7 +142,9 @@ class HomebrewJobTest(unittest.TestCase):
 
     def test_pushes_over_https_with_the_token_kept_out_of_urls_and_config(self):
         self.assertIn('git clone --depth 1 "https://github.com/${TAP}.git"', self.brew)
-        self.assertIn("GIT_CONFIG_KEY_0: credential.helper", self.brew)
+        self.assertIn('GIT_CONFIG_KEY_0: credential.helper\n          GIT_CONFIG_VALUE_0: ""', self.brew)
+        self.assertIn("GIT_CONFIG_KEY_1: credential.helper", self.brew)
+        self.assertIn('test "$1" = get || exit 0', self.brew)
         self.assertIn('password=${TAP_TOKEN}', self.brew)
         self.assertNotRegex(self.brew, r"https://[^/\s\"]*@github\.com")  # no token in a URL
         self.assertNotIn("git config credential", self.brew)  # nothing written to .git/config

@@ -10,10 +10,14 @@ the repo packed with `npm pack`, and a formula for the local sdist in a scratch 
 kept offline. --published (the default) installs what users get: PyPI, `npx github:brainrc/brainrc`
 and the brainrc/homebrew-tap tap. A route whose tool or source is missing (no brew on the machine,
 no PyPI release yet, the repo not public, no tap) prints SKIP, never PASS. Exits 1 on any FAIL.
-Homebrew runs with HOMEBREW_NO_AUTO_UPDATE, so `brew update` time isn't counted.
+Homebrew runs with HOMEBREW_NO_AUTO_UPDATE and its own download cache, so `brew update` and its
+API data aren't counted; brew skips when brainrc is already installed with Homebrew, and uninstalls
+what it installed afterwards.
 """
 import argparse
+import importlib.util
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -22,8 +26,11 @@ import time
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO / "scripts"))
-from homebrew_formula import render, sha256_of, version_of  # noqa: E402
+# Loaded by path: scripts/ on sys.path would let scripts/brainrc.py hide the brainrc package.
+_spec = importlib.util.spec_from_file_location("homebrew_formula", REPO / "scripts" / "homebrew_formula.py")
+homebrew_formula = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(homebrew_formula)
+render, sha256_of, version_of = homebrew_formula.render, homebrew_formula.sha256_of, homebrew_formula.version_of
 
 PATHS = ("uvx", "pipx", "npx", "brew")
 VERSION = (REPO / "VERSION").read_text().strip()
@@ -46,9 +53,9 @@ def find_brew() -> str | None:
     return None
 
 
-def quiet(args: list[str], env: dict | None = None, timeout: int = 60) -> bool:
+def quiet(args: list[str], env: dict | None = None, timeout: int = 60, cwd: Path | None = None) -> bool:
     try:
-        return subprocess.run(args, env=env, capture_output=True, timeout=timeout).returncode == 0
+        return subprocess.run(args, env=env, cwd=cwd, capture_output=True, timeout=timeout).returncode == 0
     except (OSError, subprocess.TimeoutExpired):
         return False
 
@@ -64,11 +71,22 @@ def public(url: str, work: Path) -> bool:
     """Whether anyone can read the repo: git without the caller's config or credentials (CI's
     checkout leaves a token in its own .git/config, so run outside it)."""
     env = {**os.environ, "GIT_TERMINAL_PROMPT": "0", "GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_NOSYSTEM": "1"}
+    return quiet(["git", "-c", "credential.helper=", "ls-remote", url, "HEAD"], env=env, cwd=work)
+
+
+def on_pypi(version: str | None = None) -> None:
+    """Skip unless PyPI has brainrc (at `version`, if given). A pip that can't answer is an error,
+    not a skip, so a broken check can't stay green."""
+    args = [sys.executable, "-m", "pip", "index", "versions", "brainrc"]
     try:
-        return subprocess.run(["git", "-c", "credential.helper=", "ls-remote", url, "HEAD"], cwd=work, env=env,
-                              capture_output=True, timeout=60).returncode == 0
-    except (OSError, subprocess.TimeoutExpired):
-        return False
+        r = subprocess.run(args, capture_output=True, text=True, timeout=60)
+    except (OSError, subprocess.TimeoutExpired) as e:
+        raise RuntimeError(f"couldn't ask PyPI: {e}") from None
+    if r.returncode == 0 and (version is None or re.search(rf"[ ,]{re.escape(version)}(,|$)", r.stdout, re.M)):
+        return
+    if r.returncode == 0 or "No matching distribution" in r.stderr:
+        raise Skip(f"brainrc {version} is not on PyPI yet" if version else "brainrc is not on PyPI yet")
+    raise RuntimeError(f"couldn't ask PyPI: {(r.stderr or r.stdout)[-300:]}")
 
 
 def local_env(dist: Path) -> dict[str, str]:
@@ -76,21 +94,18 @@ def local_env(dist: Path) -> dict[str, str]:
     return {"UV_FIND_LINKS": d, "UV_OFFLINE": "1", "PIP_FIND_LINKS": d, "PIP_NO_INDEX": "1"}
 
 
-def plan(route: str, local: Path | None, work: Path) -> tuple[str, dict[str, str]]:
-    """(bash script that installs and runs the first status, extra environment); Skip if impossible."""
+def plan(route: str, local: Path | None, work: Path) -> tuple[str, dict[str, str], list[str]]:
+    """(bash script that installs and runs the first status, extra environment, directories to put
+    first on PATH); Skip if impossible."""
     extra = local_env(local) if local else {}
-    if route == "uvx":
-        need("uvx")
-        if not local and not quiet([sys.executable, "-m", "pip", "index", "versions", "brainrc"]):
-            raise Skip("brainrc is not on PyPI yet")
-        return "uvx brainrc status", extra
-    if route == "pipx":
-        need("pipx")
-        if not local and not quiet([sys.executable, "-m", "pip", "index", "versions", "brainrc"]):
-            raise Skip("brainrc is not on PyPI yet")
-        return "pipx install brainrc\nbrainrc status", extra
+    if route in ("uvx", "pipx"):
+        need(route)
+        if not local:
+            on_pypi()
+        return ("uvx brainrc status" if route == "uvx" else "pipx install brainrc\nbrainrc status"), extra, []
     if route == "npx":
         need("npx")
+        need("uvx")  # the shim runs brainrc through uvx
         if local:
             npm = need("npm")
             r = subprocess.run([npm, "pack", "--pack-destination", str(work)], cwd=REPO,
@@ -98,29 +113,35 @@ def plan(route: str, local: Path | None, work: Path) -> tuple[str, dict[str, str
             tgz = work / f"brainrc-{VERSION}.tgz"
             if r.returncode or not tgz.is_file():
                 raise RuntimeError(f"npm pack failed: {r.stderr[-400:]}")
-            return f"npx --yes --package '{tgz}' brainrc status", extra
+            return f"npx --yes --package '{tgz}' brainrc status", extra, []
         if not public("https://github.com/brainrc/brainrc", work):
             raise Skip("github.com/brainrc/brainrc is not public")
-        return "npx --yes github:brainrc/brainrc status", extra
+        on_pypi(VERSION)  # the shim pins the repo's VERSION
+        return "npx --yes github:brainrc/brainrc status", extra, []
     if route == "brew":
         brew = find_brew()
         if not brew:
             raise Skip("Homebrew not installed")
-        bin_dir = str(Path(brew).parent)
+        if quiet([brew, "list", "--formula", "brainrc"]):
+            raise Skip("brainrc is already installed with Homebrew; `brew uninstall brainrc` to time this route")
         # Homebrew builds the sdist itself and fetches the build backend from PyPI: no offline pip.
-        extra = {"HOMEBREW_NO_AUTO_UPDATE": "1", "HOMEBREW_NO_INSTALL_CLEANUP": "1",
-                 "HOMEBREW_NO_ENV_HINTS": "1", "PATH_PREPEND": bin_dir}
+        # Its download cache stays the machine's, as a Homebrew user's would.
+        extra = {"HOMEBREW_NO_AUTO_UPDATE": "1", "HOMEBREW_NO_INSTALL_CLEANUP": "1", "HOMEBREW_NO_ENV_HINTS": "1"}
+        try:
+            cache = subprocess.run([brew, "--cache"], capture_output=True, text=True, timeout=60).stdout.strip()
+        except (OSError, subprocess.TimeoutExpired):
+            cache = ""
+        if cache:
+            extra["HOMEBREW_CACHE"] = cache
         if local:
             sdist = local / f"brainrc-{VERSION}.tar.gz"
             if not sdist.is_file():
                 raise RuntimeError(f"{sdist} missing: build it with python3 -m build")
-            tap = local_tap(brew)
-            (tap / "Formula").mkdir(parents=True, exist_ok=True)
-            (tap / "Formula" / "brainrc.rb").write_text(local_formula(sdist))
-            return f"brew install {LOCAL_TAP}/brainrc\nbrainrc status", extra
+            (local_tap(brew) / "Formula" / "brainrc.rb").write_text(local_formula(sdist))
+            return f"brew install {LOCAL_TAP}/brainrc\nbrainrc status", extra, [str(Path(brew).parent)]
         if not public("https://github.com/brainrc/homebrew-tap", work):
             raise Skip("the brainrc/homebrew-tap tap doesn't exist yet")
-        return "brew install brainrc/tap/brainrc\nbrainrc status", extra
+        return "brew install brainrc/tap/brainrc\nbrainrc status", extra, [str(Path(brew).parent)]
     raise ValueError(route)
 
 
@@ -131,30 +152,32 @@ def local_formula(sdist: Path) -> str:
 
 
 def local_tap(brew: str) -> Path:
-    """A scratch tap for the local formula (Homebrew installs formulae only from taps)."""
-    repo = subprocess.run([brew, "--repository"], capture_output=True, text=True, check=True).stdout.strip()
-    user, name = LOCAL_TAP.split("/")
-    tap = Path(repo, "Library", "Taps", user, f"homebrew-{name}")
-    tap.mkdir(parents=True, exist_ok=True)
-    return tap
+    """A scratch tap for the local formula (Homebrew installs formulae only from taps), made as
+    release.yml makes its own: `brew tap-new --no-git`."""
+    env = {**os.environ, "HOMEBREW_NO_AUTO_UPDATE": "1"}
+    quiet([brew, "untap", "--force", LOCAL_TAP], env=env, timeout=120)
+    subprocess.run([brew, "tap-new", "--no-git", LOCAL_TAP], env=env, capture_output=True, check=True, timeout=120)
+    repo = subprocess.run([brew, "--repository", LOCAL_TAP], env=env, capture_output=True, text=True,
+                          check=True, timeout=60).stdout.strip()
+    (Path(repo) / "Formula").mkdir(parents=True, exist_ok=True)
+    return Path(repo)
 
 
 def run_route(route: str, local: Path | None, limit: float) -> tuple[str, str]:
     """('PASS'|'FAIL'|'SKIP', detail)."""
     work = Path(tempfile.mkdtemp(prefix=f"install-time-{route}-"))
+    planned = False
     try:
         try:
-            script, extra = plan(route, local, work)
+            script, extra, prepend = plan(route, local, work)
         except Skip as e:
             return "SKIP", str(e)
+        planned = True
         home = work / "home"
         (home / ".claude").mkdir(parents=True)
         env = {k: v for k, v in os.environ.items() if k not in ENV_DROP}
-        prepend = [str(home / ".local" / "bin")]
-        if "PATH_PREPEND" in extra:
-            prepend.append(extra.pop("PATH_PREPEND"))
         env.update(extra, HOME=str(home), USERPROFILE=str(home),
-                   PATH=os.pathsep.join([*prepend, env.get("PATH", "")]))
+                   PATH=os.pathsep.join([str(home / ".local" / "bin"), *prepend, env.get("PATH", "")]))
         start = time.monotonic()
         try:
             r = subprocess.run(["bash", "-e", "-o", "pipefail", "-c", script], cwd=home, env=env,
@@ -169,9 +192,10 @@ def run_route(route: str, local: Path | None, limit: float) -> tuple[str, str]:
             return "FAIL", f"{took:.1f} s to first status, over the {limit:.0f} s limit"
         return "PASS", f"{took:.1f} s to first status"
     finally:
-        if route == "brew" and local:
-            brew = find_brew()
-            if brew:
+        brew = find_brew() if route == "brew" and planned else None
+        if brew:  # plan skipped when brainrc was installed before, so this is the check's own
+            quiet([brew, "uninstall", "--formula", "brainrc"], timeout=120)
+            if local:
                 quiet([brew, "untap", "--force", LOCAL_TAP], timeout=120)
         shutil.rmtree(work, ignore_errors=True)
 

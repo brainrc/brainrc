@@ -85,3 +85,24 @@ Draft PR #362 (base `main`, stacked on #361). `validate` and the full suite pass
 - Workflow `install-time`: matrix ubuntu/macOS × four routes; PRs and pushes `--local`, weekly and
   manual `--published`. Not required, so a slow route is visible without blocking merges.
 - Plan: script and workflow (new), docs/install.md; tests in `tests/test_install_time.py`.
+
+## engine · gh:279 · verified
+Draft PR #363 (base `main`, stacked on #362). `validate` and the full suite passed before the push.
+
+## review · code-reviewer on each PR (high), confirmed findings fixed
+Fixes land on the PR's own branch and reach later branches by merge commits (no rebase).
+- #359: pypi-publish pinned to v1.14.3 (Metadata 2.4); build with pinned hatchling, no isolation,
+  from the tag with no write token, attach in its own job; `check_dist` matches whole path
+  segments and reads force-include from pyproject; re-run wording in CONTRIBUTING.
+- #360: the quickstart check drops any `brainrc` already on PATH and uv/pip index settings; the CI
+  wheel is built pinned; install.md says how to fix PATH and points to the no-clone route first.
+- #361: formula caveat to run `brainrc apply --repair` after `brew upgrade`; the release installs
+  and tests the formula with Homebrew before the push; a sha256 mismatch with PyPI isn't retried.
+- #362: validate fails when the shim is gone; SIGPIPE exits 141; docs warn that `npx brainrc`
+  without `github:` runs an unrelated package and that npx may reuse an old copy.
+- #363: helpers loaded by path (no `scripts/` on sys.path); npx needs uv and, published, the
+  repo's VERSION on PyPI; an unanswering pip is FAIL; brew keeps its cache, skips when already
+  installed and uninstalls after; the workflow runs only on packaging changes.
+- Not fixed, for the owner: brainrc isn't on PyPI and `brainrc` isn't reserved on npm; between the
+  release's VERSION push and the PyPI upload, `npx github:brainrc/brainrc` pins an unpublished
+  version; Homebrew's `python@3.13` needs a bump when Homebrew retires it.

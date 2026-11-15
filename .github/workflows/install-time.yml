@@ -3,7 +3,7 @@ name: install-time
 # E26's target: install to the first `brainrc status` in under 60 seconds on a clean Mac or Linux
 # box (#279). Each route (uvx, pipx, npx, brew) runs from scratch on a fresh runner, timed by
 # scripts/check_install_time.py; the route's own tool (uv, pipx, Node, Homebrew) is there first and
-# isn't timed. Pull requests and pushes install this checkout's build: wheel, sdist, packed repo,
+# isn't timed. Pull requests and pushes that touch packaging install this checkout's build: wheel, sdist, packed repo,
 # and a formula for the local sdist. The weekly run, and a manual run with source `published`,
 # install what users get (PyPI, `npx github:brainrc/brainrc`, the brainrc/homebrew-tap tap) and
 # skip a route whose source doesn't exist yet. Not a required check: a slow route shows red here
@@ -11,8 +11,26 @@ name: install-time
 
 on:
   pull_request:
+    paths:
+      - brainrc/**
+      - bin/**
+      - pyproject.toml
+      - package.json
+      - VERSION
+      - scripts/check_install_time.py
+      - scripts/homebrew_formula.py
+      - .github/workflows/install-time.yml
   push:
     branches: [main]
+    paths:
+      - brainrc/**
+      - bin/**
+      - pyproject.toml
+      - package.json
+      - VERSION
+      - scripts/check_install_time.py
+      - scripts/homebrew_formula.py
+      - .github/workflows/install-time.yml
   schedule:
     - cron: "17 6 * * 1"
   workflow_dispatch:
@@ -60,8 +78,8 @@ jobs:
       - name: Build this checkout (not timed)
         if: env.SOURCE == 'local'
         run: |
-          python3 -m pip install build==1.6.1
-          python3 -m build --outdir "$RUNNER_TEMP/dist"
+          python3 -m pip install build==1.6.1 hatchling==1.33.0
+          python3 -m build --no-isolation --outdir "$RUNNER_TEMP/dist"
       - name: Time ${{ matrix.route }} to the first status
         run: |
           if [ "$SOURCE" = local ]; then

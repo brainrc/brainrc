@@ -2,6 +2,7 @@
 import contextlib
 import importlib.util
 import io
+import json
 import os
 import re
 import shutil
@@ -82,16 +83,21 @@ class RouteTest(unittest.TestCase):
         self.assertEqual(result, "PASS", detail)
 
     def test_the_route_runs_offline_on_the_local_build_in_a_fresh_home(self):
-        stub_command(str(self.stubs), "uvx", "import json, os\n"
-                     "print(json.dumps({k: os.environ.get(k) for k in "
-                     "('UV_FIND_LINKS', 'UV_OFFLINE', 'PIP_NO_INDEX', 'HOME', 'UV_CACHE_DIR')}))\n"
+        log = self.stubs / "env.json"
+        stub_command(str(self.stubs), "uvx", "import json, os, sys\n"
+                     f"json.dump({{'argv': sys.argv[1:], **{{k: os.environ.get(k) for k in "
+                     "('UV_FIND_LINKS', 'UV_OFFLINE', 'PIP_NO_INDEX', 'HOME', 'UV_CACHE_DIR')}}, "
+                     f"open({str(log)!r}, 'w'))\n"
                      "print('Dry run. Run `apply` to write.')")
         os.environ["UV_CACHE_DIR"] = "/somewhere/else"
-        script, extra = cit.plan("uvx", self.dist, self.stubs)
-        self.assertEqual(script, "uvx brainrc status")
-        self.assertEqual(extra["UV_FIND_LINKS"], str(self.dist))
-        self.assertEqual((extra["UV_OFFLINE"], extra["PIP_NO_INDEX"]), ("1", "1"))
-        self.assertIn("UV_CACHE_DIR", cit.ENV_DROP)
+        result, detail = cit.run_route("uvx", self.dist, 60)
+        self.assertEqual(result, "PASS", detail)
+        seen = json.loads(log.read_text())
+        self.assertEqual(seen["argv"], ["brainrc", "status"])
+        self.assertEqual(seen["UV_FIND_LINKS"], str(self.dist))
+        self.assertEqual((seen["UV_OFFLINE"], seen["PIP_NO_INDEX"]), ("1", "1"))
+        self.assertIsNone(seen["UV_CACHE_DIR"])  # the runner's warm cache is dropped
+        self.assertTrue(seen["HOME"].endswith("/home") and seen["HOME"] != os.environ.get("HOME"))
 
     def test_a_missing_tool_is_a_skip_not_a_pass(self):
         result, detail = cit.run_route("uvx", self.dist, 60)
@@ -102,7 +108,7 @@ class RouteTest(unittest.TestCase):
     def test_published_routes_skip_until_their_source_exists(self):
         for tool in ("uvx", "npx"):
             stub_command(str(self.stubs), tool, STATUS)
-        with mock.patch.object(cit, "quiet", return_value=False):
+        with mock.patch.object(cit, "on_pypi", side_effect=cit.Skip("brainrc is not on PyPI yet")):
             self.assertEqual(cit.run_route("uvx", None, 60), ("SKIP", "brainrc is not on PyPI yet"))
         with mock.patch.object(cit, "public", return_value=False):
             self.assertEqual(cit.run_route("npx", None, 60),
@@ -111,6 +117,25 @@ class RouteTest(unittest.TestCase):
                 mock.patch.object(cit, "public", return_value=False):
             self.assertEqual(cit.run_route("brew", None, 60),
                              ("SKIP", "the brainrc/homebrew-tap tap doesn't exist yet"))
+
+    def test_npx_also_needs_uv_for_the_shim(self):
+        stub_command(str(self.stubs), "npx", STATUS)
+        self.assertEqual(cit.run_route("npx", self.dist, 60), ("SKIP", "uvx not installed"))
+
+    def test_published_npx_skips_until_pypi_has_the_repos_version(self):
+        for tool in ("uvx", "npx"):
+            stub_command(str(self.stubs), tool, STATUS)
+        with mock.patch.object(cit, "public", return_value=True), \
+                mock.patch.object(cit, "on_pypi", side_effect=cit.Skip("not yet")) as pypi:
+            self.assertEqual(cit.run_route("npx", None, 60), ("SKIP", "not yet"))
+        pypi.assert_called_once_with(cit.VERSION)
+
+    def test_brew_skips_when_brainrc_is_already_installed_with_homebrew(self):
+        stub_command(str(self.stubs), "brew", "import sys; sys.exit(0 if sys.argv[1] == 'list' else 9)")
+        with mock.patch.object(cit, "find_brew", return_value=str(self.stubs / "brew")):
+            result, detail = cit.run_route("brew", None, 60)
+        self.assertEqual(result, "SKIP")
+        self.assertIn("already installed", detail)
 
     def test_main_prints_one_line_per_route_and_fails_on_any_fail(self):
         stub_command(str(self.stubs), "uvx", STATUS)
@@ -122,6 +147,27 @@ class RouteTest(unittest.TestCase):
         os.environ["STUB_EXIT"] = "1"
         with contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(cit.main(["--path", "uvx", "--local", str(self.dist)]), 1)
+
+
+class OnPypiTest(unittest.TestCase):
+    def answer(self, code, out="", err=""):
+        return mock.patch.object(cit.subprocess, "run", return_value=mock.Mock(returncode=code, stdout=out, stderr=err))
+
+    def test_listed_versions_pass_or_skip(self):
+        listing = "brainrc (1.2.4)\nAvailable versions: 1.2.4, 1.2.3\n"
+        with self.answer(0, listing):
+            cit.on_pypi()
+            cit.on_pypi("1.2.3")
+            with self.assertRaisesRegex(cit.Skip, "brainrc 1.2 is not on PyPI yet"):
+                cit.on_pypi("1.2")
+        with self.answer(1, err="ERROR: No matching distribution found for brainrc"):
+            with self.assertRaisesRegex(cit.Skip, "not on PyPI yet"):
+                cit.on_pypi()
+
+    def test_a_pip_that_cannot_answer_is_an_error_not_a_skip(self):
+        with self.answer(1, err="No module named pip"):
+            with self.assertRaisesRegex(RuntimeError, "couldn't ask PyPI"):
+                cit.on_pypi()
 
 
 class WorkflowTest(unittest.TestCase):

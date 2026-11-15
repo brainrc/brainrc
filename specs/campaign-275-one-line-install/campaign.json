@@ -59,10 +59,10 @@
       "ref": "gh:279",
       "order": 5,
       "depends_on": [],
-      "status": "in_progress",
+      "status": "delivered",
       "slug": "279-install-time-check",
       "branch": "claude/project-thread-g9cuz3-279",
-      "pr": null,
+      "pr": 363,
       "base": "main",
       "merged": false
     }

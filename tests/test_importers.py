@@ -11,9 +11,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import REPO, TempRepoCase, brainrc, quiet  # noqa: E402
 
 from brainrc.importers import discover, plan, resolve, set_pack_path  # noqa: E402
+from brainrc.importers.cursor import globs  # noqa: E402
 from brainrc.importers.markdown import headings, split  # noqa: E402
 from brainrc.scaffold import PackSpec, Rule, Skill, render_pack, write_pack  # noqa: E402
-from brainrc.sources import Source, load_pack, render_instructions, sources  # noqa: E402
+from brainrc.sources import Source, frontmatter, load_pack, render_instructions, sources  # noqa: E402
 from support import rmtree  # noqa: E402
 
 FIXTURES = REPO / "tests/fixtures/import"
@@ -232,6 +233,81 @@ class InstructionsImportTest(ImportCase):
                          [("instructions", "CLAUDE.md"), ("instructions", "AGENTS.md")])
         p = plan(resolve([str(FIXTURES / "instructions/AGENTS.md")]), "team")
         self.assertEqual(p.spec.description, "Imported by brainrc import from AGENTS.md")
+
+
+class CursorImportTest(ImportCase):
+    """#164: `.cursor/rules/*.mdc` and `.cursorrules`."""
+
+    def import_fixture(self) -> Path:
+        code, out = self.run_import(str(FIXTURES / "cursor"), "--to", "team", "--name", "team")
+        self.assertEqual(code, 0, out)
+        self.assertIn("OK:", out)
+        self.assertNotIn("ERROR", out)
+        return self.tmp / "team"
+
+    def test_always_apply_rules_become_rules_in_order(self):
+        pack = self.import_fixture()
+        self.assertEqual(sorted(p.name for p in (pack / "rules").iterdir()),
+                         ["10-general.md", "20-security.md", "30-cursorrules.md"])
+        text = rendered_pack_text(pack)
+        order = ["# General", "Never log secrets", "Answer in British English."]
+        self.assertEqual([text.index(s) for s in order], sorted(text.index(s) for s in order))
+        self.assertNotIn("alwaysApply", text)  # Cursor's frontmatter stays behind
+        self.assertNotIn("Python conventions", text)  # scoped rules are skills, not always loaded
+
+    def test_glob_rules_become_skills_with_a_domains_row(self):
+        pack = self.import_fixture()
+        meta = tomllib.loads((pack / "pack.toml").read_text())
+        self.assertEqual(meta["extensions"]["gatework"]["domains"], [
+            {"files": "`*.py`, `scripts/**/*.py`", "skills": ["team-python"]},
+            {"files": "`src/**/*.tsx`, `src/**/*.jsx`", "skills": ["team-frontend-react"]}])
+        skill = frontmatter(pack / "skills/team-python/SKILL.md")
+        self.assertEqual(skill["description"], "Python conventions. Use when working on `*.py`, `scripts/**/*.py`.")
+        body = (pack / "skills/team-python/SKILL.md").read_text()
+        self.assertIn("10-python.mdc, lines 6-7 -->", body)
+        self.assertIn("- Type-annotate public functions.\n- Use `pathlib`, not `os.path`.\n", body)
+
+    def test_described_and_manual_rules_become_skills(self):
+        pack = self.import_fixture()
+        self.assertEqual(sorted(p.name for p in (pack / "skills").iterdir()),
+                         ["team-frontend-react", "team-manual", "team-python", "team-release"])
+        release = frontmatter(pack / "skills/team-release/SKILL.md")
+        self.assertEqual(release["description"], "Steps to cut a release; use when asked to release")
+        code, out = self.run_import(str(FIXTURES / "cursor/.cursor/rules/40-manual.mdc"), "--to", "one")
+        self.assertIn("becomes a skill the model loads only when asked", out)
+
+    def test_the_domains_rows_render_into_gateworks_extensions(self):
+        code, out = self.run_import(str(FIXTURES / "cursor"), "--name", "team", "--enable")
+        self.assertEqual(code, 0, out)
+        from brainrc.validate import extension_warnings, validators
+        srcs = sources()
+        self.assertEqual([w for w in extension_warnings(srcs, validators(srcs)) if "team" in w], [])
+
+    def test_same_named_skills_from_two_sources_keep_their_domains_rows(self):
+        (self.tmp / "a/.cursor/rules").mkdir(parents=True)
+        (self.tmp / "b/.cursor/rules").mkdir(parents=True)
+        for d in ("a", "b"):
+            (self.tmp / d / ".cursor/rules/go.mdc").write_text(f"---\nglobs: {d}/**/*.go\n---\nGo in {d}.\n")
+        code, out = self.run_import("a", "b", "--to", "team", "--name", "team")
+        self.assertEqual(code, 0, out)
+        domains = tomllib.loads((self.tmp / "team/pack.toml").read_text())["extensions"]["gatework"]["domains"]
+        self.assertEqual([d["skills"] for d in domains], [["team-go"], ["team-go-2"]])
+        self.assertIn("Go in b.", (self.tmp / "team/skills/team-go-2/SKILL.md").read_text())
+
+    def test_globs(self):
+        self.assertEqual(globs("*.py, scripts/**/*.py"), ["*.py", "scripts/**/*.py"])
+        self.assertEqual(globs('["src/*.ts", \'lib/*.ts\']'), ["src/*.ts", "lib/*.ts"])
+        self.assertEqual(globs(""), [])
+
+    def test_unclosed_frontmatter_is_body(self):
+        (self.tmp / "x.mdc").write_text("---\nalwaysApply: true\nNo closing line.\n")
+        code, out = self.run_import("x.mdc", "--to", "team")
+        self.assertEqual(code, 0, out)
+        self.assertIn("alwaysApply: true", (self.tmp / "team/skills/imported-x/SKILL.md").read_text())
+
+    def test_discover_finds_both_cursor_sources(self):
+        self.assertEqual([(f, p.name) for f, p in discover(FIXTURES / "cursor")],
+                         [("cursor", "rules"), ("cursor", ".cursorrules")])
 
 
 class SetPackPathTest(unittest.TestCase):

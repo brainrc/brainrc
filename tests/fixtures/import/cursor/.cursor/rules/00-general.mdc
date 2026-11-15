@@ -1,0 +1,9 @@
+---
+description: House style for every file
+globs:
+alwaysApply: true
+---
+# General
+
+- Prefer small, pure functions.
+- Name things for what they hold, not their type.

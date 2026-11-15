@@ -56,6 +56,7 @@ over in one command. A folder means the files in it that brainrc reads.
 | Source | Becomes |
 |---|---|
 | `CLAUDE.md`, `AGENTS.md` | one rule per section, in order |
+| Cursor: `.cursor/rules/**/*.mdc`, `.cursorrules` | `alwaysApply: true` rules and `.cursorrules` become rules; a rule scoped by `globs` becomes a skill with a row in Gatework's Domains table for those globs; one with only a `description` becomes a skill with that description |
 
 Each file is split at the shallowest heading level it uses more than once (a lone `# Title`
 stays with the text under it), and each part becomes `rules/NN-<heading>.md` with a first-line

@@ -1,0 +1,4 @@
+---
+alwaysApply: true
+---
+Never log secrets or tokens, even at debug level.

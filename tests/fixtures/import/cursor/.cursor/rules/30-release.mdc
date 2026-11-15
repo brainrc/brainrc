@@ -1,0 +1,6 @@
+---
+description: Steps to cut a release; use when asked to release
+alwaysApply: false
+---
+1. Update the changelog.
+2. Tag the commit.

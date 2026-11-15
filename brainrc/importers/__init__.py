@@ -14,11 +14,11 @@ from pathlib import Path
 from .. import config
 from ..config import ConfigError, TABLE_HEADER, expand, tilde
 from ..scaffold import PackSpec, render_pack, write_pack
-from . import instructions
+from . import cursor, instructions
 from .model import Imported
 
 # Format name -> importer module, in the order discover() lists what it finds.
-FORMATS = {"instructions": instructions}
+FORMATS = {"instructions": instructions, "cursor": cursor}
 DEFAULT_NAME = "imported"
 
 
@@ -53,6 +53,7 @@ def plan(sources: list[tuple[str, Path]], name: str = DEFAULT_NAME, prefix: str 
     warnings: list[str] = []
     read: set[Path] = set()
     used = []
+    taken: set[str] = set()
     for fmt, path in sources:
         if path.resolve() in read:  # CLAUDE.md's `@AGENTS.md` already brought it in
             warnings.append(f"{tilde(path)}: already imported through an @import above; skipped")
@@ -60,11 +61,20 @@ def plan(sources: list[tuple[str, Path]], name: str = DEFAULT_NAME, prefix: str 
         got: Imported = FORMATS[fmt].read(path)
         read |= got.read
         used.append((fmt, path))
+        renamed = {}
+        for skill in got.skills:  # two sources with a skill of the same name: number the later one
+            slug, n = skill.slug, 2
+            while slug in taken:
+                slug, n = f"{skill.slug}-{n}", n + 1
+            renamed[skill.slug], skill.slug = slug, slug
+            taken.add(slug)
         spec.rules += got.rules
         spec.skills += got.skills
-        spec.domains += [{**row, "skills": [f"{spec.prefix}{s}" for s in row["skills"]]} for row in got.domains]
+        spec.domains += [{**row, "skills": [f"{spec.prefix}{renamed.get(s, s)}" for s in row["skills"]]}
+                         for row in got.domains]
         warnings += got.warnings
-    spec.description = "Imported by brainrc import from " + ", ".join(p.name for _, p in used)
+    spec.description = "Imported by brainrc import from " + ", ".join(
+        f"{p.parent.name}/{p.name}" if p.is_dir() else p.name for _, p in used)
     return Plan(spec, render_pack(spec), used, warnings)
 
 

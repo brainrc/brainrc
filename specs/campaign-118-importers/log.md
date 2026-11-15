@@ -34,3 +34,18 @@ stopped on. Merging stays with the maintainer.
 - Plan: `brainrc/scaffold.py` (render_pack, write_pack), `brainrc/importers/` (`__init__`,
   `model`, `markdown`, `instructions`), `cli.py`, docs/packs.md § Import; fixtures in
   `tests/fixtures/import/instructions/`; tests in `tests/test_importers.py`.
+
+## engine · gh:163 · verified
+Draft PR #364 (base `main`). `validate` and the full suite passed before the push.
+
+## engine · gh:164 · Spec and Plan (playbook v1, params: Cursor rules, `.cursor/rules/*.mdc`, rules + globs -> domains)
+- Spec: `.cursor/rules/**/*.mdc` in path order, plus `.cursorrules`. `alwaysApply: true` and
+  `.cursorrules` become rules (an .mdc file stays one rule: Cursor loads it whole). A rule with
+  `globs` becomes a skill whose description ends "Use when working on <globs>", plus an
+  `[[extensions.gatework.domains]]` row naming it. A rule with only a description becomes a skill
+  with it; one with neither becomes a skill and a warning. Cursor's frontmatter is read line by
+  line (`globs: *.py` isn't YAML). Skills with the same name from two sources are numbered, and
+  their Domains rows follow.
+- Plan: `brainrc/importers/cursor.py`, `FORMATS`, `plan` (rename, keep rows), docs/packs.md row;
+  fixtures in `tests/fixtures/import/cursor/`; tests in `tests/test_importers.py`.
+- Deviation within the playbook: none.

@@ -52,5 +52,5 @@ Draft PR #360 (base `main`, stacked on #359). `validate` and the full suite pass
   clones `brainrc/homebrew-tap` over SSH (host keys from `gh api meta`, strict checking), commits
   the formula when it changed, and pushes.
 - Plan: `scripts/homebrew_formula.py` (new), `release.yml`, docs/install.md, CONTRIBUTING.md;
-  tests in `tests/test_homebrew_formula.py` (render, PyPI lookup with a fake opener, `ruby -c`
+  tests in `tests/test_homebrew_formula.py` (render, PyPI JSON read from a file the workflow downloads, `ruby -c`
   where ruby exists, the job's gating).

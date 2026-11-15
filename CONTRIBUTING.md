@@ -60,9 +60,9 @@ It then builds the sdist and wheel from the tag (`scripts/check_dist.py` checks 
 them to the GitHub Release, and publishes them to [PyPI](https://pypi.org/project/brainrc/) by
 trusted publishing: the `pypi` job runs in GitHub environment `pypi` with an OIDC token, and the
 workflow holds no PyPI token. Last, it writes `Formula/brainrc.rb` for the release
-(`scripts/homebrew_formula.py`, pointing at the PyPI sdist) and pushes it to
-[brainrc/homebrew-tap](https://github.com/brainrc/homebrew-tap) with the deploy key in secret
-`HOMEBREW_TAP_DEPLOY_KEY`; without that secret the step skips with a notice. Each run works on the
+(`scripts/homebrew_formula.py`, pointing at the PyPI sdist), installs and tests it with Homebrew,
+and pushes it to [brainrc/homebrew-tap](https://github.com/brainrc/homebrew-tap) with the deploy
+key in secret `HOMEBREW_TAP_DEPLOY_KEY`; without that secret the step skips with a notice. Each run works on the
 version in `VERSION` at `main`'s tip: a tag without a release, a missing asset or a missing PyPI
 upload of that version gets it on the next run, or when you run the workflow by hand (**Actions →
 release → Run workflow**). If publishing fails, run it again before the next merge; once `VERSION`

@@ -8,6 +8,8 @@ sha256. The formula fetches it from PyPI: by default from PyPI's stable source U
 release workflow downloads) from the file URL listed there, after checking that PyPI's sha256
 matches SDIST. --url names any other URL. Prints the formula, or writes it to --out. Makes no
 network calls. brainrc needs nothing outside the standard library, so the formula has no resources.
+Exits 1 on a bad input or a PyPI listing without the sdist yet, which a later try may fix, and 3
+when PyPI's sdist has another sha256 than SDIST, which no retry fixes.
 """
 import argparse
 import hashlib
@@ -37,6 +39,13 @@ class Brainrc < Formula
     virtualenv_install_with_resources
   end
 
+  def caveats
+    <<~EOS
+      Each version installs to its own directory, and links into the old one break when Homebrew
+      cleans it up. After `brew upgrade brainrc`, run `brainrc apply --repair`.
+    EOS
+  end
+
   test do
     assert_equal "brainrc #{{version}}", shell_output("#{{bin}}/brainrc --version").strip
   end
@@ -46,6 +55,10 @@ end
 
 class FormulaError(Exception):
     pass
+
+
+class ShaMismatch(FormulaError):
+    """PyPI holds another file under this version: retrying won't change it."""
 
 
 def version_of(sdist: Path) -> str:
@@ -71,15 +84,22 @@ def render(version: str, url: str, sha256: str) -> str:
 
 def pypi_url(listing: dict, version: str, sha256: str) -> str:
     """The sdist's file URL from PyPI's JSON for `version`; FormulaError unless its sha256 matches."""
-    if listing.get("info", {}).get("version", version) != version:
-        raise FormulaError(f"the PyPI JSON is for {listing['info']['version']}, not {version}")
-    sdists = [u for u in listing.get("urls", []) if u.get("packagetype") == "sdist"]
+    try:
+        listed = (listing.get("info") or {}).get("version", version)
+        sdists = [u for u in listing.get("urls") or [] if u.get("packagetype") == "sdist"]
+        found = (sdists[0].get("digests") or {}).get("sha256") if sdists else None
+        url = sdists[0].get("url") if sdists else None
+    except AttributeError as e:
+        raise FormulaError(f"unexpected PyPI JSON: {e}") from None
+    if listed != version:
+        raise FormulaError(f"the PyPI JSON is for {listed}, not {version}")
     if not sdists:
         raise FormulaError(f"PyPI lists no sdist for brainrc {version}")
-    found = sdists[0].get("digests", {}).get("sha256")
     if found != sha256:
-        raise FormulaError(f"PyPI's sdist for {version} has sha256 {found}, the release built {sha256}")
-    return sdists[0]["url"]
+        raise ShaMismatch(f"PyPI's sdist for {version} has sha256 {found}, the release built {sha256}")
+    if not isinstance(url, str):
+        raise FormulaError(f"PyPI's sdist for {version} has no URL")
+    return url
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -100,7 +120,7 @@ def main(argv: list[str] | None = None) -> int:
         formula = render(version, url, sha256)
     except (FormulaError, OSError, ValueError) as e:
         print(f"ERROR {e}", file=sys.stderr)
-        return 1
+        return 3 if isinstance(e, ShaMismatch) else 1
     if args.out:
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_text(formula)

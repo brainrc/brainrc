@@ -113,3 +113,6 @@ The maintainer chose a token over the SSH deploy key. The `homebrew` job now clo
 read and write on the tap only), handed to git by a credential helper that reads it from the
 environment, so it never sits in a URL, a command line or the clone's config. Without the secret
 it still skips with a notice. This supersedes `HOMEBREW_TAP_DEPLOY_KEY` in the entries above.
+- Later on 2026-11-15 the maintainer created `brainrc/homebrew-tap`, set `HOMEBREW_TAP_TOKEN` and
+  made both repos public. The docs no longer say npx waits on the repo going public. The npx and
+  brew routes still need the first PyPI release (and #362 on `main` for npx) before they can run.

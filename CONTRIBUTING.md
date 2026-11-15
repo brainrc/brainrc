@@ -59,11 +59,15 @@ Every merge to `main` is a release. `.github/workflows/release.yml` runs
 It then builds the sdist and wheel from the tag (`scripts/check_dist.py` checks them), attaches
 them to the GitHub Release, and publishes them to [PyPI](https://pypi.org/project/brainrc/) by
 trusted publishing: the `pypi` job runs in GitHub environment `pypi` with an OIDC token, and the
-workflow holds no PyPI token. Each run works on the version in `VERSION` at `main`'s tip: a tag
-without a release, a missing asset or a missing PyPI upload of that version gets it on the next run,
-or when you run the workflow by hand (**Actions → release → Run workflow**). If publishing fails, run
-it again before the next merge; once `VERSION` moves on, the earlier version stays off PyPI. Users
-pin a tag ([install](docs/install.md)). If `main` is
+workflow holds no PyPI token. Last, it writes `Formula/brainrc.rb` for the release
+(`scripts/homebrew_formula.py`, pointing at the PyPI sdist), installs and tests it with Homebrew,
+and pushes it to [brainrc/homebrew-tap](https://github.com/brainrc/homebrew-tap) over HTTPS with the
+token in secret `HOMEBREW_TAP_TOKEN` (fine-grained, Contents read and write on the tap only); without
+that secret the step skips with a notice. Each run works on the
+version in `VERSION` at `main`'s tip: a tag without a release, a missing asset or a missing PyPI
+upload of that version gets it on the next run, or when you run the workflow by hand (**Actions →
+release → Run workflow**). If publishing fails, run it again before the next merge; once `VERSION`
+moves on, the earlier version stays off PyPI. Users pin a tag ([install](docs/install.md)). If `main` is
 protected, add GitHub Actions to the rule's bypass list so the workflow can push its release
 commit and tag.
 

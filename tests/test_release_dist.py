@@ -21,6 +21,7 @@ check_dist = importlib.util.module_from_spec(spec)
 sys.modules["check_dist"] = check_dist
 spec.loader.exec_module(check_dist)
 
+CORE = check_dist.force_include()
 METADATA = f"Metadata-Version: 2.4\nName: brainrc\nVersion: {VERSION}\nRequires-Python: >=3.11\n"
 
 
@@ -36,15 +37,15 @@ class CheckDistTest(unittest.TestCase):
         self.addCleanup(shutil.rmtree, d, ignore_errors=True)
         root = f"brainrc-{VERSION}"
         with tarfile.open(d / f"{root}.tar.gz", "w:gz") as tf:
-            for rel in [*([] if skip_core else check_dist.CORE), "brainrc/cli.py", *sdist_extra]:
+            for rel in [*([] if skip_core else CORE), "brainrc/cli.py", *sdist_extra]:
                 data = b"x"
                 info = tarfile.TarInfo(f"{root}/{rel}")
                 info.size = len(data)
                 tf.addfile(info, io.BytesIO(data))
         with zipfile.ZipFile(d / f"{root}-py3-none-any.whl", "w") as zf:
             zf.writestr(f"{root}.dist-info/METADATA", metadata)
-            for rel in check_dist.CORE:
-                zf.writestr(f"brainrc/_core/{rel}", "x")
+            for dest in CORE.values():
+                zf.writestr(dest, "x")
         return d
 
     def run_main(self, dist: Path) -> tuple[int, str]:
@@ -76,6 +77,25 @@ class CheckDistTest(unittest.TestCase):
         self.assertEqual(code, 1)
         code, out = self.run_main(self.make(metadata=METADATA.replace(VERSION, "0.0.1")))
         self.assertIn("FAIL wheel version", out)
+        self.assertEqual(code, 1)
+
+    def test_a_look_alike_name_is_not_core(self):
+        d = self.make()
+        wheel = d / f"brainrc-{VERSION}-py3-none-any.whl"
+        with zipfile.ZipFile(wheel) as zf:
+            kept = {n: zf.read(n) for n in zf.namelist() if n != "brainrc/_core/VERSION"}
+        with zipfile.ZipFile(wheel, "w") as zf:
+            for n, data in kept.items():
+                zf.writestr(n, data)
+            zf.writestr("brainrc/_core/VERSION.bak", "x")
+        code, out = self.run_main(d)
+        self.assertEqual(code, 1)
+        self.assertIn("FAIL wheel bundles core: missing ['brainrc/_core/VERSION']", out)
+
+    def test_a_missing_dist_dir_is_a_fail_line(self):
+        code, out = self.run_main(Path(tempfile.gettempdir()) / "no-such-dist-dir")
+        self.assertEqual(code, 1)
+        self.assertIn("FAIL files", out)
 
     def test_a_missing_or_extra_file_fails(self):
         d = self.make()
@@ -92,8 +112,9 @@ class SdistConfigTest(unittest.TestCase):
         for src in hatch["wheel"]["force-include"]:
             self.assertTrue(any(src == o or src.startswith(o + "/") for o in only), src)
         self.assertIn("brainrc", only)
-        for path in check_dist.CORE:
-            self.assertTrue((REPO / path).exists(), path)
+        for src, dest in CORE.items():
+            self.assertTrue((REPO / src).exists(), src)
+            self.assertTrue(dest.startswith("brainrc/_core/"), dest)
 
 
 class ReleaseWorkflowTest(unittest.TestCase):
@@ -116,17 +137,25 @@ class ReleaseWorkflowTest(unittest.TestCase):
         self.assertRegex(pypi, r"needs: \[release, dist\]")
 
     def test_only_the_publish_job_gets_an_oidc_token(self):
-        for name in ("release", "dist"):
+        for name in ("release", "dist", "attach"):
             self.assertNotIn("id-token", job(self.text, name), name)
         self.assertIn("contents: read", self.text.split("jobs:")[0])
 
-    def test_dist_builds_from_the_tag_and_checks_before_attaching(self):
+    def test_dist_builds_from_the_tag_with_pinned_tools_and_no_write_token(self):
         dist = job(self.text, "dist")
         self.assertIn("ref: v${{ needs.release.outputs.version }}", dist)
-        build, check, attach = (dist.index(s) for s in
-                                ("python3 -m build", "scripts/check_dist.py dist", "gh release upload"))
-        self.assertLess(build, check)
-        self.assertLess(check, attach)
+        self.assertIn("persist-credentials: false", dist)
+        self.assertIn("contents: read", dist)
+        self.assertNotIn("contents: write", dist)
+        self.assertIn("hatchling==", dist)
+        self.assertIn("--no-isolation", dist)
+        self.assertLess(dist.index("python3 -m build"), dist.index("scripts/check_dist.py"))
+
+    def test_attach_only_uploads_the_checked_files(self):
+        attach = job(self.text, "attach")
+        self.assertIn("needs: [release, dist]", attach)
+        self.assertIn("gh release upload", attach)
+        self.assertNotIn("actions/checkout", attach)
 
 
 if __name__ == "__main__":

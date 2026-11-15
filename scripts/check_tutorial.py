@@ -3,8 +3,8 @@
 
 Usage: python3 scripts/check_tutorial.py [--doc PATH | --readme [PATH]] [--find-links DIR]
 With --readme, runs the bash block under "## Quickstart" of the README the same way, from the temp
-HOME, with ~/.local/bin (where `uv tool install` and pipx put commands) first on PATH and no other
-brainrc on PATH, so the quickstart runs the command it installed.
+HOME, with ~/.local/bin (where `uv tool install` and pipx put commands) first on PATH and any other
+brainrc on PATH hidden, so the quickstart runs the command it installed.
 --find-links DIR makes uv and pip install brainrc from the wheels in DIR, offline, instead of PyPI:
 CI passes a wheel built from the checkout, so the quickstart runs as written against this code.
 The commands are read from the doc, so a changed command is run as changed. Step 1's `git clone`
@@ -106,18 +106,28 @@ def local_wheels(find_links: str) -> dict[str, str]:
     return {"UV_FIND_LINKS": d, "UV_OFFLINE": "1", "PIP_FIND_LINKS": d, "PIP_NO_INDEX": "1"}
 
 
-def path_without_brainrc(path: str, drop: bool) -> list[str]:
-    """PATH entries; with drop, minus any that already hold a `brainrc` command, so the quickstart
-    runs the brainrc it installed and never one that was on PATH before."""
-    entries = [d for d in path.split(os.pathsep) if d]
-    return [d for d in entries if not (drop and shutil.which("brainrc", path=d))]
+GUARD = """#!/usr/bin/env bash
+echo "brainrc: not installed by the quickstart (this is check_tutorial's stand-in)" >&2
+exit 127
+"""
+
+
+def guard_dir(work: Path) -> Path:
+    """A directory whose `brainrc` fails. Put after ~/.local/bin and before the rest of PATH, it
+    hides a brainrc that was on PATH before (pip's, in the same directory as uv), so the quickstart
+    runs the brainrc it installed or fails."""
+    d = work / "guard"
+    d.mkdir()
+    (d / "brainrc").write_text(GUARD)
+    (d / "brainrc").chmod(0o755)
+    return d
 
 
 def run(parsed: dict[int, tuple[str, str]], expected: dict[int, list[str]], *, in_home: bool = False,
         extra_env: dict[str, str] | None = None) -> bool:
     """Run each block in a temp HOME and checkout copy; print PASS/FAIL per block. True if all pass.
-    in_home runs the blocks from the temp HOME instead of the checkout copy, with no `brainrc` on
-    PATH but the one in ~/.local/bin. extra_env is added after ENV_DROP is taken out."""
+    in_home runs the blocks from the temp HOME instead of the checkout copy, with any `brainrc` on
+    PATH but the one in ~/.local/bin hidden. extra_env is added after ENV_DROP is taken out."""
     failed = False
     work = tempfile.mkdtemp(prefix="check-tutorial-")
     try:
@@ -129,7 +139,8 @@ def run(parsed: dict[int, tuple[str, str]], expected: dict[int, list[str]], *, i
         env.update({"HOME": str(home), "USERPROFILE": str(home),
                     "BRAINRC_HOME": str(home / ".config" / "brainrc"), **(extra_env or {})})
         env["PATH"] = os.pathsep.join([str(home / ".local" / "bin"),
-                                       *path_without_brainrc(env.get("PATH", ""), in_home)])
+                                       *([str(guard_dir(Path(work)))] if in_home else []),
+                                       env.get("PATH", "")])
         for n, (title, block) in parsed.items():
             name = f"step {n} {title}"
             try:

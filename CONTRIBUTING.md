@@ -62,9 +62,11 @@ trusted publishing: the `pypi` job runs in GitHub environment `pypi` with an OID
 workflow holds no PyPI token. Last, it writes `Formula/brainrc.rb` for the release
 (`scripts/homebrew_formula.py`, pointing at the PyPI sdist) and pushes it to
 [brainrc/homebrew-tap](https://github.com/brainrc/homebrew-tap) with the deploy key in secret
-`HOMEBREW_TAP_DEPLOY_KEY`; without that secret the step skips with a notice. A tag without a release, an asset or a PyPI upload gets it on the next
-run, or when you run the workflow by hand (**Actions → release → Run workflow**). Users pin a tag
-([install](docs/install.md)). If `main` is
+`HOMEBREW_TAP_DEPLOY_KEY`; without that secret the step skips with a notice. Each run works on the
+version in `VERSION` at `main`'s tip: a tag without a release, a missing asset or a missing PyPI
+upload of that version gets it on the next run, or when you run the workflow by hand (**Actions →
+release → Run workflow**). If publishing fails, run it again before the next merge; once `VERSION`
+moves on, the earlier version stays off PyPI. Users pin a tag ([install](docs/install.md)). If `main` is
 protected, add GitHub Actions to the rule's bypass list so the workflow can push its release
 commit and tag.
 

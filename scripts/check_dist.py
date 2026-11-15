@@ -10,14 +10,25 @@ PASS/FAIL line per check and each file's sha256; exits 1 on any FAIL.
 import hashlib
 import sys
 import tarfile
+import tomllib
 import zipfile
 from email.parser import Parser
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-# What the wheel force-includes (pyproject.toml), so the sdist must carry it too.
-CORE = ("rules/00-core.md", "overrides/claude/settings.fragment.json", "mcp/servers.toml",
-        "harnesses.toml", "packs.toml", "VERSION", "CHANGELOG.md", "docs/schemas")
+
+
+def force_include(repo: Path = REPO) -> dict[str, str]:
+    """pyproject.toml's wheel force-include: source path in the sdist -> path in the wheel."""
+    pyproject = tomllib.loads((repo / "pyproject.toml").read_text(encoding="utf-8"))
+    return pyproject["tool"]["hatch"]["build"]["targets"]["wheel"]["force-include"]
+
+
+def has(names: list[str], path: str) -> bool:
+    """The archive holds `path`, as a file or as a directory with something in it."""
+    return any(n == path or n.startswith(path + "/") for n in names)
+
+
 NOT_IN_SDIST = ("specs", "tests", "evals", "examples", "scripts", ".github", "changelog.d")
 
 
@@ -25,7 +36,10 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def check(dist: Path, version: str) -> list[tuple[str, bool, str]]:
+def check(dist: Path, version: str, core: dict[str, str] | None = None) -> list[tuple[str, bool, str]]:
+    core = force_include() if core is None else core
+    if not dist.is_dir():
+        return [("files", False, f"{dist} is not a directory")]
     results = []
     sdist, wheel = dist / f"brainrc-{version}.tar.gz", dist / f"brainrc-{version}-py3-none-any.whl"
     names = sorted(p.name for p in dist.iterdir() if p.is_file())
@@ -37,7 +51,7 @@ def check(dist: Path, version: str) -> list[tuple[str, bool, str]]:
         top = {m.split("/", 1)[0] for m in members}
         extra = sorted(top & set(NOT_IN_SDIST))
         results.append(("sdist leaves out specs, tests and tooling", not extra, f"has {extra}"))
-        missing = [c for c in CORE if not any(m == c or m.startswith(c + "/") for m in members)]
+        missing = [src for src in core if not has(members, src)]
         results.append(("sdist carries core", not missing, f"missing {missing}"))
     if wheel.is_file():
         with zipfile.ZipFile(wheel) as zf:
@@ -49,8 +63,8 @@ def check(dist: Path, version: str) -> list[tuple[str, bool, str]]:
                         f"Requires-Python {meta['Requires-Python']}"))
         deps = meta.get_all("Requires-Dist") or []
         results.append(("wheel has no dependencies", not deps, f"Requires-Dist {deps}"))
-        missing = [c for c in CORE if not any(f.startswith(f"brainrc/_core/{c}") for f in files)]
-        results.append(("wheel bundles core", not missing, f"missing brainrc/_core/ {missing}"))
+        missing = [dest for dest in core.values() if not has(files, dest)]
+        results.append(("wheel bundles core", not missing, f"missing {missing}"))
     return results
 
 

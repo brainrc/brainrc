@@ -11,7 +11,7 @@ import os
 import re
 import tempfile
 from dataclasses import dataclass, field
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 
 from . import config
 from .config import ConfigError, tilde
@@ -134,7 +134,8 @@ def check_dest(dest: Path, files: dict[str, str], force: bool = False, sources: 
     if full and held:
         raise ConfigError(f"{tilde(dest)} holds {tilde(held[0])}, which is being imported; pick another folder")
     for rel in files:
-        if Path(rel).is_absolute() or ".." in Path(rel).parts:
+        posix, win = PurePosixPath(rel), PureWindowsPath(rel)
+        if posix.is_absolute() or win.is_absolute() or win.drive or win.root or ".." in win.parts:
             raise ConfigError(f"refusing to write {rel} outside {tilde(dest)}")
 
 

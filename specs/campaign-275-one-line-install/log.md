@@ -106,3 +106,10 @@ Fixes land on the PR's own branch and reach later branches by merge commits (no 
 - Not fixed, for the owner: brainrc isn't on PyPI and `brainrc` isn't reserved on npm; between the
   release's VERSION push and the PyPI upload, `npx github:brainrc/brainrc` pins an unpublished
   version; Homebrew's `python@3.13` needs a bump when Homebrew retires it.
+
+## engine · gh:277 · change: token instead of deploy key (2026-11-15)
+The maintainer chose a token over the SSH deploy key. The `homebrew` job now clones and pushes
+`brainrc/homebrew-tap` over HTTPS with org secret `HOMEBREW_TAP_TOKEN` (fine-grained, Contents
+read and write on the tap only), handed to git by a credential helper that reads it from the
+environment, so it never sits in a URL, a command line or the clone's config. Without the secret
+it still skips with a notice. This supersedes `HOMEBREW_TAP_DEPLOY_KEY` in the entries above.

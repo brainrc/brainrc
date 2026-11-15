@@ -12,6 +12,7 @@ from pathlib import Path
 
 from ..config import tilde
 from ..scaffold import Rule, Skill, slugify
+from ..sources import parse_frontmatter
 from .markdown import split, to_rules
 from .model import Imported
 
@@ -25,39 +26,32 @@ def detect(path: Path) -> bool:
     return path.is_dir() and path.name == "rules" and path.parent.name == ".cursor"
 
 
-def _frontmatter(text: str) -> tuple[dict[str, str], int]:
-    """Cursor's frontmatter as written (`globs: *.ts` is not valid YAML, so no YAML parser), and the
-    index of the first body line."""
-    lines = text.splitlines()
-    if not lines or lines[0].strip() != "---":
-        return {}, 0
-    meta = {}
-    for i, line in enumerate(lines[1:], 1):
-        if line.strip() == "---":
-            return meta, i + 1
-        key, sep, value = line.partition(":")
-        if sep and key.strip():
-            meta[key.strip()] = value.strip()
-    return {}, 0  # never closed: all of it is body
-
-
 def _unquote(value: str) -> str:
     value = value.strip()
     return value[1:-1] if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'" else value
 
 
 def globs(value: str) -> list[str]:
-    """`*.py, scripts/**/*.py` or `["src/**/*.tsx", ...]` -> the globs."""
-    value = value.strip()
+    """`*.py, scripts/**/*.py`, `"*.py, *.pyi"`, `["src/**/*.tsx", ...]` or `src/*.{ts,tsx}` -> the
+    globs: split at commas outside `{}` and `[]`, each unquoted."""
+    value = _unquote(value)
     if value.startswith("[") and value.endswith("]"):
         value = value[1:-1]
-    return [g for g in (_unquote(part) for part in value.split(",")) if g]
+    parts, depth, cur = [], 0, ""
+    for ch in value:
+        if ch == "," and depth == 0:
+            parts.append(cur)
+            cur = ""
+            continue
+        depth += {"{": 1, "[": 1, "}": -1, "]": -1}.get(ch, 0)
+        cur += ch
+    parts.append(cur)
+    return [g for g in (_unquote(part) for part in parts) if g]
 
 
 def _rule_file(path: Path, slug: str, label: str, out: Imported) -> None:
-    text = path.read_text(encoding="utf-8")
-    meta, start = _frontmatter(text)
-    lines = text.splitlines()
+    lines = path.read_text(encoding="utf-8-sig").splitlines()
+    meta, start = parse_frontmatter(lines)
     sections = split("\n".join(lines[start:]), start + 1)
     if not sections:
         out.warnings.append(f"{label}: no text to import")
@@ -66,7 +60,7 @@ def _rule_file(path: Path, slug: str, label: str, out: Imported) -> None:
     body = "\n".join(lines[first - 1:last])  # the file stays whole: Cursor loads it whole
     provenance = f"imported by brainrc from {label}, lines {first}-{last}"
     scoped = globs(meta.get("globs", ""))
-    description = _unquote(meta.get("description", ""))
+    description = " ".join(meta.get("description", "").split())
     if meta.get("alwaysApply", "").lower() == "true":
         out.rules.append(Rule(slug, body, provenance))
         return
@@ -81,9 +75,18 @@ def _rule_file(path: Path, slug: str, label: str, out: Imported) -> None:
     out.skills.append(Skill(slug, description, body, provenance))
 
 
+def _unique(slug: str, out: Imported) -> str:
+    """slug, or slug-2, -3... when this source already has a skill or rule of that name."""
+    taken = {s.slug for s in out.skills} | {r.slug for r in out.rules}
+    name, n = slug, 2
+    while name in taken:
+        name, n = f"{slug}-{n}", n + 1
+    return name
+
+
 def _slug(path: Path, root: Path) -> str:
-    """`frontend/10-react.mdc` -> `frontend-react`: the path, without the ordering number."""
-    parts = [*path.relative_to(root).parent.parts, path.stem.lstrip("0123456789-_") or path.stem]
+    """`10-frontend/20-react.mdc` -> `frontend-react`: the path, without the ordering numbers."""
+    parts = [p.lstrip("0123456789-_") or p for p in (*path.relative_to(root).parent.parts, path.stem)]
     return slugify("-".join(parts), "rule")
 
 
@@ -94,9 +97,12 @@ def read(path: Path) -> Imported:
         out.read.add(f.resolve())
         label = tilde(f)
         if f.name == ".cursorrules":  # plain markdown, always applied
-            out.rules += to_rules(split(f.read_text(encoding="utf-8")), label, "cursorrules")
+            rules = to_rules(split(f.read_text(encoding="utf-8-sig")), label, "cursorrules")
+            out.rules += rules
+            if not rules:
+                out.warnings.append(f"{label}: no text to import")
         else:
-            _rule_file(f, _slug(f, path if path.is_dir() else f.parent), label, out)
+            _rule_file(f, _unique(_slug(f, path if path.is_dir() else f.parent), out), label, out)
     if not files:
         out.warnings.append(f"{tilde(path)}: no .mdc files")
     return out

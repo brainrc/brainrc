@@ -197,7 +197,7 @@ class InstructionsImportTest(ImportCase):
     def test_a_folder_imports_claude_md_and_skips_the_agents_md_it_already_inlined(self):
         code, out = self.run_import(str(FIXTURES / "instructions"), "--to", "team")
         self.assertEqual(code, 0, out)
-        self.assertIn("AGENTS.md: already imported through an @import in", out)
+        self.assertIn("AGENTS.md: already imported with", out)
         self.assertEqual(rendered_pack_text(self.tmp / "team").count("## Git"), 1)
 
     def test_an_import_cycle_is_kept_as_text(self):
@@ -273,10 +273,13 @@ class InstructionsImportTest(ImportCase):
         self.assertIn("@part.md", p.spec.rules[0].text)
         self.assertNotIn("Inlined.", p.spec.rules[0].text)
 
-    def test_format_names_files_not_folders(self):
-        code, out = self.run_import(str(FIXTURES / "instructions"), "--format", "instructions", "--to", "team")
+    def test_format_with_a_folder_reads_that_formats_sources_in_it(self):
+        code, out = self.run_import(str(FIXTURES), "--format", "instructions", "--to", "team")
         self.assertEqual(code, 1, out)
-        self.assertIn("name the files, not a folder", out)
+        self.assertIn("no instructions sources in it", out)
+        code, out = self.run_import(str(FIXTURES / "cursor"), "--format", "cursor", "--to", "team")
+        self.assertEqual(code, 0, out)
+        self.assertIn("Import", out)
 
     def test_a_source_that_is_not_utf8_fails_cleanly(self):
         (self.tmp / "AGENTS.md").write_bytes(b"## A\n\ncaf\xe9\n")
@@ -368,7 +371,39 @@ class CursorImportTest(ImportCase):
     def test_globs(self):
         self.assertEqual(globs("*.py, scripts/**/*.py"), ["*.py", "scripts/**/*.py"])
         self.assertEqual(globs('["src/*.ts", \'lib/*.ts\']'), ["src/*.ts", "lib/*.ts"])
+        self.assertEqual(globs('"*.py, *.pyi"'), ["*.py", "*.pyi"])
+        self.assertEqual(globs("src/**/*.{ts,tsx}, *.md"), ["src/**/*.{ts,tsx}", "*.md"])
         self.assertEqual(globs(""), [])
+
+    def test_two_rules_with_one_name_in_one_folder_keep_their_own_rows(self):
+        rules = self.tmp / ".cursor/rules"
+        rules.mkdir(parents=True)
+        (rules / "10-python.mdc").write_text("---\nglobs: a/**\n---\nA.\n")
+        (rules / "20-python.mdc").write_text("---\nglobs: b/**\n---\nB.\n")
+        p = plan(resolve([".cursor/rules"]), "team")
+        self.assertEqual([(d["files"], d["skills"]) for d in p.spec.domains],
+                         [("`a/**`", ["team-python"]), ("`b/**`", ["team-python-2"])])
+        self.assertIn("B.", p.files["skills/team-python-2/SKILL.md"])
+
+    def test_yaml_frontmatter_forms(self):
+        rules = self.tmp / ".cursor/rules"
+        rules.mkdir(parents=True)
+        (rules / "a.mdc").write_text("\ufeff---\nalwaysApply: \"true\"\n---\nAlways.\n")
+        (rules / "b.mdc").write_text("---\ndescription: >\n  Folded\n  text.\nglobs:\n  - \"src/**\"\n---\nB.\n")
+        (rules / "10-web").mkdir()
+        (rules / "10-web/20-ui.mdc").write_text("---\nglobs: ui/**\n---\nUI.\n")
+        p = plan(resolve([".cursor/rules"]), "team")
+        self.assertEqual([r.text for r in p.spec.rules], ["Always."])
+        self.assertEqual([(s.slug, s.description) for s in p.spec.skills],
+                         [("web-ui", "Use when working on `ui/**`."),
+                          ("b", "Folded text. Use when working on `src/**`.")])
+
+    def test_an_empty_cursorrules_warns(self):
+        (self.tmp / "p").mkdir()
+        (self.tmp / "p/.cursorrules").write_text("\n  \n")
+        (self.tmp / "p/AGENTS.md").write_text("Hi.\n")
+        p = plan(resolve(["p"]), "team")
+        self.assertTrue(any(".cursorrules: no text to import" in w for w in p.warnings), p.warnings)
 
     def test_unclosed_frontmatter_is_body(self):
         (self.tmp / "x.mdc").write_text("---\nalwaysApply: true\nNo closing line.\n")

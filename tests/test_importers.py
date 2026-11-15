@@ -388,7 +388,7 @@ class CursorImportTest(ImportCase):
     def test_yaml_frontmatter_forms(self):
         rules = self.tmp / ".cursor/rules"
         rules.mkdir(parents=True)
-        (rules / "a.mdc").write_text("\ufeff---\nalwaysApply: \"true\"\n---\nAlways.\n")
+        (rules / "a.mdc").write_text("\ufeff---\nalwaysApply: \"true\"\n---\nAlways.\n", encoding="utf-8")
         (rules / "b.mdc").write_text("---\ndescription: >\n  Folded\n  text.\nglobs:\n  - \"src/**\"\n---\nB.\n")
         (rules / "10-web").mkdir()
         (rules / "10-web/20-ui.mdc").write_text("---\nglobs: ui/**\n---\nUI.\n")

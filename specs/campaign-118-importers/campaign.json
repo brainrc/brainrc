@@ -32,12 +32,17 @@
         "maps_to": "rules/NN-*.md"
       },
       "depends_on": [],
-      "status": "in_progress",
+      "status": "in_review",
       "slug": "163-import-instructions",
       "branch": "claude/project-thread-2l9n29",
-      "pr": null,
+      "pr": 364,
       "base": "main",
-      "merged": false
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 10,
+        "fixed": 10
+      }
     },
     {
       "ref": "gh:164",
@@ -48,12 +53,17 @@
         "maps_to": "rules + globs -> domains"
       },
       "depends_on": [],
-      "status": "pending",
+      "status": "in_review",
       "slug": "164-import-cursor",
       "branch": "claude/project-thread-2l9n29-164",
-      "pr": null,
+      "pr": 365,
       "base": "main",
-      "merged": false
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 10,
+        "fixed": 10
+      }
     },
     {
       "ref": "gh:165",
@@ -64,23 +74,36 @@
         "maps_to": "rules"
       },
       "depends_on": [],
-      "status": "pending",
+      "status": "in_review",
       "slug": "165-import-copilot",
       "branch": "claude/project-thread-2l9n29-165",
-      "pr": null,
+      "pr": 366,
       "base": "main",
-      "merged": false
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 10,
+        "fixed": 10
+      }
     },
     {
       "ref": "gh:297",
       "order": 4,
       "depends_on": [],
-      "status": "pending",
+      "status": "in_review",
       "slug": "297-init-import-profile",
       "branch": "claude/project-thread-2l9n29-297",
-      "pr": null,
+      "pr": 367,
       "base": "main",
-      "merged": false
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 10,
+        "fixed": 9,
+        "no_change": [
+          "init --profile can't repair a bad profile line: check_config already refused it before this PR"
+        ]
+      }
     }
   ]
 }

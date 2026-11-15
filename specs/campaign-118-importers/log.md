@@ -85,3 +85,27 @@ Draft PR #366 (base `main`, stacked on #365). `validate` and the full suite pass
   `--profile`; `--import`), docs/install.md; tests in `tests/test_init_import.py`.
 - Starter profiles and their excludes are this campaign's own default (the issue names the three
   profiles but not what each holds); listed for the maintainer.
+
+## engine · gh:297 · verified
+Draft PR #367 (base `main`, stacked on #366). `validate` and the full suite passed before the push.
+
+## engine · review · code-review (high) on each PR's own diff
+Each PR was reviewed on its increment over the PR below it, fixed on its own branch, and merged
+forward (no force-push). `validate` and the full suite passed before every push.
+- #364 (gh:163): 10 found, 10 fixed. `--force` replaces only an earlier pack (never a link or a
+  folder holding a source) through a backup swap; @imports inline into one text before splitting;
+  one fence reader; order-independent skip; `--enable` turns a disabled pack on, writes atomically
+  and `~`-relative; unreadable or non-UTF-8 sources fail with a message; CLAUDE.local.md is not
+  discovered; one TOML table helper.
+- #365 (gh:164): 10 found, 10 fixed. Frontmatter through brainrc's YAML-subset reader (block
+  lists, folded text, quotes, BOM); brace-aware globs; same-named rules in one folder keep their
+  rows; order numbers leave folder names; empty `.cursorrules` warns; `--format` with a folder.
+- #366 (gh:165): 10 found, 10 fixed. `applyTo` with any of `**`/`**/*` is a rule and `*` is not;
+  `excludeAgent: coding-agent` skipped; `--format copilot` on another file reads it as repo-wide;
+  shared folder walk; the changelog and docs name nested files.
+- #367 (gh:297): 10 found, 9 fixed, 1 no change. Starter asked only when no profile is set; pack
+  folder checked before asking, pack written and validated first; managed links not offered;
+  `--import` says why when empty; turned-on default packs counted; TOML-aware `exclude` edit;
+  `session_tokens` renders as `brainrc tokens` does; one prompt and one write loop. No change: a
+  bad profile line was already refused by `check_config` before this PR.
+

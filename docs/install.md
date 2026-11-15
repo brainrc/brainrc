@@ -90,7 +90,7 @@ Already have the old `ai-config` package installed? Run `uv tool uninstall ai-co
 The `aicfg` command was removed in 0.5.0: use `brainrc`.
 
 Links then point into the installed package, so `uv tool upgrade brainrc` (or `pipx upgrade
-brainrc`, `brew upgrade brainrc`) updates every harness. Guard hooks are the exception: `apply` copies them to
+brainrc`) updates every harness. Guard hooks are the exception: `apply` copies them to
 `$BRAINRC_HOME/hooks/core/` and links there, because the package path changes when an upgrade
 moves the tool to a new Python. Run `brainrc apply` after upgrading to refresh the copy. After an
 upgrade to a new Python, the other links (skills, agents) point at the old path and `apply`

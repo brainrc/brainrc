@@ -67,6 +67,20 @@ jobs:
           python3 -m pip install uv==0.13.8 hatchling==1.33.0
           python3 -m pip wheel --no-deps --no-build-isolation --wheel-dir "$RUNNER_TEMP/wheel" .
           python3 scripts/check_tutorial.py --readme --find-links "$RUNNER_TEMP/wheel"
+      # `npx github:brainrc/brainrc` installs the repo as an npm package: pack it the same way and
+      # run the shim, with uv resolving brainrc to the same wheel, offline.
+      - name: Run the npx shim from a packed copy of the repo
+        if: ${{ matrix.python-version == '3.12' }}  # the shim doesn't depend on Python: once per OS
+        env:
+          UV_FIND_LINKS: ${{ runner.temp }}/wheel
+          UV_OFFLINE: "1"
+        run: |
+          version="$(cat VERSION)"
+          npm pack --pack-destination "$RUNNER_TEMP"
+          cd "$RUNNER_TEMP"
+          out="$(npx --yes "./brainrc-${version}.tgz" --version)"
+          echo "$out"
+          test "$out" = "brainrc ${version}"
       - run: python3 -m unittest -q
         working-directory: examples/sandbox
       # The gitleaks CLI, not gitleaks-action: the action needs a paid license for org-owned repos.

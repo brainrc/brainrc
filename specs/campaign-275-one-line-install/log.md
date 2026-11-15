@@ -54,3 +54,19 @@ Draft PR #360 (base `main`, stacked on #359). `validate` and the full suite pass
 - Plan: `scripts/homebrew_formula.py` (new), `release.yml`, docs/install.md, CONTRIBUTING.md;
   tests in `tests/test_homebrew_formula.py` (render, PyPI JSON read from a file the workflow downloads, `ruby -c`
   where ruby exists, the job's gating).
+
+## engine · gh:277 · verified
+Draft PR #361 (base `main`, stacked on #360). `validate` and the full suite passed before the push.
+The PyPI lookup moved into the workflow (curl to a JSON file the script reads): scripts make no
+network calls (`tests/test_project_files.py`).
+
+## engine · gh:278 · Spec and Plan (logged under the Campaign gate)
+- Spec: root `package.json` with `bin: {brainrc: bin/brainrc.js}`, `files: [bin/brainrc.js,
+  VERSION]`, `private: true`, no dependencies or scripts, generated with the plugin manifests so
+  its version tracks `VERSION` (release commits it; `validate` reports it stale). The shim refuses
+  a package.json/VERSION mismatch, runs `uvx brainrc@<VERSION> <args>`, passes the exit code and
+  signals, and without uv prints the install link and exits 127. Without a public repo, `npx
+  github:` can't fetch it; docs say so.
+- Plan: `bin/brainrc.js` (new), `brainrc/plugin.py`, `package.json` (generated), `release.yml`,
+  `validate.yml` (npm pack + npx on the packed file, uv offline on the checkout's wheel),
+  AGENTS.md, docs/install.md; tests in `tests/test_npx_shim.py`.

@@ -12,6 +12,10 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.8.4 (2026-11-15)
+
+- The README quickstart installs from PyPI (#276): `uvx brainrc status` to preview, then `uv tool install brainrc` (or `pipx install brainrc`), `brainrc apply` and `brainrc status`. No clone or Python of your own needed; uv fetches one. docs/install.md leads with the PyPI routes and keeps the git URL for releases before PyPI publishing. `check_tutorial.py --readme` runs the quickstart from the temp HOME with `~/.local/bin` on PATH and no other `brainrc` there, drops uv and pip index settings, and `--find-links DIR` makes uv and pip install brainrc offline from a wheel in DIR, which CI builds from the checkout.
+
 ## 0.8.3 (2026-11-15)
 
 - Each release now publishes brainrc to PyPI (#108): `release.yml` builds the sdist and wheel from the tag, checks them with `scripts/check_dist.py`, attaches them to the GitHub Release, and uploads them by trusted publishing (OIDC) from a job in GitHub environment `pypi`, with no token. The sdist carries only what the wheel is built from, not `specs/`, `tests/` or `evals/`, and CI builds and checks both files on every PR.

@@ -239,13 +239,21 @@ class ReadmeCheckTest(unittest.TestCase):
         self.assertEqual(code, 1, out)
         self.assertIn("FAIL step 1 quickstart", out)
 
-    def test_path_without_brainrc_only_drops_when_asked(self):
-        d = tempfile.mkdtemp(prefix="stray-bin-")
+    @unittest.skipIf(os.name == "nt", "the uv stand-ins are POSIX scripts run from bash")
+    def test_uv_next_to_a_pip_installed_brainrc_still_runs(self):
+        bin_dir = tempfile.mkdtemp(prefix="readme-bin-")  # as in CI: pip puts brainrc beside uv
+        self.addCleanup(rmtree, bin_dir, True)
+        stub_command(bin_dir, "uvx", UVX)
+        stub_command(bin_dir, "uv", UV)
+        stub_command(bin_dir, "brainrc", "import sys; sys.exit(3)")
+        code, out = self.run_readme((REPO / "README.md").read_text(encoding="utf-8"), path=bin_dir)
+        self.assertEqual(code, 0, out)
+
+    def test_the_guard_hides_brainrc_but_not_its_neighbours(self):
+        d = Path(tempfile.mkdtemp(prefix="guard-"))
         self.addCleanup(rmtree, d, True)
-        stub_command(d, "brainrc", "pass")
-        path = os.pathsep.join([d, str(REPO)])
-        self.assertEqual(check_tutorial.path_without_brainrc(path, True), [str(REPO)])
-        self.assertEqual(check_tutorial.path_without_brainrc(path, False), [d, str(REPO)])
+        guard = check_tutorial.guard_dir(d)
+        self.assertEqual(sorted(os.listdir(guard)), ["brainrc"])  # uvx next to a pip brainrc stays
 
     @unittest.skipIf(os.name == "nt", "the block is a bash command")
     def test_run_drops_outside_settings_and_adds_extra_env(self):

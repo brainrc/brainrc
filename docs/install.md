@@ -29,8 +29,10 @@ into `rules/adopted-<harness>.local.md` and moves the original aside as
 Run from a project folder, `init` also finds its CLAUDE.md, AGENTS.md, Cursor rules and Copilot
 instructions and offers to import them into a pack named `imported` (`brainrc import`,
 [packs](packs.md#import)), which every session then loads; it answers no unless you say yes, or
-pass `--import`. It skips your home folder and a brainrc checkout. Then it asks for a starter
-profile, which it writes to `brainrc.local.toml` ([below](#per-machine-customization-never-committed)):
+pass `--import`. It skips your home folder, a brainrc checkout and links to what brainrc renders,
+and it writes and checks that pack before anything else, so a pack that fails leaves the rest
+unwritten. Then, when `brainrc.local.toml` sets no profile yet, it asks for a starter profile, which
+it writes there ([below](#per-machine-customization-never-committed)):
 
 | Starter | Profile | Leaves out |
 |---|---|---|

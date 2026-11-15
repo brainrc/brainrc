@@ -44,6 +44,14 @@ class StarterTextTest(unittest.TestCase):
         self.assertEqual(set_exclude("", []), "")
         self.assertEqual(set_exclude('[t]\nexclude = ["x"]\n', ["y"]), 'exclude = ["y"]\n[t]\nexclude = ["x"]\n')
 
+    def test_set_exclude_reads_brackets_and_hashes_inside_strings(self):
+        text = 'exclude = [\n  "skills/a]",\n  "b",\n]\n[t]\nx = 1\n'
+        self.assertEqual(set_exclude(text, ["c"]), 'exclude = ["c"]\n[t]\nx = 1\n')
+        text = 'exclude = ["x#y"]\nother = 1\n[t]\n'
+        self.assertEqual(set_exclude(text, ["c"]), 'exclude = ["c"]\nother = 1\n[t]\n')
+        with self.assertRaises(brainrc.config.ConfigError):
+            set_exclude('exclude = [\n "a",\n', ["c"])
+
 
 class InitImportTest(TempRepoCase):
     """A fresh HOME with Claude Code installed, run from a project folder with instruction files."""
@@ -146,7 +154,7 @@ class InitImportTest(TempRepoCase):
         (self.project / "AGENTS.md").write_text("## Changed\n\nNew text.\n")
         code, out = run("--yes", "--import")
         self.assertEqual(code, 0, out)
-        self.assertIn("already has files, so init leaves them", out)
+        self.assertIn("already has files or isn't a folder, so init leaves it", out)
         self.assertNotIn("New text.", render_instructions(sources()))
 
     def test_no_files_are_offered_from_home_or_a_brainrc_checkout(self):
@@ -156,6 +164,37 @@ class InitImportTest(TempRepoCase):
         self.assertEqual(project_sources(self.home, set()), [])
         skip = {(self.project / "AGENTS.md").resolve()}
         self.assertNotIn("AGENTS.md", [p.name for _, p in project_sources(self.project, skip)])
+
+    def test_interactive_init_never_asks_over_a_profile_already_set(self):
+        (self.repo / "brainrc.local.toml").write_text('profile = "full"\n')
+        code, out = run(stdin="", tty=True)
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("Which starter profile?", out)
+        self.assertEqual((self.repo / "brainrc.local.toml").read_text(), 'profile = "full"\n')
+
+    def test_import_says_why_when_there_is_nothing_to_import(self):
+        os.chdir(self.home)
+        code, out = run("--yes", "--import")
+        self.assertEqual(code, 0, out)
+        self.assertIn("Nothing to import from", out)
+        self.assertIn("home folder", out)
+
+    def test_a_pack_folder_that_cannot_take_the_import_is_left_and_named(self):
+        self.pack.parent.mkdir(parents=True)
+        self.pack.write_text("not a folder\n")
+        code, out = run("--yes", "--import", "--starter", "app")
+        self.assertEqual(code, 0, out)
+        self.assertIn("isn't a folder, so init leaves it", out)
+        self.assertEqual(self.pack.read_text(), "not a folder\n")
+        self.assertNotIn("imported", (self.repo / "packs.local.toml").read_text()
+                         if (self.repo / "packs.local.toml").exists() else "")
+
+    def test_a_link_to_what_brainrc_renders_is_not_offered(self):
+        roots = [brainrc.config.REPO]
+        (self.project / "CLAUDE.md").symlink_to(brainrc.config.REPO / "AGENTS.md")
+        names = [p.name for _, p in project_sources(self.project, set(), roots)]
+        self.assertNotIn("CLAUDE.md", names)
+        self.assertIn("AGENTS.md", names)
 
     def test_profile_and_starter_are_exclusive(self):
         err = io.StringIO()

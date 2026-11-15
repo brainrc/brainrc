@@ -14,8 +14,8 @@ import re
 import tomllib
 from pathlib import Path
 
-from .config import PROFILES, TABLE_HEADER
-from .sources import Source, excluded, frontmatter, local_rules, markdown_files, rule_text, skills
+from .config import PROFILES, TABLE_HEADER, ConfigError
+from .sources import Source, excluded, frontmatter, markdown_files, render_instructions, skills
 from .tokens import estimate_tokens
 
 # Gatework's infrastructure domain skills (docs/spec-agent.md § Domain skills).
@@ -36,6 +36,45 @@ def _top_level(lines: list[str]) -> int:
     return next((i for i, raw in enumerate(lines) if TABLE_HEADER.match(raw)), len(lines))
 
 
+def set_profile(text: str, profile: str) -> str:
+    """text (a brainrc.local.toml) with its top-level `profile` set, everything else kept as is."""
+    line = f'profile = "{profile}"\n'
+    lines = text.splitlines(keepends=True)
+    for i in range(_top_level(lines)):
+        if re.match(r"\s*profile\s*=", lines[i]):
+            lines[i] = line
+            return "".join(lines)
+    return line + text
+
+
+def _array_end(lines: list[str], i: int) -> int | None:
+    """Index of the line that closes the array `key = [` opened on line i: strings, comments and
+    nested arrays read as TOML reads them. None when it never closes."""
+    depth, quote, k = 0, "", lines[i].index("=") + 1
+    for j in range(i, len(lines)):
+        line = lines[j]
+        while k < len(line):
+            ch = line[k]
+            if quote:
+                if ch == "\\" and quote == '"':
+                    k += 1
+                elif ch == quote:
+                    quote = ""
+            elif ch in "\"'":
+                quote = ch
+            elif ch == "#":
+                break
+            elif ch == "[":
+                depth += 1
+            elif ch == "]":
+                depth -= 1
+                if depth == 0:
+                    return j
+            k += 1
+        k = 0
+    return None
+
+
 def set_exclude(text: str, patterns: list[str]) -> str:
     """text (a brainrc.local.toml) with its top-level `exclude` set to patterns (removed when there
     are none), everything else kept as is. A multi-line array is replaced whole."""
@@ -43,9 +82,9 @@ def set_exclude(text: str, patterns: list[str]) -> str:
     lines = text.splitlines(keepends=True)
     for i in range(_top_level(lines)):
         if re.match(r"\s*exclude\s*=", lines[i]):
-            end = i
-            if "]" not in lines[i].split("#", 1)[0]:  # an array over several lines
-                end = next((j for j in range(i + 1, len(lines)) if "]" in lines[j].split("#", 1)[0]), i)
+            end = _array_end(lines, i) if "[" in lines[i] else i
+            if end is None:
+                raise ConfigError(f"`exclude` on line {i + 1} of brainrc.local.toml never closes its `[`")
             lines[i:end + 1] = [line]
             return "".join(lines)
     if not line:
@@ -58,7 +97,6 @@ def set_exclude(text: str, patterns: list[str]) -> str:
 def starter_text(text: str, starter: str) -> str:
     """brainrc.local.toml with the starter's profile, and its exclude patterns in place of another
     starter's; patterns the user added stay."""
-    from .init import set_profile
     profile, patterns = STARTERS[starter]
     try:
         current = tomllib.loads(text).get("exclude", [])
@@ -96,13 +134,12 @@ def hook_count(srcs: list[Source], harnesses: dict[str, dict], profile: str) -> 
     return found
 
 
-def always_tokens(srcs: list[Source], profile: str, exclude: list[str],
-                  extra_rules: list[str], extra_descriptions: list[str]) -> tuple[int, int]:
-    """(rule tokens, description tokens) every session loads after apply: every source's rules and
-    machine-local rules, plus the descriptions of the items the profile installs."""
-    rules = sum(estimate_tokens(rule_text(p)) for s in srcs for p in markdown_files("rules", s))
-    rules += sum(estimate_tokens(rule_text(p)) for p in local_rules(srcs))
-    rules += sum(estimate_tokens(t) for t in extra_rules)
+def session_tokens(srcs: list[Source], profile: str, exclude: list[str],
+                   extra_rules: list[str], extra_descriptions: list[str]) -> tuple[int, int]:
+    """(rule tokens, description tokens) every session loads after apply, as `brainrc tokens`
+    counts them: the rendered instructions (with extra_rules, the rules init is about to add), and
+    the descriptions of the items the profile installs."""
+    rules = estimate_tokens(render_instructions(srcs)) + sum(estimate_tokens(t) for t in extra_rules)
     descriptions = sum(estimate_tokens(d) for d in extra_descriptions)
     if "items" in PROFILES[profile]:
         for s in srcs:

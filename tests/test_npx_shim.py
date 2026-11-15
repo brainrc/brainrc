@@ -51,6 +51,21 @@ class PackageJsonTest(unittest.TestCase):
             brainrc.config.REPO = old
         self.assertTrue(any(e.startswith("package.json: stale") for e in errors), errors)
 
+    def test_a_missing_shim_fails_validation_while_package_json_is_there(self):
+        old = brainrc.config.REPO
+        tmp = Path(tempfile.mkdtemp()).resolve()
+        self.addCleanup(rmtree, tmp, True)
+        for name in (".claude-plugin", ".cursor-plugin", "overrides"):
+            shutil.copytree(REPO / name, tmp / name)
+        for name in ("VERSION", "plugin.json", "package.json"):
+            shutil.copy2(REPO / name, tmp / name)
+        brainrc.config.REPO = tmp
+        try:
+            errors = brainrc.check_plugin()
+        finally:
+            brainrc.config.REPO = old
+        self.assertTrue(any(e.startswith("bin/brainrc.js: missing") for e in errors), errors)
+
     def test_release_commits_package_json(self):
         release = (REPO / ".github" / "workflows" / "release.yml").read_text()
         self.assertIn(".cursor-plugin plugin.json package.json", release)
@@ -90,12 +105,18 @@ class ShimTest(unittest.TestCase):
         self.assertIn("isn't on PATH", r.stderr)
         self.assertIn("https://docs.astral.sh/uv/", r.stderr)
 
+    def test_a_signal_that_node_ignores_still_exits_128_plus_its_number(self):
+        stub_command(str(self.bin_dir), "uvx", "import os, signal\nsignal.signal(signal.SIGPIPE, signal.SIG_DFL)\nos.kill(os.getpid(), signal.SIGPIPE)")
+        r = self.run_shim("status")
+        self.assertEqual(r.returncode, 128 + 13, r.stderr)
+
     def test_a_version_mismatch_stops_before_running_anything(self):
         stub_command(str(self.bin_dir), "uvx", RECORDER)
         (self.root / "VERSION").write_text("9.9.9\n")
         r = self.run_shim("status")
         self.assertEqual(r.returncode, 1)
         self.assertIn("VERSION says 9.9.9", r.stderr)
+        self.assertNotIn("scripts/brainrc.py", r.stderr)  # npx users have no checkout
         self.assertFalse(self.log.exists())
 
 

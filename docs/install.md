@@ -65,6 +65,9 @@ brainrc status
 brainrc apply
 ```
 
+With Homebrew, `brew install brainrc/tap/brainrc` installs the latest release from the
+[brainrc/homebrew-tap](https://github.com/brainrc/homebrew-tap) tap; `brew upgrade brainrc` moves it on.
+
 Pin a release with `uv tool install brainrc==<X.Y.Z>` (`pipx install brainrc==<X.Y.Z>`,
 `uvx brainrc@<X.Y.Z>`). Run `apply` from the installed command, not `uvx`: links point into the
 package, and uvx runs it from a cache that uv may clear. Releases from before PyPI publishing
@@ -77,12 +80,13 @@ Already have the old `ai-config` package installed? Run `uv tool uninstall ai-co
 The `aicfg` command was removed in 0.5.0: use `brainrc`.
 
 Links then point into the installed package, so `uv tool upgrade brainrc` (or `pipx upgrade
-brainrc`) updates every harness. Guard hooks are the exception: `apply` copies them to
+brainrc`, `brew upgrade brainrc`) updates every harness. Guard hooks are the exception: `apply` copies them to
 `$BRAINRC_HOME/hooks/core/` and links there, because the package path changes when an upgrade
 moves the tool to a new Python. Run `brainrc apply` after upgrading to refresh the copy. After an
 upgrade to a new Python, the other links (skills, agents) point at the old path and `apply`
 reports them as `CONFLICT`; `brainrc apply --repair` relinks them (it does the same after you
-move a checkout). Local files go in `~/.config/brainrc/` (`$BRAINRC_HOME`):
+move a checkout). Homebrew keeps each version under its own path, so after `brew upgrade brainrc`
+run `brainrc apply --repair`. Local files go in `~/.config/brainrc/` (`$BRAINRC_HOME`):
 `harnesses.local.toml`, `packs.local.toml`, and `rules/*.local.md`. Packs are local
 directories or git URLs that `brainrc` fetches ([packs](packs.md#enable-a-pack)).
 

@@ -39,3 +39,18 @@ Draft PR #359 (base `main`). `validate` and the full suite passed before the pus
   the installed command, not uvx (uv's cache can be cleared under the links).
 - Plan: README.md, docs/install.md, `scripts/check_tutorial.py`, `validate.yml` (uv 0.13.8, a wheel
   of the checkout); tests in `tests/test_check_tutorial.py` with uv stand-ins.
+
+## engine · gh:276 · verified
+Draft PR #360 (base `main`, stacked on #359). `validate` and the full suite passed before the push.
+
+## engine · gh:277 · Spec and Plan (logged under the Campaign gate)
+- Spec: `scripts/homebrew_formula.py SDIST` renders `Formula/brainrc.rb`: the sdist from PyPI
+  (`--pypi-json` takes the file URL from PyPI's JSON, which the workflow downloads, and refuses a sha256 other than the
+  built file's), `depends_on "python@3.13"`, `virtualenv_install_with_resources` with no
+  resources, a `brainrc --version` test. `release.yml`'s `homebrew` job runs after `pypi`; with
+  no `HOMEBREW_TAP_DEPLOY_KEY` it prints a notice and skips every other step; with it, it
+  clones `brainrc/homebrew-tap` over SSH (host keys from `gh api meta`, strict checking), commits
+  the formula when it changed, and pushes.
+- Plan: `scripts/homebrew_formula.py` (new), `release.yml`, docs/install.md, CONTRIBUTING.md;
+  tests in `tests/test_homebrew_formula.py` (render, PyPI lookup with a fake opener, `ruby -c`
+  where ruby exists, the job's gating).

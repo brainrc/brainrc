@@ -7,9 +7,10 @@ Each route runs in a fresh temp HOME (empty uv, pip, npm and pipx caches; ~/.cla
 a Claude Code user), and the clock runs from the install command to the end of the first `status`.
 --local installs what this checkout builds: the wheel and sdist in DIST_DIR (`python3 -m build`),
 the repo packed with `npm pack`, and a formula for the local sdist in a scratch tap; uv and pip are
-kept offline. --published (the default) installs what users get: PyPI, `npx github:brainrc/brainrc`
-and the brainrc/homebrew-tap tap. A route whose tool or source is missing (no brew on the machine,
-no PyPI release yet, the repo not public, no tap) prints SKIP, never PASS. Exits 1 on any FAIL.
+kept offline, but for the pip that pipx fetches for itself. --published (the default) installs what
+users get: PyPI, `npx github:brainrc/brainrc` and the brainrc/homebrew-tap tap. A route whose tool
+or source is missing (no brew on the machine, no PyPI release yet, the repo not public, no tap)
+prints SKIP, never PASS. Exits 1 on any FAIL.
 Homebrew runs with HOMEBREW_NO_AUTO_UPDATE and its own download cache, so `brew update` and its
 API data aren't counted; brew skips when brainrc is already installed with Homebrew, and uninstalls
 what it installed afterwards.
@@ -98,11 +99,22 @@ def plan(route: str, local: Path | None, work: Path) -> tuple[str, dict[str, str
     """(bash script that installs and runs the first status, extra environment, directories to put
     first on PATH); Skip if impossible."""
     extra = local_env(local) if local else {}
-    if route in ("uvx", "pipx"):
-        need(route)
+    if route == "uvx":
+        need("uvx")
         if not local:
             on_pypi()
-        return ("uvx brainrc status" if route == "uvx" else "pipx install brainrc\nbrainrc status"), extra, []
+        return "uvx brainrc status", extra, []
+    if route == "pipx":
+        need("pipx")
+        if not local:
+            on_pypi()
+            return "pipx install brainrc\nbrainrc status", extra, []
+        # pipx's first run fetches pip for its shared environment from the index, as it does for a
+        # new user, so this route can't be offline: it installs the local wheel by its path.
+        wheel = local / f"brainrc-{VERSION}-py3-none-any.whl"
+        if not wheel.is_file():
+            raise RuntimeError(f"{wheel} missing: build it with python3 -m build")
+        return f"pipx install '{wheel.resolve()}'\nbrainrc status", {}, []
     if route == "npx":
         need("npx")
         need("uvx")  # the shim runs brainrc through uvx

@@ -79,8 +79,12 @@ class RouteTest(unittest.TestCase):
                      "d = os.path.join(os.environ['HOME'], '.local', 'bin'); os.makedirs(d)\n"
                      f"open(os.path.join(d, 'brainrc'), 'w').write('#!{sys.executable}\\n' + {STATUS!r})\n"
                      "os.chmod(os.path.join(d, 'brainrc'), 0o755)")
+        (self.dist / f"brainrc-{cit.VERSION}-py3-none-any.whl").write_bytes(b"")
         result, detail = cit.run_route("pipx", self.dist, 60)
         self.assertEqual(result, "PASS", detail)
+        script, extra, _ = cit.plan("pipx", self.dist, self.stubs)
+        self.assertIn(f"pipx install '{self.dist}/brainrc-{cit.VERSION}-py3-none-any.whl'", script)
+        self.assertEqual(extra, {})  # pipx fetches its own pip from the index
 
     def test_the_route_runs_offline_on_the_local_build_in_a_fresh_home(self):
         log = self.stubs / "env.json"

@@ -425,7 +425,7 @@ class CopilotImportTest(ImportCase):
         self.assertIn("OK:", out)
         rules = sorted(p.name for p in (self.tmp / "team/rules").iterdir())
         self.assertEqual(rules[0], "01-team-conventions.md")  # CLAUDE.md's first lines and the AGENTS.md it inlines
-        self.assertEqual(rules[-1], "14-everywhere.md")
+        self.assertEqual(rules[-1], "13-everywhere.md")
 
 
 class SetPackPathTest(unittest.TestCase):

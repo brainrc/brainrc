@@ -116,3 +116,7 @@ it still skips with a notice. This supersedes `HOMEBREW_TAP_DEPLOY_KEY` in the e
 - Later on 2026-11-15 the maintainer created `brainrc/homebrew-tap`, set `HOMEBREW_TAP_TOKEN` and
   made both repos public. The docs no longer say npx waits on the repo going public. The npx and
   brew routes still need the first PyPI release (and #362 on `main` for npx) before they can run.
+- 2026-11-15: #359 to #362 merged and released as v0.8.3 to v0.8.6 on the maintainer's yes. The
+  first release created environment `pypi` itself and published; v0.8.5 pushed the formula to the
+  tap. #363's Linux brew route then measured 73.8 s, so the maintainer set the brew limit to 90 s
+  (other routes stay at 60 s) before merging it.

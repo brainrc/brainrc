@@ -4,7 +4,6 @@ import importlib.util
 import io
 import json
 import os
-import re
 import shutil
 import sys
 import tempfile
@@ -189,10 +188,18 @@ class WorkflowTest(unittest.TestCase):
         self.assertIn("--published", self.text)
         self.assertIn("github.event_name == 'schedule'", self.text)
 
-    def test_the_default_limit_is_sixty_seconds(self):
+    def test_the_limit_is_sixty_seconds_and_ninety_for_brew(self):
         self.assertNotIn("--limit", self.text)
-        self.assertTrue(re.search(r'"--limit", type=float, default=60\.0',
-                                  (REPO / "scripts" / "check_install_time.py").read_text()))
+        self.assertEqual(cit.LIMITS, {"uvx": 60.0, "pipx": 60.0, "npx": 60.0, "brew": 90.0})
+        self.assertEqual(set(cit.LIMITS), set(cit.PATHS))
+
+    def test_main_passes_each_route_its_limit_unless_limit_is_given(self):
+        seen = []
+        with mock.patch.object(cit, "run_route", lambda r, local, limit: seen.append((r, limit)) or ("PASS", "")), \
+                contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(cit.main(["--path", "uvx", "--path", "brew"]), 0)
+            self.assertEqual(cit.main(["--path", "brew", "--limit", "30"]), 0)
+        self.assertEqual(seen, [("uvx", 60.0), ("brew", 90.0), ("brew", 30.0)])
 
 
 if __name__ == "__main__":

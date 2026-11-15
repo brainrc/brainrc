@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Time each install route from scratch to the first `brainrc status` (E26's 60-second target).
 
-Usage: python3 scripts/check_install_time.py [--path uvx|pipx|npx|brew ...] [--limit 60]
+Usage: python3 scripts/check_install_time.py [--path uvx|pipx|npx|brew ...] [--limit SECONDS]
                                             [--local DIST_DIR | --published]
 Each route runs in a fresh temp HOME (empty uv, pip, npm and pipx caches; ~/.claude present, as for
 a Claude Code user), and the clock runs from the install command to the end of the first `status`.
@@ -212,10 +212,16 @@ def run_route(route: str, local: Path | None, limit: float) -> tuple[str, str]:
         shutil.rmtree(work, ignore_errors=True)
 
 
+# Seconds allowed per route. Homebrew installs python@3.13 and builds a virtualenv, and lands near
+# 60 s on CI runners, so the maintainer set its limit to 90 s (2026-11-15).
+LIMITS = {"uvx": 60.0, "pipx": 60.0, "npx": 60.0, "brew": 90.0}
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--path", action="append", choices=PATHS, help="route to time (repeatable; default all)")
-    ap.add_argument("--limit", type=float, default=60.0, help="seconds allowed to first status")
+    ap.add_argument("--limit", type=float, help="seconds allowed to first status, for every route "
+                    "(default: 60, 90 for brew)")
     src = ap.add_mutually_exclusive_group()
     src.add_argument("--local", type=Path, metavar="DIST_DIR", help="install this checkout's build")
     src.add_argument("--published", action="store_true", help="install the published releases (default)")
@@ -223,7 +229,8 @@ def main(argv: list[str] | None = None) -> int:
     failed = False
     for route in args.path or PATHS:
         try:
-            result, detail = run_route(route, args.local, args.limit)
+            limit = args.limit if args.limit is not None else LIMITS[route]
+            result, detail = run_route(route, args.local, limit)
         except Exception as e:  # a crash is a FAIL line, never a traceback
             result, detail = "FAIL", f"{type(e).__name__}: {e}"
         print(f"{result} {route}: {detail}", flush=True)

@@ -12,6 +12,10 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.8.3 (2026-11-15)
+
+- Each release now publishes brainrc to PyPI (#108): `release.yml` builds the sdist and wheel from the tag, checks them with `scripts/check_dist.py`, attaches them to the GitHub Release, and uploads them by trusted publishing (OIDC) from a job in GitHub environment `pypi`, with no token. The sdist carries only what the wheel is built from, not `specs/`, `tests/` or `evals/`, and CI builds and checks both files on every PR.
+
 ## 0.8.2 (2026-11-14)
 
 - `brainrc audit` lists, per harness, every skill, agent, command, rule, hook and MCP server

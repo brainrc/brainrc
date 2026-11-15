@@ -214,14 +214,17 @@ jobs:
           brew install --formula brainrc-release/check/brainrc
           brew test brainrc-release/check/brainrc
       # The token reaches git through a credential helper that reads it from the environment, so
-      # it never sits in a URL, the clone's .git/config or a command line.
+      # it never sits in a URL, the clone's .git/config or a command line. The empty helper first
+      # clears any helper the runner configures, so no stored credential is tried instead.
       - name: Push it to the tap
         if: steps.key.outputs.present == 'true'
         env:
           TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
-          GIT_CONFIG_COUNT: "1"
+          GIT_CONFIG_COUNT: "2"
           GIT_CONFIG_KEY_0: credential.helper
-          GIT_CONFIG_VALUE_0: '!f() { echo username=x-access-token; echo "password=${TAP_TOKEN}"; }; f'
+          GIT_CONFIG_VALUE_0: ""
+          GIT_CONFIG_KEY_1: credential.helper
+          GIT_CONFIG_VALUE_1: '!f() { test "$1" = get || exit 0; echo username=x-access-token; echo "password=${TAP_TOKEN}"; }; f'
         run: |
           git clone --depth 1 "https://github.com/${TAP}.git" "$RUNNER_TEMP/tap"
           cd "$RUNNER_TEMP/tap"

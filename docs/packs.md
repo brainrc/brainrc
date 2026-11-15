@@ -69,8 +69,8 @@ brainrc import . --to tools/agent-pack --dry-run          # what a repo's files 
 ```
 
 The pack goes to `$BRAINRC_HOME/imported/<name>` unless `--to` names a folder, and is checked as
-`validate --pack` would. `import` never overwrites a folder with files in it (`--force` replaces
-it). `--enable` adds it to `packs.local.toml`; for one project, list it in `brainrc.toml` instead
+`validate --pack` would. `import` never overwrites a folder with files in it; `--force` replaces
+an earlier pack there (a folder with a `pack.toml`), never one that holds a source. `--enable` adds it to `packs.local.toml`; for one project, list it in `brainrc.toml` instead
 ([project](project.md)).
 
 ## Layout

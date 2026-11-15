@@ -55,8 +55,8 @@ jobs:
       - name: Build and check the sdist and wheel
         if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12' }}
         run: |
-          python3 -m pip install build==1.6.1
-          python3 -m build --outdir "$RUNNER_TEMP/dist"
+          python3 -m pip install build==1.6.1 hatchling==1.33.0
+          python3 -m build --no-isolation --outdir "$RUNNER_TEMP/dist"
           python3 scripts/check_dist.py "$RUNNER_TEMP/dist"
       - name: Run the tutorial's steps 1-5
         run: python3 scripts/check_tutorial.py

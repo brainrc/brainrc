@@ -121,6 +121,30 @@ TOML_POSITION = re.compile(r" \(at (?:line (\d+), column \d+|end of document)\)$
 TABLE_HEADER = re.compile(r"^\s*\[\s*([^\]\s]+)\s*\]")
 
 
+def table_span(lines: list[str], name: str) -> tuple[int, int] | None:
+    """(header index, end) of table [name] in a TOML file's lines (keepends), or None. The end is
+    the next table header or the end of the file; quoted names match unquoted."""
+    start = next((i for i, raw in enumerate(lines)
+                  if (m := TABLE_HEADER.match(raw)) and m[1].strip("\"'") == name), None)
+    if start is None:
+        return None
+    return start, next((i for i in range(start + 1, len(lines)) if TABLE_HEADER.match(lines[i])), len(lines))
+
+
+def write_text_atomic(path: Path, text: str) -> None:
+    """Write a config file through a temporary file beside it, so a crash never leaves half of it."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(f".{path.name}.brainrc-tmp-{os.getpid()}")
+    tmp.write_text(text, encoding="utf-8")
+    os.replace(tmp, path)
+
+
+def config_path(path: Path) -> str:
+    """path as written into a config file: `~/...` when it is under HOME, else absolute, with `/`."""
+    home = Path.home()
+    return f"~/{path.relative_to(home).as_posix()}" if path.is_relative_to(home) and path != home else path.as_posix()
+
+
 def toml_error(path: Path, text: str, e: tomllib.TOMLDecodeError) -> ConfigError:
     """`<file>:<line>: invalid TOML: <what>`; at end of document, the line is the last one."""
     m = TOML_POSITION.search(str(e))

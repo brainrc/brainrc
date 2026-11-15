@@ -9,11 +9,11 @@ from __future__ import annotations
 
 import os
 import re
-import shutil
 import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from . import config
 from .config import ConfigError, tilde
 from .naming import NAME, PREFIX_MAX, PREFIX_MIN
 
@@ -120,28 +120,42 @@ def render_pack(spec: PackSpec) -> dict[str, str]:
     return files
 
 
-def write_pack(dest: Path, files: dict[str, str], force: bool = False) -> list[Path]:
-    """Write files under dest, all or nothing: into a temporary directory beside dest, then moved
-    into place. dest must not exist, or be empty, unless force, which replaces it."""
-    if dest.exists() and not dest.is_dir():
-        raise ConfigError(f"{tilde(dest)} is a file, not a directory")
-    if dest.is_dir() and any(dest.iterdir()) and not force:
-        raise ConfigError(f"{tilde(dest)} already has files; pick another directory, or pass --force "
-                          "to replace it")
+def write_pack(dest: Path, files: dict[str, str], force: bool = False, sources: list[Path] = ()) -> list[Path]:
+    """Write files under dest: into a temporary folder beside it, then moved into place. dest must
+    not exist, or be empty. With force it may also be an earlier pack (it has a pack.toml), which
+    is replaced, but never a folder that holds one of the sources or is a link."""
+    if dest.is_symlink() or (dest.exists() and not dest.is_dir()):
+        raise ConfigError(f"{tilde(dest)} is a link or a file, not a folder")
+    full = dest.is_dir() and any(dest.iterdir())
+    if full and not force:
+        raise ConfigError(f"{tilde(dest)} already has files; pick another folder, or pass --force "
+                          "to replace the pack in it")
+    if full and not (dest / "pack.toml").is_file():
+        raise ConfigError(f"{tilde(dest)} has files but no pack.toml; --force replaces only an earlier pack")
+    held = [s for s in sources if s.resolve().is_relative_to(dest.resolve())]
+    if full and held:
+        raise ConfigError(f"{tilde(dest)} holds {tilde(held[0])}, which is being imported; pick another folder")
     for rel in files:
         if Path(rel).is_absolute() or ".." in Path(rel).parts:
             raise ConfigError(f"refusing to write {rel} outside {tilde(dest)}")
     dest.parent.mkdir(parents=True, exist_ok=True)
     tmp = Path(tempfile.mkdtemp(prefix=f".{dest.name}-", dir=dest.parent))
+    old = None
     try:
         for rel, text in files.items():
             path = tmp / rel
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(text, encoding="utf-8")
-        if dest.exists():
-            shutil.rmtree(dest)
+        if dest.exists():  # moved aside first, so a failure leaves the earlier pack whole
+            old = Path(tempfile.mkdtemp(prefix=f".{dest.name}-old-", dir=dest.parent))
+            os.replace(dest, old / dest.name)
         os.replace(tmp, dest)
     except BaseException:
-        shutil.rmtree(tmp, ignore_errors=True)
+        if old and not dest.exists():
+            os.replace(old / dest.name, dest)
+        config.rmtree(tmp, ignore_errors=True)
         raise
+    finally:
+        if old:
+            config.rmtree(old, ignore_errors=True)
     return [dest / rel for rel in files]

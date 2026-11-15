@@ -23,7 +23,7 @@ from pathlib import Path
 from . import config, importers
 from .config import (
     PROFILE_FILE, PROFILES, ConfigError, TABLE_HEADER, _layered, check_config, expand, harness_home,
-    install_profile, load_harnesses, tilde,
+    config_path, install_profile, load_harnesses, table_span, tilde, write_text_atomic,
 )
 from .plan import _managed_target, link_target
 from .scaffold import write_pack
@@ -65,12 +65,11 @@ def set_enabled(text: str, name: str, value: bool) -> str:
     """text (a harnesses.local.toml) with `enabled` set for [name], everything else kept as is."""
     line = f"enabled = {'true' if value else 'false'}"
     lines = text.splitlines(keepends=True)
-    start = next((i for i, raw in enumerate(lines)
-                  if (m := TABLE_HEADER.match(raw)) and m[1].strip("\"'") == name), None)
-    if start is None:  # a new table at the end, after one blank line
+    span = table_span(lines, name)
+    if span is None:  # a new table at the end, after one blank line
         head = text.rstrip("\n") + "\n\n" if text.strip() else ""
         return f"{head}[{name}]\n{line}\n"
-    end = next((i for i in range(start + 1, len(lines)) if TABLE_HEADER.match(lines[i])), len(lines))
+    start, end = span
     for i in range(start + 1, end):
         if re.match(r"\s*[\"']?enabled[\"']?\s*=", lines[i]):
             lines[i] = line + "\n"
@@ -99,8 +98,7 @@ def _write(path: Path, before: str, after: str, dry_run: bool, what: str) -> Non
         return
     tomllib.loads(after)  # the setters keep the file valid TOML; fail loudly if one ever doesn't
     if not dry_run:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(after)
+        write_text_atomic(path, after)
     print(f"{'Would write' if dry_run else 'Wrote'} {tilde(path)}: {what}.")
 
 
@@ -282,6 +280,9 @@ def cmd_init(yes: bool = False, harnesses: list[str] | None = None, adopt: bool 
             except ConfigError as e:
                 print(f"ERROR {e}")
                 return 1
+            except (OSError, UnicodeDecodeError) as e:
+                print(f"ERROR {importers.why(e)}")
+                return 1
             if not imported.spec.rules and not imported.spec.skills:
                 imported, import_note = None, f"Found {names}, but there is nothing in them to import."
         else:
@@ -299,7 +300,7 @@ def cmd_init(yes: bool = False, harnesses: list[str] | None = None, adopt: bool 
             packs_after = set_enabled(packs_after, key, not on)
             packs_what.append(f"{key} {'off' if on else 'on'}")
     if imported:
-        packs_after = importers.set_pack_path(packs_after, IMPORT_NAME, tilde(import_dest))
+        packs_after = importers.set_pack_path(packs_after, IMPORT_NAME, config_path(import_dest))
         packs_what.append(f"pack {IMPORT_NAME} added")
 
     if interactive and not profile and not starter:
@@ -361,8 +362,7 @@ def cmd_init(yes: bool = False, harnesses: list[str] | None = None, adopt: bool 
     verb = "Would write" if dry_run else "Wrote"
     if after != before:
         if not dry_run:
-            local.parent.mkdir(parents=True, exist_ok=True)
-            local.write_text(after)
+            write_text_atomic(local, after)
         print(f"{verb} {tilde(local)}: brainrc manages {', '.join(chosen) or 'no harness'}.")
     else:
         print(f"brainrc manages {', '.join(chosen) or 'no harness'}; {tilde(local)} needs no change.")
@@ -375,9 +375,9 @@ def cmd_init(yes: bool = False, harnesses: list[str] | None = None, adopt: bool 
     if imported:
         if not dry_run:
             try:
-                write_pack(import_dest, imported.files)
-            except ConfigError as e:
-                print(f"ERROR {e}")
+                write_pack(import_dest, imported.files, sources=[p for _, p in imported.sources])
+            except (ConfigError, OSError) as e:
+                print(f"ERROR {e if isinstance(e, ConfigError) else importers.why(e)}")
                 return 1
         print(f"{verb} {tilde(import_dest)}: {importers.summary(imported)}, from "
               + ", ".join(tilde(p) for _, p in imported.sources) + ".")

@@ -18,19 +18,28 @@ class Section:
     text: str
 
 
-def headings(lines: list[str]) -> list[tuple[int, int, str]]:
-    """(index, level, title) of every ATX heading outside a fenced code block."""
-    found, fence = [], ""
-    for i, line in enumerate(lines):
+def fenced(lines: list[str]) -> list[bool]:
+    """For each line, whether it is part of a fenced code block (its fence lines included), as
+    CommonMark reads fences: a closing fence uses the opening's character, at least as many."""
+    out, fence = [], ""
+    for line in lines:
         m = FENCE_OPEN.match(line)
         if fence:
+            out.append(True)
             if m and m[1][0] == fence[0] and len(m[1]) >= len(fence) and not line.strip()[len(m[1]):].strip():
                 fence = ""
             continue
         if m and not (m[1][0] == "`" and "`" in line.strip()[len(m[1]):]):
             fence = m[1]
-            continue
-        if h := HEADING.match(line):
+        out.append(bool(fence))
+    return out
+
+
+def headings(lines: list[str]) -> list[tuple[int, int, str]]:
+    """(index, level, title) of every ATX heading outside a fenced code block."""
+    found = []
+    for i, (line, in_fence) in enumerate(zip(lines, fenced(lines))):
+        if not in_fence and (h := HEADING.match(line)):
             found.append((i, len(h[1]), h[2]))
     return found
 
@@ -64,6 +73,26 @@ def split(text: str, first_line: int = 1) -> list[Section]:
 def to_rules(sections: list[Section], label: str, fallback: str = "rules") -> list[Rule]:
     return [Rule(slugify(s.title, fallback), s.text,
                  f"imported by brainrc from {label}, lines {s.first}-{s.last}") for s in sections]
+
+
+def provenance(origins: list[tuple[str, int]]) -> str:
+    """`imported by brainrc from A, lines 1-4; B, lines 1-9` for lines that came from several files."""
+    runs: list[list] = []
+    for label, n in origins:
+        if runs and runs[-1][0] == label and n == runs[-1][2] + 1:
+            runs[-1][2] = n
+        else:
+            runs.append([label, n, n])
+    return "imported by brainrc from " + "; ".join(f"{label}, lines {a}-{b}" for label, a, b in runs)
+
+
+def rules_from_lines(lines: list[tuple[str, int, str]], fallback: str) -> list[Rule]:
+    """Rules from (file label, line number, text) lines that may come from several files (inlined
+    imports): split as one text, each rule naming the files and lines it holds."""
+    sections = split("\n".join(text for _, _, text in lines))
+    return [Rule(slugify(s.title, fallback), s.text,
+                 provenance([(label, n) for label, n, _ in lines[s.first - 1:s.last]]))
+            for s in sections]
 
 
 def simple_frontmatter(text: str) -> tuple[dict[str, str], int]:

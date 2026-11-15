@@ -12,10 +12,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from .. import config
-from ..config import ConfigError, TABLE_HEADER, expand, tilde
+from ..config import ConfigError, config_path, expand, table_span, tilde, write_text_atomic
 from ..scaffold import PackSpec, render_pack, write_pack
 from . import cursor, instructions
-from .model import Imported
 
 # Format name -> importer module, in the order discover() lists what it finds.
 FORMATS = {"instructions": instructions, "cursor": cursor}
@@ -51,28 +50,30 @@ def plan(sources: list[tuple[str, Path]], name: str = DEFAULT_NAME, prefix: str 
     """The pack the sources become, rendered but not written."""
     spec = PackSpec(name, prefix)
     warnings: list[str] = []
-    read: set[Path] = set()
-    used = []
-    taken: set[str] = set()
-    for fmt, path in sources:
-        if path.resolve() in read:  # CLAUDE.md's `@AGENTS.md` already brought it in
-            warnings.append(f"{tilde(path)}: already imported through an @import above; skipped")
+    got = [FORMATS[fmt].read(path) for fmt, path in sources]
+    used, taken, kept_reads = [], set(), set()
+    for i, ((fmt, path), one) in enumerate(zip(sources, got)):
+        me = path.resolve()
+        # A file another source inlines (CLAUDE.md's `@AGENTS.md`) comes in there, whatever the order.
+        by = [p for j, (_, p) in enumerate(sources) if j != i and me in got[j].read and p.resolve() not in one.read]
+        if me in kept_reads or by:
+            warnings.append(f"{tilde(path)}: already imported through an @import in "
+                            f"{tilde(by[0]) if by else 'a file above'}; skipped")
             continue
-        got: Imported = FORMATS[fmt].read(path)
-        read |= got.read
+        kept_reads |= one.read
         used.append((fmt, path))
         renamed = {}
-        for skill in got.skills:  # two sources with a skill of the same name: number the later one
+        for skill in one.skills:  # two sources with a skill of the same name: number the later one
             slug, n = skill.slug, 2
             while slug in taken:
                 slug, n = f"{skill.slug}-{n}", n + 1
             renamed[skill.slug], skill.slug = slug, slug
             taken.add(slug)
-        spec.rules += got.rules
-        spec.skills += got.skills
+        spec.rules += one.rules
+        spec.skills += one.skills
         spec.domains += [{**row, "skills": [f"{spec.prefix}{renamed.get(s, s)}" for s in row["skills"]]}
-                         for row in got.domains]
-        warnings += got.warnings
+                         for row in one.domains]
+        warnings += one.warnings
     spec.description = "Imported by brainrc import from " + ", ".join(
         f"{p.parent.name}/{p.name}" if p.is_dir() else p.name for _, p in used)
     return Plan(spec, render_pack(spec), used, warnings)
@@ -86,6 +87,8 @@ def resolve(paths: list[str], fmt: str | None = None) -> list[tuple[str, Path]]:
         if not path.exists():
             raise ConfigError(f"{raw}: no such file or folder")
         if fmt:
+            if path.is_dir() and not FORMATS[fmt].detect(path):
+                raise ConfigError(f"{raw}: --format {fmt} reads files; name the files, not a folder")
             out.append((fmt, path))
         elif found := detect(path):
             out.append((found, path))
@@ -106,17 +109,17 @@ def summary(p: Plan) -> str:
 
 
 def set_pack_path(text: str, name: str, path: str) -> str:
-    """text (a packs.local.toml) with [name] path = path; a new table, or that table's path replaced."""
+    """text (a packs.local.toml) with [name] path = path and on: a new table, or that table's
+    `path`, `git`, `ref` and `enabled` replaced by the path."""
     line = f'path = "{path}"\n'
     lines = text.splitlines(keepends=True)
-    start = next((i for i, raw in enumerate(lines)
-                  if (m := TABLE_HEADER.match(raw)) and m[1].strip("\"'") == name), None)
-    if start is None:
+    span = table_span(lines, name)
+    if span is None:
         head = text.rstrip("\n") + "\n\n" if text.strip() else ""
         return f"{head}[{name}]\n{line}"
-    end = next((i for i in range(start + 1, len(lines)) if TABLE_HEADER.match(lines[i])), len(lines))
+    start, end = span
     for i in range(start + 1, end):
-        if re.match(r"\s*[\"']?(path|git|ref)[\"']?\s*=", lines[i]):
+        if re.match(r"\s*[\"']?(path|git|ref|enabled)[\"']?\s*=", lines[i]):
             lines[i] = ""
     if not lines[start].endswith("\n"):
         lines[start] += "\n"
@@ -132,12 +135,21 @@ def enable(name: str, dest: Path, dry_run: bool = False) -> str:
     """Add the pack to packs.local.toml; the message to print."""
     packs_file = config.local_dir() / "packs.local.toml"
     before = packs_file.read_text() if packs_file.is_file() else ""
-    after = set_pack_path(before, name, tilde(dest))
-    tomllib.loads(after)  # fail loudly rather than write a file apply can't read
+    try:
+        tomllib.loads(before)
+    except tomllib.TOMLDecodeError as e:
+        raise config.toml_error(packs_file, before, e) from None
+    after = set_pack_path(before, name, config_path(dest))
+    tomllib.loads(after)  # the setter keeps it valid; fail loudly rather than write a file apply can't read
     if after != before and not dry_run:
-        packs_file.parent.mkdir(parents=True, exist_ok=True)
-        packs_file.write_text(after)
+        write_text_atomic(packs_file, after)
     return f"{'Would add' if dry_run else 'Added'} [{name}] to {tilde(packs_file)}."
+
+
+def _why(e: OSError | UnicodeDecodeError) -> str:
+    if isinstance(e, UnicodeDecodeError):
+        return f"a source isn't UTF-8 text ({e.reason} at byte {e.start}); save it as UTF-8 and import again"
+    return f"{tilde(Path(e.filename)) + ': ' if e.filename else ''}{e.strerror or e}"
 
 
 def cmd_import(paths: list[str], to: str | None = None, name: str = DEFAULT_NAME, prefix: str = "",
@@ -161,9 +173,12 @@ def cmd_import(paths: list[str], to: str | None = None, name: str = DEFAULT_NAME
             if enable_pack:
                 print(enable(name, dest, dry_run=True))
             return 0
-        write_pack(dest, p.files, force=force)
+        write_pack(dest, p.files, force=force, sources=[path for _, path in p.sources])
     except ConfigError as e:
         print(f"ERROR {e}")
+        return 1
+    except (OSError, UnicodeDecodeError) as e:
+        print(f"ERROR {_why(e)}")
         return 1
     print(f"Wrote {tilde(dest)}: {summary(p)}.")
     from ..validate import cmd_validate
@@ -171,11 +186,15 @@ def cmd_import(paths: list[str], to: str | None = None, name: str = DEFAULT_NAME
     if code:
         return code
     if enable_pack:
-        print(enable(name, dest))
+        try:
+            print(enable(name, dest))
+        except (ConfigError, OSError) as e:
+            print(f"ERROR {e}")
+            return 1
         print(f"Next: `{config.command('status')}` to see the changes, then `{config.command('apply')}`.")
     else:
         print(f"To load it on this machine, add it to packs.local.toml (or import again with --enable):\n\n"
-              f"[{name}]\npath = \"{tilde(dest)}\"")
+              f"[{name}]\npath = \"{config_path(dest)}\"")
         if dest.is_relative_to(Path.cwd()):
             print(f"\nOr, for this project only, to brainrc.toml:\n\n[packs.{name}]\n"
                   f"path = \"{dest.relative_to(Path.cwd()).as_posix()}\"")

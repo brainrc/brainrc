@@ -28,6 +28,7 @@ from .config import (
 from .sources import (
     check_packs, collisions, core_version, duplicate_packs, render_instructions, sources,
 )
+from .importers import FORMATS as IMPORT_FORMATS, cmd_import
 from .init import cmd_init
 from .uninstall import cmd_uninstall, finish_purge
 from .opencode import rendered_agents
@@ -509,6 +510,21 @@ def _parser() -> argparse.ArgumentParser:
                    help="what this machine installs, in brainrc.local.toml: minimal is rules only, "
                    "recommended adds skills, agents, commands and hooks, full adds MCP servers")
     p.add_argument("--dry-run", action="store_true", help="print what init would do, write nothing")
+    p = add("import", "turn CLAUDE.md, AGENTS.md and other tools' instruction files into a pack",
+            "Read instruction files other tools load and write them as a pack: one rule per "
+            "section, in order, each with a comment naming the file and lines it came from. A "
+            "folder means the files in it brainrc can read. The pack goes to "
+            "$BRAINRC_HOME/imported/<name> unless --to names a folder, and is checked as "
+            "`validate --pack` would. --enable adds it to packs.local.toml.")
+    p.add_argument("paths", nargs="+", metavar="PATH", help="files or folders to import, in order")
+    p.add_argument("--to", metavar="DIR", help="where to write the pack (default: $BRAINRC_HOME/imported/<name>)")
+    p.add_argument("--name", default="imported", help="the pack's name (default: imported)")
+    p.add_argument("--prefix", default="", help="the prefix for its skills (default: <name>-)")
+    p.add_argument("--format", dest="fmt", choices=sorted(IMPORT_FORMATS),
+                   help="read every PATH as this format, whatever its name")
+    p.add_argument("--force", action="store_true", help="replace the folder if it already has files")
+    p.add_argument("--enable", action="store_true", help="add the pack to packs.local.toml")
+    p.add_argument("--dry-run", action="store_true", help="print the files it would write, write nothing")
     repair_help = ("also relink broken links to where an item used to be: after moving the checkout, "
                    "or a package upgrade to a new Python")
     only_help = ("only these harnesses (repeat it, or separate names with commas); the others "
@@ -630,6 +646,9 @@ def _dispatch(argv: list[str]) -> int:
         only = [n for names in getattr(args, "only", None) or [] for n in names]
         return cmd_sync(apply=cmd == "apply", only=only or None, repair=args.repair,
                         yes=getattr(args, "yes", False))
+    if cmd == "import":
+        return cmd_import(args.paths, to=args.to, name=args.name, prefix=args.prefix, fmt=args.fmt,
+                          force=args.force, dry_run=args.dry_run, enable_pack=args.enable)
     if cmd == "validate":
         return cmd_validate(args.pack) if args.pack else cmd_validate()
     if cmd == "plugin":

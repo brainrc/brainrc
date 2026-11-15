@@ -6,6 +6,8 @@ and each machine picks the packs it needs.
 
 To start one, copy the working example in [examples/pack-acme](../examples/pack-acme/README.md).
 For a pack with a guard hook, see [examples/pack-homelab](../examples/pack-homelab/README.md).
+Or start from the instructions you already have: `brainrc import` turns them into a pack
+([Import](#import)).
 
 ## Enable a pack
 
@@ -45,6 +47,31 @@ upgrade. `doctor` reports a git pack that hasn't been fetched yet or whose clone
 The lock also records what each pack can do: its hooks, MCP servers, tool grants and network
 domains. `status` lists any added (`PERMS ... +`) or removed, and `apply` asks before adding any
 unless you pass `--yes` ([permissions](project.md#permissions)).
+
+## Import
+
+`brainrc import PATH ...` writes the instruction files you already have as a pack, so they move
+over in one command. A folder means the files in it that brainrc reads.
+
+| Source | Becomes |
+|---|---|
+| `CLAUDE.md`, `AGENTS.md` | one rule per section, in order |
+
+Each file is split at the shallowest heading level it uses more than once (a lone `# Title`
+stays with the text under it), and each part becomes `rules/NN-<heading>.md` with a first-line
+comment naming the file and lines it came from. Headings inside code blocks don't count. A
+CLAUDE.md line that is only `@path` (Claude Code's import) is replaced by that file's rules, and
+a brainrc project block is left out, since `install` writes it.
+
+```bash
+brainrc import ~/.claude/CLAUDE.md --name mine --enable   # write ~/.config/brainrc/imported/mine, load it
+brainrc import . --to tools/agent-pack --dry-run          # what a repo's files would become
+```
+
+The pack goes to `$BRAINRC_HOME/imported/<name>` unless `--to` names a folder, and is checked as
+`validate --pack` would. `import` never overwrites a folder with files in it (`--force` replaces
+it). `--enable` adds it to `packs.local.toml`; for one project, list it in `brainrc.toml` instead
+([project](project.md)).
 
 ## Layout
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from ..config import tilde
 from ..scaffold import Rule, Skill
 
 
@@ -23,8 +24,18 @@ class Imported:
             name, n = f"{slug}-{n}", n + 1
         return name
 
+    def files(self, path: Path, suffix: str) -> list[Path]:
+        """path, or the files under it that end in suffix in path order (the tools' own order),
+        each recorded as read; a warning when a folder has none."""
+        found = [path] if path.is_file() else sorted(
+            (f for f in path.rglob(f"*{suffix}") if f.is_file()), key=lambda f: f.relative_to(path).as_posix())
+        self.read |= {f.resolve() for f in found}
+        if not found:
+            self.warnings.append(f"{tilde(path)}: no {suffix} files")
+        return found
+
     def add_skill(self, slug: str, description: str, scoped: list[str], body: str, provenance: str,
-                  label: str, manual: str) -> None:
+                  label: str, manual: str, missing: str) -> None:
         """A rule another tool loads only for some files, or on request, as a skill. Scoped by
         globs: its description says so and a Domains row names it. Neither globs nor a
         description: `manual` becomes its description, and a warning says it loads only on request."""
@@ -34,6 +45,6 @@ class Imported:
             self.domains.append({"files": where, "skills": [slug]})
         elif not description:
             description = manual
-            self.warnings.append(f"{label}: has no description or file globs, so it becomes a skill the "
-                                 "model loads only when asked")
+            self.warnings.append(f"{label}: has no {missing}, so it becomes a skill the model loads only "
+                                 "when asked")
         self.skills.append(Skill(slug, description, body, provenance))

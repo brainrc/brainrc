@@ -11,8 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import REPO, TempRepoCase, brainrc, quiet  # noqa: E402
 
 from brainrc.importers import discover, plan, resolve, set_pack_path  # noqa: E402
-from brainrc.importers.markdown import globs  # noqa: E402
-from brainrc.importers.markdown import headings, split  # noqa: E402
+from brainrc.importers.markdown import globs, headings, split  # noqa: E402
 from brainrc.scaffold import PackSpec, Rule, Skill, render_pack, write_pack  # noqa: E402
 from brainrc.sources import Source, frontmatter, load_pack, render_instructions, sources  # noqa: E402
 from support import rmtree  # noqa: E402
@@ -348,7 +347,7 @@ class CursorImportTest(ImportCase):
         release = frontmatter(pack / "skills/team-release/SKILL.md")
         self.assertEqual(release["description"], "Steps to cut a release; use when asked to release")
         code, out = self.run_import(str(FIXTURES / "cursor/.cursor/rules/40-manual.mdc"), "--to", "one")
-        self.assertIn("so it becomes a skill the model loads only when asked", out)
+        self.assertIn("has no description, globs or alwaysApply, so it becomes a skill the model loads only when asked", out)
 
     def test_the_domains_rows_render_into_gateworks_extensions(self):
         code, out = self.run_import(str(FIXTURES / "cursor"), "--name", "team", "--enable")
@@ -448,6 +447,23 @@ class CopilotImportTest(ImportCase):
         review = frontmatter(pack / "skills/team-review/SKILL.md")
         self.assertEqual(review["description"], "Code review checklist; use when reviewing a PR")
         self.assertNotIn("applyTo", rendered_pack_text(pack))
+
+    def test_apply_to_globs(self):
+        inst = self.tmp / ".github/instructions"
+        inst.mkdir(parents=True)
+        (inst / "root.instructions.md").write_text('---\napplyTo: "*"\n---\nRoot files.\n')
+        (inst / "mixed.instructions.md").write_text('---\napplyTo: "**, docs/**"\n---\nAll files.\n')
+        (inst / "review.instructions.md").write_text('---\napplyTo: "**"\nexcludeAgent: "coding-agent"\n---\nCheck.\n')
+        p = plan(resolve([".github/instructions"]), "team")
+        self.assertEqual([r.slug for r in p.spec.rules], ["mixed"])
+        self.assertEqual([s.slug for s in p.spec.skills], ["root"])
+        self.assertTrue(any("only for Copilot code review" in w for w in p.warnings), p.warnings)
+
+    def test_format_copilot_reads_any_other_file_as_repo_wide_instructions(self):
+        (self.tmp / "team-guidelines-for-ai.md").write_text("## One\n\nA.\n\n## Two\n\nB.\n")
+        p = plan(resolve(["team-guidelines-for-ai.md"], "copilot"), "team")
+        self.assertEqual([r.slug for r in p.spec.rules], ["one", "two"])
+        self.assertEqual(p.spec.skills, [])
 
     def test_discover_finds_both_copilot_sources(self):
         self.assertEqual([(f, p.name) for f, p in discover(FIXTURES / "copilot")],

@@ -124,8 +124,7 @@ def whole_body(text: str) -> tuple[dict[str, str], str, int, int] | None:
     no text after its frontmatter."""
     lines = text.splitlines()
     meta, start = parse_frontmatter(lines)  # brainrc's YAML subset: block lists, folded text, quotes
-    sections = split("\n".join(lines[start:]), start + 1)
-    if not sections:
+    text_at = [i for i in range(start, len(lines)) if lines[i].strip()]
+    if not text_at:
         return None
-    first, last = sections[0].first, sections[-1].last
-    return meta, "\n".join(lines[first - 1:last]), first, last
+    return meta, "\n".join(lines[text_at[0]:text_at[-1] + 1]), text_at[0] + 1, text_at[-1] + 1

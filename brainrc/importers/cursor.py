@@ -38,7 +38,8 @@ def _rule_file(path: Path, slug: str, label: str, out: Imported) -> None:
         out.rules.append(Rule(slug, body, provenance))
         return
     out.add_skill(slug, description, scoped, body, provenance, label,
-                  f"Cursor's manual rule `{path.stem}`; use when asked to apply it.")
+                  f"Cursor's manual rule `{path.stem}`; use when asked to apply it.",
+                  "description, globs or alwaysApply")
 
 
 def _slug(path: Path, root: Path) -> str:
@@ -49,9 +50,7 @@ def _slug(path: Path, root: Path) -> str:
 
 def read(path: Path) -> Imported:
     out = Imported()
-    files = [path] if path.is_file() else sorted(path.rglob("*.mdc"), key=lambda p: p.relative_to(path).as_posix())
-    for f in files:
-        out.read.add(f.resolve())
+    for f in out.files(path, ".mdc"):
         label = tilde(f)
         if f.name == ".cursorrules":  # plain markdown, always applied
             rules = to_rules(split(f.read_text(encoding="utf-8-sig")), label, "cursorrules")
@@ -60,6 +59,4 @@ def read(path: Path) -> Imported:
                 out.warnings.append(f"{label}: no text to import")
         else:
             _rule_file(f, out.unique(_slug(f, path if path.is_dir() else f.parent)), label, out)
-    if not files:
-        out.warnings.append(f"{tilde(path)}: no .mdc files")
     return out

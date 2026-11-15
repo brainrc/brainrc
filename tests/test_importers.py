@@ -109,6 +109,29 @@ class ScaffoldTest(unittest.TestCase):
         self.assertEqual((dest / "pack.toml").read_text(), 'name = "b"\n')
         self.assertEqual([p.name for p in self.tmp.iterdir()], ["pack"])  # no temp dir left behind
 
+    def test_force_replaces_only_an_earlier_pack(self):
+        dest = self.tmp / "work"
+        dest.mkdir()
+        (dest / "notes.md").write_text("mine\n")
+        with self.assertRaisesRegex(brainrc.config.ConfigError, "no pack.toml"):
+            write_pack(dest, {"pack.toml": "x\n"}, force=True)
+        self.assertEqual((dest / "notes.md").read_text(), "mine\n")
+
+    def test_force_never_replaces_a_folder_that_holds_a_source(self):
+        dest = self.tmp / "pack"
+        write_pack(dest, {"pack.toml": "a\n", "AGENTS.md": "src\n"})
+        with self.assertRaisesRegex(brainrc.config.ConfigError, "being imported"):
+            write_pack(dest, {"pack.toml": "b\n"}, force=True, sources=[dest / "AGENTS.md"])
+        self.assertEqual((dest / "AGENTS.md").read_text(), "src\n")
+
+    def test_a_link_is_not_written_through(self):
+        target = self.tmp / "elsewhere"
+        target.mkdir()
+        (self.tmp / "pack").symlink_to(target, target_is_directory=True)
+        with self.assertRaisesRegex(brainrc.config.ConfigError, "a link"):
+            write_pack(self.tmp / "pack", {"pack.toml": "x\n"}, force=True)
+        self.assertEqual(list(target.iterdir()), [])
+
     def test_write_refuses_paths_outside_the_folder(self):
         for rel in ("../escape.md", "/abs.md"):
             with self.assertRaises(brainrc.config.ConfigError):
@@ -167,14 +190,14 @@ class InstructionsImportTest(ImportCase):
         self.assertEqual([text.index(s) for s in order], sorted(text.index(s) for s in order))
         self.assertNotIn("brainrc:begin", text)
         self.assertNotIn(".brainrc/AGENTS.md", text)
-        rules = sorted((self.tmp / "team/rules").iterdir())
-        self.assertIn("instructions/CLAUDE.md, lines 1-1", rules[0].read_text())
-        self.assertIn("instructions/AGENTS.md, lines 1-3", rules[1].read_text())
+        first = sorted((self.tmp / "team/rules").iterdir())[0].read_text()
+        claude, agents = (brainrc.config.tilde(FIXTURES / "instructions" / n) for n in ("CLAUDE.md", "AGENTS.md"))
+        self.assertTrue(first.startswith(f"<!-- imported by brainrc from {claude}, lines 1-2; {agents}, lines 1-3 -->"))
 
     def test_a_folder_imports_claude_md_and_skips_the_agents_md_it_already_inlined(self):
         code, out = self.run_import(str(FIXTURES / "instructions"), "--to", "team")
         self.assertEqual(code, 0, out)
-        self.assertIn("AGENTS.md: already imported through an @import above; skipped", out)
+        self.assertIn("AGENTS.md: already imported through an @import in", out)
         self.assertEqual(rendered_pack_text(self.tmp / "team").count("## Git"), 1)
 
     def test_an_import_cycle_is_kept_as_text(self):
@@ -183,7 +206,7 @@ class InstructionsImportTest(ImportCase):
         (self.tmp / "a/AGENTS.md").write_text("Agents.\n\n@CLAUDE.md\n")
         code, out = self.run_import("a/CLAUDE.md", "--to", "team")
         self.assertEqual(code, 0, out)
-        self.assertIn("`@CLAUDE.md` imports itself; kept as text", out)
+        self.assertIn("`@CLAUDE.md` not inlined (imports itself); kept as text", out)
 
     def test_dry_run_writes_nothing(self):
         code, out = self.run_import(str(FIXTURES / "instructions/AGENTS.md"), "--dry-run", "--enable")
@@ -227,6 +250,54 @@ class InstructionsImportTest(ImportCase):
         code, out = self.run_import("conventions.md", "--format", "instructions", "--to", "team")
         self.assertEqual(code, 0, out)
         self.assertEqual(len(list((self.tmp / "team/rules").iterdir())), 2)
+
+    def test_skip_does_not_depend_on_source_order(self):
+        for order in (("AGENTS.md", "CLAUDE.md"), ("CLAUDE.md", "AGENTS.md")):
+            p = plan(resolve([str(FIXTURES / "instructions" / n) for n in order]), "team")
+            self.assertEqual([path.name for _, path in p.sources], ["CLAUDE.md"], order)
+            self.assertEqual(sum(r.text.count("## Git") for r in p.spec.rules), 1)
+
+    def test_an_import_in_the_middle_of_a_section_splits_as_one_text(self):
+        (self.tmp / "a").mkdir()
+        (self.tmp / "a/part.md").write_text("Inlined line.\n")
+        (self.tmp / "a/CLAUDE.md").write_text("## One\n\nBefore.\n@part.md\nAfter.\n\n## Two\n\nB.\n")
+        p = plan(resolve(["a/CLAUDE.md"]), "team")
+        self.assertEqual([r.slug for r in p.spec.rules], ["one", "two"])
+        self.assertIn("Before.\nInlined line.\nAfter.", p.spec.rules[0].text)
+
+    def test_an_import_inside_a_fence_stays_as_text(self):
+        (self.tmp / "a").mkdir()
+        (self.tmp / "a/part.md").write_text("Inlined.\n")
+        (self.tmp / "a/CLAUDE.md").write_text("Use:\n\n```\n@part.md\n```\n")
+        p = plan(resolve(["a/CLAUDE.md"]), "team")
+        self.assertIn("@part.md", p.spec.rules[0].text)
+        self.assertNotIn("Inlined.", p.spec.rules[0].text)
+
+    def test_format_names_files_not_folders(self):
+        code, out = self.run_import(str(FIXTURES / "instructions"), "--format", "instructions", "--to", "team")
+        self.assertEqual(code, 1, out)
+        self.assertIn("name the files, not a folder", out)
+
+    def test_a_source_that_is_not_utf8_fails_cleanly(self):
+        (self.tmp / "AGENTS.md").write_bytes(b"## A\n\ncaf\xe9\n")
+        code, out = self.run_import("AGENTS.md", "--to", "team")
+        self.assertEqual(code, 1, out)
+        self.assertIn("isn't UTF-8", out)
+        self.assertNotIn("Traceback", out)
+        self.assertFalse((self.tmp / "team").exists())
+
+    def test_enable_turns_on_a_pack_that_was_off(self):
+        (self.repo / "packs.local.toml").write_text('[team]\npath = "~/old"\nenabled = false\n')
+        code, out = self.run_import(str(FIXTURES / "instructions/AGENTS.md"), "--enable", "--name", "team")
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("enabled", (self.repo / "packs.local.toml").read_text())
+        self.assertIn("team", [s.name for s in sources()])
+
+    def test_enable_reports_a_broken_packs_file(self):
+        (self.repo / "packs.local.toml").write_text("[team\n")
+        code, out = self.run_import(str(FIXTURES / "instructions/AGENTS.md"), "--enable", "--name", "team")
+        self.assertEqual(code, 1, out)
+        self.assertIn("invalid TOML", out)
 
     def test_discover_and_resolve(self):
         self.assertEqual([(f, p.name) for f, p in discover(FIXTURES / "instructions")],
@@ -353,7 +424,7 @@ class CopilotImportTest(ImportCase):
         self.assertEqual(code, 0, out)
         self.assertIn("OK:", out)
         rules = sorted(p.name for p in (self.tmp / "team/rules").iterdir())
-        self.assertEqual(rules[0], "01-claude.md")
+        self.assertEqual(rules[0], "01-team-conventions.md")  # CLAUDE.md's first lines and the AGENTS.md it inlines
         self.assertEqual(rules[-1], "14-everywhere.md")
 
 
@@ -362,11 +433,21 @@ class SetPackPathTest(unittest.TestCase):
         self.assertEqual(set_pack_path("", "team", "~/p"), '[team]\npath = "~/p"\n')
         self.assertEqual(set_pack_path("# mine\n", "team", "~/p"), '# mine\n\n[team]\npath = "~/p"\n')
 
-    def test_replaces_the_tables_origin_and_keeps_the_rest(self):
-        text = '[team]\ngit = "https://x"\nref = "v1"\nenabled = false\n\n[other]\npath = "~/o"\n'
+    def test_replaces_the_tables_origin_turns_it_on_and_keeps_the_rest(self):
+        text = '[team]\ngit = "https://x"\nref = "v1"\nenabled = false\nwhy = "x"\n\n[other]\npath = "~/o"\n'
         after = set_pack_path(text, "team", "~/p")
-        self.assertEqual(tomllib.loads(after), {"team": {"path": "~/p", "enabled": False},
+        self.assertEqual(tomllib.loads(after), {"team": {"path": "~/p", "why": "x"},
                                                 "other": {"path": "~/o"}})
+
+    def test_a_quoted_table_name_matches(self):
+        after = set_pack_path('["team"]\npath = "~/old"\n', "team", "~/p")
+        self.assertEqual(tomllib.loads(after), {"team": {"path": "~/p"}})
+
+
+class ConfigPathTest(unittest.TestCase):
+    def test_under_home_is_tilde_else_absolute(self):
+        self.assertEqual(brainrc.config.config_path(Path.home() / "x/y"), "~/x/y")
+        self.assertEqual(brainrc.config.config_path(Path("/srv/packs/team")), "/srv/packs/team")
 
 
 if __name__ == "__main__":

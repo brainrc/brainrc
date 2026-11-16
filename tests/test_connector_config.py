@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import TempRepoCase, brainrc, quiet  # noqa: E402
-from brainrc import connectors  # noqa: E402
+from brainrc import config, connectors  # noqa: E402
 from brainrc.connectors import Field  # noqa: E402
 from brainrc.validate import pack_errors  # noqa: E402
 from brainrc.sources import load_pack, sources  # noqa: E402
@@ -43,6 +43,18 @@ class DeclarationTest(unittest.TestCase):
                          {"brainrc-config": "a: string; b: list required", "other": "plain value"})
         self.assertEqual(connectors.declared(s), {"a": Field("string"), "b": Field("list", True)})
 
+    def test_metadata_reads_wrapped_and_block_values_and_skips_nested_maps(self):
+        s = self.skill('metadata:\n  brainrc-config: "refs: list required;\n    host: string required"\n'
+                       "  folded: >-\n    one\n    two\n  kept: |\n    a\n    b\n"
+                       "  owner:\n    brainrc-config: nested\n  plain: wraps\n    on\n")
+        self.assertEqual(connectors.metadata(s / "SKILL.md"), {
+            "brainrc-config": "refs: list required; host: string required", "folded": "one two",
+            "kept": "a\nb", "owner": "brainrc-config: nested", "plain": "wraps on"})
+        self.assertEqual(connectors.declared(s), {"refs": Field("list", True), "host": Field("string", True)})
+
+    def test_a_broken_declaration_declares_nothing(self):
+        self.assertIsNone(connectors.declared(self.skill('metadata:\n  brainrc-config: "a: string; b: str"\n')))
+
     def test_no_metadata_means_no_declaration(self):
         self.assertIsNone(connectors.declared(self.skill("")))
         write(self.dir / "t/SKILL.md", "no frontmatter\nmetadata:\n  brainrc-config: a: string\n")
@@ -62,6 +74,18 @@ class DeclarationTest(unittest.TestCase):
         self.assertEqual(connectors.tables(meta), [("extensions.gatework.ticket", {"connector": "x"}),
                                                    ("extensions.ticket", {"connector": "y"})])
         self.assertEqual(connectors.tables({"extensions": "x"}), [])
+
+
+class KeyLineTest(unittest.TestCase):
+    TEXT = ('#:schema x\nname = "acme"\nmax_always_token = 4\n[extensions.gatework]\nticket.host = "h"\n'
+            "ticket.blocked_stat = 1\n[[extension.gatework.domains]]\nfiles = 1\n[extensions.gatework.other]\nkey = 2\n")
+
+    def test_each_form_of_key(self):
+        for path, line in [(("max_always_token",), 3), (("extensions", "gatework", "ticket", "blocked_stat"), 6),
+                           (("extension",), 7), (("extensions", "gatework", "other", "key"), 10),
+                           (("missing",), 1)]:
+            with self.subTest(path=path):
+                self.assertEqual(config.key_line(self.TEXT, path), line)
 
 
 class ValidateTest(TempRepoCase):
@@ -100,11 +124,11 @@ class ValidateTest(TempRepoCase):
         self.assertIn("[extensions.gatework.ticket] needs `host` (brainrc-ticket-jira's config)", out)
         self.assertIn("[extensions.gatework.ticket] `refs` must be a list of strings", out)
 
-    def test_apply_refuses_the_pack_too(self):
+    def test_apply_still_installs_the_pack(self):
+        # Like pack.toml's schema, connector config is validate's to report; apply goes ahead.
         self.edit('host = "acme.example.net"', "host = true")
         srcs = [*sources(), load_pack(self.pack)]
-        found = dict((s.name, e) for s, e in pack_errors(srcs))
-        self.assertTrue(any("`host` must be a string" in e for e in found["acme"]), found)
+        self.assertNotIn("acme", dict((s.name, e) for s, e in pack_errors(srcs)))
 
     def test_an_unknown_key_warns_with_the_closest_declared_one(self):
         self.edit('review_status = "In Review"', 'review_status = "In Review"\nblocked_stat = "Blocked"')
@@ -137,6 +161,16 @@ class ValidateTest(TempRepoCase):
         self.assertRegex(out, r"ERROR acme:pack\.toml:\d+: \[extensions\.gatework\.ticket\] instructions: "
                               r"tripwire old-pager: pagerbot was replaced")
 
+    def test_the_instructions_tripwire_follows_paths_and_exclude(self):
+        self.edit(EXAMPLE_INSTRUCTIONS, 'instructions = "Page on-call with pagerbot."')
+        base = '[[tripwire]]\nid = "old-pager"\npattern = "(?i)pagerbot"\nmessage = "gone"\n'
+        for extra, count in (('paths = ["*.toml"]\n', 1), ('paths = ["skills/*"]\n', 0),
+                             ('exclude = ["pack.toml"]\n', 0)):
+            with self.subTest(extra=extra):
+                write(self.pack / "tripwires.toml", base + extra)
+                _, out = self.validate()
+                self.assertEqual(out.count("tripwire old-pager"), count, out)
+
     def test_a_connector_without_a_declaration_is_not_checked(self):
         self.edit('connector = "brainrc-ticket-jira"', 'connector = "brainrc-ticket-github"')
         self.edit('host = "acme.example.net"', "host = 3")
@@ -152,6 +186,11 @@ class ValidateTest(TempRepoCase):
         code, out = self.validate()
         self.assertEqual(code, 1, out)
         self.assertIn("acme:skills/acme-ticket-desk/SKILL.md: metadata.brainrc-config: `tier: colour` must be", out)
+        self.assertNotIn("acme-ticket-desk's config", out)  # a broken declaration checks no pack
+        skill = self.pack / "skills/acme-ticket-desk/SKILL.md"
+        skill.write_text(skill.read_text().replace("; tier: colour", ""))
+        code, out = self.validate()
+        self.assertEqual(code, 1, out)
         self.assertIn("`queue` must be an integer (acme-ticket-desk's config)", out)
 
     def test_the_legacy_top_level_table_is_checked_too(self):

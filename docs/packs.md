@@ -222,10 +222,12 @@ metadata:
 Each `key: type` entry is one of `string`, `integer`, `boolean` or `list` (of strings), followed by
 `required` when the table must set it. `validate` then checks every pack table that names the skill
 as its `connector`: a key of the wrong type or a missing required key fails, and a key the
-connector doesn't declare warns. A connector that declares nothing isn't checked. Every table may
-also set `instructions`: what the pack tells the connector about its tickets, in place of free-form
-keys such as `notes`. It reaches the model, so the pack's [tripwires](#tripwirestoml) check it like
-the pack's other text.
+connector doesn't declare warns. Only `validate` reports these; `apply` still installs the pack. A
+connector that declares nothing, or a declaration with a mistake (which fails on the skill), isn't
+checked. Every table may also set `instructions`: what the pack tells the connector about its
+tickets, in place of free-form keys such as `notes`. It reaches the model, so the pack's
+[tripwires](#tripwirestoml) check it like the pack's other text, unless a tripwire sets `paths` or
+`exclude`s `pack.toml`.
 
 ## Validator plugins
 

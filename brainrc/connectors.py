@@ -13,12 +13,11 @@ gives the connector, which the pack's tripwires check like its other text.
 """
 from __future__ import annotations
 
-import difflib
 import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from .config import line_of
+from .config import did_you_mean, key_line
 from .sources import Source, _quoted, parse_frontmatter, skills
 
 CONFIG_KEY = "brainrc-config"
@@ -41,22 +40,39 @@ class Field:
 
 
 def metadata(path: Path) -> dict[str, str]:
-    """The one-level `metadata:` map of a file's frontmatter, every value a string. A plain or quoted
-    scalar per `  key: value` line; anything else under it is skipped."""
+    """The one-level `metadata:` map of a file's frontmatter, every value a string. A value may be
+    plain, quoted, or a `>`/`|` block scalar, and may wrap onto more-indented lines; keys nested
+    deeper than the map's own are part of a value, not keys of it."""
     lines = path.read_text().splitlines()
     end = parse_frontmatter(lines)[1]
-    found: dict[str, str] = {}
-    inside = False
+    found: dict[str, list[str]] = {}
+    inside, indent, key = False, None, None
     for line in lines[1:max(end - 1, 1)]:
         if not line.strip() or line.lstrip().startswith("#"):
             continue
         if not line[:1].isspace():
-            inside = line.split("#", 1)[0].strip() == "metadata:"
+            inside, indent, key = line.split("#", 1)[0].strip() == "metadata:", None, None
             continue
-        if inside and (m := re.match(r"^\s+([^\s:#][^:]*?):\s+(.*)$", line)):
-            value = m[2].strip()
-            found[m[1]] = _quoted(value) if value[:1] in "'\"" else value.split(" #", 1)[0].strip()
-    return found
+        if not inside:
+            continue
+        depth = len(line) - len(line.lstrip())
+        indent = depth if indent is None else indent
+        if depth == indent and (m := re.match(r"^\s+([^\s:#][^:]*?):(?:\s+(.*))?$", line)):
+            key = m[1]
+            found[key] = [(m[2] or "").strip()]
+        elif depth > indent and key:
+            found[key].append(line.strip())
+    return {k: _scalar(v) for k, v in found.items()}
+
+
+def _scalar(parts: list[str]) -> str:
+    """One YAML scalar from its first line and its continuation lines."""
+    head, rest = parts[0], parts[1:]
+    if head[:1] in ("|", ">"):
+        return ("\n" if head[0] == "|" else " ").join(rest)
+    if head[:1] in "'\"" and head:
+        return _quoted(" ".join([head, *rest]))
+    return " ".join([head.split(" #", 1)[0].strip(), *rest]).strip()
 
 
 def parse(text: str) -> tuple[dict[str, Field], list[str]]:
@@ -79,9 +95,13 @@ def parse(text: str) -> tuple[dict[str, Field], list[str]]:
 
 
 def declared(skill: Path) -> dict[str, Field] | None:
-    """A skill's declared config, or None when it declares none (it is then not checked)."""
+    """A skill's declared config, or None when it declares none or a broken one (it is then not
+    checked: the skill's own error says what to fix, and packs aren't told to drop good keys)."""
     text = metadata(skill / "SKILL.md").get(CONFIG_KEY)
-    return None if text is None else parse(text)[0]
+    if text is None:
+        return None
+    fields, problems = parse(text)
+    return None if problems else fields
 
 
 def declaration_errors(src: Source) -> list[str]:
@@ -138,12 +158,8 @@ def check(src: Source, connectors: dict[str, Path]) -> tuple[list[str], list[str
         for key in table:
             if key in fields or key in RESERVED:
                 continue
-            at = f"{src.rel(path)}:{line_of(text, name, key)}: [{name}]"
-            if key in RENAMED:
-                hint = f"; it is now `{RENAMED[key]}`"
-            else:
-                close = difflib.get_close_matches(key, list(fields), n=1, cutoff=0.75)
-                hint = f" (did you mean `{close[0]}`?)" if close else ""
+            at = f"{src.rel(path)}:{key_line(text, (*name.split('.'), key))}: [{name}]"
+            hint = f"; it is now `{RENAMED[key]}`" if key in RENAMED else did_you_mean(key, fields)
             warnings.append(f"{at} unknown key `{key}` for {connector}{hint}; it ignores it")
     return errors, warnings
 

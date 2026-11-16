@@ -28,7 +28,7 @@ def run(src: Source) -> list[str]:
     if path.is_file() and not path.stem.isidentifier():
         return [f"{where}: unittest can't import {path.name}; name it like a module (test_guard.py)"]
     start, pattern = (path, "test*.py") if path.is_dir() else (path.parent, path.name)
-    env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1",
+    env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1", PYTHONUNBUFFERED="1",  # prints land before the report
                PYTHONPATH=os.pathsep.join(filter(None, [str(Path(__file__).resolve().parent.parent),
                                                         os.environ.get("PYTHONPATH")])))
     try:

@@ -19,7 +19,8 @@ from pathlib import Path
 
 from . import config
 from .config import (
-    PROFILE_FILE, ConfigError, TABLE_HEADER, _layered, check_config, expand, harness_home, load_harnesses, tilde,
+    PROFILE_FILE, ConfigError, TABLE_HEADER, _layered, check_config, expand, harness_home, load_harnesses,
+    table_span, tilde, write_text_atomic,
 )
 from .plan import _managed_target, link_target
 from .sources import default_packs, sources
@@ -57,12 +58,11 @@ def set_enabled(text: str, name: str, value: bool) -> str:
     """text (a harnesses.local.toml) with `enabled` set for [name], everything else kept as is."""
     line = f"enabled = {'true' if value else 'false'}"
     lines = text.splitlines(keepends=True)
-    start = next((i for i, raw in enumerate(lines)
-                  if (m := TABLE_HEADER.match(raw)) and m[1].strip("\"'") == name), None)
-    if start is None:  # a new table at the end, after one blank line
+    span = table_span(lines, name)
+    if span is None:  # a new table at the end, after one blank line
         head = text.rstrip("\n") + "\n\n" if text.strip() else ""
         return f"{head}[{name}]\n{line}\n"
-    end = next((i for i in range(start + 1, len(lines)) if TABLE_HEADER.match(lines[i])), len(lines))
+    start, end = span
     for i in range(start + 1, end):
         if re.match(r"\s*[\"']?enabled[\"']?\s*=", lines[i]):
             lines[i] = line + "\n"
@@ -91,8 +91,7 @@ def _write(path: Path, before: str, after: str, dry_run: bool, what: str) -> Non
         return
     tomllib.loads(after)  # the setters keep the file valid TOML; fail loudly if one ever doesn't
     if not dry_run:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(after)
+        write_text_atomic(path, after)
     print(f"{'Would write' if dry_run else 'Wrote'} {tilde(path)}: {what}.")
 
 
@@ -219,8 +218,7 @@ def cmd_init(yes: bool = False, harnesses: list[str] | None = None, adopt: bool 
     verb = "Would write" if dry_run else "Wrote"
     if after != before:
         if not dry_run:
-            local.parent.mkdir(parents=True, exist_ok=True)
-            local.write_text(after)
+            write_text_atomic(local, after)
         print(f"{verb} {tilde(local)}: brainrc manages {', '.join(chosen) or 'no harness'}.")
     else:
         print(f"brainrc manages {', '.join(chosen) or 'no harness'}; {tilde(local)} needs no change.")

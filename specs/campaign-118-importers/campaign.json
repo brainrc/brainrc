@@ -1,0 +1,86 @@
+{
+  "ref": "gh:118",
+  "shape": "playbook",
+  "batch_size": 3,
+  "playbook_version": 1,
+  "dependency_source": "none",
+  "started_at": "2026-11-15T16:20:00Z",
+  "delivery": "stacked draft PRs against main",
+  "gates": {
+    "campaign": {
+      "presented_at": "2026-11-15T16:20:00Z",
+      "approved_at": "2026-11-15T16:20:00Z"
+    }
+  },
+  "skipped": [
+    {
+      "ref": "gh:166",
+      "why": "left for later (brief)"
+    },
+    {
+      "ref": "gh:167",
+      "why": "left for later (brief)"
+    }
+  ],
+  "members": [
+    {
+      "ref": "gh:163",
+      "order": 1,
+      "params": {
+        "format": "CLAUDE.md / AGENTS.md",
+        "source": "~/.claude/CLAUDE.md, repo AGENTS.md",
+        "maps_to": "rules/NN-*.md"
+      },
+      "depends_on": [],
+      "status": "in_progress",
+      "slug": "163-import-instructions",
+      "branch": "claude/project-thread-2l9n29",
+      "pr": null,
+      "base": "main",
+      "merged": false
+    },
+    {
+      "ref": "gh:164",
+      "order": 2,
+      "params": {
+        "format": "Cursor rules",
+        "source": ".cursor/rules/*.mdc",
+        "maps_to": "rules + globs -> domains"
+      },
+      "depends_on": [],
+      "status": "pending",
+      "slug": "164-import-cursor",
+      "branch": "claude/project-thread-2l9n29-164",
+      "pr": null,
+      "base": "main",
+      "merged": false
+    },
+    {
+      "ref": "gh:165",
+      "order": 3,
+      "params": {
+        "format": "Copilot",
+        "source": ".github/copilot-instructions.md",
+        "maps_to": "rules"
+      },
+      "depends_on": [],
+      "status": "pending",
+      "slug": "165-import-copilot",
+      "branch": "claude/project-thread-2l9n29-165",
+      "pr": null,
+      "base": "main",
+      "merged": false
+    },
+    {
+      "ref": "gh:297",
+      "order": 4,
+      "depends_on": [],
+      "status": "pending",
+      "slug": "297-init-import-profile",
+      "branch": "claude/project-thread-2l9n29-297",
+      "pr": null,
+      "base": "main",
+      "merged": false
+    }
+  ]
+}

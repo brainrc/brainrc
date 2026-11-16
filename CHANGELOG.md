@@ -12,6 +12,10 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.8.11 (2026-11-16)
+
+- `brainrc init`, run from a project folder, finds its CLAUDE.md, AGENTS.md, Cursor rules and Copilot instructions and offers to import them into a pack (`--import` without asking), asks for a starter profile (`--starter minimal|app|infra`: rules only; recommended without Gatework's infrastructure skills; full), and shows the file, hook and token counts before it writes anything (#297).
+
 ## 0.8.10 (2026-11-16)
 
 - `brainrc import` reads GitHub Copilot instructions: `.github/copilot-instructions.md` becomes rules, one per section, in order, and path-specific `.github/instructions/**/*.instructions.md` files become rules (`applyTo: "**"`) or skills: with a Domains row for their globs, or loaded on request when they have only a description or neither. A file for code review only (`excludeAgent: coding-agent`) is skipped. Each keeps a comment naming its file and lines (#165).

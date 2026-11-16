@@ -1,6 +1,6 @@
 {
   "name": "brainrc",
-  "version": "0.8.14",
+  "version": "0.8.15",
   "description": "Runs brainrc (a Python CLI, from PyPI) through uv: npx github:brainrc/brainrc",
   "license": "MIT",
   "private": true,

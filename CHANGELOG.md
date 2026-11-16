@@ -12,6 +12,10 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.8.9 (2026-11-16)
+
+- `brainrc import` reads Cursor rules (`.cursor/rules/**/*.mdc` and `.cursorrules`): `alwaysApply` rules become rules in order; a rule scoped by `globs` becomes a skill with a row in Gatework's Domains table for those globs; one with only a description becomes a skill. Each keeps a comment naming its file and lines (#164).
+
 ## 0.8.8 (2026-11-16)
 
 - `brainrc import` turns a CLAUDE.md or AGENTS.md into a pack: one rule per section, in order, each with a comment naming the file and lines it came from. Claude Code's whole-line `@path` imports are inlined in place, a brainrc project block is left out, and the pack is checked as `validate --pack` would. It goes to `$BRAINRC_HOME/imported/<name>` (or `--to`), and `--enable` adds it to `packs.local.toml` (#163).

@@ -80,3 +80,71 @@ Draft PR #370 (base `main`, stacked on #369). `validate` and the full suite pass
 - Plan: `brainrc/validate.py`, `brainrc/plan.py`, `brainrc/config.py` (`pack_plugin_path`),
   `brainrc/permissions.py`, examples, docs/packs.md, docs/guardrails.md; fixture
   `tests/fixtures/pack-prose-refs/`; tests in `tests/test_validate_coverage.py`.
+
+## engine · gh:137 · verified
+Draft PR #371 (base `main`, stacked on #370). `validate` and the full suite passed before the push.
+
+## engine · gh:138 · Spec and Plan (logged under the Campaign gate)
+- Spec: `test = "<dir or file>.py"` in `pack.toml` names the pack's unittest tests; `validate --pack`
+  from the command line runs them in a fresh Python (cwd the pack's root, brainrc importable, no
+  bytecode written), and fails when one fails, none is found, or the path isn't a directory or `.py`
+  file in the pack. `doctor` (which passes the pack's key) and `apply` never run them, so they need
+  no permission or lock entry, unlike a validator. `brainrc.testing` gives `run_hook`, `bash`,
+  `assert_denies` (exit 2 counts), `assert_asks` and `assert_allows` (allow or no opinion).
+- The homelab example's rule tests move from core's tests/test_hooks.py into the pack; core keeps
+  the "core no longer asks" and fragment checks, and CI validates both example packs.
+- Plan: `brainrc/testing.py`, `brainrc/packtests.py` (new), `brainrc/validate.py`, the pack.toml
+  schema, examples/pack-homelab (tests/, pack.toml, README), docs/packs.md (Pack tests), the
+  workflow; tests in `tests/test_pack_tests.py`.
+
+## engine · gh:138 · verified
+`validate --pack examples/pack-homelab` runs its 6 tests; a guard with a rule removed fails it.
+`validate` and the full suite (1216 tests) passed before the push.
+
+## engine · gh:138 · draft PR
+Draft PR #372 (base `main`, stacked on #371).
+
+## engine · gh:139 · Spec and Plan (logged under the Campaign gate)
+- Spec: a composite action at `.github/actions/validate-pack/` runs `validate --pack <path>` with
+  the core it is pinned to (GitHub checks out this repository at the pinned ref, so the action's
+  own directory is the core). Inputs: `path`, `default-packs`, `python-version`; inputs reach the
+  shell through `env` only. (Review changed how it gets the default packs: see below.) `.pre-commit-hooks.yaml` adds `brainrc-validate-pack` (`language: python`, the
+  installed `brainrc`). Core's CI checks acme and homelab with the action from this checkout.
+- Not done here: tagging a release that carries the action, publishing it to the Marketplace, and
+  a private pack's CI adopting it. Those are the maintainer's.
+- Plan: the action, `.pre-commit-hooks.yaml`, the workflow, `scripts/check_install.py` (a pack's
+  tests from the installed package), docs/packs.md, the acme README; tests in
+  `tests/test_validate_pack_action.py`.
+
+## engine · gh:139 · verified
+The action's two steps, run by hand with a scratch home, fetched Gatework and passed acme. The
+installed-wheel smoke test passed, including `validate --pack` on homelab. `validate` and the full
+suite passed before the push.
+
+## engine · gh:139 · draft PR
+Draft PR #373 (base `main`, stacked on #372).
+
+## review · code-review (high) on each PR, fixes on its own branch, merged forward
+- #369 (gh:135): 10 findings, 8 fixed. Schema findings became validate-only (apply installs a pack
+  as before), a decimal budget counts, unknown keys name their table and real line, form-aware
+  unknown-key collection, one error per bad `id`, `url` + `env_from = []` allowed, harness names
+  free, docs on which files have schemas. Kept: the `patch` bump (apply is unaffected, only
+  validate is stricter) and the per-reader type guards (refusing at load would fail every command).
+- #370 (gh:136): 8 findings, 6 fixed. Connector config is validate-only and checked once;
+  `metadata()` reads wrapped, quoted and block values and skips nested maps; a broken declaration
+  checks no pack; the instructions tripwire follows `paths`/`exclude` and names the matching line;
+  one shared line finder and hint (`config.key_line`, `config.did_you_mean`). Kept: a separate
+  `metadata()` parser (changing `parse_frontmatter` touches every skill) and the `patch` bump.
+- #371 (gh:137): 10 findings, 9 fixed. README/docs links, rule references and prose names are
+  validate-only; prose names need the pack prefix or a head two skills share, and skip "skill set";
+  `/docs/x.md` and `%20` links resolve; a relative link in a rule warns; an orphaned pack plugin
+  link is removed; dotfile plugin names; harnesses.toml read once. Kept: example READMEs link
+  `blob/main` (a copied pack keeps working links).
+- #372 (gh:138): 9 findings, 9 fixed. `run_hook` fails on a missing or hung hook, reads JSON with no
+  decision as no opinion; `assert_no_opinion`; unittest's report stays in view; a test file name
+  unittest can't import is named; core's hook tests share the helper; AGENTS.md updated.
+- #373 (gh:139): 8 findings, 7 fixed. New `validate --pack <dir> --fetch-defaults` fetches the
+  default packs at the refs core pins into `$BRAINRC_HOME/validate-packs/`, so the action no longer
+  runs `apply` in a fake home: one step, a settings home per call, setup-python only when asked.
+  The pre-commit hook uses the same flag and takes the pack's directory as `args`. Kept: core's CI
+  fetches Gatework again for the action (it exercises the action as pack authors run it).

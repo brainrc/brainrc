@@ -1,6 +1,7 @@
 """Packs named by git URL: brainrc fetches them into $BRAINRC_HOME/packs/<key>."""
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import subprocess
@@ -189,3 +190,29 @@ def commits_between(root: Path, old: str, new: str) -> list[str] | None:
 def printable(text: str) -> str:
     """text with control characters (a terminal escape in a commit subject) shown as `?`."""
     return "".join(c if c.isprintable() else "?" for c in text)
+
+
+def pinned_defaults(skip: str = "") -> list:
+    """Core's default packs at the `git` and `ref` core's own packs.toml pins (packs.local.toml
+    doesn't change them), for `validate --pack --fetch-defaults` (#139). Each is a clone of its own
+    under $BRAINRC_HOME/validate-packs/, never the clone apply links, fetched only when it doesn't
+    match. skip: the name of the pack being validated."""
+    from .sources import _read_toml, default_packs, load_pack
+    core = _read_toml(config.REPO / "packs.toml")
+    found = []
+    for key in default_packs():
+        cfg = core[key]
+        if "git" in cfg:
+            tag = hashlib.sha256(f"{cfg['git']}\n{cfg.get('ref', 'HEAD')}".encode()).hexdigest()[:12]
+            root = config.settings_home() / "validate-packs" / f"{key}-{tag}"
+            if needs_fetch(cfg, root):
+                print(describe(key, cfg))
+                if root.exists():
+                    config.rmtree(root)
+                fetch_pack(key, cfg, root)
+        else:
+            root = _pack_root(cfg, key)
+        src = load_pack(root, key)
+        if src.name != skip:
+            found.append(src)
+    return found

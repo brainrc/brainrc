@@ -1,0 +1,56 @@
+# Validate a brainrc pack against the core version this action is pinned to (#139):
+#
+#   - uses: actions/checkout@<sha>
+#   - uses: brainrc/brainrc/.github/actions/validate-pack@<core tag or sha>
+#     with:
+#       path: .            # the pack's directory in your repository
+#
+# The ref you pin is the core the pack is checked against: GitHub checks out this whole repository at
+# that ref to run the action, so there is nothing else to clone. See docs/packs.md (Validate a pack
+# in its own CI).
+name: Validate a brainrc pack
+description: Run `brainrc validate --pack` against a pinned brainrc core and the default packs it pins.
+author: brainrc
+branding:
+  icon: check-circle
+  color: green
+inputs:
+  path:
+    description: The pack's directory, relative to the workspace.
+    required: false
+    default: "."
+  default-packs:
+    description: >-
+      "true" checks the pack against core's default packs (Gatework) at the versions core pins,
+      fetched for this run, so it may use their skills and agents; "false" checks it against core
+      alone.
+    required: false
+    default: "true"
+  python-version:
+    description: >-
+      A Python (3.11 or later) for the action to set up, which then stays on PATH for the rest of
+      the job; empty uses the python3 already there.
+    required: false
+    default: ""
+runs:
+  using: composite
+  steps:
+    - if: ${{ inputs.python-version != '' }}
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      with:
+        python-version: ${{ inputs.python-version }}
+    - name: Validate the pack
+      shell: bash
+      env:
+        CORE: ${{ github.action_path }}/../../..
+        PACK: ${{ inputs.path }}
+        DEFAULT_PACKS: ${{ inputs.default-packs }}
+      # A settings home of its own for each call: nothing from the runner, or an earlier call, is
+      # checked by mistake, and validate writes nowhere else.
+      run: |
+        python=python3
+        command -v python3 >/dev/null || python=python
+        args=(validate --pack "$PACK")
+        if [ "$DEFAULT_PACKS" = true ]; then args+=(--fetch-defaults); fi
+        BRAINRC_HOME="$(mktemp -d "${RUNNER_TEMP:-/tmp}/brainrc-validate-pack.XXXXXX")" \
+          "$python" "$CORE/scripts/brainrc.py" "${args[@]}"

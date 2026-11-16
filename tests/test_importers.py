@@ -11,8 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import REPO, TempRepoCase, brainrc, quiet  # noqa: E402
 
 from brainrc.importers import discover, plan, resolve, set_pack_path  # noqa: E402
-from brainrc.importers.cursor import globs  # noqa: E402
-from brainrc.importers.markdown import headings, split  # noqa: E402
+from brainrc.importers.markdown import globs, headings, split  # noqa: E402
 from brainrc.scaffold import PackSpec, Rule, Skill, render_pack, write_pack  # noqa: E402
 from brainrc.sources import Source, frontmatter, load_pack, render_instructions, sources  # noqa: E402
 from support import rmtree  # noqa: E402
@@ -348,7 +347,7 @@ class CursorImportTest(ImportCase):
         release = frontmatter(pack / "skills/team-release/SKILL.md")
         self.assertEqual(release["description"], "Steps to cut a release; use when asked to release")
         code, out = self.run_import(str(FIXTURES / "cursor/.cursor/rules/40-manual.mdc"), "--to", "one")
-        self.assertIn("becomes a skill the model loads only when asked", out)
+        self.assertIn("has no description, globs or alwaysApply, so it becomes a skill the model loads only when asked", out)
 
     def test_the_domains_rows_render_into_gateworks_extensions(self):
         code, out = self.run_import(str(FIXTURES / "cursor"), "--name", "team", "--enable")
@@ -371,6 +370,7 @@ class CursorImportTest(ImportCase):
     def test_globs(self):
         self.assertEqual(globs("*.py, scripts/**/*.py"), ["*.py", "scripts/**/*.py"])
         self.assertEqual(globs('["src/*.ts", \'lib/*.ts\']'), ["src/*.ts", "lib/*.ts"])
+        self.assertEqual(globs('"**/*.ts,**/*.tsx"'), ["**/*.ts", "**/*.tsx"])
         self.assertEqual(globs('"*.py, *.pyi"'), ["*.py", "*.pyi"])
         self.assertEqual(globs("src/**/*.{ts,tsx}, *.md"), ["src/**/*.{ts,tsx}", "*.md"])
         self.assertEqual(globs(""), [])
@@ -414,6 +414,69 @@ class CursorImportTest(ImportCase):
     def test_discover_finds_both_cursor_sources(self):
         self.assertEqual([(f, p.name) for f, p in discover(FIXTURES / "cursor")],
                          [("cursor", "rules"), ("cursor", ".cursorrules")])
+
+
+class CopilotImportTest(ImportCase):
+    """#165: `.github/copilot-instructions.md` and `.github/instructions/*.instructions.md`."""
+
+    def test_copilot_instructions_import_into_a_pack_that_renders_the_same_text(self):
+        source = FIXTURES / "copilot/.github/copilot-instructions.md"
+        code, out = self.run_import(str(source), "--to", "team", "--name", "team")
+        self.assertEqual(code, 0, out)
+        self.assertIn("OK:", out)
+        self.assertEqual(sorted(p.name for p in (self.tmp / "team/rules").iterdir()),
+                         ["10-copilot.md", "20-build.md", "30-style.md", "40-pull-requests.md"])
+        self.assertEqual(rendered_pack_text(self.tmp / "team").strip(), normalized(source.read_text()))
+        first = (self.tmp / "team/rules/10-copilot.md").read_text()
+        self.assertTrue(first.startswith(f"<!-- imported by brainrc from {brainrc.config.tilde(source)}, lines 1-1 -->"))
+
+    def test_a_repo_imports_both_kinds_in_order(self):
+        code, out = self.run_import(str(FIXTURES / "copilot"), "--to", "team", "--name", "team")
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("ERROR", out)
+        pack = self.tmp / "team"
+        self.assertEqual(sorted(p.name for p in (pack / "rules").iterdir()),
+                         ["10-copilot.md", "20-build.md", "30-style.md", "40-pull-requests.md", "50-everywhere.md"])
+        self.assertEqual(sorted(p.name for p in (pack / "skills").iterdir()),
+                         ["team-backend-go", "team-review", "team-typescript"])
+        domains = tomllib.loads((pack / "pack.toml").read_text())["extensions"]["gatework"]["domains"]
+        self.assertEqual(domains, [{"files": "`api/**/*.go`", "skills": ["team-backend-go"]},
+                                   {"files": "`**/*.ts`, `**/*.tsx`", "skills": ["team-typescript"]}])
+        ts = frontmatter(pack / "skills/team-typescript/SKILL.md")
+        self.assertEqual(ts["description"], "TypeScript conventions. Use when working on `**/*.ts`, `**/*.tsx`.")
+        review = frontmatter(pack / "skills/team-review/SKILL.md")
+        self.assertEqual(review["description"], "Code review checklist; use when reviewing a PR")
+        self.assertNotIn("applyTo", rendered_pack_text(pack))
+
+    def test_apply_to_globs(self):
+        inst = self.tmp / ".github/instructions"
+        inst.mkdir(parents=True)
+        (inst / "root.instructions.md").write_text('---\napplyTo: "*"\n---\nRoot files.\n')
+        (inst / "mixed.instructions.md").write_text('---\napplyTo: "**, docs/**"\n---\nAll files.\n')
+        (inst / "review.instructions.md").write_text('---\napplyTo: "**"\nexcludeAgent: "coding-agent"\n---\nCheck.\n')
+        p = plan(resolve([".github/instructions"]), "team")
+        self.assertEqual([r.slug for r in p.spec.rules], ["mixed"])
+        self.assertEqual([s.slug for s in p.spec.skills], ["root"])
+        self.assertTrue(any("only for Copilot code review" in w for w in p.warnings), p.warnings)
+
+    def test_format_copilot_reads_any_other_file_as_repo_wide_instructions(self):
+        (self.tmp / "team-guidelines-for-ai.md").write_text("## One\n\nA.\n\n## Two\n\nB.\n")
+        p = plan(resolve(["team-guidelines-for-ai.md"], "copilot"), "team")
+        self.assertEqual([r.slug for r in p.spec.rules], ["one", "two"])
+        self.assertEqual(p.spec.skills, [])
+
+    def test_discover_finds_both_copilot_sources(self):
+        self.assertEqual([(f, p.name) for f, p in discover(FIXTURES / "copilot")],
+                         [("copilot", "copilot-instructions.md"), ("copilot", "instructions")])
+
+    def test_every_format_together(self):
+        paths = [str(FIXTURES / d) for d in ("instructions", "cursor", "copilot")]
+        code, out = self.run_import(*paths, "--to", "team", "--name", "team")
+        self.assertEqual(code, 0, out)
+        self.assertIn("OK:", out)
+        rules = sorted(p.name for p in (self.tmp / "team/rules").iterdir())
+        self.assertEqual(rules[0], "01-team-conventions.md")  # CLAUDE.md's first lines and the AGENTS.md it inlines
+        self.assertEqual(rules[-1], "13-everywhere.md")
 
 
 class SetPackPathTest(unittest.TestCase):

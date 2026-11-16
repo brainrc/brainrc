@@ -49,3 +49,17 @@ Draft PR #364 (base `main`). `validate` and the full suite passed before the pus
 - Plan: `brainrc/importers/cursor.py`, `FORMATS`, `plan` (rename, keep rows), docs/packs.md row;
   fixtures in `tests/fixtures/import/cursor/`; tests in `tests/test_importers.py`.
 - Deviation within the playbook: none.
+
+## engine · gh:164 · verified
+Draft PR #365 (base `main`, stacked on #364). `validate` and the full suite passed before the push.
+
+## engine · gh:165 · Spec and Plan (playbook v1, params: Copilot, `.github/copilot-instructions.md`, rules)
+- Spec: `.github/copilot-instructions.md` becomes rules, one per section, in order. The
+  path-specific `.github/instructions/**/*.instructions.md` files (Copilot's other format, same
+  folder) are read too: `applyTo: "**"` becomes a rule; other globs a skill with a Domains row;
+  only a description a skill. Order: copilot-instructions.md, then those files in path order.
+- Plan: `brainrc/importers/copilot.py`; Cursor's frontmatter and whole-file helpers move to
+  `importers/markdown.py`, and the scoped-skill mapping to `Imported.add_skill`, so both formats
+  share them; docs/packs.md row; fixtures in `tests/fixtures/import/copilot/`.
+- Deviation within the playbook: the path-specific files are beyond the issue's one named
+  source; added because the mapping is the one #164 already built.

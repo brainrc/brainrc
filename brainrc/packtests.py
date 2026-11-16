@@ -25,17 +25,19 @@ def run(src: Source) -> list[str]:
     path = (root / name).resolve()
     if not path.is_relative_to(root) or not (path.is_dir() or (path.is_file() and path.suffix == ".py")):
         return [f"{where} must name a directory or a .py file in the pack ({name})"]
+    if path.is_file() and not path.stem.isidentifier():
+        return [f"{where}: unittest can't import {path.name}; name it like a module (test_guard.py)"]
     start, pattern = (path, "test*.py") if path.is_dir() else (path.parent, path.name)
     env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1",
                PYTHONPATH=os.pathsep.join(filter(None, [str(Path(__file__).resolve().parent.parent),
                                                         os.environ.get("PYTHONPATH")])))
     try:
-        done = subprocess.run([sys.executable, "-B", "-m", "unittest", "discover", "-s", str(start),
-                               "-p", pattern], cwd=root, env=env, capture_output=True, text=True,
+        done = subprocess.run([sys.executable, "-m", "unittest", "discover", "-s", str(start), "-p", pattern],
+                              cwd=root, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
                               timeout=TIMEOUT)
     except subprocess.TimeoutExpired:
         return [f"{where}: {name} took over {TIMEOUT}s, so validate stopped it"]
-    out = (done.stderr + done.stdout).strip()
+    out = done.stdout.strip()  # what tests print, then unittest's report, which stays last
     if "\nRan 0 tests" in "\n" + out:
         return [f"{where}: {name} has no tests (unittest found none matching {pattern})"]
     if done.returncode != 0:

@@ -261,7 +261,7 @@ command line runs them; `doctor` and `apply` never do.
 test needs no scaffolding of its own. A string is a Bash command; a dict is the whole payload:
 
 ```python
-from brainrc.testing import assert_allows, assert_asks, assert_denies, run_hook
+from brainrc.testing import assert_allows, assert_asks, assert_denies, assert_no_opinion, run_hook
 
 HOOK = Path(__file__).resolve().parent.parent / "overrides/claude/hooks/guard_acme.py"
 
@@ -271,9 +271,10 @@ class GuardTest(unittest.TestCase):
         assert_allows(HOOK, "acme deploy --help")  # and a safe near-miss
 ```
 
-`assert_allows` passes when the hook allows or has no opinion; `assert_denies` counts exit code 2
-as a deny. Each lists every case that came out wrong. `run_hook(hook, payload)` returns the
-decision itself. [pack-homelab](https://github.com/brainrc/brainrc/blob/main/examples/pack-homelab/tests/test_guard.py)
+`assert_allows` passes when the hook allows or has no opinion, and `assert_no_opinion` only when it
+stays out, so Claude Code's own permission check still decides; `assert_denies` counts exit code 2
+as a deny. Each lists every case that came out wrong, and a missing, failing or hung hook fails.
+`run_hook(hook, payload)` returns the decision itself. [pack-homelab](https://github.com/brainrc/brainrc/blob/main/examples/pack-homelab/tests/test_guard.py)
 has a full example.
 
 ## Default packs

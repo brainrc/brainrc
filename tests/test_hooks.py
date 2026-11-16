@@ -9,16 +9,16 @@ from pathlib import Path
 
 from support import rmtree, symlink
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from brainrc import testing  # noqa: E402
+
 HOOKS = Path(__file__).resolve().parent.parent / "overrides" / "claude" / "hooks"
 
 
 def run_hook(script: str, payload: dict) -> str | None:
-    """Return the permission decision the hook emits, or None for no opinion."""
-    out = subprocess.run(
-        [sys.executable, str(HOOKS / script)],
-        input=json.dumps(payload), capture_output=True, text=True, check=True,
-    ).stdout.strip()
-    return json.loads(out)["hookSpecificOutput"]["permissionDecision"] if out else None
+    """Return the permission decision the hook emits, or None for no opinion (the same helper packs
+    use, brainrc.testing)."""
+    return testing.run_hook(HOOKS / script, payload)
 
 
 def bash(command: str) -> str | None:

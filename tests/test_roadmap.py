@@ -6,7 +6,8 @@ from pathlib import Path
 ROADMAP = Path(__file__).resolve().parent.parent / "docs/roadmap.md"
 # An epic sits under a gate heading (one per GitHub milestone) or the waiting-to-close group.
 GATES = ("Gate A: public launch", "Gate B: v1.0", "Gate C: team adoption")
-GROUP = re.compile(r"^(Gate [A-C]: .+|Open, with every sub-issue closed)$")
+WAITING = "Open, with every sub-issue closed"
+GROUPS = (*GATES, WAITING)
 EPIC = re.compile(r"^- \*\*(?P<id>[A-Z]\d+)\*\* \[[^\]]+\]\(https://github\.com/brainrc/brainrc/issues/(?P<n>\d+)\)(?::\s+\S.*)?$")
 
 
@@ -26,12 +27,12 @@ class RoadmapTest(unittest.TestCase):
         self.assertEqual(len(ids), len(set(ids)), ids)
         self.assertEqual(len(issues), len(set(issues)), issues)
 
-    def test_every_item_is_under_a_wave_or_group_heading(self):
+    def test_every_item_is_under_a_gate_or_group_heading(self):
         heading, misplaced = None, []
         for line in self.lines:
             if line.startswith("## "):
                 heading = line[3:]
-            elif line.startswith("- ") and not (heading and GROUP.match(heading)):
+            elif line.startswith("- ") and heading not in GROUPS:
                 misplaced.append(f"{heading}: {line}")
         self.assertEqual(misplaced, [], "roadmap items belong under a gate or group heading")
 
@@ -40,7 +41,7 @@ class RoadmapTest(unittest.TestCase):
         self.assertEqual([h for h in headings if h.startswith("Gate ")], list(GATES))
 
     def test_names_every_epic_from_e26_to_e33(self):
-        # Each is either an open epic's line or named among the gate's shipped epics.
+        # The epics added for the gates (#300): each is an open epic's line or a gate's shipped one.
         listed = {m["id"] for m in map(EPIC.match, self.items) if m}
         shipped = " ".join(line for line in self.lines if line.startswith("Shipped in this gate:"))
         missing = [f"E{n}" for n in range(26, 34) if f"E{n}" not in listed and not re.search(rf"\bE{n}\b", shipped)]

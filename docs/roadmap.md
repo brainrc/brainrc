@@ -1,26 +1,26 @@
 # Roadmap
 
 The plan lives in GitHub epics: each one groups sub-issues in build order and says how to run
-them (`/work --campaign gh:<epic>`). This page lists every open epic under the release gate it
-belongs to, matching the GitHub milestones, in the order to start them. Within a gate, the
-epic's own "Start after" note wins over this order. An epic whose children span two gates sits
-under the gate where most of its open work is, and its line names the child that sits elsewhere.
+them with Gatework's spec-agent (`/brainrc-work --campaign gh:<epic>`). This page lists every open epic
+under the release gate it belongs to, matching the GitHub milestones, in the order to start them.
+Within a gate, the epic's own "Start after" note wins over this order. An epic whose children
+span two gates sits under the gate where most of its open work is, and its line names the child
+that sits elsewhere.
 
-Shipped work is in the [CHANGELOG](../CHANGELOG.md). Closed epics drop off this page.
+A sub-issue's `Roadmap ID` says where it belongs: `GA-`, `GB-` or `GC-` for Gate A, B or C, and
+`P0-` to `P4-` for the earlier waves 0 to 4, which the gates replaced.
+
+Shipped work is in the [CHANGELOG](../CHANGELOG.md). A closed epic drops off the lists; each
+gate's first line names the epics it has shipped.
 
 ## Gate A: public launch
 Shipped in this gate: E4, E5, E6, E27 (lockfile), E28 (trust baseline) and E29 (pack naming).
-Gate A also has standalone issues with no epic: the docs site
-([#197](https://github.com/brainrc/brainrc/issues/197)), the capability matrix
-([#298](https://github.com/brainrc/brainrc/issues/298)), hook latency
-([#299](https://github.com/brainrc/brainrc/issues/299)) and this page
-([#300](https://github.com/brainrc/brainrc/issues/300)).
+Gate A's standalone issues, with no epic, are in its
+[milestone](https://github.com/brainrc/brainrc/milestone/1).
 - **D1** [Owner decisions and accounts](https://github.com/brainrc/brainrc/issues/95): the name, the namespace, PyPI and release accounts. A person does these, not an agent.
-- **E26** [One-line install](https://github.com/brainrc/brainrc/issues/275): uvx, pipx, Homebrew and npx installs, with a CI check on time to first `status`.
 
 ## Gate B: v1.0
-- **E30** [Evals as a product](https://github.com/brainrc/brainrc/issues/301): `brainrc eval` with and without a pack, project token budgets, and a 30% cut in core's always-loaded tokens.
-- **E9** [Validation for pack authors](https://github.com/brainrc/brainrc/issues/111): published JSON Schemas, wider validate checks, pack tests, and a reusable validate-pack Action.
+- **E30** [Evals as a product](https://github.com/brainrc/brainrc/issues/301): `brainrc eval` with and without a pack, project token budgets, and a 30% cut in core's always-loaded tokens. Its MCP tool budgets child (#332) is Gate C.
 - **E7** [Pack scaffolding](https://github.com/brainrc/brainrc/issues/114): `new pack`, a pack template repo, and pack author docs.
 - **E8** [Item scaffolders](https://github.com/brainrc/brainrc/issues/117): `new skill`, `new agent`, `new rule` and `new command`.
 - **E12** [Importers](https://github.com/brainrc/brainrc/issues/118): Windsurf rules and Claude plugins as packs, after the Gate A importers for CLAUDE.md, AGENTS.md, Cursor and Copilot.
@@ -30,7 +30,7 @@ Gate A also has standalone issues with no epic: the docs site
 - **E20** [Stack packs](https://github.com/brainrc/brainrc/issues/121): official packs (starter, review, Go, Terraform, Kubernetes, Python, Node/TypeScript, Rust), and domain skills moved out of core.
 - **E16** [Native Windows](https://github.com/brainrc/brainrc/issues/120): copy mode instead of symlinks, native hook commands, and a Windows CI cell.
 - **E15** [Split and 1.0](https://github.com/brainrc/brainrc/issues/119): freeze the pack API, move `specs/` out of the way, and tag v1.0. Its README and concepts child (#296) is Gate A.
-- **E21** [Pack index and pack evals](https://github.com/brainrc/brainrc/issues/124): evals for packs, a searchable index, signing tiers, a publish scanner and badges.
+- **E21** [Pack index and pack evals](https://github.com/brainrc/brainrc/issues/124): evals for packs, a searchable index, signing tiers, a publish scanner and badges. Its verified vendor packs child (#333) is Gate C.
 - **E14** [pack-builder skill](https://github.com/brainrc/brainrc/issues/122): an interview that plans and generates your own pack, with an eval case.
 
 ## Gate C: team adoption
@@ -48,4 +48,6 @@ Gate A also has standalone issues with no epic: the docs site
 Waiting to be closed:
 - **E2** [Config and pack loading](https://github.com/brainrc/brainrc/issues/93): readable config errors first, then the config and pack-loading fixes that build on them.
 - **E3** [Neutral core and doc drift](https://github.com/brainrc/brainrc/issues/94): keep employer names out of core mechanically, fix stale docs, and keep this page as the epic list.
+- **E9** [Validation for pack authors](https://github.com/brainrc/brainrc/issues/111): published JSON Schemas, wider validate checks, pack tests, and a reusable validate-pack Action.
 - **E22** [Rename to brainrc](https://github.com/brainrc/brainrc/issues/199): rename the project and command to brainrc, reading the old names for one minor release.
+- **E26** [One-line install](https://github.com/brainrc/brainrc/issues/275): uvx, pipx, Homebrew and npx installs, with a CI check on time to first `status`.

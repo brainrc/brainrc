@@ -221,44 +221,14 @@ HOMELAB_HOOKS = HOOKS.parent.parent.parent / "examples" / "pack-homelab" / "over
 HOMELAB_RISKY = ["qm destroy 105", "pct stop 200", "talosctl -n 10.0.0.2 upgrade --image x"]
 
 
-def homelab(payload: dict | str) -> str | None:
-    data = payload if isinstance(payload, str) else json.dumps(payload)
-    out = subprocess.run(
-        [sys.executable, str(HOMELAB_HOOKS / "guard_homelab.py")],
-        input=data, capture_output=True, text=True, check=True,
-    ).stdout.strip()
-    return json.loads(out)["hookSpecificOutput"]["permissionDecision"] if out else None
-
-
 class HomelabGuardTest(unittest.TestCase):
-    """The Proxmox and Talos rules live in examples/pack-homelab, not in core."""
+    """The Proxmox and Talos rules live in examples/pack-homelab, not in core. The pack's own tests
+    check each rule (examples/pack-homelab/tests, which tests/test_pack_tests.py runs)."""
 
     def test_core_no_longer_asks(self):
         for command in HOMELAB_RISKY:
             with self.subTest(command=command):
                 self.assertIsNone(bash(command))
-
-    def test_pack_asks_for_destructive(self):
-        for command in HOMELAB_RISKY + [
-            "qm migrate 105 node2",
-            "pct rollback 200 snap1",
-            "talosctl reset -n 10.0.0.2",
-            "sh -c 'qm destroy 105'",
-            "ls;pct shutdown 200",
-        ]:
-            with self.subTest(command=command):
-                self.assertEqual(homelab({"tool_name": "Bash", "tool_input": {"command": command}}), "ask")
-
-    def test_pack_allows_read_only(self):
-        for command in ["qm list", "pct list", "talosctl -n 10.0.0.2 dashboard",
-                        "talosctl -n 10.0.0.2 get members", "echo qm-destroy", "git status"]:
-            with self.subTest(command=command):
-                self.assertIsNone(homelab({"tool_name": "Bash", "tool_input": {"command": command}}))
-
-    def test_pack_ignores_other_tools_and_bad_payloads(self):
-        self.assertIsNone(homelab({"tool_name": "Read", "tool_input": {"command": "qm destroy 105"}}))
-        self.assertIsNone(homelab("not json"))
-        self.assertIsNone(homelab({"tool_name": "Bash"}))
 
     def test_pack_fragment_runs_hook_from_its_hooks_dir(self):
         fragment = json.loads((HOMELAB_HOOKS.parent / "settings.fragment.json").read_text())

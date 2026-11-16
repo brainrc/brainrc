@@ -83,6 +83,7 @@ Same as this repo. Every folder is optional.
 acme-ai-pack/
   pack.toml              name, prefix, extensions for other packs (see Extensions)
   validator.py           optional checks and renders of its own (see Validator plugins)
+  tests/                 the pack's own tests, which validate --pack runs (see Pack tests)
   skills/acme-*/         linked next to the core skills
   agents/acme-*.md       linked next to the core agents
   commands/acme-*.md
@@ -139,6 +140,7 @@ prefix = "acme-"          # default: "<name>-"
 id = "acme/acme-ai-pack"  # optional: the <owner>/<pack> ID it's published under (see Naming)
 requires_core = ">=0.7, <0.9"   # core versions this pack works with (see Compatibility)
 max_always_tokens = 800   # optional budget for rules + descriptions (see Context cost)
+test = "tests"            # optional: tests validate --pack runs (see Pack tests)
 
 [extensions.gatework]      # what the gatework pack (spec-agent) reads; see Extensions
 deliver_checks = [        # listed in the Deliver gate as done / not applicable / not run
@@ -244,6 +246,32 @@ A validator is the pack's code running inside `brainrc`, so core runs it only fo
 `run_validator = true`. Otherwise `validate` warns that the pack ships one. Gatework's
 [validator.py](https://github.com/brainrc/gatework/blob/main/validator.py) is the reference.
 
+## Pack tests
+
+`test = "tests"` in `pack.toml` names the pack's own `unittest` tests: a directory (its `test*.py`
+files) or one `.py` file. `validate --pack` runs them in a fresh Python, from the pack's root, and
+fails if one fails or none is found. They are the pack's code, so only `validate --pack` from the
+command line runs them; `doctor` and `apply` never do.
+
+`brainrc.testing` runs a guard hook the way Claude Code does, a PreToolUse payload on stdin, so a
+test needs no scaffolding of its own. A string is a Bash command; a dict is the whole payload:
+
+```python
+from brainrc.testing import assert_allows, assert_asks, assert_denies, run_hook
+
+HOOK = Path(__file__).resolve().parent.parent / "overrides/claude/hooks/guard_acme.py"
+
+class GuardTest(unittest.TestCase):
+    def test_asks_before_a_deploy(self):
+        assert_asks(HOOK, "acme deploy prod")      # the risky command
+        assert_allows(HOOK, "acme deploy --help")  # and a safe near-miss
+```
+
+`assert_allows` passes when the hook allows or has no opinion; `assert_denies` counts exit code 2
+as a deny. Each lists every case that came out wrong. `run_hook(hook, payload)` returns the
+decision itself. [pack-homelab](https://github.com/brainrc/brainrc/blob/main/examples/pack-homelab/tests/test_guard.py)
+has a full example.
+
 ## Default packs
 
 A default pack is a table in core's shipped `packs.toml`: core turns it on unless
@@ -324,7 +352,8 @@ frontmatter; `pack.toml` against [its schema](#packtoml); cross-references in sk
 commands, rules, `README.md` and `docs/**` (relative links, `[agent: x]` tags, and skills named
 as "`x` skill" or in prose as "the x skill"; pack files may reference core's and Gatework's skills
 and agents); the [naming](#naming) rules; collisions; extension references and
-[connector config](#connector-config); `requires_core`; and tripwires. A skill named in prose counts
+[connector config](#connector-config); `requires_core`; tripwires; and the pack's own
+[tests](#pack-tests). A skill named in prose counts
 only when its name has a hyphen and starts like a known skill's or the pack's prefix, so "the
 follow-up skill" stays prose.
 

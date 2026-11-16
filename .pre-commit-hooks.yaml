@@ -1,0 +1,17 @@
+# pre-commit hooks for a brainrc pack's own repository (#139). In the pack's .pre-commit-config.yaml:
+#
+#   - repo: https://github.com/brainrc/brainrc
+#     rev: <core tag>          # the core the pack is checked against
+#     hooks:
+#       - id: brainrc-validate-pack
+#
+# It checks the repository root as a pack, against that core and the default packs this machine
+# has fetched (run `brainrc apply` once for Gatework). See docs/packs.md (Validate a pack in its own CI).
+- id: brainrc-validate-pack
+  name: brainrc validate --pack
+  description: Check this pack against the pinned brainrc core (frontmatter, pack.toml, references, tripwires, its tests).
+  entry: brainrc validate --pack .
+  language: python
+  pass_filenames: false
+  require_serial: true
+  minimum_pre_commit_version: "3.0.0"

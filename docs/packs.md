@@ -339,6 +339,30 @@ paths = ["*.md"]                              # default; fnmatch against the pat
 
 ## Validate a pack in its own CI
 
+The `validate-pack` action checks a pack against the core version you pin, fetching core's default
+packs (Gatework) at the versions that core pins, so a pack may use their skills and agents:
+
+```yaml
+- uses: actions/checkout@<sha>
+- uses: brainrc/brainrc/.github/actions/validate-pack@<core tag or sha>
+  with:
+    path: .                  # the pack's directory (default: the repository root)
+    # default-packs: "false" checks it against core alone
+```
+
+The ref you pin is the core: GitHub runs the action from that commit of this repository, so
+there is nothing else to clone. To check before each commit, add the pre-commit hook, which
+installs `brainrc` at the `rev` you pin and checks the repository root:
+
+```yaml
+- repo: https://github.com/brainrc/brainrc
+  rev: <core tag>
+  hooks:
+    - id: brainrc-validate-pack
+```
+
+Without either, clone core and run it yourself:
+
 ```bash
 git clone <core-repo> core
 # A pack that extends Gatework or uses its skills and agents checks against it too:
@@ -353,9 +377,8 @@ commands, rules, `README.md` and `docs/**` (relative links, `[agent: x]` tags, a
 as "`x` skill" or in prose as "the x skill"; pack files may reference core's and Gatework's skills
 and agents); the [naming](#naming) rules; collisions; extension references and
 [connector config](#connector-config); `requires_core`; tripwires; and the pack's own
-[tests](#pack-tests). A skill named in prose counts
-only when its name has a hyphen and starts like a known skill's or the pack's prefix, so "the
-follow-up skill" stays prose.
+[tests](#pack-tests). A skill named in prose counts only when its name has a hyphen and starts like
+a known skill's or the pack's prefix, so "the follow-up skill" stays prose.
 
 ## Packs and Claude Code plugins
 

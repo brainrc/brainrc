@@ -100,3 +100,24 @@ Draft PR #371 (base `main`, stacked on #370). `validate` and the full suite pass
 ## engine · gh:138 · verified
 `validate --pack examples/pack-homelab` runs its 6 tests; a guard with a rule removed fails it.
 `validate` and the full suite (1216 tests) passed before the push.
+
+## engine · gh:138 · draft PR
+Draft PR #372 (base `main`, stacked on #371).
+
+## engine · gh:139 · Spec and Plan (logged under the Campaign gate)
+- Spec: a composite action at `.github/actions/validate-pack/` runs `validate --pack <path>` with
+  the core it is pinned to (GitHub checks out this repository at the pinned ref, so the action's
+  own directory is the core), after `apply` fetches the default packs into a home of its own under
+  `runner.temp`. Inputs: `path`, `default-packs`, `python-version`; inputs reach the shell through
+  `env` only. `.pre-commit-hooks.yaml` adds `brainrc-validate-pack` (`language: python`, the
+  installed `brainrc`). Core's CI checks acme and homelab with the action from this checkout.
+- Not done here: tagging a release that carries the action, publishing it to the Marketplace, and
+  a private pack's CI adopting it. Those are the maintainer's.
+- Plan: the action, `.pre-commit-hooks.yaml`, the workflow, `scripts/check_install.py` (a pack's
+  tests from the installed package), docs/packs.md, the acme README; tests in
+  `tests/test_validate_pack_action.py`.
+
+## engine · gh:139 · verified
+The action's two steps, run by hand with a scratch home, fetched Gatework and passed acme. The
+installed-wheel smoke test passed, including `validate --pack` on homelab. `validate` and the full
+suite passed before the push.

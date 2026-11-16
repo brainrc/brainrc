@@ -83,6 +83,7 @@ Same as this repo. Every folder is optional.
 acme-ai-pack/
   pack.toml              name, prefix, extensions for other packs (see Extensions)
   validator.py           optional checks and renders of its own (see Validator plugins)
+  tests/                 the pack's own tests, which validate --pack runs (see Pack tests)
   skills/acme-*/         linked next to the core skills
   agents/acme-*.md       linked next to the core agents
   commands/acme-*.md
@@ -139,6 +140,7 @@ prefix = "acme-"          # default: "<name>-"
 id = "acme/acme-ai-pack"  # optional: the <owner>/<pack> ID it's published under (see Naming)
 requires_core = ">=0.7, <0.9"   # core versions this pack works with (see Compatibility)
 max_always_tokens = 800   # optional budget for rules + descriptions (see Context cost)
+test = "tests"            # optional: tests validate --pack runs (see Pack tests)
 
 [extensions.gatework]      # what the gatework pack (spec-agent) reads; see Extensions
 deliver_checks = [        # listed in the Deliver gate as done / not applicable / not run
@@ -248,6 +250,33 @@ A validator is the pack's code running inside `brainrc`, so core runs it only fo
 `run_validator = true`. Otherwise `validate` warns that the pack ships one. Gatework's
 [validator.py](https://github.com/brainrc/gatework/blob/main/validator.py) is the reference.
 
+## Pack tests
+
+`test = "tests"` in `pack.toml` names the pack's own `unittest` tests: a directory (its `test*.py`
+files) or one `.py` file. `validate --pack` runs them in a fresh Python, from the pack's root, and
+fails if one fails or none is found. They are the pack's code, so only `validate --pack` from the
+command line runs them; `doctor` and `apply` never do.
+
+`brainrc.testing` runs a guard hook the way Claude Code does, a PreToolUse payload on stdin, so a
+test needs no scaffolding of its own. A string is a Bash command; a dict is the whole payload:
+
+```python
+from brainrc.testing import assert_allows, assert_asks, assert_denies, assert_no_opinion, run_hook
+
+HOOK = Path(__file__).resolve().parent.parent / "overrides/claude/hooks/guard_acme.py"
+
+class GuardTest(unittest.TestCase):
+    def test_asks_before_a_deploy(self):
+        assert_asks(HOOK, "acme deploy prod")      # the risky command
+        assert_allows(HOOK, "acme deploy --help")  # and a safe near-miss
+```
+
+`assert_allows` passes when the hook allows or has no opinion, and `assert_no_opinion` only when it
+stays out, so Claude Code's own permission check still decides; `assert_denies` counts exit code 2
+as a deny. Each lists every case that came out wrong, and a missing, failing or hung hook fails.
+`run_hook(hook, payload)` returns the decision itself. [pack-homelab](https://github.com/brainrc/brainrc/blob/main/examples/pack-homelab/tests/test_guard.py)
+has a full example.
+
 ## Default packs
 
 A default pack is a table in core's shipped `packs.toml`: core turns it on unless
@@ -271,7 +300,8 @@ path = "~/src/gatework"
 
 `validate --pack` checks a pack against core and the default packs on disk, so a pack that
 extends Gatework is checked against it once `apply` has fetched it; until then `validate` warns
-that it isn't fetched yet.
+that it isn't fetched yet. `--fetch-defaults` fetches them at the versions core pins instead (see
+[Validate a pack in its own CI](#validate-a-pack-in-its-own-ci)).
 
 ## Rules
 
@@ -315,12 +345,39 @@ paths = ["*.md"]                              # default; fnmatch against the pat
 
 ## Validate a pack in its own CI
 
+The `validate-pack` action checks a pack against the core version you pin, and against core's
+default packs (Gatework) at the versions that core pins, so a pack may use their skills and agents:
+
+```yaml
+- uses: actions/checkout@<sha>
+- uses: brainrc/brainrc/.github/actions/validate-pack@<core tag or sha>
+  with:
+    path: .                  # the pack's directory (default: the repository root)
+    # default-packs: "false" checks it against core alone
+    # python-version: "3.12" sets one up; by default it uses the python3 on PATH
+```
+
+The ref you pin is the core: GitHub runs the action from that commit of this repository, so
+there is nothing else to clone. To check before each commit, add the pre-commit hook, which
+installs `brainrc` at the `rev` you pin:
+
+```yaml
+- repo: https://github.com/brainrc/brainrc
+  rev: <core tag>
+  hooks:
+    - id: brainrc-validate-pack
+      # args: [pack]          # the pack's directory, when it isn't the repository root
+```
+
+Both run `validate --pack <dir> --fetch-defaults`, which fetches the default packs at the refs
+core's `packs.toml` pins into clones of their own under `$BRAINRC_HOME/validate-packs/` (once;
+later runs reuse them), never the clones `apply` links.
+
+Without either, clone core at the version you pin and run it yourself:
+
 ```bash
-git clone <core-repo> core
-# A pack that extends Gatework or uses its skills and agents checks against it too:
-git clone --depth 1 https://github.com/brainrc/gatework gatework
-printf '[gatework]\npath = "%s/gatework"\n' "$PWD" > core/packs.local.toml
-python3 core/scripts/brainrc.py validate --pack .
+git clone --depth 1 --branch <core tag> https://github.com/brainrc/brainrc core
+python3 core/scripts/brainrc.py validate --pack . --fetch-defaults
 ```
 
 This checks the core, the default packs on disk and that pack, whatever else is in `packs.toml`:
@@ -328,12 +385,12 @@ frontmatter; `pack.toml` against [its schema](#packtoml); cross-references in sk
 commands, rules, `README.md` and `docs/**` (relative links, `[agent: x]` tags, and skills named
 as "`x` skill" or in prose as "the x skill"; pack files may reference core's and Gatework's skills
 and agents); the [naming](#naming) rules; collisions; extension references and
-[connector config](#connector-config); `requires_core`; and tripwires. A skill named in prose counts
-only when its name has a hyphen and starts with the pack's prefix or a first part two known skills
-share, so "the follow-up skill" stays prose. A relative link in a rule warns, since rules are
-rendered into each harness's own file; link a URL. `apply` refuses a pack only for what would
-break the install (frontmatter, names, collisions, tags, links in skills, agents and commands);
-the rest only `validate` reports.
+[connector config](#connector-config); `requires_core`; tripwires; and the pack's own
+[tests](#pack-tests). A skill named in prose counts only when its name has a hyphen and starts with
+the pack's prefix or a first part two known skills share, so "the follow-up skill" stays prose. A
+relative link in a rule warns, since rules are rendered into each harness's own file; link a URL.
+`apply` refuses a pack only for what would break the install (frontmatter, names, collisions,
+tags, links in skills, agents and commands); the rest only `validate` reports.
 
 ## Packs and Claude Code plugins
 

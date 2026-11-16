@@ -71,6 +71,11 @@ moves on, the earlier version stays off PyPI. Users pin a tag ([install](docs/in
 protected, add GitHub Actions to the rule's bypass list so the workflow can push its release
 commit and tag.
 
+After each release, the `docs` workflow builds the docs site from the new tag (`mkdocs.yml`, one
+version per minor release with mike) and pushes it to the `gh-pages` branch. GitHub Pages serves
+it at https://brainrc.github.io/brainrc/ once an owner sets the Pages source to `gh-pages`.
+Preview locally with `pip install mkdocs==1.6.1 mkdocs-material==9.7.6 && mkdocs serve`.
+
 Gatework, the default pack, is released the same way from
 [brainrc/gatework](https://github.com/brainrc/gatework). To ship a new Gatework release with
 core, bump `ref` under `[gatework]` in `packs.toml` to its tag, in a PR with its own fragment.

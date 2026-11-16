@@ -12,6 +12,15 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.8.14 (2026-11-16)
+
+- **[pack contract]** Connector config schema: a connector skill declares the keys and types its
+  table takes in SKILL.md frontmatter (`metadata.brainrc-config`), and `validate` checks every pack
+  table that names it as `connector`: a wrong type or a missing required key fails, an undeclared
+  key warns. Only `validate` reports these; `apply` still installs the pack. `instructions` is a
+  defined field every connector table may set, in place of free-form `notes`, and the pack's
+  tripwires check it (#136).
+
 ## 0.8.13 (2026-11-16)
 
 - **[pack contract]** JSON Schemas for `pack.toml`, `mcp/servers.toml` and `harnesses.toml` in

@@ -67,6 +67,14 @@ def checks(work: str, env: dict[str, str], scripts: dict[str, str]) -> None:
            f"exit {r.returncode}; _core dir {core.is_dir()}, missing {absent}, installed() {config.installed()}\n"
            f"{r.stdout[-500:]}{r.stderr[-500:]}")
 
+    # What the pre-commit hook runs (.pre-commit-hooks.yaml): a pack's own tests import
+    # brainrc.testing from the installed package.
+    pack = Path(work) / "pack-homelab"
+    shutil.copytree(REPO / "examples" / "pack-homelab", pack)
+    r = run([scripts["brainrc"], "validate", "--pack", "."], env, str(pack))
+    report("AC9 brainrc validate --pack runs a pack's tests from the installed package",
+           r.returncode == 0, f"exit {r.returncode}\n{r.stdout[-800:]}{r.stderr[-500:]}")
+
     new = sh("brainrc", "status")
     report("AC3 brainrc status",
            new.returncode == 0 and bool(new.stdout.strip()) and not new.stderr.strip(),

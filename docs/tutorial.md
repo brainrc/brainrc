@@ -126,13 +126,12 @@ git add .
 git -c user.name=you -c user.email=you@example.com commit -qm "Add myteam pack"
 ```
 
-Then validate it in the pack's own CI on every push, against core's latest `main`:
+Then validate it in the pack's own CI on every push, against the core version you pin
+([Validate a pack in its own CI](packs.md#validate-a-pack-in-its-own-ci)):
 
 ```yaml
-- run: git clone --depth 1 <this-repo> core
-- run: git clone --depth 1 https://github.com/brainrc/gatework gatework
-- run: printf '[gatework]\npath = "%s/gatework"\n' "$PWD" > core/packs.local.toml
-- run: python3 core/scripts/brainrc.py validate --pack .
+- uses: actions/checkout@<sha>
+- uses: brainrc/brainrc/.github/actions/validate-pack@<core tag>
 ```
 
 ## Next steps

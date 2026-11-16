@@ -1,0 +1,120 @@
+{
+  "ref": "gh:111",
+  "shape": "ordered",
+  "batch_size": 5,
+  "playbook_version": 1,
+  "dependency_source": "none",
+  "started_at": "2026-11-16T02:20:00Z",
+  "delivery": "stacked draft PRs against main",
+  "gates": {
+    "campaign": {
+      "presented_at": "2026-11-16T02:20:00Z",
+      "approved_at": "2026-11-16T02:20:00Z"
+    }
+  },
+  "skipped": [],
+  "members": [
+    {
+      "ref": "gh:135",
+      "order": 1,
+      "depends_on": [],
+      "status": "in_review",
+      "slug": "135-pack-schemas",
+      "branch": "claude/project-thread-4rxjfx",
+      "pr": 369,
+      "base": "main",
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 10,
+        "fixed": 8,
+        "no_change": [
+          "bump stays patch: apply is unaffected, only validate is stricter",
+          "per-reader type guards kept: refusing at load would fail every command"
+        ]
+      }
+    },
+    {
+      "ref": "gh:136",
+      "order": 2,
+      "depends_on": [
+        "gh:135"
+      ],
+      "status": "in_review",
+      "slug": "136-connector-config",
+      "branch": "claude/project-thread-4rxjfx-136",
+      "pr": 370,
+      "base": "main",
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 8,
+        "fixed": 6,
+        "no_change": [
+          "metadata() stays separate from parse_frontmatter, which every skill goes through",
+          "bump stays patch: connector config is validate-only"
+        ]
+      }
+    },
+    {
+      "ref": "gh:137",
+      "order": 3,
+      "depends_on": [
+        "gh:136"
+      ],
+      "status": "in_review",
+      "slug": "137-validate-coverage",
+      "branch": "claude/project-thread-4rxjfx-137",
+      "pr": 371,
+      "base": "main",
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 10,
+        "fixed": 9,
+        "no_change": [
+          "example READMEs keep blob/main links, so a copied pack keeps working links"
+        ]
+      }
+    },
+    {
+      "ref": "gh:138",
+      "order": 4,
+      "depends_on": [
+        "gh:137"
+      ],
+      "status": "in_review",
+      "slug": "138-pack-tests",
+      "branch": "claude/project-thread-4rxjfx-138",
+      "pr": 372,
+      "base": "main",
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 9,
+        "fixed": 9
+      }
+    },
+    {
+      "ref": "gh:139",
+      "order": 5,
+      "depends_on": [
+        "gh:138"
+      ],
+      "status": "in_review",
+      "slug": "139-validate-pack-action",
+      "branch": "claude/project-thread-4rxjfx-139",
+      "pr": 373,
+      "base": "main",
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 8,
+        "fixed": 7,
+        "no_change": [
+          "core's CI fetches Gatework again for the action, to run it as pack authors do"
+        ]
+      }
+    }
+  ]
+}

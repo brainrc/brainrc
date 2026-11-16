@@ -5,7 +5,7 @@
   "description": "Where each AI harness reads its user-level config, and harnesses.local.toml over it, after they are parsed as TOML. Paths expand ~ and $ENV_VARS; ${VAR:-default} uses default when VAR is unset, empty or relative.",
   "type": "object",
   "propertyNames": {
-    "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    "minLength": 1
   },
   "additionalProperties": {
     "$ref": "#/$defs/harness"

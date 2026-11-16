@@ -26,7 +26,8 @@ These rules apply to human contributors too. Setup and PR workflow: [CONTRIBUTIN
 - Agents: frontmatter `model` is `haiku|sonnet|opus|inherit`; keep `tools` least-privilege.
 - Keep the `brainrc/` package (run as `scripts/brainrc.py`) and hooks stdlib-only (Python 3.11+);
   `hatchling` in `pyproject.toml` is build-time only. New guard patterns need tests
-  for both the risky command and a safe near-miss in `tests/test_hooks.py`.
+  for both the risky command and a safe near-miss in `tests/test_hooks.py` (a pack's guard: in the
+  pack's own tests, which `validate --pack` runs; see `docs/packs.md#pack-tests`).
 - Keep files short: they are loaded into model context. Rules load every session.
 - After changes, run `python3 scripts/brainrc.py validate` and `python3 -m unittest discover -s tests`.
 - Every PR adds one fragment, `changelog.d/<branch>.md` (`bump:` + bullets, see its README).

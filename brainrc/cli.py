@@ -608,6 +608,9 @@ def _parser() -> argparse.ArgumentParser:
                    "fetched git packs")
     p = add("validate", "check frontmatter, cross-references, packs and tripwires (CI runs it)")
     p.add_argument("--pack", metavar="DIR", help="check core plus this pack only")
+    p.add_argument("--fetch-defaults", action="store_true",
+                   help="with --pack: check it against core's default packs at the versions core pins, "
+                   "fetched into clones of their own (never the ones apply links)")
     add("doctor", "diagnose this machine's install (read-only); exits 1 on any problem, each "
         "with its fix")
     p = add("migrate", "move an old settings home (AICFG_HOME or ~/.config/ai-config) to "
@@ -660,7 +663,11 @@ def _dispatch(argv: list[str]) -> int:
         return cmd_import(args.paths, to=args.to, name=args.name, prefix=args.prefix, fmt=args.fmt,
                           force=args.force, dry_run=args.dry_run, enable_pack=args.enable)
     if cmd == "validate":
-        return cmd_validate(args.pack) if args.pack else cmd_validate()
+        if args.fetch_defaults and not args.pack:
+            parser.print_usage(sys.stderr)
+            print(f"{parser.prog}: error: --fetch-defaults needs --pack", file=sys.stderr)
+            return 2
+        return cmd_validate(args.pack, fetch_defaults=args.fetch_defaults) if args.pack else cmd_validate()
     if cmd == "plugin":
         return cmd_plugin()
     if cmd == "release":

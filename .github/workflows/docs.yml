@@ -1,0 +1,113 @@
+name: docs
+
+# The docs site (#197): docs/ built with MkDocs Material (mkdocs.yml), one version per release.
+#
+# - A pull request that touches the docs builds the site with --strict, so a broken link or
+#   anchor fails it. Nothing is published.
+# - After each successful `release` run on main (which tags v<VERSION>), the site is built from
+#   that tag with mike, as version <major>.<minor> with the alias `latest`, committed to the
+#   gh-pages branch and pushed. GitHub Pages serves gh-pages at https://brainrc.github.io/brainrc/
+#   once the repo's Pages source is set to that branch (Settings > Pages; an owner's step).
+# - Run it by hand (workflow_dispatch) to publish a given tag again.
+#
+# The build runs third-party code (MkDocs and its plugins), so it gets no write token: checkout
+# keeps no credentials, and only the final push step sees GITHUB_TOKEN.
+
+on:
+  pull_request:
+    paths:
+      - "docs/**"
+      - "mkdocs.yml"
+      - "scripts/mkdocs_hooks.py"
+      - ".github/workflows/docs.yml"
+  workflow_run:
+    workflows: [release]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to publish (vX.Y.Z); empty for the newest tag on main"
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.event_name == 'pull_request' && github.ref || 'publish' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  DOCS_TOOLS: mkdocs==1.6.1 mkdocs-material==9.7.6 mike==2.1.3
+
+jobs:
+  build:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - run: python3 -m pip install $DOCS_TOOLS
+      - run: mkdocs build --strict --site-dir "$RUNNER_TEMP/site"
+
+  publish:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write # push the gh-pages branch
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Pick the release tag
+        id: tag
+        env:
+          WANTED: ${{ inputs.tag }}
+        run: |
+          tag="${WANTED:-v$(cat VERSION)}"
+          if ! [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::not a release tag: $tag"; exit 1
+          fi
+          git checkout --quiet "refs/tags/$tag"
+          minor="${tag#v}"; minor="${minor%.*}"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "version=$minor" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - run: python3 -m pip install $DOCS_TOOLS
+      - name: Fetch gh-pages
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          auth="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          if git -c http.extraheader="$auth" fetch --quiet origin gh-pages:gh-pages; then
+            echo "gh-pages exists"
+          else
+            echo "gh-pages not created yet: mike starts it"
+          fi
+      - name: Build the version with mike
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+          VERSION: ${{ steps.tag.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          mike deploy --update-aliases --title "$VERSION ($TAG)" --message "Docs for $TAG" "$VERSION" latest
+          mike set-default --message "Default docs: latest" latest
+      - name: Push gh-pages
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          auth="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c http.extraheader="$auth" push origin gh-pages

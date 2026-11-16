@@ -24,14 +24,22 @@ and a tripwire. Format reference: [docs/packs.md](https://github.com/brainrc/bra
    python3 scripts/brainrc.py apply
    ```
 
-5. Validate it in the pack's own CI:
+5. Validate it in the pack's own CI with core's `validate-pack` action, pinned to the core
+   version you tested against. It fetches Gatework, the pack this one extends, too:
 
-   ```bash
-   git clone <core-repo> core
-   git clone --depth 1 https://github.com/brainrc/gatework gatework   # the pack this one extends
-   printf '[gatework]\npath = "%s/gatework"\n' "$PWD" > core/packs.local.toml
-   python3 core/scripts/brainrc.py validate --pack .
+   ```yaml
+   # .github/workflows/validate.yml
+   on: [push, pull_request]
+   jobs:
+     validate:
+       runs-on: ubuntu-latest
+       steps:
+         - uses: actions/checkout@<sha>
+         - uses: brainrc/brainrc/.github/actions/validate-pack@<core tag>
    ```
+
+   Core's own CI checks this example with the same action. A pre-commit hook and the manual
+   step are in [docs/packs.md](https://github.com/brainrc/brainrc/blob/main/docs/packs.md#validate-a-pack-in-its-own-ci).
 
 Hooks are left out on purpose: an enabled pack's hooks run on every tool call. To add them,
 see `overrides/` in [docs/packs.md](https://github.com/brainrc/brainrc/blob/main/docs/packs.md#layout) and the

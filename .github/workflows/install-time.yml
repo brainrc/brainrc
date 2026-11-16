@@ -7,7 +7,8 @@ name: install-time
 # and a formula for the local sdist. The weekly run, and a manual run with source `published`,
 # install what users get (PyPI, `npx github:brainrc/brainrc`, the brainrc/homebrew-tap tap) and
 # skip a route whose source doesn't exist yet. Not a required check: a slow route shows red here
-# without blocking a merge.
+# without blocking a merge, but for brew, whose time swings with the runner: over 90 s it's a
+# warning on the run, and it's red only over 180 s or when the install breaks.
 
 on:
   pull_request:

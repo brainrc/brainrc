@@ -99,8 +99,9 @@ copy it fetched before, so pin a release that ships the shim with
 install the command for `apply`.
 
 CI times each of these routes from scratch to the first `brainrc status` on Linux and macOS, and
-fails one that takes over 60 seconds, 90 for Homebrew (`scripts/check_install_time.py`, workflow
-`install-time`).
+fails one that takes over 60 seconds (`scripts/check_install_time.py`, workflow `install-time`).
+Homebrew, which installs Python first and whose time swings with the runner, warns over 90
+seconds and fails over 180, or when its install breaks.
 
 Pin a release with `uv tool install brainrc==<X.Y.Z>` (`pipx install brainrc==<X.Y.Z>`,
 `uvx brainrc@<X.Y.Z>`). Run `apply` from the installed command, not `uvx`: links point into the

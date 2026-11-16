@@ -10,7 +10,10 @@ the repo packed with `npm pack`, and a formula for the local sdist in a scratch 
 kept offline, but for the pip that pipx fetches for itself. --published (the default) installs what
 users get: PyPI, `npx github:brainrc/brainrc` and the brainrc/homebrew-tap tap. A route whose tool
 or source is missing (no brew on the machine, no PyPI release yet, the repo not public, no tap)
-prints SKIP, never PASS. Exits 1 on any FAIL.
+prints SKIP, never PASS. A route over its limit FAILs, but for brew, whose time is mostly Homebrew
+installing Python and swings with the runner: over 90 s it WARNs, and only over a 180 s ceiling it
+FAILs (an explicit --limit is a hard limit for every route). Exits 1 on any FAIL. Under GitHub
+Actions a WARN is also a ::warning:: annotation, and every route's result goes to the step summary.
 Homebrew runs with HOMEBREW_NO_AUTO_UPDATE and its own download cache, so `brew update` and its
 API data aren't counted; brew skips when brainrc is already installed with Homebrew, and uninstalls
 what it installed afterwards.
@@ -175,8 +178,9 @@ def local_tap(brew: str) -> Path:
     return Path(repo)
 
 
-def run_route(route: str, local: Path | None, limit: float) -> tuple[str, str]:
-    """('PASS'|'FAIL'|'SKIP', detail)."""
+def run_route(route: str, local: Path | None, limit: float, ceiling: float | None = None) -> tuple[str, str]:
+    """('PASS'|'WARN'|'FAIL'|'SKIP', detail). Over `limit` FAILs, or with a `ceiling`, WARNs up
+    to it and FAILs over it."""
     work = Path(tempfile.mkdtemp(prefix=f"install-time-{route}-"))
     planned = False
     try:
@@ -193,15 +197,18 @@ def run_route(route: str, local: Path | None, limit: float) -> tuple[str, str]:
         start = time.monotonic()
         try:
             r = subprocess.run(["bash", "-e", "-o", "pipefail", "-c", script], cwd=home, env=env,
-                               capture_output=True, text=True, timeout=max(limit * 5, 300))
+                               capture_output=True, text=True, timeout=max((ceiling or limit) * 5, 300))
         except subprocess.TimeoutExpired:
-            return "FAIL", f"still running after {max(limit * 5, 300):.0f} s"
+            return "FAIL", f"still running after {max((ceiling or limit) * 5, 300):.0f} s"
         took = time.monotonic() - start
         if r.returncode or STATUS_OK not in r.stdout:
             tail = (r.stdout + r.stderr)[-800:]
             return "FAIL", f"exit {r.returncode} after {took:.1f} s\n{tail}"
+        if ceiling is not None and took > ceiling:
+            return "FAIL", f"{took:.1f} s to first status, over the {ceiling:.0f} s ceiling"
         if took > limit:
-            return "FAIL", f"{took:.1f} s to first status, over the {limit:.0f} s limit"
+            return ("WARN" if ceiling is not None else "FAIL"), \
+                f"{took:.1f} s to first status, over the {limit:.0f} s limit"
         return "PASS", f"{took:.1f} s to first status"
     finally:
         brew = find_brew() if route == "brew" and planned else None
@@ -215,13 +222,34 @@ def run_route(route: str, local: Path | None, limit: float) -> tuple[str, str]:
 # Seconds allowed per route. Homebrew installs python@3.13 and builds a virtualenv, and lands near
 # 60 s on CI runners, so the maintainer set its limit to 90 s (2026-11-15).
 LIMITS = {"uvx": 60.0, "pipx": 60.0, "npx": 60.0, "brew": 90.0}
+# Routes that only warn over their limit, and fail over this ceiling. Brew still ran 90-99 s on some
+# runners after the raise, from runner speed rather than brainrc (the other routes take seconds), so
+# a slow brew run warns; one that breaks, or takes twice its limit, still fails (2026-11-16).
+CEILINGS = {"brew": 180.0}
+
+
+def report(result: str, route: str, detail: str) -> None:
+    """Print the route's line; under GitHub Actions, annotate a WARN and add a step summary line."""
+    print(f"{result} {route}: {detail}", flush=True)
+    if os.environ.get("GITHUB_ACTIONS") != "true":
+        return
+    first = detail.splitlines()[0] if detail else ""
+    if result == "WARN":
+        print(f"::warning title=install-time {route}::{first.replace('%', '%25')}", flush=True)
+    summary = os.environ.get("GITHUB_STEP_SUMMARY")
+    if summary:
+        try:
+            with open(summary, "a", encoding="utf-8") as f:
+                f.write(f"- {result} {route}: {first}\n")
+        except OSError:
+            pass
 
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--path", action="append", choices=PATHS, help="route to time (repeatable; default all)")
     ap.add_argument("--limit", type=float, help="seconds allowed to first status, for every route "
-                    "(default: 60, 90 for brew)")
+                    "(default: 60; 90 for brew, which warns up to 180 s and fails over it)")
     src = ap.add_mutually_exclusive_group()
     src.add_argument("--local", type=Path, metavar="DIST_DIR", help="install this checkout's build")
     src.add_argument("--published", action="store_true", help="install the published releases (default)")
@@ -229,11 +257,14 @@ def main(argv: list[str] | None = None) -> int:
     failed = False
     for route in args.path or PATHS:
         try:
-            limit = args.limit if args.limit is not None else LIMITS[route]
-            result, detail = run_route(route, args.local, limit)
+            if args.limit is not None:  # an explicit limit is a hard one, for brew too
+                limit, ceiling = args.limit, None
+            else:
+                limit, ceiling = LIMITS[route], CEILINGS.get(route)
+            result, detail = run_route(route, args.local, limit, ceiling)
         except Exception as e:  # a crash is a FAIL line, never a traceback
             result, detail = "FAIL", f"{type(e).__name__}: {e}"
-        print(f"{result} {route}: {detail}", flush=True)
+        report(result, route, detail)
         failed = failed or result == "FAIL"
     return 1 if failed else 0
 

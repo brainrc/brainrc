@@ -12,6 +12,35 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.8.15 (2026-11-16)
+
+- **[pack contract]** `validate` checks more of a pack: relative links in its `README.md` and
+  `docs/**` (a `/docs/x.md` link is read from the pack's root, as GitHub does), references inside
+  rules (core's too; a relative link in a rule warns, since rules are rendered elsewhere), and
+  skills named in prose ("the acme-deploy skill") as well as "`acme-deploy` skill". Only
+  `validate` reports these; `apply` still installs the pack. A pack may ship its own OpenCode
+  plugin as `overrides/opencode/plugin.js`: `apply` links it beside core's guard plugin
+  (`brainrc-guard-<pack>.js`), removes the link with the pack (its entry deleted, too), and the
+  lock records it with the pack's hooks. The example packs' READMEs link core's docs on GitHub,
+  so a copy keeps working links (#137).
+
+## 0.8.14 (2026-11-16)
+
+- **[pack contract]** Connector config schema: a connector skill declares the keys and types its
+  table takes in SKILL.md frontmatter (`metadata.brainrc-config`), and `validate` checks every pack
+  table that names it as `connector`: a wrong type or a missing required key fails, an undeclared
+  key warns. Only `validate` reports these; `apply` still installs the pack. `instructions` is a
+  defined field every connector table may set, in place of free-form `notes`, and the pack's
+  tripwires check it (#136).
+
+## 0.8.13 (2026-11-16)
+
+- **[pack contract]** JSON Schemas for `pack.toml`, `mcp/servers.toml` and `harnesses.toml` in
+  `docs/schemas/`, with `.taplo.toml` and a `#:schema` first line (written by `brainrc import`) for
+  editor completion. `validate` checks a pack's `pack.toml` against its schema: a known key of the
+  wrong type fails, and an unknown key warns with the closest known one (`max_always_token`).
+  `apply` still installs such a pack, as before (#135).
+
 ## 0.8.12 (2026-11-16)
 
 - Install-time check: a Homebrew route over its 90-second limit is now a warning (a `WARN` line, a

@@ -357,9 +357,11 @@ commands, rules, `README.md` and `docs/**` (relative links, `[agent: x]` tags, a
 as "`x` skill" or in prose as "the x skill"; pack files may reference core's and Gatework's skills
 and agents); the [naming](#naming) rules; collisions; extension references and
 [connector config](#connector-config); `requires_core`; tripwires; and the pack's own
-[tests](#pack-tests). A skill named in prose counts
-only when its name has a hyphen and starts like a known skill's or the pack's prefix, so "the
-follow-up skill" stays prose.
+[tests](#pack-tests). A skill named in prose counts only when its name has a hyphen and starts with
+the pack's prefix or a first part two known skills share, so "the follow-up skill" stays prose. A
+relative link in a rule warns, since rules are rendered into each harness's own file; link a URL.
+`apply` refuses a pack only for what would break the install (frontmatter, names, collisions,
+tags, links in skills, agents and commands); the rest only `validate` reports.
 
 ## Packs and Claude Code plugins
 

@@ -555,8 +555,10 @@ def former_hooks_dirs(hooks_dir: str) -> list[str]:
 
 def pack_plugin_path(plugin: str, pack: str) -> str:
     """A pack's own plugin file: a sibling of core's, `brainrc-guard.js` -> `brainrc-guard-<pack>.js`."""
-    stem, dot, ext = plugin.rpartition(".")
-    return f"{stem}-{pack}.{ext}" if dot and "/" not in ext else f"{plugin}-{pack}"
+    head, slash, name = plugin.rpartition("/")
+    stem, dot, ext = name.rpartition(".")
+    name = f"{stem}-{pack}.{ext}" if dot and stem else f"{name}-{pack}"
+    return head + slash + name
 
 
 def former_plugin_paths(plugin: str) -> list[str]:

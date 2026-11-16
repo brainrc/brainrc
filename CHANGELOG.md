@@ -12,6 +12,14 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.8.12 (2026-11-16)
+
+- Install-time check: a Homebrew route over its 90-second limit is now a warning (a `WARN` line, a
+  GitHub Actions `::warning::` annotation) instead of a failure, so a slow runner no longer turns
+  `main` red. It still fails over a 180-second ceiling, or when the install or the first `status`
+  breaks; the other routes still fail over 60 seconds, and an explicit `--limit` is a hard limit
+  for every route. Under GitHub Actions each route's result also goes to the job's step summary.
+
 ## 0.8.11 (2026-11-16)
 
 - `brainrc init`, run from a project folder, finds its CLAUDE.md, AGENTS.md, Cursor rules and Copilot instructions and offers to import them into a pack (`--import` without asking), asks for a starter profile (`--starter minimal|app|infra`: rules only; recommended without Gatework's infrastructure skills; full), and shows the file, hook and token counts before it writes anything (#297).

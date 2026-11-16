@@ -12,7 +12,7 @@ from pathlib import Path
 from .mcp import check_servers
 from .naming import check_pack_names, unprefixed_ok
 from .plugins import extension_errors, extension_warnings, plugin_errors, validators
-from . import config, schema
+from . import config, connectors, schema
 from .config import (
     ConfigError,
     HOOKS_DIR_PLACEHOLDER,
@@ -80,8 +80,11 @@ def _check_references(src: Source, path: Path, agent_names: set[str], skill_name
 RESERVED_SKILL_NAMES = frozenset({"review", "plan", "init", "help", "status", "compact"})
 
 
-def _validate_source(src: Source, agent_names: set[str], skill_names: set[str], plugins=()) -> list[str]:
-    errors = []
+def _validate_source(src: Source, agent_names: set[str], skill_names: set[str], plugins=(),
+                     skill_dirs: dict[str, Path] | None = None) -> list[str]:
+    """skill_dirs: every source's skills by name, to check a pack's connector tables against the
+    connector's declared config."""
+    errors = connectors.declaration_errors(src)
     if src.is_core:
         errors += [f"overrides/{name}/plugin.js: missing, but harnesses.toml [{name}] sets `plugin`"
                    for name, h in load_harnesses(include_disabled=True).items()
@@ -148,6 +151,7 @@ def _validate_source(src: Source, agent_names: set[str], skill_names: set[str], 
     if not src.is_core:
         errors += _validate_pack(src)
         errors += extension_errors(src, list(plugins), skill_names, agent_names)
+        errors += connectors.check(src, skill_dirs or {})[0]
     errors += _check_tripwires(src)
     if src.is_core:
         errors += _check_local_tripwires(src)
@@ -199,6 +203,8 @@ def _tripwire_files(src: Source, patterns: list[str]) -> list[Path]:
 def _check_tripwires(src: Source) -> list[str]:
     """Stale facts that must not come back: tripwires.toml [[tripwire]] pattern/message/allow/paths."""
     errors = []
+    pack_toml = src.root / "pack.toml"
+    instructions = connectors.instruction_texts(src) if not src.is_core and pack_toml.is_file() else []
     for t in _read_toml(src.root / "tripwires.toml").get("tripwire", []):
         tid = t.get("id", "?")
         try:
@@ -215,6 +221,10 @@ def _check_tripwires(src: Source) -> list[str]:
             for n, line in enumerate(p.read_text(errors="replace").splitlines(), 1):
                 if pattern.search(line) and not (allow and allow.search(line)):
                     errors.append(f"{src.rel(p)}:{n}: tripwire {tid}: {t.get('message', t['pattern'])}")
+        for name, text in instructions:  # what a pack tells a connector reaches the model too (#136)
+            if any(pattern.search(line) and not (allow and allow.search(line)) for line in text.splitlines()):
+                errors.append(f"{src.rel(pack_toml)}:{line_of(pack_toml.read_text(), name, 'instructions')}: "
+                              f"[{name}] instructions: tripwire {tid}: {t.get('message', t['pattern'])}")
     return errors
 
 
@@ -278,9 +288,10 @@ def pack_errors(srcs: list[Source]) -> list[tuple[Source, list[str]]]:
     """(pack, errors) for each pack whose own files fail what validate --pack checks; apply runs
     it before linking."""
     agent_names = {f.stem for s in srcs for f in markdown_files("agents", s)}
-    skill_names = {p.name for s in srcs for p in skills(s)}
+    skill_dirs = {p.name: p for s in srcs for p in skills(s)}
+    skill_names = set(skill_dirs)
     plugins = validators(srcs)
-    found = [(src, _validate_source(src, agent_names, skill_names, plugins)) for src in srcs
+    found = [(src, _validate_source(src, agent_names, skill_names, plugins, skill_dirs)) for src in srcs
              if not src.is_core]
     return [(src, errors) for src, errors in found if errors]
 
@@ -303,11 +314,12 @@ def cmd_validate(pack: str | None = None, key: str = "") -> int:
         print(f"ERROR {e}")
         return 1
     agent_names = {f.stem for s in srcs for f in markdown_files("agents", s)}
-    skill_names = {p.name for s in srcs for p in skills(s)}
+    skill_dirs = {p.name: p for s in srcs for p in skills(s)}
+    skill_names = set(skill_dirs)
     errors = duplicate_packs(srcs) + collisions(srcs)
     for src in srcs:
         try:
-            errors += _validate_source(src, agent_names, skill_names, plugins)
+            errors += _validate_source(src, agent_names, skill_names, plugins, skill_dirs)
         except ConfigError as e:  # a validator plugin that failed
             errors.append(str(e))
     try:
@@ -316,7 +328,8 @@ def cmd_validate(pack: str | None = None, key: str = "") -> int:
         errors.append(str(e))
     errors += check_servers(srcs)
     warnings = config_warnings + extension_warnings(srcs, plugins)
-    warnings += [w for src in srcs if not src.is_core for w in pack_toml_findings(src)[1]]
+    warnings += [w for src in srcs if not src.is_core
+                 for w in pack_toml_findings(src)[1] + connectors.check(src, skill_dirs)[1]]
     try:
         errors += check_changelog(core_version())
         compat_errors, compat_warnings = check_packs(srcs)

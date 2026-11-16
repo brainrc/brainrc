@@ -1,0 +1,1478 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="One set of AI coding-agent config for Claude Code, Codex CLI, OpenCode, Antigravity CLI and Cursor">
+      
+      
+      
+        <link rel="canonical" href="https://brainrc.github.io/brainrc/0.8/troubleshooting/">
+      
+      
+        <link rel="prev" href="../tutorial/">
+      
+      
+        <link rel="next" href="../packs/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Troubleshooting - brainrc</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#troubleshooting" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="brainrc" class="md-header__button md-logo" aria-label="brainrc" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            brainrc
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Troubleshooting
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/brainrc/brainrc" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    brainrc/brainrc
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="brainrc" class="md-nav__button md-logo" aria-label="brainrc" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    brainrc
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/brainrc/brainrc" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    brainrc/brainrc
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Get started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Get started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorial
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#a-harness-doesnt-see-a-skill-agent-command-or-rule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A harness doesn't see a skill, agent, command, or rule
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#every-skill-shows-up-twice-or-a-hook-runs-twice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Every skill shows up twice, or a hook runs twice
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conflict-in-status-or-apply" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CONFLICT in status or apply
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#config-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Config errors
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pack-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pack errors
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#settings-backups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Settings backups
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#apply-while-something-else-writes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Apply while something else writes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#uninstall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Uninstall
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#every-tool-call-is-blocked-or-doctor-says-hook-missing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Every tool call is blocked, or doctor says hook missing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a-guard-hook-blocked-something-safe-or-missed-something-risky" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A guard hook blocked something safe, or missed something risky
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../packs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Packs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../project/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project manifest and lockfile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guardrails/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guardrails
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../harness-packages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Harness packages
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../spec-agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    spec-agent
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../post-deliver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    After delivery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../evals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../e2e-runs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    End-to-end runs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../formats/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Formats
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../schemas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schemas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../efficiency/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Efficiency
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#a-harness-doesnt-see-a-skill-agent-command-or-rule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A harness doesn't see a skill, agent, command, or rule
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#every-skill-shows-up-twice-or-a-hook-runs-twice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Every skill shows up twice, or a hook runs twice
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conflict-in-status-or-apply" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CONFLICT in status or apply
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#config-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Config errors
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pack-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pack errors
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#settings-backups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Settings backups
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#apply-while-something-else-writes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Apply while something else writes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#uninstall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Uninstall
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#every-tool-call-is-blocked-or-doctor-says-hook-missing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Every tool call is blocked, or doctor says hook missing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a-guard-hook-blocked-something-safe-or-missed-something-risky" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A guard hook blocked something safe, or missed something risky
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h1>
+<p>Start here: this lists what's wrong with the install on this machine and how to fix each item.
+It changes nothing.</p>
+<div class="highlight"><pre><span></span><code>python3<span class="w"> </span>scripts/brainrc.py<span class="w"> </span>doctor
+</code></pre></div>
+<p>Then find the symptom below.</p>
+<h2 id="a-harness-doesnt-see-a-skill-agent-command-or-rule">A harness doesn't see a skill, agent, command, or rule<a class="headerlink" href="#a-harness-doesnt-see-a-skill-agent-command-or-rule" title="Permanent link">&para;</a></h2>
+<p>Run <code>python3 scripts/brainrc.py apply</code>. Skills, agents, and commands are symlinks, so edits to
+existing ones show up at once, but new or removed ones need <code>apply</code>. Rules are different:
+they're rendered into <code>~/.config/brainrc/instructions.md</code> (or <code>$BRAINRC_HOME</code>), so <strong>every</strong> change to <code>rules/</code> (or a pack's
+rules) needs <code>apply</code>, edits included. Restart the harness or start a new session afterwards.</p>
+<p>If you moved the repo, the old links are broken and <code>apply</code> reports each as a <code>CONFLICT</code>. Run
+<code>python3 scripts/brainrc.py apply --repair</code> from the new location: it relinks every broken link
+that points at the same item's old location (<code>skills/&lt;name&gt;</code>, <code>agents/&lt;name&gt;.md</code>, ...) and prunes
+the ones into the old location whose item is gone. <code>status --repair</code> shows the changes first. A
+broken link to anything else stays a <code>CONFLICT</code>, and your own working links are never touched.</p>
+<h2 id="every-skill-shows-up-twice-or-a-hook-runs-twice">Every skill shows up twice, or a hook runs twice<a class="headerlink" href="#every-skill-shows-up-twice-or-a-hook-runs-twice" title="Permanent link">&para;</a></h2>
+<p>Both the plugin and the <code>brainrc</code> command's links are installed. <code>doctor</code> warns when it sees both
+in Claude Code or Cursor, and names which to remove. Keep one: in Claude Code, <code>/plugin uninstall
+brainrc@brainrc</code> (the links also bring the rules and your packs), or set <code>[claude] enabled = false</code>
+in <code>harnesses.local.toml</code> and run <code>apply</code>. In Cursor, keep the plugin (it brings the rules) and set
+<code>[cursor] enabled = false</code>, or remove <code>~/.cursor/plugins/local/brainrc</code>.</p>
+<p>If <code>doctor</code> warns that the old plugin <code>ai-config@ai-config</code> is installed, you have the plugin
+under both names: follow <a href="../install/#moving-from-ai-config">Moving from ai-config</a>.</p>
+<h2 id="conflict-in-status-or-apply"><code>CONFLICT</code> in <code>status</code> or <code>apply</code><a class="headerlink" href="#conflict-in-status-or-apply" title="Permanent link">&para;</a></h2>
+<p>A real file, or a symlink pointing outside this repo and your packs, sits where <code>brainrc</code> wants
+a link. <code>brainrc</code> never overwrites it. Look at it, then either:</p>
+<ul>
+<li>move it into the repo or a pack (as a skill, agent, or command) and delete the original, or</li>
+<li>delete it if you don't need it,</li>
+</ul>
+<p>and run <code>apply</code> again. <code>CONFLICT</code> on a settings file means it isn't valid JSON: fix it by
+hand. <code>CONFLICT</code> naming an MCP server means your harness config already defines a server of that
+name: rename or remove yours (or the registry's), then run <code>apply</code>.</p>
+<h2 id="config-errors">Config errors<a class="headerlink" href="#config-errors" title="Permanent link">&para;</a></h2>
+<p><code>status</code>, <code>apply</code>, <code>validate</code>, and <code>doctor</code> check <code>harnesses.toml</code>, <code>packs.toml</code>, their
+<code>.local.toml</code> overrides, and each pack's <code>pack.toml</code> first, and name the file and line:</p>
+<table>
+<thead>
+<tr>
+<th>Message</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ERROR harnesses.local.toml:3: invalid TOML: Invalid value</code></td>
+<td>Fix the TOML on that line (often a missing value or quote).</td>
+</tr>
+<tr>
+<td><code>ERROR harnesses.local.toml:2: `claude` must be a table, e.g. [claude]</code></td>
+<td>Write <code>[claude]</code> on its own line, then <code>enabled = false</code> under it.</td>
+</tr>
+<tr>
+<td><code>ERROR harnesses.local.toml:3: [codex] `enabled` must be true or false</code></td>
+<td>Use <code>true</code> or <code>false</code> without quotes. Paths and <code>ref</code> must be quoted strings.</td>
+</tr>
+<tr>
+<td><code>WARN harnesses.local.toml:2: unknown key `enabeld` in [claude]</code></td>
+<td>A typo: the key is ignored until you fix it.</td>
+</tr>
+<tr>
+<td><code>WARN harnesses.local.toml:4: unknown harness [cursr]</code></td>
+<td>A typo, or a harness <code>harnesses.toml</code> doesn't list. It still loads.</td>
+</tr>
+</tbody>
+</table>
+<p>Errors stop the command before it writes anything; warnings don't.</p>
+<h2 id="pack-errors">Pack errors<a class="headerlink" href="#pack-errors" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Message</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pack name `acme` is used by both [work] and [acme]</code></td>
+<td>Two packs share one <code>name</code>. Change <code>name</code> in one <code>pack.toml</code>, or set <code>enabled = false</code> for one in <code>packs.local.toml</code>. <code>core</code> is taken.</td>
+</tr>
+<tr>
+<td><code>skill `acme-deploy` is defined in both acme and acme2</code></td>
+<td>Rename one. Each pack's items carry its own <code>prefix</code>.</td>
+</tr>
+<tr>
+<td><code>acme:skills/x: pack skills must start with `acme-`</code></td>
+<td>Rename the item to start with the pack's <code>prefix</code>.</td>
+</tr>
+<tr>
+<td><code>acme:pack.toml: `prefix` must be ASCII lowercase letters, digits and hyphens, ending with '-'</code></td>
+<td>Fix <code>prefix</code> in <code>pack.toml</code>, e.g. <code>acme-</code>.</td>
+</tr>
+<tr>
+<td><code>acme:pack.toml: `prefix` `aws-` uses the vendor name `aws`</code>, <code>... reserved for official packs</code>, <code>... one or two edits from the official name `brainrc`</code></td>
+<td>Rename the pack or its prefix to follow the <a href="../packs/#naming">naming rules</a>.</td>
+</tr>
+<tr>
+<td><code>acme:pack.toml: requires_core `&gt;=2.0` is not satisfied by core 1.2.3</code></td>
+<td>Update core (<code>git pull</code>) or the pack, or set <code>enabled = false</code> for it in <code>packs.local.toml</code>.</td>
+</tr>
+<tr>
+<td><code>pack acme: no pack.toml at ...</code></td>
+<td>Fix the pack's <code>path</code> in <code>packs.local.toml</code>.</td>
+</tr>
+</tbody>
+</table>
+<p><code>validate</code> reports all of these. <code>apply</code> and <code>status</code> check each pack the same way first and
+write nothing while any of them stands, naming <code>validate --pack &lt;dir&gt;</code> for the pack to fix. See <a href="../packs/">packs.md</a>.</p>
+<h2 id="settings-backups">Settings backups<a class="headerlink" href="#settings-backups" title="Permanent link">&para;</a></h2>
+<p>Before <code>apply</code> changes a harness's settings file (Claude Code: <code>~/.claude/settings.json</code>), it
+copies it next to the original as <code>settings.json.bak-brainrc-&lt;UTC time&gt;</code>. The last 5 are kept, counting
+old <code>settings.json.bak-aicfg-&lt;UTC time&gt;</code> backups too.
+No backup is made when the file didn't exist yet. MCP config files (<code>~/.claude.json</code> and the
+others) are backed up the same way.</p>
+<p>The rewritten file and its backup keep the original's permissions, so a <code>0600</code> <code>~/.claude.json</code>
+stays <code>0600</code>. If the path is a symlink (a dotfiles-managed <code>settings.json</code>), <code>apply</code> writes
+through to the link's target and leaves the link in place; the backup goes next to the target.</p>
+<h2 id="apply-while-something-else-writes">Apply while something else writes<a class="headerlink" href="#apply-while-something-else-writes" title="Permanent link">&para;</a></h2>
+<p>Close Claude Code before <code>apply</code> changes MCP servers: it rewrites <code>~/.claude.json</code> while it runs.</p>
+<table>
+<thead>
+<tr>
+<th>Message</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ERROR another brainrc apply is running (lock: &lt;path&gt;)</code></td>
+<td>Another <code>apply</code> (or <code>update</code>) holds <code>$BRAINRC_HOME/apply.lock</code>. Let it finish, then re-run. The lock is released when that process exits, even if it crashed, so there is nothing to delete.</td>
+</tr>
+<tr>
+<td><code>CHANGED &lt;harness&gt; &lt;file&gt;  (changed during apply; close Claude Code and re-run)</code></td>
+<td>The file changed after <code>apply</code> read it, so <code>apply</code> left it alone and exited 1. Close the harness that writes it, then re-run.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="uninstall">Uninstall<a class="headerlink" href="#uninstall" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>python3<span class="w"> </span>scripts/brainrc.py<span class="w"> </span>uninstall<span class="w"> </span>--dry-run<span class="w">   </span><span class="c1"># see what goes</span>
+python3<span class="w"> </span>scripts/brainrc.py<span class="w"> </span>uninstall<span class="w">             </span><span class="c1"># or `brainrc uninstall` from the package</span>
+</code></pre></div>
+<p><code>uninstall</code> removes every link brainrc made (broken ones too), takes its hooks out of each
+settings file and the MCP servers it added out of each MCP file, and removes the files and
+directories that leaves empty. Your own settings, hooks, and servers stay, every file it
+rewrites is backed up first (<code>*.bak-brainrc-*</code>), and an instructions file <code>init</code> moved aside is
+put back. It reads which harnesses and source roots apply used from <code>$BRAINRC_HOME/harnesses.json</code>,
+so it still works after you move or delete the checkout or a pack.</p>
+<p>Your local config (<code>harnesses.local.toml</code>, <code>packs.local.toml</code>, <code>rules/*.local.md</code>) and fetched
+git packs stay in <code>$BRAINRC_HOME</code>; <code>uninstall --purge</code> deletes that directory too, unless it
+holds files brainrc didn't make (then it says which, and leaves them). Then delete
+the repo, or <code>uv tool uninstall brainrc</code> (<code>pipx uninstall brainrc</code>).</p>
+<h2 id="every-tool-call-is-blocked-or-doctor-says-hook-missing">Every tool call is blocked, or <code>doctor</code> says <code>hook missing</code><a class="headerlink" href="#every-tool-call-is-blocked-or-doctor-says-hook-missing" title="Permanent link">&para;</a></h2>
+<p>In older installs, a hook whose script had gone (checkout moved or deleted, package removed, Python
+upgraded) exited 2, which Claude Code treats as a block on every tool call. Run <code>apply</code> to
+rewrite the hook commands: they now skip a missing script (Cursor's reply "allow"), so the
+harness keeps working. That also means the guard is off until it's fixed, so <code>doctor</code> checks
+each one:</p>
+<table>
+<thead>
+<tr>
+<th>Finding</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&lt;harness&gt;: hook missing: &lt;path&gt;</code></td>
+<td>Run <code>apply</code> from the checkout or install you use now; it re-links the hooks dir.</td>
+</tr>
+<tr>
+<td><code>&lt;harness&gt;: hook &lt;path&gt; exits &lt;n&gt; on an empty payload</code></td>
+<td>Run <code>python3 &lt;path&gt;</code> and read the error (often a Python too old for the guard), then <code>apply</code>.</td>
+</tr>
+<tr>
+<td><code>&lt;harness&gt;: hook &lt;path&gt; timed out after &lt;n&gt;s</code></td>
+<td>Run it by hand to see where it hangs.</td>
+</tr>
+<tr>
+<td><code>&lt;harness&gt;: hook &lt;path&gt; can't run: python3 is not on PATH</code></td>
+<td>Install Python 3, or put <code>python3</code> on the PATH the harness starts with.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="a-guard-hook-blocked-something-safe-or-missed-something-risky">A guard hook blocked something safe, or missed something risky<a class="headerlink" href="#a-guard-hook-blocked-something-safe-or-missed-something-risky" title="Permanent link">&para;</a></h2>
+<p>The Claude Code hooks match command patterns (<a href="../guardrails/">guardrails.md</a>), so both happen.
+Open an issue with the exact command or tool call, what the hook did, and what you expected.
+A fix comes with two tests in <code>tests/test_hooks.py</code>: the risky command, and a safe near-miss
+that must still pass (for example <code>git push origin x</code> asks, <code>git log</code> doesn't).</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

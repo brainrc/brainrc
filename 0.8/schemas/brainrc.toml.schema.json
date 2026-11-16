@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/brainrc/brainrc/blob/main/docs/schemas/brainrc.toml.schema.json",
+  "title": "brainrc.toml",
+  "description": "A project's brainrc manifest, after it is parsed as TOML (docs/project.md).",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "integer",
+      "const": 1
+    },
+    "exclude": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "harnesses": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+      }
+    },
+    "packs": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/pack"
+      }
+    }
+  },
+  "$defs": {
+    "pack": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "git": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[^-]"
+        },
+        "ref": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[^-]"
+        },
+        "path": {
+          "$ref": "#/$defs/repoPath"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "not": {
+        "required": [
+          "git",
+          "path"
+        ]
+      }
+    },
+    "repoPath": {
+      "description": "Relative to the repo root, with / separators, staying inside the repo.",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?![/~$\\\\])(?![A-Za-z]:)(?!(.*/)?\\.\\.(/|$))[^\\\\]+$"
+    }
+  }
+}

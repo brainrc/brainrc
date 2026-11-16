@@ -1,0 +1,1709 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="One set of AI coding-agent config for Claude Code, Codex CLI, OpenCode, Antigravity CLI and Cursor">
+      
+      
+      
+        <link rel="canonical" href="https://brainrc.github.io/brainrc/0.8/spec-agent/">
+      
+      
+        <link rel="prev" href="../harness-packages/">
+      
+      
+        <link rel="next" href="../post-deliver/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>spec-agent - brainrc</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#spec-agent" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="brainrc" class="md-header__button md-logo" aria-label="brainrc" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            brainrc
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              spec-agent
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/brainrc/brainrc" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    brainrc/brainrc
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="brainrc" class="md-nav__button md-logo" aria-label="brainrc" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    brainrc
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/brainrc/brainrc" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    brainrc/brainrc
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Get started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Get started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorial
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../packs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Packs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../project/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project manifest and lockfile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guardrails/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guardrails
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../harness-packages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Harness packages
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    spec-agent
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    spec-agent
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Commands
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#auto-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auto mode
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#oneshot-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Oneshot mode
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#planning-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Planning mode
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design principles
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#campaigns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Campaigns
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#living-specs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Living specs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#active-run-pointer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Active run pointer
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-worktrees" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run worktrees
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#roles-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Roles (agents/)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#domain-skills-skills" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Domain skills (skills/)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#environments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environments
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#harness-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Harness support
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#extending" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Extending
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#credits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Credits
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../post-deliver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    After delivery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../evals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../e2e-runs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    End-to-end runs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../formats/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Formats
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../schemas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schemas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../efficiency/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Efficiency
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Commands
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#auto-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auto mode
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#oneshot-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Oneshot mode
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#planning-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Planning mode
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design principles
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#campaigns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Campaigns
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#living-specs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Living specs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#active-run-pointer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Active run pointer
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-worktrees" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run worktrees
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#roles-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Roles (agents/)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#domain-skills-skills" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Domain skills (skills/)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#environments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environments
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#harness-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Harness support
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#extending" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Extending
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#credits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Credits
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="spec-agent">spec-agent<a class="headerlink" href="#spec-agent" title="Permanent link">&para;</a></h1>
+<p>Takes a work item (GitHub issue, local markdown ticket, or a sentence) to a reviewed pull
+request: <strong>spec → plan → implement → verify → document → deliver</strong>, run by an orchestrator
+skill with a team of small, reusable agents. You approve at three gates. Everything else runs
+on its own.</p>
+<p>spec-agent is the engine of Gatework, brainrc's default pack (<a href="../packs/#default-packs">packs.md</a>,
+<a href="https://github.com/brainrc/gatework">brainrc/gatework</a>):
+the <code>brainrc-gatework</code> skill. Its old names (<code>spec-agent</code>, <code>/spec-status</code>, <code>ticket-github</code> and the
+other unprefixed skills) are deprecated aliases until 0.8.0.</p>
+<blockquote>
+<p><strong>Best effort outside Claude Code.</strong> The design assumes each role starts with a fresh context
+and that hooks enforce the guardrails. That is fully true only in Claude Code. OpenCode runs
+real subagents, but without per-role models, and its hooks block instead of asking. Codex,
+Antigravity CLI, and Cursor have no named subagents, so the engine
+<a href="https://github.com/brainrc/gatework/blob/main/skills/brainrc-gatework/references/fallback.md">switches roles in one session</a>: reviewers have
+seen the implementer's reasoning, and the guardrails are instructions, not hooks. The fallback
+limits what reviewers read, and for standard and large runs it recommends a fresh session for
+review (<a href="#harness-support">below</a>).</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code>/brainrc-work gh:42
+  intake ─► analyst ─► ⛔ SPEC ─► architect ─► ⛔ PLAN ─► implementer ×N ─► reviewers ─►
+  verifier ─► doc-writer ─► ⛔ DELIVER ─► push · PR · ticket update ─► retro ─► watch
+</code></pre></div>
+<p><strong><code>watch</code></strong> (normal delivery, connector with <code>pr_status</code>) runs on <code>/brainrc-gatework-resume</code>, never in a
+loop. It reads the PR's checks; a red check caused by this diff becomes a fix task <code>C&lt;n&gt;</code>, run
+through the usual implement and review loop, then a <strong>Push gate</strong> (diff stat, commits, the
+failing check) before anything is pushed. External failures are only noted. Unresolved review threads are handled once each: a small
+ask becomes a fix task <code>R&lt;n&gt;</code>, a question gets a drafted reply, and a design-level ask stops for
+you. Replies post only after the same Push gate, and after 3 review rounds the PR is handed back.
+After merge, <code>watch</code> verifies the merge commit in a detached worktree and records <code>pass</code>, <code>regression</code>, or <code>unverified</code>; a PR closed unmerged ends as <code>abandoned</code>, and both show in the summary. Details: <a href="../post-deliver/">post-deliver.md</a>. In a sandbox copy with
+no git remote, <code>SPEC_PR_STATUS_FIXTURE</code> names a <code>pr_status</code> fixture file read instead of the connector.</p>
+<h2 id="commands">Commands<a class="headerlink" href="#commands" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/brainrc-work &lt;gh:42 \| issue URL \| local:path.md \| free text&gt; [--local] [--auto] [--oneshot]</code></td>
+<td>Start, or resume if a spec for it exists. <code>--local</code>: drafts only, never push/PR/comment. <code>--auto</code>: no gate stops, ends with a draft PR (<a href="#auto-mode">Auto mode</a>). <code>--oneshot</code>: like <code>--auto</code>, safer defaults, ready PRs (<a href="#oneshot-mode">Oneshot mode</a>)</td>
+</tr>
+<tr>
+<td><code>/brainrc-gatework-status [ref]</code></td>
+<td>Stage, gates, tasks, blocker, next action</td>
+</tr>
+<tr>
+<td><code>/brainrc-gatework-approve [notes]</code></td>
+<td>Approve the pending gate</td>
+</tr>
+<tr>
+<td><code>/brainrc-gatework-resume [ref]</code></td>
+<td>Continue an interrupted run (any tool)</td>
+</tr>
+</tbody>
+</table>
+<p>These are user-invoked skills (Gatework's <code>skills/brainrc-work/</code> and so on), so every harness that reads skills
+gets them. In the Claude Code plugin they're <code>/gatework:brainrc-work</code>; in Codex, call the skill by name.</p>
+<h2 id="auto-mode">Auto mode<a class="headerlink" href="#auto-mode" title="Permanent link">&para;</a></h2>
+<p><code>/brainrc-work &lt;ref&gt; --auto</code> (or <code>/brainrc-work --campaign &lt;ref&gt; --shape ordered --auto</code>) runs every stage without
+stopping at the gates. It's for tickets you'd approve as written. Each gate is still written to
+<code>log.md</code> as <code>auto-approved</code>, with its timestamps. Open questions take the analyst's stated default.
+The run ends with a <strong>draft</strong> PR (a campaign: stacked draft PRs) whose body lists the gates and every
+"Decision made without you". Review happens there.</p>
+<p>Only the flag turns this on. No reply wording does, and a resumed run is gated again unless you pass
+<code>--auto</code> again. These still stop the run, push nothing, and open no PR:
+- any guardrails stop condition (retries, scope breach, spec gap, secrets)
+- size <code>large</code> (the spec with its proposed split is written first)
+- any plan Callout: a new dependency, an API or contract change, a migration, IAM/RBAC, prod config, or a destructive change
+- a CRITICAL or HIGH security finding
+- instructions in the ticket or other untrusted content
+- a live target</p>
+<p>Ticket comments stay drafts. Auto mode never merges, changes a PR's base, closes an issue, or
+passes the <code>watch</code> Push gate, and <code>--local</code> still means nothing is pushed. Sandbox tickets
+011–018 and eval cases <code>sandbox-008</code>–<code>015</code> grade it (<a href="../evals/">evals.md</a>).</p>
+<h2 id="oneshot-mode">Oneshot mode<a class="headerlink" href="#oneshot-mode" title="Permanent link">&para;</a></h2>
+<p><code>--oneshot</code> behaves as <code>--auto</code> with these differences, for tickets you want delivered without
+babysitting:
+- A <code>large</code> ticket splits into a local ordered campaign (no tracker tickets) run as <code>--oneshot</code>,
+  delivered stacked.
+- Plan callouts take the safer default (no new dependency; contract unchanged, or additive if the
+  criteria need it; no migration or data change; destructive steps skipped; IAM/RBAC and prod config
+  unchanged) and are listed under "Decisions made without you". If no default meets the acceptance
+  criteria, the run blocks.
+- A live target is refused and the run continues offline.
+- PRs open ready, never merged. A tainted stop (CRITICAL/HIGH security finding, an instruction in
+  untrusted content, a secret) pushes nothing and opens no PR, as <code>--auto</code> does. A benign stop
+  (retry budget, scope breach, spec gap, no safe default) opens a draft PR titled
+  <code>[blocked] &lt;ticket ref&gt;: &lt;fixed phrase&gt;</code> with a <code>## Blocked</code> section that names kinds and
+  locations only. Any other stop counts as tainted. A blocked campaign child pauses the later children.
+- <code>--oneshot</code> with <code>--auto</code> is <code>--oneshot</code>; <code>--local</code> still pushes nothing.</p>
+<h2 id="planning-mode">Planning mode<a class="headerlink" href="#planning-mode" title="Permanent link">&para;</a></h2>
+<p><code>/brainrc-plan &lt;topic&gt;</code> turns a topic into proven tickets. A <code>brainrc-researcher</code> role reads the repo (the web
+only with <code>--web</code>) and proposes candidates, each with proof: a read-only command and its
+output, a failing test, or a local spike commit, plus <code>file:line</code> links. The engine re-runs each
+command proof through <code>proof_guard.py</code>, a narrow read-only allowlist with no shell, network, or
+secret files. Unproven candidates are listed under "Needs evidence" and never created. Content
+the researcher reads is never obeyed; a plan that flags any instruction creates nothing.</p>
+<p>The plan ends at a Ticket gate listing each ticket (at most 10) as an outward action; nothing is
+created before you approve it. <code>--dry-run</code> creates nothing. <code>--oneshot</code> creates proven local
+tickets only and refuses GitHub. State lives in <code>specs/plan-&lt;slug&gt;/</code>. Details:
+<a href="https://github.com/brainrc/gatework/blob/main/skills/brainrc-gatework/references/planning.md">planning.md</a>.</p>
+<h2 id="design-principles">Design principles<a class="headerlink" href="#design-principles" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>Files are the handoff.</strong> Agents share no memory; each reads named artifacts in
+   <code>specs/&lt;slug&gt;/</code> and returns a short handoff block. Any session, in any tool, can resume from
+   <code>state.json</code>.</li>
+<li><strong>Evidence over claims.</strong> Tasks are done when commands prove it (tests, validators, plan
+   summaries), not when an agent says so.</li>
+<li><strong>Ceremony scales with risk.</strong> Size (trivial → large) decides stages, gates, and whether
+   subagents are worth spawning. Infra, IAM, migrations, and prod paths have a higher floor.</li>
+<li><strong>Outward actions are gated twice</strong>: by the Deliver gate in the workflow, and by
+   harness hooks (Claude Code) that prompt on push, PR, cluster, cloud, and state mutations.</li>
+<li><strong>Cheap by default.</strong> Domain knowledge loads only for the stacks touched, command output stays
+   in files, routine roles use cheaper models. See <a href="../efficiency/">efficiency.md</a>.</li>
+</ol>
+<h2 id="campaigns">Campaigns<a class="headerlink" href="#campaigns" title="Permanent link">&para;</a></h2>
+<p><code>/brainrc-work --campaign &lt;epic | query | refs&gt; [--shape playbook|ordered]</code> runs many related tickets.
+Two shapes, detected from the template check plus the children's depends-on links (<code>--shape</code> overrides):</p>
+<ul>
+<li><strong>playbook</strong>: near-identical tickets. One shared playbook, approved at one Campaign gate, then
+  batches with one Deliver gate per batch.</li>
+<li><strong>ordered</strong>: different or dependent children, built in dependency order. Dependencies come from
+  the connector (<code>api</code>, then <code>body</code>, then <code>frontmatter</code>; else epic order). Each child gets its own
+  Spec and Plan gates. One Deliver gate covers all children and picks the delivery: <code>sequential</code>
+  (only the first PR opens; resuming with <code>/brainrc-work --campaign</code> or <code>/brainrc-gatework-resume</code> opens the next after
+  its predecessor merges) or <code>stacked</code> (all PRs open at once, each based on the previous child's
+  branch). Either way a child PR merges only with base <code>main</code>: on resume after its predecessor
+  merges, <code>main</code> is merged into its branch and a stacked PR is retargeted to <code>main</code>.</li>
+</ul>
+<p>To express dependencies, use GitHub issue dependencies or a <code>Depends on #N</code> line in the child's
+body. For local tickets, use <code>depends_on: [local:...]</code> in the child's frontmatter, and list the
+children in the epic's <code>children:</code> (their order is the epic order).</p>
+<p>Details: <a href="https://github.com/brainrc/gatework/blob/main/skills/brainrc-gatework/references/campaign.md">campaign.md</a>.</p>
+<h2 id="living-specs">Living specs<a class="headerlink" href="#living-specs" title="Permanent link">&para;</a></h2>
+<p>Each run's <code>specs/&lt;slug&gt;/</code> describes one change; <code>specs/living/&lt;area&gt;.md</code> describes how the
+system behaves now, one file per capability area (<code>cli</code>, <code>export</code>). The analyst reads the areas
+a ticket touches and writes the spec's <code>## Requirement changes</code>: ADDED, MODIFIED, and REMOVED
+requirements against them, or <code>None.</code> In the document stage the engine applies that delta with
+Gatework's <code>skills/brainrc-gatework/scripts/living_specs.py apply</code>, so the Deliver gate's diff shows the
+behavior change next to the code. The script checks every block first (a MODIFIED or REMOVED
+target must exist, an ADDED one must not) and writes nothing if any fails. Each requirement names
+the run that last changed it. Formats: <code>templates/spec.md</code> and <code>templates/living.md</code>. Projects
+that already have runs start with no living specs; the first run that touches an area creates it.</p>
+<h2 id="active-run-pointer">Active run pointer<a class="headerlink" href="#active-run-pointer" title="Permanent link">&para;</a></h2>
+<p>For tools outside the run's repo (a pack repo, a workspace root), spec-agent writes the active
+run's absolute path to <code>$BRAINRC_HOME/active-run</code> (default <code>~/.config/brainrc/active-run</code>) at
+intake, on resume, and at every checkpoint commit. The file is one line. It is not cleared when
+a run finishes, and the last write wins across sessions. A tool reads it through
+Gatework's <code>skills/brainrc-gatework/scripts/active_run.py read</code>, or falls back to the newest run in <code>&lt;cwd&gt;/specs/</code>
+and every branch worktree's <code>specs/</code> when the file is absent or names a missing directory (detached task and verify worktrees are skipped). The contract is in <a href="https://github.com/brainrc/gatework/blob/main/skills/brainrc-gatework/references/state.md#active-run-pointer">state.md</a>.</p>
+<h2 id="run-worktrees">Run worktrees<a class="headerlink" href="#run-worktrees" title="Permanent link">&para;</a></h2>
+<p>Each run works in its own git worktree at <code>&lt;repo parent&gt;/.brainrc-worktrees/&lt;repo-name&gt;/&lt;slug&gt;</code>,
+outside the repo and not under <code>$TMPDIR</code>. Your checkout is never touched, so you can keep
+working in it. A run refuses to start or resume when your checkout is on the run's branch; switch away
+first. The path is <code>state.worktree</code>, and <code>/brainrc-gatework-status</code> lists it for every run. <code>/brainrc-gatework-resume</code>
+continues there and recreates a missing worktree from <code>state.branch</code>; if the branch is gone it
+stops and says so.</p>
+<p>Remove a worktree by hand with <code>git worktree remove &lt;path&gt;</code>. Cleanup on merge is planned
+(#256). If your harness sandbox denies writes outside the repo, allow the directory (Claude Code:
+<code>--add-dir &lt;repo parent&gt;/.brainrc-worktrees</code>).</p>
+<h2 id="roles-agents">Roles (<code>agents/</code>)<a class="headerlink" href="#roles-agents" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Agent</th>
+<th>Model</th>
+<th>Job</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>brainrc-analyst</td>
+<td>sonnet</td>
+<td>ticket → testable spec</td>
+</tr>
+<tr>
+<td>brainrc-architect</td>
+<td>opus</td>
+<td>spec → approach + scope-fenced tasks</td>
+</tr>
+<tr>
+<td>brainrc-implementer</td>
+<td>sonnet</td>
+<td>one task, test-first, in scope</td>
+</tr>
+<tr>
+<td>brainrc-test-writer</td>
+<td>sonnet</td>
+<td>failing tests only (security logic, contracts)</td>
+</tr>
+<tr>
+<td>brainrc-code-reviewer</td>
+<td>sonnet</td>
+<td>correctness + spec compliance</td>
+</tr>
+<tr>
+<td>brainrc-security-reviewer</td>
+<td>sonnet</td>
+<td>exploitable issues</td>
+</tr>
+<tr>
+<td>brainrc-infra-reviewer</td>
+<td>sonnet</td>
+<td>blast radius, destroy/replace, state, rollout</td>
+</tr>
+<tr>
+<td>brainrc-verifier</td>
+<td>haiku</td>
+<td>criteria → evidence</td>
+</tr>
+<tr>
+<td>brainrc-researcher</td>
+<td>sonnet</td>
+<td>topic → proven candidate tickets (<code>/brainrc-plan</code>)</td>
+</tr>
+<tr>
+<td>brainrc-doc-writer</td>
+<td>haiku</td>
+<td>docs, PR body, ticket comment</td>
+</tr>
+</tbody>
+</table>
+<h2 id="domain-skills-skills">Domain skills (<code>skills/</code>)<a class="headerlink" href="#domain-skills-skills" title="Permanent link">&para;</a></h2>
+<p>Loaded only when the work touches their files: <code>brainrc-go-service</code>, <code>brainrc-terraform</code> (incl. Terragrunt,
+Atlantis, Spacelift), <code>brainrc-aws</code>, <code>brainrc-kubernetes</code> (Helm, Kustomize), <code>brainrc-gitops</code> (Argo CD, Flux),
+<code>brainrc-ci-pipelines</code> (GitHub Actions), <code>brainrc-containers</code>, <code>brainrc-db-migrations</code>, <code>brainrc-observability</code>, <code>brainrc-scripting</code>
+(Python, Bash). Each holds offline validation commands, conventions, a review checklist,
+and what never to run without approval.</p>
+<h2 id="environments">Environments<a class="headerlink" href="#environments" title="Permanent link">&para;</a></h2>
+<p>Default is offline: validators, renderers, unit tests, local containers and databases. At
+intake, you can allow specific targets for <strong>read-only</strong> evidence (a Terraform root to plan,
+a kube context to diff, an AWS profile to read). Deploying (apply, sync, migrate on shared DBs)
+is never part of a run. It happens after merge, by you, Atlantis/Spacelift, or GitOps.</p>
+<h2 id="harness-support">Harness support<a class="headerlink" href="#harness-support" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Claude Code</th>
+<th>OpenCode</th>
+<th>Codex / Antigravity / Cursor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Skills + commands</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅ (Cursor: skills only)</td>
+</tr>
+<tr>
+<td>Execution</td>
+<td>subagents per role</td>
+<td>subagents per role (rendered agents)</td>
+<td>fallback: role-switch in one session</td>
+</tr>
+<tr>
+<td>Per-agent model tiers</td>
+<td>✅</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Enforced guard hooks</td>
+<td>✅</td>
+<td>✅ plugin (deny only)</td>
+<td>rules only (Cursor: shell and reads, deny only)</td>
+</tr>
+<tr>
+<td>Independent reviewers</td>
+<td>✅ fresh context</td>
+<td>✅ fresh context</td>
+<td>⚠️ same session; reviewers read only spec, diff, and their role's inputs</td>
+</tr>
+<tr>
+<td>Status</td>
+<td>supported, E2E-tested</td>
+<td>supported</td>
+<td>best effort</td>
+</tr>
+</tbody>
+</table>
+<p>In fallback mode, the reviewer and verifier roles read only <code>spec.md</code>, the diff (<code>git diff
+&lt;base&gt;...HEAD</code>), and the inputs their role file names. They never read <code>log.md</code> or the
+implementer's handoffs, and the verifier re-runs every command it cites,
+so the reasoning that produced the change can't argue for it. That narrows what a reviewer
+reads; it doesn't make the context fresh, because the session still contains the earlier roles.
+For standard and large runs the engine stops before batched review and recommends
+<code>/brainrc-gatework-resume</code> in a new session. That is the only way to get an independent review there.</p>
+<h2 id="extending">Extending<a class="headerlink" href="#extending" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Agent:</strong> add <code>agents/&lt;name&gt;.md</code> (frontmatter <code>name</code>, <code>description</code>, <code>tools</code>, <code>model</code>; body
+  Role / Reads / Writes / Must not / Done when / Handoff), then reference it in the engine.</li>
+<li><strong>Domain skill:</strong> add <code>skills/&lt;name&gt;/SKILL.md</code> with Validate / Conventions / Review checklist /
+  Never-without-approval, then add a row to the Domains table in <code>skills/brainrc-gatework/SKILL.md</code>. These live in
+  <a href="https://github.com/brainrc/gatework">brainrc/gatework</a>; a private one goes in your own pack.</li>
+<li><strong>Ticket connector:</strong> add <code>skills/ticket-&lt;system&gt;/SKILL.md</code> implementing <code>fetch</code>, <code>comment</code>,
+  <code>transition</code>, <code>link_pr</code> per the
+  <a href="https://github.com/brainrc/gatework/blob/main/skills/brainrc-gatework/references/connectors.md">connector contract</a>. <code>validate</code> checks the
+  headings. Existing ones: <code>brainrc-ticket-local</code>, <code>brainrc-ticket-github</code>, <code>brainrc-ticket-jira</code>.
+  Optional: <code>pr_status</code> (read-only; without it <code>watch</code> skips).</li>
+</ul>
+<p><code>python3 scripts/brainrc.py validate</code> checks that every agent, skill, and link referenced exists.</p>
+<h2 id="credits">Credits<a class="headerlink" href="#credits" title="Permanent link">&para;</a></h2>
+<p>Stage structure inspired by GitHub's <a href="https://github.com/github/spec-kit">spec-kit</a>; small
+artifacts, change-focused specs, and living specs updated by ADDED/MODIFIED/REMOVED deltas by
+<a href="https://github.com/Fission-AI/OpenSpec">OpenSpec</a>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

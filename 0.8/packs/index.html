@@ -1,0 +1,1877 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="One set of AI coding-agent config for Claude Code, Codex CLI, OpenCode, Antigravity CLI and Cursor">
+      
+      
+      
+        <link rel="canonical" href="https://brainrc.github.io/brainrc/0.8/packs/">
+      
+      
+        <link rel="prev" href="../troubleshooting/">
+      
+      
+        <link rel="next" href="../project/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Packs - brainrc</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#packs" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="brainrc" class="md-header__button md-logo" aria-label="brainrc" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            brainrc
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Packs
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/brainrc/brainrc" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    brainrc/brainrc
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="brainrc" class="md-nav__button md-logo" aria-label="brainrc" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    brainrc
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/brainrc/brainrc" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    brainrc/brainrc
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Get started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Get started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorial
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Packs
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Packs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#enable-a-pack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enable a pack
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#import" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Import
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Layout
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#naming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Naming
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#packtoml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pack.toml
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="pack.toml">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#editor-completion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Editor completion
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#extensions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Extensions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Extensions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#connector-config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connector config
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#validator-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validator plugins
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pack-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pack tests
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#default-packs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Default packs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compatibility
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tripwirestoml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        tripwires.toml
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#validate-a-pack-in-its-own-ci" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validate a pack in its own CI
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#packs-and-claude-code-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Packs and Claude Code plugins
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#context-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context cost
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../project/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project manifest and lockfile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guardrails/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guardrails
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../harness-packages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Harness packages
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../spec-agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    spec-agent
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../post-deliver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    After delivery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../evals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../e2e-runs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    End-to-end runs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../formats/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Formats
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../schemas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schemas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../efficiency/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Efficiency
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#enable-a-pack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enable a pack
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#import" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Import
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Layout
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#naming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Naming
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#packtoml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pack.toml
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="pack.toml">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#editor-completion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Editor completion
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#extensions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Extensions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Extensions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#connector-config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connector config
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#validator-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validator plugins
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pack-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pack tests
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#default-packs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Default packs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compatibility
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tripwirestoml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        tripwires.toml
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#validate-a-pack-in-its-own-ci" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validate a pack in its own CI
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#packs-and-claude-code-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Packs and Claude Code plugins
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#context-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context cost
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="packs">Packs<a class="headerlink" href="#packs" title="Permanent link">&para;</a></h1>
+<p>A pack is a separate repo layered on top of this one. Use it for content that must not live
+here: an employer's facts, internal skills, private review rules. This repo stays generic,
+and each machine picks the packs it needs.</p>
+<p>To start one, copy the working example in <a href="https://github.com/brainrc/brainrc/blob/main/examples/pack-acme/README.md">examples/pack-acme</a>.
+For a pack with a guard hook, see <a href="https://github.com/brainrc/brainrc/blob/main/examples/pack-homelab/README.md">examples/pack-homelab</a>.
+Or start from the instructions you already have: <code>brainrc import</code> turns them into a pack
+(<a href="#import">Import</a>).</p>
+<h2 id="enable-a-pack">Enable a pack<a class="headerlink" href="#enable-a-pack" title="Permanent link">&para;</a></h2>
+<p>List it in <code>packs.local.toml</code> (gitignored; for an installed <code>brainrc</code>, in <code>~/.config/brainrc/</code>),
+then apply:</p>
+<div class="highlight"><pre><span></span><code><span class="k">[acme]</span>
+<span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"~/src/acme-ai-pack"</span><span class="w">   </span><span class="c1"># ~ and $VARS expand; relative paths are relative to this file</span>
+<span class="c1"># enabled = false             # removes the pack's links and hooks on the next apply</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>python3<span class="w"> </span>scripts/brainrc.py<span class="w"> </span>status<span class="w">   </span><span class="c1"># dry run</span>
+python3<span class="w"> </span>scripts/brainrc.py<span class="w"> </span>apply
+</code></pre></div>
+<p>Or name it by git URL and let <code>brainrc</code> fetch it, with no clone of your own:</p>
+<div class="highlight"><pre><span></span><code><span class="k">[acme]</span>
+<span class="n">git</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"git@github.com:acme/acme-ai-pack.git"</span><span class="w">   </span><span class="c1"># any URL git accepts; private repos use your git credentials</span>
+<span class="n">ref</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"v1.2.0"</span><span class="w">                                 </span><span class="c1"># tag, branch, or commit; default: the remote's default branch</span>
+</code></pre></div>
+<p><code>apply</code> fetches it (shallow, detached) into <code>~/.config/brainrc/packs/acme</code> and records the URL
+and <code>ref</code> it fetched; after that it works offline. Change <code>ref</code> or <code>git</code> and the next <code>apply</code>
+fetches again (<code>status</code> shows the <code>FETCH</code> line first). <code>apply</code> records the commit each ref resolved
+to, and a hash of every file it installed, in <code>~/.config/brainrc/brainrc.lock</code>, and from then on
+keeps the pack at that commit, even when the tag or branch moves. <code>brainrc update [&lt;pack&gt; ...]</code>
+(or <code>python3 scripts/brainrc.py update</code>) moves the pin: it refetches the packs at their <code>ref</code>, prints
+the commits and installed files that change, then applies (<a href="../project/">pinned commits</a>). Both
+refuse a clone with local changes, and stop any git call after 60s. Pin a tag, and bump <code>ref</code> to
+upgrade. <code>doctor</code> reports a git pack that hasn't been fetched yet or whose clone doesn't match its
+<code>git</code> and <code>ref</code>.</p>
+<p>The lock also records what each pack can do: its hooks, MCP servers, tool grants and network
+domains. <code>status</code> lists any added (<code>PERMS ... +</code>) or removed, and <code>apply</code> asks before adding any
+unless you pass <code>--yes</code> (<a href="../project/#permissions">permissions</a>).</p>
+<h2 id="import">Import<a class="headerlink" href="#import" title="Permanent link">&para;</a></h2>
+<p><code>brainrc import PATH ...</code> writes the instruction files you already have as a pack, so they move
+over in one command. A folder means the files in it that brainrc reads.</p>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Becomes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CLAUDE.md</code>, <code>AGENTS.md</code></td>
+<td>one rule per section, in order</td>
+</tr>
+<tr>
+<td>Cursor: <code>.cursor/rules/**/*.mdc</code>, <code>.cursorrules</code></td>
+<td><code>alwaysApply: true</code> rules and <code>.cursorrules</code> become rules; a rule scoped by <code>globs</code> becomes a skill with a row in Gatework's Domains table for those globs; one with only a <code>description</code> becomes a skill with that description</td>
+</tr>
+<tr>
+<td>Copilot: <code>.github/copilot-instructions.md</code>, <code>.github/instructions/**/*.instructions.md</code></td>
+<td>copilot-instructions.md becomes one rule per section; a path-specific file with <code>applyTo: "**"</code> becomes a rule, one scoped to other globs a skill with a Domains row, one with neither a skill loaded on request, as for Cursor; one for code review only (<code>excludeAgent: coding-agent</code>) is skipped</td>
+</tr>
+</tbody>
+</table>
+<p>Each file is split at the shallowest heading level it uses more than once (a lone <code># Title</code>
+stays with the text under it), and each part becomes <code>rules/NN-&lt;heading&gt;.md</code> with a first-line
+comment naming the file and lines it came from. Headings inside code blocks don't count. A
+CLAUDE.md line that is only <code>@path</code> (Claude Code's import) is replaced by that file's rules, and
+a brainrc project block is left out, since <code>install</code> writes it.</p>
+<div class="highlight"><pre><span></span><code>brainrc<span class="w"> </span>import<span class="w"> </span>~/.claude/CLAUDE.md<span class="w"> </span>--name<span class="w"> </span>mine<span class="w"> </span>--enable<span class="w">   </span><span class="c1"># write ~/.config/brainrc/imported/mine, load it</span>
+brainrc<span class="w"> </span>import<span class="w"> </span>.<span class="w"> </span>--to<span class="w"> </span>tools/agent-pack<span class="w"> </span>--dry-run<span class="w">          </span><span class="c1"># what a repo's files would become</span>
+</code></pre></div>
+<p>The pack goes to <code>$BRAINRC_HOME/imported/&lt;name&gt;</code> unless <code>--to</code> names a folder, and is checked as
+<code>validate --pack</code> would. <code>import</code> never overwrites a folder with files in it; <code>--force</code> replaces
+an earlier pack there (a folder with a <code>pack.toml</code>), never one that holds a source. <code>--enable</code> adds it to <code>packs.local.toml</code>; for one project, list it in <code>brainrc.toml</code> instead
+(<a href="../project/">project</a>).</p>
+<h2 id="layout">Layout<a class="headerlink" href="#layout" title="Permanent link">&para;</a></h2>
+<p>Same as this repo. Every folder is optional.</p>
+<div class="highlight"><pre><span></span><code>acme-ai-pack/
+  pack.toml              name, prefix, extensions for other packs (see Extensions)
+  validator.py           optional checks and renders of its own (see Validator plugins)
+  tests/                 the pack's own tests, which validate --pack runs (see Pack tests)
+  skills/acme-*/         linked next to the core skills
+  agents/acme-*.md       linked next to the core agents
+  commands/acme-*.md
+  rules/NN-*.md          rendered after all core rules, as one labelled block (see Rules)
+  overrides/claude/hooks/                 linked to &lt;hooks_dir&gt;-acme (e.g. ~/.claude/hooks/brainrc-acme)
+  overrides/claude/settings.fragment.json merged after the core fragment; {{hooks_dir}} = the pack's hooks dir
+  overrides/opencode/plugin.js            linked beside core's guard plugin, as brainrc-guard-acme.js
+  mcp/servers.toml       MCP servers, synced after core's (see formats.md#mcp-servers-mcpserverstoml)
+  tripwires.toml         patterns that must not appear in the pack (checked by validate)
+</code></pre></div>
+<p>Skills, agents, commands, and MCP servers must start with the pack's <code>prefix</code>, and no name may
+exist in two sources. <code>apply</code> refuses to write anything if one does. The full rules are in
+<a href="#naming">Naming</a>.</p>
+<h2 id="naming">Naming<a class="headerlink" href="#naming" title="Permanent link">&para;</a></h2>
+<p>A clear name is the cheapest trust signal a pack has. Every pack follows these seven rules:</p>
+<ol>
+<li><strong><code>brainrc-</code> and <code>brainrc/</code> are reserved for official packs.</strong> No other pack's name, prefix
+   or ID starts with them.</li>
+<li><strong>A registry prefix starts with the owner's handle.</strong> A pack published as <code>jdoe/k8s-tools</code>
+   uses a prefix such as <code>jdoe-</code> or <code>jdoe-k8s-</code>.</li>
+<li><strong>No vendor names without verification.</strong> A pack's name, prefix and ID don't use a vendor's
+   name (<code>aws</code>, <code>github</code>, <code>openai</code> and the like) unless the vendor itself is verified as its owner.</li>
+<li><strong>No names one or two edits from an official name.</strong> The official names are <code>brainrc</code> and
+   the IDs in the table below, so <code>brainrx-</code> and <code>brianrc/review</code> are refused.</li>
+<li><strong>ASCII lowercase letters, digits and hyphens only</strong>, in names, prefixes, IDs and item names.</li>
+<li><strong>A prefix is 2 to 24 characters</strong>, not counting its trailing hyphen.</li>
+<li><strong>Item names are prefix-scoped.</strong> Every skill, agent, command and MCP server starts with the
+   pack's prefix, so two packs' items can't collide.</li>
+</ol>
+<p><code>validate</code> and <code>apply</code> refuse a pack that breaks one. The vendor names and the official IDs it
+checks are listed in <code>brainrc/naming.py</code>.</p>
+<p>A pack's ID is <code>&lt;owner&gt;/&lt;pack&gt;</code>, where the owner is the GitHub user or organization that
+publishes it. Official packs are owned by <code>brainrc</code>:</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>What it holds</th>
+<th>Issue</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>brainrc/gatework</code></td>
+<td>the default pack: spec-agent, its roles, ticket connectors and domain skills (<a href="https://github.com/brainrc/gatework">brainrc/gatework</a>)</td>
+<td><a href="https://github.com/brainrc/brainrc/issues/172">#172</a></td>
+</tr>
+<tr>
+<td><code>brainrc/starter</code></td>
+<td>the small, measured base for the default profile</td>
+<td><a href="https://github.com/brainrc/brainrc/issues/313">#313</a></td>
+</tr>
+<tr>
+<td><code>brainrc/review</code></td>
+<td>review, PR description, commit message and unslop</td>
+<td><a href="https://github.com/brainrc/brainrc/issues/314">#314</a></td>
+</tr>
+<tr>
+<td><code>brainrc/go</code></td>
+<td>Go, built from today's <code>brainrc-go-service</code> skill</td>
+<td><a href="https://github.com/brainrc/brainrc/issues/315">#315</a></td>
+</tr>
+<tr>
+<td><code>brainrc/terraform-aws</code></td>
+<td>Terraform and AWS</td>
+<td><a href="https://github.com/brainrc/brainrc/issues/316">#316</a></td>
+</tr>
+<tr>
+<td><code>brainrc/kubernetes</code></td>
+<td>Kubernetes, including GitOps</td>
+<td><a href="https://github.com/brainrc/brainrc/issues/317">#317</a></td>
+</tr>
+<tr>
+<td><code>brainrc/security-baseline</code></td>
+<td>the default guard policy, secret protection and a sandbox profile</td>
+<td><a href="https://github.com/brainrc/brainrc/issues/323">#323</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="packtoml">pack.toml<a class="headerlink" href="#packtoml" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"acme"</span>
+<span class="n">prefix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"acme-"</span><span class="w">          </span><span class="c1"># default: "&lt;name&gt;-"</span>
+<span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"acme/acme-ai-pack"</span><span class="w">  </span><span class="c1"># optional: the &lt;owner&gt;/&lt;pack&gt; ID it's published under (see Naming)</span>
+<span class="n">requires_core</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"&gt;=0.7, &lt;0.9"</span><span class="w">   </span><span class="c1"># core versions this pack works with (see Compatibility)</span>
+<span class="n">max_always_tokens</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">800</span><span class="w">   </span><span class="c1"># optional budget for rules + descriptions (see Context cost)</span>
+<span class="n">test</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"tests"</span><span class="w">            </span><span class="c1"># optional: tests validate --pack runs (see Pack tests)</span>
+
+<span class="k">[extensions.gatework]</span><span class="w">      </span><span class="c1"># what the gatework pack (spec-agent) reads; see Extensions</span>
+<span class="n">deliver_checks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="w">        </span><span class="c1"># listed in the Deliver gate as done / not applicable / not run</span>
+<span class="w">  </span><span class="s2">"Deploy plan reviewed by the owning team"</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="k">[[extensions.gatework.domains]]</span><span class="w">   </span><span class="c1"># extra rows for spec-agent's Domains table</span>
+<span class="n">files</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"`deploy/*.yaml`, `charts/acme-*`"</span>
+<span class="n">skills</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"acme-deploy"</span><span class="p">]</span>
+<span class="n">reviewer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"brainrc-infra-reviewer"</span>
+
+<span class="k">[[extensions.gatework.intake_context]]</span><span class="w">   </span><span class="c1"># skills spec-agent runs after fetching the ticket</span>
+<span class="n">skill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"acme-context"</span>
+<span class="n">when</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"every ticket"</span>
+
+<span class="k">[extensions.gatework.ticket]</span><span class="w">   </span><span class="c1"># a connector for this pack's ticket refs, with its config</span>
+<span class="n">connector</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"brainrc-ticket-jira"</span>
+<span class="n">refs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"ACME-*"</span><span class="p">]</span>
+<span class="n">host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"acme.example.net"</span>
+<span class="n">blocked_status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Blocked"</span>
+<span class="n">instructions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Link the PR in the ticket's Development panel."</span><span class="w">   </span><span class="c1"># see Connector config</span>
+</code></pre></div>
+<p><code>validate</code> checks <code>pack.toml</code> against
+<a href="../schemas/pack.toml.schema.json"><code>schemas/pack.toml.schema.json</code></a>: a known key with a value of the
+wrong type fails, and a key it doesn't know warns, naming the closest known key
+(<code>max_always_token</code> → <code>max_always_tokens</code>), since brainrc would otherwise ignore it. Only
+<code>validate</code> reports these; <code>apply</code> still installs the pack.</p>
+<h3 id="editor-completion">Editor completion<a class="headerlink" href="#editor-completion" title="Permanent link">&para;</a></h3>
+<p>A pack's <code>pack.toml</code> and <code>mcp/servers.toml</code> have JSON Schemas in <a href="../schemas/"><code>docs/schemas/</code></a>
+(<code>pack.toml</code>, <code>mcp-servers.toml</code>), as does core's <code>harnesses.toml</code>. Editors that use
+<a href="https://taplo.tamasfe.dev/">Taplo</a> (VS Code's Even Better TOML, Zed, Helix) complete keys and flag
+wrong ones from a first line naming the schema, which <code>brainrc import</code> writes for you:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">#:schema https://raw.githubusercontent.com/brainrc/brainrc/main/docs/schemas/pack.toml.schema.json</span>
+<span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"acme"</span>
+</code></pre></div>
+<p>In a checkout of this repo, <a href="https://github.com/brainrc/brainrc/blob/main/.taplo.toml"><code>.taplo.toml</code></a> maps each file to its schema. Files
+outside it (a pack's own repo, <code>~/.config/brainrc/harnesses.local.toml</code>) take the <code>#:schema</code> line.</p>
+<h2 id="extensions">Extensions<a class="headerlink" href="#extensions" title="Permanent link">&para;</a></h2>
+<p><code>[extensions.&lt;namespace&gt;]</code> is a table another pack reads; core passes it through untouched. The
+pack that owns the namespace checks it with its <a href="#validator-plugins">validator plugin</a>, and
+<code>validate</code> warns about a table no enabled pack reads. Gatework, the default pack, owns
+<code>[extensions.gatework]</code> above. <code>apply</code> renders every enabled pack's table into
+<code>$BRAINRC_HOME/extensions.md</code> (default <code>~/.config/brainrc/extensions.md</code>), which spec-agent reads
+at intake. With no other packs enabled, the file says so and spec-agent runs as before; with
+Gatework disabled, there is no file.</p>
+<p>The forms from before 0.7.0, the same keys directly under <code>[extensions]</code> or under
+<code>[extensions.spec-agent]</code>, still work and warn until 0.8.0: move them under
+<code>[extensions.gatework]</code>. <code>apply</code> no longer writes the old copy at
+<code>skills/spec-agent/references/extensions.md</code>, and removes it.</p>
+<p>A pack has at most one <code>[extensions.ticket]</code>: one connector and the refs it handles. A team
+with two ticket systems splits them into two packs. The connector, core or the pack's own,
+must follow the <a href="https://github.com/brainrc/gatework/blob/main/skills/brainrc-gatework/references/connectors.md">connector contract</a>, which
+<code>validate</code> checks.</p>
+<h3 id="connector-config">Connector config<a class="headerlink" href="#connector-config" title="Permanent link">&para;</a></h3>
+<p>A connector skill declares the keys its table takes, and their types, in its SKILL.md frontmatter
+under the <a href="https://agentskills.io">Agent Skills</a> <code>metadata</code> map, so every harness still loads it:</p>
+<div class="highlight"><pre><span></span><code>---
+name: acme-ticket-desk
+description: Ticket connector for the Acme service desk. Use for DESK- refs.
+metadata:
+<span class="gu">  brainrc-config: "refs: list required; queue: integer; blocked_status: string"</span>
+<span class="gu">---</span>
+</code></pre></div>
+<p>Each <code>key: type</code> entry is one of <code>string</code>, <code>integer</code>, <code>boolean</code> or <code>list</code> (of strings), followed by
+<code>required</code> when the table must set it. <code>validate</code> then checks every pack table that names the skill
+as its <code>connector</code>: a key of the wrong type or a missing required key fails, and a key the
+connector doesn't declare warns. Only <code>validate</code> reports these; <code>apply</code> still installs the pack. A
+connector that declares nothing, or a declaration with a mistake (which fails on the skill), isn't
+checked. Every table may also set <code>instructions</code>: what the pack tells the connector about its
+tickets, in place of free-form keys such as <code>notes</code>. It reaches the model, so the pack's
+<a href="#tripwirestoml">tripwires</a> check it like the pack's other text, unless a tripwire sets <code>paths</code> or
+<code>exclude</code>s <code>pack.toml</code>.</p>
+<h2 id="validator-plugins">Validator plugins<a class="headerlink" href="#validator-plugins" title="Permanent link">&para;</a></h2>
+<p>A pack can check what only it understands: <code>validator = "validator.py"</code> in <code>pack.toml</code> names a
+Python module in the pack. Each name in it is optional:</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>What core does with it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NAMESPACE</code></td>
+<td>the <code>[extensions.&lt;namespace&gt;]</code> table it owns (default: the pack's name)</td>
+</tr>
+<tr>
+<td><code>LEGACY_KEYS</code>, <code>LEGACY_NAMESPACES</code>, <code>REMOVED_IN</code></td>
+<td>older extension forms it still reads; <code>validate</code> warns until <code>REMOVED_IN</code></td>
+</tr>
+<tr>
+<td><code>check_extensions(table, where, skill_names, agent_names)</code></td>
+<td>errors in one pack's table, before <code>apply</code> writes anything</td>
+</tr>
+<tr>
+<td><code>warn_extensions(table, where)</code></td>
+<td>warnings for one pack's table, from <code>validate</code></td>
+</tr>
+<tr>
+<td><code>check(me, sources)</code></td>
+<td>errors across every source, from <code>validate</code></td>
+</tr>
+<tr>
+<td><code>doctor(me)</code></td>
+<td><code>(FAIL or WARN, what, fix)</code> findings for <code>doctor</code></td>
+</tr>
+<tr>
+<td><code>render_extensions(tables)</code></td>
+<td>the text of <code>$BRAINRC_HOME/extensions.md</code></td>
+</tr>
+</tbody>
+</table>
+<p>A validator is the pack's code running inside <code>brainrc</code>, so core runs it only for a default pack
+(core's <code>packs.toml</code> pins it, or your own <code>packs.local.toml</code> points it elsewhere), for the pack
+<code>validate --pack</code> checks, and for a pack whose entry in <code>packs.local.toml</code> sets
+<code>run_validator = true</code>. Otherwise <code>validate</code> warns that the pack ships one. Gatework's
+<a href="https://github.com/brainrc/gatework/blob/main/validator.py">validator.py</a> is the reference.</p>
+<h2 id="pack-tests">Pack tests<a class="headerlink" href="#pack-tests" title="Permanent link">&para;</a></h2>
+<p><code>test = "tests"</code> in <code>pack.toml</code> names the pack's own <code>unittest</code> tests: a directory (its <code>test*.py</code>
+files) or one <code>.py</code> file. <code>validate --pack</code> runs them in a fresh Python, from the pack's root, and
+fails if one fails or none is found. They are the pack's code, so only <code>validate --pack</code> from the
+command line runs them; <code>doctor</code> and <code>apply</code> never do.</p>
+<p><code>brainrc.testing</code> runs a guard hook the way Claude Code does, a PreToolUse payload on stdin, so a
+test needs no scaffolding of its own. A string is a Bash command; a dict is the whole payload:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">brainrc.testing</span><span class="w"> </span><span class="kn">import</span> <span class="n">assert_allows</span><span class="p">,</span> <span class="n">assert_asks</span><span class="p">,</span> <span class="n">assert_denies</span><span class="p">,</span> <span class="n">assert_no_opinion</span><span class="p">,</span> <span class="n">run_hook</span>
+
+<span class="n">HOOK</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">"overrides/claude/hooks/guard_acme.py"</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">GuardTest</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_asks_before_a_deploy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">assert_asks</span><span class="p">(</span><span class="n">HOOK</span><span class="p">,</span> <span class="s2">"acme deploy prod"</span><span class="p">)</span>      <span class="c1"># the risky command</span>
+        <span class="n">assert_allows</span><span class="p">(</span><span class="n">HOOK</span><span class="p">,</span> <span class="s2">"acme deploy --help"</span><span class="p">)</span>  <span class="c1"># and a safe near-miss</span>
+</code></pre></div>
+<p><code>assert_allows</code> passes when the hook allows or has no opinion, and <code>assert_no_opinion</code> only when it
+stays out, so Claude Code's own permission check still decides; <code>assert_denies</code> counts exit code 2
+as a deny. Each lists every case that came out wrong, and a missing, failing or hung hook fails.
+<code>run_hook(hook, payload)</code> returns the decision itself. <a href="https://github.com/brainrc/brainrc/blob/main/examples/pack-homelab/tests/test_guard.py">pack-homelab</a>
+has a full example.</p>
+<h2 id="default-packs">Default packs<a class="headerlink" href="#default-packs" title="Permanent link">&para;</a></h2>
+<p>A default pack is a table in core's shipped <code>packs.toml</code>: core turns it on unless
+<code>packs.local.toml</code> says otherwise. Gatework is the only one: spec-agent (the <code>brainrc-gatework</code>
+skill), its roles, the ticket connectors and the domain skills. It lives in
+<a href="https://github.com/brainrc/gatework">brainrc/gatework</a>, and <code>packs.toml</code> pins it by <code>git</code> and a
+release tag <code>ref</code>, so <code>apply</code> fetches it like any git pack (<code>update</code> refetches). Before 0.7.1 it
+shipped inside core as <code>packs/gatework</code>.</p>
+<p>Its names before 0.7.0 (<code>spec-agent</code>, <code>spec-status</code>, <code>ticket-github</code>, <code>kubernetes</code> and the rest,
+listed in <code>brainrc/naming.py</code>) are deprecated aliases until 0.8.0, and the only names naming rule
+7 lets it keep without its prefix. <code>[gatework]</code> with <code>enabled = false</code> in <code>packs.local.toml</code> turns
+it off (<code>brainrc init</code> asks), and core then installs its rules and guard hooks and nothing else.
+To try another version, set only <code>ref</code> there; to work on a clone, set <code>path</code>, which replaces the
+shipped <code>git</code> and <code>ref</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">[gatework]</span>
+<span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"~/src/gatework"</span>
+</code></pre></div>
+<p><code>validate --pack</code> checks a pack against core and the default packs on disk, so a pack that
+extends Gatework is checked against it once <code>apply</code> has fetched it; until then <code>validate</code> warns
+that it isn't fetched yet. <code>--fetch-defaults</code> fetches them at the versions core pins instead (see
+<a href="#validate-a-pack-in-its-own-ci">Validate a pack in its own CI</a>).</p>
+<h2 id="rules">Rules<a class="headerlink" href="#rules" title="Permanent link">&para;</a></h2>
+<p>The rendered instructions file has three parts, in this order:</p>
+<ol>
+<li>Core rules, in filename order.</li>
+<li>Each enabled pack's rules, one block per pack in <code>packs.toml</code> order, filename order inside.
+   Each block starts with <code>&lt;!-- pack: &lt;name&gt; --&gt;</code> and a line telling the model the rules refine
+   the ones above.</li>
+<li><code>*.local.md</code> rules from any source, under <code>&lt;!-- local --&gt;</code>.</li>
+</ol>
+<p>Pack rule numbers only order rules within the pack. Later rules refine earlier ones and must
+not contradict them: a pack rule that contradicts core is a bug in the pack. Write it as a
+narrower case ("in Acme repos, also ...") instead.</p>
+<h2 id="compatibility">Compatibility<a class="headerlink" href="#compatibility" title="Permanent link">&para;</a></h2>
+<p>Core's version is in <code>VERSION</code>. <a href="https://github.com/brainrc/brainrc/blob/main/CHANGELOG.md">CHANGELOG.md</a> tags changes that affect packs
+with <strong>[pack contract]</strong>. Declare the versions your pack supports with <code>requires_core</code>:
+comma-separated clauses of <code>&gt;=</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&lt;</code>, <code>==</code>, <code>!=</code> and a version (missing parts
+are zero, and a bare version means <code>&gt;=</code>).</p>
+<ul>
+<li>Not satisfied → <code>validate</code> fails and <code>apply</code>/<code>status</code> write nothing, naming the pack.</li>
+<li>Missing → allowed, with a warning.</li>
+<li>Policy: semver. While core is <code>0.x</code>, a breaking pack-contract change bumps MINOR, so pin
+  <code>"&gt;=0.N, &lt;0.N+1"</code>. After <code>1.0</code>, breaking changes bump MAJOR: pin <code>"&gt;=1.N, &lt;2"</code>.
+  Other changes (new skills, fixes, docs) bump PATCH and never break a pin.</li>
+</ul>
+<h2 id="tripwirestoml">tripwires.toml<a class="headerlink" href="#tripwirestoml" title="Permanent link">&para;</a></h2>
+<p>Stale facts that must not come back, checked by <code>validate</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">[[tripwire]]</span>
+<span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"old-pager"</span>
+<span class="n">pattern</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'(?i)\bpagerbot\b'</span>
+<span class="n">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"pagerbot was replaced by the new on-call tool"</span>
+<span class="n">allow</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'(?i)replaced|decommissioned|never'</span><span class="w">   </span><span class="c1"># lines matching this pass (they warn against it)</span>
+<span class="n">paths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"*.md"</span><span class="p">]</span><span class="w">                              </span><span class="c1"># default; fnmatch against the path in the pack</span>
+</code></pre></div>
+<h2 id="validate-a-pack-in-its-own-ci">Validate a pack in its own CI<a class="headerlink" href="#validate-a-pack-in-its-own-ci" title="Permanent link">&para;</a></h2>
+<p>The <code>validate-pack</code> action checks a pack against the core version you pin, and against core's
+default packs (Gatework) at the versions that core pins, so a pack may use their skills and agents:</p>
+<div class="highlight"><pre><span></span><code><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@&lt;sha&gt;</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">brainrc/brainrc/.github/actions/validate-pack@&lt;core tag or sha&gt;</span>
+<span class="w">  </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span><span class="w">                  </span><span class="c1"># the pack's directory (default: the repository root)</span>
+<span class="w">    </span><span class="c1"># default-packs: "false" checks it against core alone</span>
+<span class="w">    </span><span class="c1"># python-version: "3.12" sets one up; by default it uses the python3 on PATH</span>
+</code></pre></div>
+<p>The ref you pin is the core: GitHub runs the action from that commit of this repository, so
+there is nothing else to clone. To check before each commit, add the pre-commit hook, which
+installs <code>brainrc</code> at the <code>rev</code> you pin:</p>
+<div class="highlight"><pre><span></span><code><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/brainrc/brainrc</span>
+<span class="w">  </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;core tag&gt;</span>
+<span class="w">  </span><span class="nt">hooks</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">brainrc-validate-pack</span>
+<span class="w">      </span><span class="c1"># args: [pack]          # the pack's directory, when it isn't the repository root</span>
+</code></pre></div>
+<p>Both run <code>validate --pack &lt;dir&gt; --fetch-defaults</code>, which fetches the default packs at the refs
+core's <code>packs.toml</code> pins into clones of their own under <code>$BRAINRC_HOME/validate-packs/</code> (once;
+later runs reuse them), never the clones <code>apply</code> links.</p>
+<p>Without either, clone core at the version you pin and run it yourself:</p>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>--depth<span class="w"> </span><span class="m">1</span><span class="w"> </span>--branch<span class="w"> </span>&lt;core<span class="w"> </span>tag&gt;<span class="w"> </span>https://github.com/brainrc/brainrc<span class="w"> </span>core
+python3<span class="w"> </span>core/scripts/brainrc.py<span class="w"> </span>validate<span class="w"> </span>--pack<span class="w"> </span>.<span class="w"> </span>--fetch-defaults
+</code></pre></div>
+<p>This checks the core, the default packs on disk and that pack, whatever else is in <code>packs.toml</code>:
+frontmatter; <code>pack.toml</code> against <a href="#packtoml">its schema</a>; cross-references in skills, agents,
+commands, rules, <code>README.md</code> and <code>docs/**</code> (relative links, <code>[agent: x]</code> tags, and skills named
+as "<code>x</code> skill" or in prose as "the x skill"; pack files may reference core's and Gatework's skills
+and agents); the <a href="#naming">naming</a> rules; collisions; extension references and
+<a href="#connector-config">connector config</a>; <code>requires_core</code>; tripwires; and the pack's own
+<a href="#pack-tests">tests</a>. A skill named in prose counts only when its name has a hyphen and starts with
+the pack's prefix or a first part two known skills share, so "the follow-up skill" stays prose. A
+relative link in a rule warns, since rules are rendered into each harness's own file; link a URL.
+<code>apply</code> refuses a pack only for what would break the install (frontmatter, names, collisions,
+tags, links in skills, agents and commands); the rest only <code>validate</code> reports.</p>
+<h2 id="packs-and-claude-code-plugins">Packs and Claude Code plugins<a class="headerlink" href="#packs-and-claude-code-plugins" title="Permanent link">&para;</a></h2>
+<p>Core also ships as a Claude Code plugin (README, Install). Packs stay <code>brainrc</code> packs: a plugin
+could carry a pack's skills, agents, and hooks, but not its rules or its spec-agent extensions
+(domains, ticket connector, Deliver checks), which <code>brainrc apply</code> renders for Gatework. Revisit if
+plugins gain a way to extend another plugin.</p>
+<h2 id="context-cost">Context cost<a class="headerlink" href="#context-cost" title="Permanent link">&para;</a></h2>
+<p><code>python3 scripts/brainrc.py tokens</code> estimates tokens per skill, agent, and command across all
+enabled sources. It also shows what loads in every session (rules and descriptions) versus on
+use. Keep pack rules short: they load in every session on that machine.</p>
+<p><code>validate</code> enforces a budget on each source's always-loaded tokens (its rules plus its skill,
+agent, and command descriptions). Core's is 3,000. A pack declares its own in <code>pack.toml</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">max_always_tokens</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">800</span>
+</code></pre></div>
+<p>Over a declared budget, <code>validate</code> fails and names the biggest items. A pack without
+<code>max_always_tokens</code> gets a warning above 1,000 tokens. Any description over 100 tokens gets a
+warning: say what the skill does and when to use it, and move the rest into the body.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

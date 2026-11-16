@@ -120,10 +120,8 @@ def render_pack(spec: PackSpec) -> dict[str, str]:
     return files
 
 
-def write_pack(dest: Path, files: dict[str, str], force: bool = False, sources: list[Path] = ()) -> list[Path]:
-    """Write files under dest: into a temporary folder beside it, then moved into place. dest must
-    not exist, or be empty. With force it may also be an earlier pack (it has a pack.toml), which
-    is replaced, but never a folder that holds one of the sources or is a link."""
+def check_dest(dest: Path, files: dict[str, str], force: bool = False, sources: list[Path] = ()) -> None:
+    """Raise ConfigError if write_pack would refuse dest: so a caller can check before it asks."""
     if dest.is_symlink() or (dest.exists() and not dest.is_dir()):
         raise ConfigError(f"{tilde(dest)} is a link or a file, not a folder")
     full = dest.is_dir() and any(dest.iterdir())
@@ -139,6 +137,13 @@ def write_pack(dest: Path, files: dict[str, str], force: bool = False, sources: 
         posix, win = PurePosixPath(rel), PureWindowsPath(rel)
         if posix.is_absolute() or win.is_absolute() or win.drive or win.root or ".." in win.parts:
             raise ConfigError(f"refusing to write {rel} outside {tilde(dest)}")
+
+
+def write_pack(dest: Path, files: dict[str, str], force: bool = False, sources: list[Path] = ()) -> list[Path]:
+    """Write files under dest: into a temporary folder beside it, then moved into place. dest must
+    not exist, or be empty. With force it may also be an earlier pack (it has a pack.toml), which
+    is replaced, but never a folder that holds one of the sources or is a link."""
+    check_dest(dest, files, force, sources)
     dest.parent.mkdir(parents=True, exist_ok=True)
     tmp = Path(tempfile.mkdtemp(prefix=f".{dest.name}-", dir=dest.parent))
     old = None

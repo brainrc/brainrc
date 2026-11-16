@@ -150,7 +150,7 @@ def enable(name: str, dest: Path, dry_run: bool = False) -> str:
     return f"{'Would add' if dry_run else 'Added'} [{name}] to {tilde(packs_file)}."
 
 
-def _why(e: OSError | UnicodeDecodeError) -> str:
+def why(e: OSError | UnicodeDecodeError) -> str:
     if isinstance(e, UnicodeDecodeError):
         return f"a source isn't UTF-8 text ({e.reason} at byte {e.start}); save it as UTF-8 and import again"
     return f"{tilde(Path(e.filename)) + ': ' if e.filename else ''}{e.strerror or e}"
@@ -182,7 +182,7 @@ def cmd_import(paths: list[str], to: str | None = None, name: str = DEFAULT_NAME
         print(f"ERROR {e}")
         return 1
     except (OSError, UnicodeDecodeError) as e:
-        print(f"ERROR {_why(e)}")
+        print(f"ERROR {why(e)}")
         return 1
     print(f"Wrote {tilde(dest)}: {summary(p)}.")
     from ..validate import cmd_validate

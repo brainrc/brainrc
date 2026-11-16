@@ -63,3 +63,49 @@ Draft PR #365 (base `main`, stacked on #364). `validate` and the full suite pass
   share them; docs/packs.md row; fixtures in `tests/fixtures/import/copilot/`.
 - Deviation within the playbook: the path-specific files are beyond the issue's one named
   source; added because the mapping is the one #164 already built.
+
+## engine · gh:165 · verified
+Draft PR #366 (base `main`, stacked on #365). `validate` and the full suite passed before the push.
+
+## engine · gh:297 · Spec and Plan (ordered member, logged under the Campaign gate)
+- Spec: `init` decides everything first, then shows counts, then (when it asks) waits for a yes,
+  then writes. Run from a folder that isn't HOME or a brainrc checkout, it finds the folder's
+  CLAUDE.md, AGENTS.md, Cursor and Copilot files (`importers.discover`, minus any file it adopts)
+  and offers to import them into pack `imported` at `$BRAINRC_HOME/imported/imported`, added to
+  packs.local.toml. The question defaults to no, since the pack loads in every session; `--yes`
+  names the files and imports nothing; `--import` imports without asking. An earlier import is
+  left alone. A starter profile (`--starter`, or a question defaulting to `app`) writes
+  `profile` and `exclude`: minimal -> minimal; app -> recommended minus Gatework's Terraform,
+  AWS, Kubernetes and GitOps skills; infra -> full. Switching starters keeps the user's own
+  patterns. Counts: files new / changed / moved aside; hooks per harness from the sources'
+  settings fragments under the new profile; tokens of rules (core, packs, local, adopted,
+  imported) plus the descriptions the profile installs after `exclude`. Packs not fetched yet are
+  named as not counted.
+- Plan: `brainrc/starter.py` (new), `brainrc/init.py`, `cli.py` (`--starter`, exclusive with
+  `--profile`; `--import`), docs/install.md; tests in `tests/test_init_import.py`.
+- Starter profiles and their excludes are this campaign's own default (the issue names the three
+  profiles but not what each holds); listed for the maintainer.
+
+## engine · gh:297 · verified
+Draft PR #367 (base `main`, stacked on #366). `validate` and the full suite passed before the push.
+
+## engine · review · code-review (high) on each PR's own diff
+Each PR was reviewed on its increment over the PR below it, fixed on its own branch, and merged
+forward (no force-push). `validate` and the full suite passed before every push.
+- #364 (gh:163): 10 found, 10 fixed. `--force` replaces only an earlier pack (never a link or a
+  folder holding a source) through a backup swap; @imports inline into one text before splitting;
+  one fence reader; order-independent skip; `--enable` turns a disabled pack on, writes atomically
+  and `~`-relative; unreadable or non-UTF-8 sources fail with a message; CLAUDE.local.md is not
+  discovered; one TOML table helper.
+- #365 (gh:164): 10 found, 10 fixed. Frontmatter through brainrc's YAML-subset reader (block
+  lists, folded text, quotes, BOM); brace-aware globs; same-named rules in one folder keep their
+  rows; order numbers leave folder names; empty `.cursorrules` warns; `--format` with a folder.
+- #366 (gh:165): 10 found, 10 fixed. `applyTo` with any of `**`/`**/*` is a rule and `*` is not;
+  `excludeAgent: coding-agent` skipped; `--format copilot` on another file reads it as repo-wide;
+  shared folder walk; the changelog and docs name nested files.
+- #367 (gh:297): 10 found, 9 fixed, 1 no change. Starter asked only when no profile is set; pack
+  folder checked before asking, pack written and validated first; managed links not offered;
+  `--import` says why when empty; turned-on default packs counted; TOML-aware `exclude` edit;
+  `session_tokens` renders as `brainrc tokens` does; one prompt and one write loop. No change: a
+  bad profile line was already refused by `check_config` before this PR.
+

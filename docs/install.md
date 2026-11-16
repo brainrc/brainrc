@@ -15,7 +15,7 @@ when you want to change the config itself.
 ```bash
 git clone <this-repo> ~/brainrc
 cd ~/brainrc
-python3 scripts/brainrc.py init     # first run: pick harnesses, adopt your CLAUDE.md / AGENTS.md
+python3 scripts/brainrc.py init     # first run: pick harnesses, bring in your CLAUDE.md / AGENTS.md
 python3 scripts/brainrc.py status   # dry run: shows what would be linked
 python3 scripts/brainrc.py apply    # render rules + create symlinks
 ```
@@ -24,9 +24,28 @@ python3 scripts/brainrc.py apply    # render rules + create symlinks
 If you already have an instructions file of your own (`~/.claude/CLAUDE.md`,
 `~/.codex/AGENTS.md`, ...), `apply` would report it as a `CONFLICT`, so `init` copies its text
 into `rules/adopted-<harness>.local.md` and moves the original aside as
-`<file>.bak-brainrc-<time>`. Adopted text is a local rule, so every harness loads it. `--yes`
-takes the defaults without asking, `--harness claude,codex` names the harnesses, `--no-adopt`
-leaves your files where they are, and `--dry-run` writes nothing. `init` never runs `apply`.
+`<file>.bak-brainrc-<time>`. Adopted text is a local rule, so every harness loads it.
+
+Run from a project folder, `init` also finds its CLAUDE.md, AGENTS.md, Cursor rules and Copilot
+instructions and offers to import them into a pack named `imported` (`brainrc import`,
+[packs](packs.md#import)), which every session then loads; it answers no unless you say yes, or
+pass `--import`. It skips your home folder, a brainrc checkout and links to what brainrc renders,
+and it writes and checks that pack before anything else, so a pack that fails leaves the rest
+unwritten. Then, when `brainrc.local.toml` sets no profile yet, it asks for a starter profile, which
+it writes there ([below](#per-machine-customization-never-committed)):
+
+| Starter | Profile | Leaves out |
+|---|---|---|
+| `minimal` | `minimal`: rules only | everything but rules |
+| `app` (the default) | `recommended`: plus skills, agents, commands and hooks | MCP servers, and Gatework's Terraform, AWS, Kubernetes and GitOps skills |
+| `infra` | `full`: everything | nothing |
+
+Before it writes anything, `init` shows how many files it will create, change and move aside,
+how many hooks the next `apply` installs, and about how many tokens of rules and descriptions
+every session will load, then asks to go on. `--yes` takes the defaults without asking (no
+import, no starter), `--harness claude,codex` names the harnesses, `--starter app` or
+`--profile recommended` picks the profile, `--no-adopt` leaves your files where they are, and
+`--dry-run` writes nothing. `init` never runs `apply`.
 
 `--help` lists the commands, and `<command> --help` shows one command's options. `status` and
 `apply` take `--only <harness>` (repeat it, or `--only claude,codex`) to touch only those

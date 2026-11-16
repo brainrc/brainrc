@@ -38,6 +38,11 @@
       "type": "string",
       "minLength": 1
     },
+    "test": {
+      "description": "The pack's own unittest tests, a directory or a .py file in the pack; validate --pack runs them (docs/packs.md#pack-tests).",
+      "type": "string",
+      "minLength": 1
+    },
     "extensions": {
       "description": "Tables other packs read, one per namespace, e.g. [extensions.gatework]; the pack that owns a namespace checks it (docs/packs.md#extensions).",
       "type": "object"

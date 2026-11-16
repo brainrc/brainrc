@@ -80,3 +80,23 @@ Draft PR #370 (base `main`, stacked on #369). `validate` and the full suite pass
 - Plan: `brainrc/validate.py`, `brainrc/plan.py`, `brainrc/config.py` (`pack_plugin_path`),
   `brainrc/permissions.py`, examples, docs/packs.md, docs/guardrails.md; fixture
   `tests/fixtures/pack-prose-refs/`; tests in `tests/test_validate_coverage.py`.
+
+## engine · gh:137 · verified
+Draft PR #371 (base `main`, stacked on #370). `validate` and the full suite passed before the push.
+
+## engine · gh:138 · Spec and Plan (logged under the Campaign gate)
+- Spec: `test = "<dir or file>.py"` in `pack.toml` names the pack's unittest tests; `validate --pack`
+  from the command line runs them in a fresh Python (cwd the pack's root, brainrc importable, no
+  bytecode written), and fails when one fails, none is found, or the path isn't a directory or `.py`
+  file in the pack. `doctor` (which passes the pack's key) and `apply` never run them, so they need
+  no permission or lock entry, unlike a validator. `brainrc.testing` gives `run_hook`, `bash`,
+  `assert_denies` (exit 2 counts), `assert_asks` and `assert_allows` (allow or no opinion).
+- The homelab example's rule tests move from core's tests/test_hooks.py into the pack; core keeps
+  the "core no longer asks" and fragment checks, and CI validates both example packs.
+- Plan: `brainrc/testing.py`, `brainrc/packtests.py` (new), `brainrc/validate.py`, the pack.toml
+  schema, examples/pack-homelab (tests/, pack.toml, README), docs/packs.md (Pack tests), the
+  workflow; tests in `tests/test_pack_tests.py`.
+
+## engine · gh:138 · verified
+`validate --pack examples/pack-homelab` runs its 6 tests; a guard with a rule removed fails it.
+`validate` and the full suite (1216 tests) passed before the push.

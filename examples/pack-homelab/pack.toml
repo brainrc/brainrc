@@ -3,3 +3,4 @@
 name = "homelab"
 prefix = "homelab-"               # skills, agents, and commands must start with this
 requires_core = ">=0.6, <0.9"     # core versions this pack works with (docs/packs.md#compatibility)
+test = "tests"                    # its guard tests; validate --pack runs them

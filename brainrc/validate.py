@@ -12,7 +12,7 @@ from pathlib import Path
 from .mcp import check_servers
 from .naming import check_pack_names, unprefixed_ok
 from .plugins import extension_errors, extension_warnings, plugin_errors, validators
-from . import config, connectors, schema
+from . import config, connectors, packtests, schema
 from .config import (
     ConfigError,
     HOOKS_DIR_PLACEHOLDER,
@@ -365,7 +365,8 @@ def pack_errors(srcs: list[Source]) -> list[tuple[Source, list[str]]]:
 
 def cmd_validate(pack: str | None = None, key: str = "") -> int:
     """key: the pack's packs.toml table when doctor checks an enabled pack, so its validator runs
-    only if the user trusts it (`validate --pack` from the command line runs it)."""
+    only if the user trusts it and its tests don't run (`validate --pack` from the command line
+    runs both)."""
     try:
         config_warnings = check_config()
         if pack:
@@ -417,6 +418,8 @@ def cmd_validate(pack: str | None = None, key: str = "") -> int:
         warnings += budget_warnings
     except ConfigError as e:
         errors.append(str(e))
+    if pack and not key:  # only `validate --pack` from the command line runs a pack's own tests
+        errors += packtests.run(checked)
 
     for w in warnings:
         print(f"WARN {w}")

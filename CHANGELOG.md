@@ -12,6 +12,11 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.8.8 (2026-11-16)
+
+- `brainrc import` turns a CLAUDE.md or AGENTS.md into a pack: one rule per section, in order, each with a comment naming the file and lines it came from. Claude Code's whole-line `@path` imports are inlined in place, a brainrc project block is left out, and the pack is checked as `validate --pack` would. It goes to `$BRAINRC_HOME/imported/<name>` (or `--to`), and `--enable` adds it to `packs.local.toml` (#163).
+- New `brainrc/scaffold.py`: the one writer of a pack's layout (pack.toml, rules, skills), all or nothing, for the importers now and `new pack` (#150) later.
+
 ## 0.8.7 (2026-11-15)
 
 - Install-time check (#279): workflow `install-time` runs each install route (`uvx`, `pipx`, `npx`, `brew`) from scratch on ubuntu and macOS and fails one that takes over 60 seconds (90 for Homebrew, which installs Python and builds a virtualenv) from the install command to the first `brainrc status`. `scripts/check_install_time.py` runs each route in a fresh temp HOME with empty caches. Pull requests time this checkout's build (wheel, sdist, packed repo, a formula for the local sdist in a scratch tap); the weekly run, and a manual run, time what's published, and a route whose source doesn't exist yet (no PyPI release, private repo, no tap, no Homebrew) prints SKIP, never PASS; a pip that can't reach PyPI is a FAIL, not a SKIP. Homebrew keeps its own download cache, skips when brainrc is already installed with it, and uninstalls what the check installed. The workflow runs on pull requests and pushes that touch packaging. It isn't a required check.

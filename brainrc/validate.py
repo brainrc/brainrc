@@ -64,18 +64,67 @@ AGENT_TAG = re.compile(r"\[agent:\s*([a-z0-9-]+)\]")
 SKILL_MENTION = re.compile(r"`([a-z0-9-]+)` skill")
 
 
-def _check_references(src: Source, path: Path, agent_names: set[str], skill_names: set[str]) -> list[str]:
+# A skill named in prose, without backticks: "the acme-deploy skill" (#137). Only a hyphenated name
+# whose first part is the pack's prefix, or one two known skills share, counts, so "the write-up
+# skill" and "the acme-specific skill set" stay prose.
+PROSE_SKILL = re.compile(r"\b(?i:the)\s+([a-z0-9]+(?:-[a-z0-9]+)+)\s+skill(?![-\w]|\s+(?:sets?|trees?|levels?)\b)")
+
+
+def _check_references(src: Source, path: Path, agent_names: set[str], skill_names: set[str],
+                      links: bool = True, tags: bool = True, prose: bool = False) -> list[str]:
+    """Broken relative links, unknown `[agent: x]` tags and skills named as "`x` skill" (tags), and,
+    with prose, unknown skills named as "the x skill"."""
     rel = src.rel(path)
     text = FENCE.sub("", path.read_text())
     errors = []
-    for target in MD_LINK.findall(text):
+    for target in MD_LINK.findall(text) if links else []:
         if re.match(r"^[a-z]+:", target) or target.startswith("#") or "<" in target:
             continue
-        if not (path.parent / target.split("#", 1)[0]).exists():
+        local = _unquote(target.split("#", 1)[0])
+        # "/docs/x.md" is relative to the pack's (or core's) root, as GitHub reads it.
+        if not ((src.root / local.lstrip("/")) if local.startswith("/") else (path.parent / local)).exists():
             errors.append(f"{rel}: broken link `{target}`")
-    errors += [f"{rel}: unknown agent `{a}`" for a in AGENT_TAG.findall(text) if a not in agent_names]
-    errors += [f"{rel}: unknown skill `{s}`" for s in SKILL_MENTION.findall(text) if s not in skill_names]
+    if tags:
+        errors += [f"{rel}: unknown agent `{a}`" for a in AGENT_TAG.findall(text) if a not in agent_names]
+        errors += [f"{rel}: unknown skill `{s}`" for s in SKILL_MENTION.findall(text) if s not in skill_names]
+    if prose:
+        firsts = [n.split("-", 1)[0] for n in skill_names]
+        heads = {h for h in firsts if firsts.count(h) > 1} | {src.prefix.split("-", 1)[0]} - {""}
+        errors += [f"{rel}: unknown skill `{s}` (named as \"the {s} skill\")" for s in PROSE_SKILL.findall(text)
+                   if s not in skill_names and s.split("-", 1)[0] in heads]
     return errors
+
+
+def _unquote(link: str) -> str:
+    """A link's %XX escapes decoded (`my%20notes.md` -> `my notes.md`); no urllib, which the
+    no-network test keeps out of brainrc/."""
+    return re.sub(rb"%([0-9A-Fa-f]{2})", lambda m: bytes([int(m[1], 16)]), link.encode()).decode(errors="replace")
+
+
+def _docs(src: Source) -> list[Path]:
+    """A pack's README.md and docs/**/*.md, whose links and references validate checks too."""
+    readme = [src.root / name for name in ("README.md",) if (src.root / name).is_file()]
+    return readme + (_markdown_under(src.root / "docs") if (src.root / "docs").is_dir() else [])
+
+
+def coverage_findings(src: Source, agent_names: set[str], skill_names: set[str]) -> tuple[list[str], list[str]]:
+    """(errors, warnings) from what validate checks beyond what apply refuses (#137): skills named in
+    prose everywhere, references in rules, and links in a pack's README.md and docs/**. A relative
+    link in a rule only warns: rules are rendered into each harness's own instructions file, where
+    it won't resolve."""
+    errors, warnings = [], []
+    items = [md for s in skills(src) for md in _markdown_under(s)]
+    items += markdown_files("agents", src) + markdown_files("commands", src)
+    for f in items:  # their links and tags apply checks already
+        errors += _check_references(src, f, agent_names, skill_names, links=False, tags=False, prose=True)
+    for f in markdown_files("rules", src):
+        errors += _check_references(src, f, agent_names, skill_names, links=False, prose=True)
+        warnings += [f"{src.rel(f)}: relative link `{t}` won't resolve once the rule is rendered; link a URL"
+                     for t in MD_LINK.findall(FENCE.sub("", f.read_text()))
+                     if not (re.match(r"^[a-z]+:", t) or t.startswith("#") or "<" in t)]
+    for f in [] if src.is_core else _docs(src):
+        errors += _check_references(src, f, agent_names, skill_names, prose=True)
+    return errors, warnings
 
 
 # Harness built-in names a core skill must not take.
@@ -137,17 +186,21 @@ def _validate_source(src: Source, agent_names: set[str], skill_names: set[str], 
         errors += _check_references(src, f, agent_names, skill_names)
 
     overrides = src.root / "overrides"
-    for fragment in sorted(overrides.glob("*/settings.fragment.json")) if overrides.is_dir() else []:
+    harnesses = load_harnesses(include_disabled=True)
+    for fragment in sorted(overrides.glob("*/settings.fragment.json")):
         try:
             json.loads(fragment.read_text())
         except json.JSONDecodeError as e:
             errors.append(f"{src.rel(fragment)}: invalid JSON ({e})")
-        harness = load_harnesses(include_disabled=True).get(fragment.parent.name, {})
+        harness = harnesses.get(fragment.parent.name, {})
         if HOOKS_DIR_PLACEHOLDER in fragment.read_text() and "hooks_dir" not in harness:
             errors.append(f"{src.rel(fragment)}: uses {HOOKS_DIR_PLACEHOLDER} but harnesses.toml "
                           f"[{fragment.parent.name}] has no hooks_dir")
 
     if not src.is_core:
+        errors += [f"{src.rel(p)}: no harness in harnesses.toml loads a plugin from overrides/{p.parent.name}/ "
+                   "(only one with `plugin` set does)" for p in sorted(overrides.glob("*/plugin.js"))
+                   if "plugin" not in harnesses.get(p.parent.name, {})]
         errors += _validate_pack(src)
         errors += extension_errors(src, list(plugins), skill_names, agent_names)
     errors += _check_tripwires(src)
@@ -344,6 +397,9 @@ def cmd_validate(pack: str | None = None, key: str = "") -> int:
     warnings = config_warnings + extension_warnings(srcs, plugins)
     for src in srcs:  # validate-only, like pack.toml's schema: apply installs a pack whatever these say
         errors += connectors.declaration_errors(src)
+        found = coverage_findings(src, agent_names, skill_names)
+        errors += found[0]
+        warnings += found[1]
         if not src.is_core:
             for found in (pack_toml_findings(src), connectors.check(src, skill_dirs)):
                 errors += found[0]

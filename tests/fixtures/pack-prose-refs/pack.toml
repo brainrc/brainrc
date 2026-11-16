@@ -1,0 +1,4 @@
+# A pack whose references are written in prose, some of them wrong: validate must fail it (#137).
+name = "prose"
+prefix = "prose-"
+requires_core = ">=0"

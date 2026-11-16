@@ -28,4 +28,4 @@ python3 scripts/brainrc.py apply
 `apply` links `overrides/claude/hooks/` to `<hooks_dir>-homelab` and merges
 `settings.fragment.json` after core's. To add your own rules, copy this directory and add to
 `RULES` in `guard_homelab.py`, with a test for the risky command and a safe near-miss.
-Format reference: [docs/packs.md](../../docs/packs.md#layout).
+Format reference: [docs/packs.md](https://github.com/brainrc/brainrc/blob/main/docs/packs.md#layout).

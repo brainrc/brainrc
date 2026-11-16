@@ -65,3 +65,18 @@ couldn't be installed in the build environment, so the editor association is che
 - Plan: `brainrc/connectors.py` (new), `brainrc/validate.py`, the fixture's Jira skill,
   `examples/pack-acme/pack.toml`, docs/packs.md (Connector config), docs/formats.md; tests in
   `tests/test_connector_config.py`.
+
+## engine · gh:136 · verified
+Draft PR #370 (base `main`, stacked on #369). `validate` and the full suite passed before the push.
+
+## engine · gh:137 · Spec and Plan (logged under the Campaign gate)
+- Spec: `validate` runs its reference check (relative links, `[agent: x]`, "`x` skill") over every
+  source's rules and a pack's `README.md` and `docs/**`, and also catches a skill named in prose,
+  "the x skill", when x is hyphenated and starts like a known skill or the pack's prefix (so "the
+  follow-up skill" stays prose). A pack's `overrides/<harness>/plugin.js` is linked for a harness
+  with `plugin` set, as a sibling of core's file (`brainrc-guard-<pack>.js`), removed with the pack,
+  and recorded in the lock as one of the pack's hooks; a plugin for a harness that loads none fails.
+  The example READMEs link core's docs by URL, since a pack copied out of this repo broke them.
+- Plan: `brainrc/validate.py`, `brainrc/plan.py`, `brainrc/config.py` (`pack_plugin_path`),
+  `brainrc/permissions.py`, examples, docs/packs.md, docs/guardrails.md; fixture
+  `tests/fixtures/pack-prose-refs/`; tests in `tests/test_validate_coverage.py`.

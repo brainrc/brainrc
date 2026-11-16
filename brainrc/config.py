@@ -553,6 +553,14 @@ def former_hooks_dirs(hooks_dir: str) -> list[str]:
     return [d[:-len("brainrc")] + "ai-config"] if d.endswith("/brainrc") else []
 
 
+def pack_plugin_path(plugin: str, pack: str) -> str:
+    """A pack's own plugin file: a sibling of core's, `brainrc-guard.js` -> `brainrc-guard-<pack>.js`."""
+    head, slash, name = plugin.rpartition("/")
+    stem, dot, ext = name.rpartition(".")
+    name = f"{stem}-{pack}.{ext}" if dot and stem else f"{name}-{pack}"
+    return head + slash + name
+
+
 def former_plugin_paths(plugin: str) -> list[str]:
     """The pre-rename link for a plugin named brainrc-guard.js; a plugin the user named is used as given."""
     head, _, name = plugin.rpartition("/")

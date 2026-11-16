@@ -31,11 +31,22 @@ class CapabilitiesTest(unittest.TestCase):
             shutil.copy(REPO / capabilities.PAGE, root / capabilities.PAGE)
             shutil.copytree(REPO / "overrides", root / "overrides")
             toml = (REPO / "harnesses.toml").read_text()
-            (root / "harnesses.toml").write_text(toml.replace('mcp = "${CODEX_HOME:-~/.codex}/config.toml"\n', ""))
+            changed = toml.replace("\n[codex]\n", "\n[codex]\nagents = \"~/.codex/agents\"\n", 1)
+            self.assertNotEqual(changed, toml, "the [codex] table moved: update this test")
+            (root / "harnesses.toml").write_text(changed)
             self.assertNotEqual(capabilities.current((root / capabilities.PAGE).read_text()), capabilities.render(root))
             self.assertTrue(capabilities.write(root))
             self.assertEqual(capabilities.current((root / capabilities.PAGE).read_text()), capabilities.render(root))
             self.assertFalse(capabilities.write(root))
+
+    def test_write_refuses_a_page_without_markers(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "docs").mkdir()
+            (root / capabilities.PAGE).write_text("# no table\n")
+            shutil.copy(REPO / "harnesses.toml", root / "harnesses.toml")
+            with self.assertRaises(capabilities.ConfigError):
+                capabilities.write(root)
 
 
 if __name__ == "__main__":

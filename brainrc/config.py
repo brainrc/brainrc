@@ -439,6 +439,11 @@ def harness_vars(name: str) -> list[str]:
         h = _layered("harnesses").get(name, {})
     except ConfigError:
         return []
+    return env_vars(h)
+
+
+def env_vars(h: dict) -> list[str]:
+    """The env vars that harness table h's paths read, e.g. ["CLAUDE_CONFIG_DIR"]."""
     return sorted({m[1] for k, v in h.items() if k in PATH_KEYS and isinstance(v, str)
                    for m in ENV_DEFAULT.finditer(v)})
 

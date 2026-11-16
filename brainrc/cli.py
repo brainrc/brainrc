@@ -666,11 +666,7 @@ def _dispatch(argv: list[str]) -> int:
     if cmd == "plugin":
         return cmd_plugin()
     if cmd == "capabilities":
-        if args.write:
-            print(f"{capabilities.PAGE}: {'updated' if capabilities.write() else 'up to date'}")
-        else:
-            print(capabilities.render())
-        return 0
+        return capabilities.cmd_capabilities(args.write)
     if cmd == "release":
         return cmd_release_notes(args.notes) if args.notes else cmd_release(dry_run=args.dry_run)
     if cmd == "doctor":

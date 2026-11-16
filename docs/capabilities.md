@@ -9,11 +9,11 @@ it changes only when that file does, and a test fails when the two disagree.
 <!-- BEGIN capability matrix: generated from harnesses.toml by `brainrc capabilities --write` -->
 | Tool | Skills | Rules | Agents | Commands | Guard hooks | MCP servers | In a repo | Moves with |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Claude Code | `~/.claude/skills` | `~/.claude/CLAUDE.md` | `~/.claude/agents` | `~/.claude/commands` | `~/.claude/settings.json`: PreToolUse, SessionStart | `~/.claude.json` | `.claude/skills/` (copy), `CLAUDE.md` (imports AGENTS.md) | `CLAUDE_CONFIG_DIR` |
+| Claude Code | `~/.claude/skills` | `~/.claude/CLAUDE.md` | `~/.claude/agents` | `~/.claude/commands` | `~/.claude/settings.json`: PreToolUse, SessionStart | `~/.claude.json` | `.agents/skills/`, `AGENTS.md`, `.claude/skills/` (copy), `CLAUDE.md` (imports AGENTS.md) | `CLAUDE_CONFIG_DIR` |
 | Codex | `~/.codex/skills` | `~/.codex/AGENTS.md` | — | `~/.codex/prompts` | — | `~/.codex/config.toml` | `.agents/skills/`, `AGENTS.md` | `CODEX_HOME` |
 | OpenCode | `~/.config/opencode/skills` | `~/.config/opencode/AGENTS.md` | `~/.config/opencode/agents` (rendered) | `~/.config/opencode/command` | plugin `~/.config/opencode/plugins/brainrc-guard.js` | `~/.config/opencode/opencode.json` | `.agents/skills/`, `AGENTS.md` | `XDG_CONFIG_HOME` |
 | Antigravity CLI | `~/.gemini/config/skills` | `~/.gemini/config/AGENTS.md` | — | — | — | — | `.agents/skills/`, `AGENTS.md` | — |
-| Gemini CLI (off by default) | `~/.gemini/skills` | `~/.gemini/GEMINI.md` | — | — | — | — | — | — |
+| Gemini CLI (off by default) | `~/.gemini/skills` | `~/.gemini/GEMINI.md` | — | — | — | — | `.agents/skills/`, `AGENTS.md` | — |
 | Cursor | `~/.cursor/skills` | — | — | — | `~/.cursor/hooks.json`: beforeReadFile, beforeShellExecution | — | `.agents/skills/`, `AGENTS.md` | — |
 <!-- END capability matrix -->
 
@@ -26,6 +26,8 @@ What the table can't show:
 - **Guard hooks**: Claude Code can allow, ask or deny; OpenCode's plugin and Cursor's hooks deny
   only ([guardrails](guardrails.md)). Codex and Antigravity get the rules alone.
 - **Off by default**: Gemini CLI was replaced by Antigravity CLI. Enable it in
-  `harnesses.local.toml` if your account still runs it.
+  `harnesses.local.toml` if your account still runs it. In a repo, an off-by-default tool gets
+  files only when `brainrc.toml` names it in `harnesses`.
 
-To add or move a tool, edit `harnesses.toml`, then run `python3 scripts/brainrc.py capabilities --write`.
+To add or move a tool, edit `harnesses.toml` (and, for a new tool, its display name in
+`brainrc/capabilities.py`), then run `python3 scripts/brainrc.py capabilities --write`.

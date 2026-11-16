@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 from . import config
+from .config import ConfigError
 
 PAGE = "docs/capabilities.md"
 BEGIN = "<!-- BEGIN capability matrix: generated from harnesses.toml by `brainrc capabilities --write` -->"
@@ -20,7 +21,7 @@ NONE = "—"
 
 
 def _path(h: dict, key: str) -> str:
-    return f"`{config.env_default(h[key], defaults=True)}`"
+    return f"`{config.env_default(h[key], defaults=True)}`" if key in h else NONE
 
 
 def _hooks(root: Path, name: str, h: dict) -> str:
@@ -34,54 +35,72 @@ def _hooks(root: Path, name: str, h: dict) -> str:
 
 
 def _repo(h: dict) -> str:
-    skills = f"`{h['project_skills']}/` (copy)" if "project_skills" in h else "`.agents/skills/`"
-    rules = f"`{h['project_instructions']}` (imports AGENTS.md)" if "project_instructions" in h else "`AGENTS.md`"
-    return f"{skills}, {rules}"
+    """Project scope always writes the standard files; project_* adds a tool's own (docs/project.md)."""
+    out = ["`.agents/skills/`", "`AGENTS.md`"]
+    if "project_skills" in h:
+        out.append(f"`{h['project_skills']}/` (copy)")
+    if "project_instructions" in h:
+        out.append(f"`{h['project_instructions']}` (imports AGENTS.md)")
+    return ", ".join(out)
 
 
 def _row(root: Path, name: str, h: dict) -> list[str]:
     label = LABELS.get(name, name) + ("" if h.get("enabled", True) else " (off by default)")
-    agents = _path(h, "agents") + (" (rendered)" if h.get("agents_format") == "opencode" else "") \
-        if "agents" in h else NONE
-    moves = sorted({m[1] for k, v in h.items() if k in config.PATH_KEYS and isinstance(v, str)
-                    for m in config.ENV_DEFAULT.finditer(v)})
-    return [label,
-            _path(h, "skills") if "skills" in h else NONE,
-            _path(h, "instructions") if "instructions" in h else NONE,
-            agents,
-            _path(h, "commands") if "commands" in h else NONE,
-            _hooks(root, name, h),
-            _path(h, "mcp") if "mcp" in h else NONE,
-            _repo(h) if h.get("enabled", True) else NONE,
-            ", ".join(f"`{v}`" for v in moves) or NONE]
+    agents = _path(h, "agents") + (" (rendered)" if h.get("agents_format") == "opencode" else "")
+    return [label, _path(h, "skills"), _path(h, "instructions"), agents if "agents" in h else NONE,
+            _path(h, "commands"), _hooks(root, name, h), _path(h, "mcp"), _repo(h),
+            ", ".join(f"`{v}`" for v in config.env_vars(h)) or NONE]
 
 
 def render(root: Path | None = None) -> str:
-    """The table for root's harnesses.toml (the shipped file, never the local one)."""
-    import tomllib  # here, not at the top: an old Python gets cli's version message first
-
+    """The table for root's harnesses.toml (the shipped file, never the local one). Raises
+    ConfigError for a broken file."""
     root = root or config.REPO
-    harnesses = tomllib.loads((root / "harnesses.toml").read_text())
+    harnesses = config._read_toml(root / "harnesses.toml")
     rows = [COLUMNS, ["---"] * len(COLUMNS)] + [_row(root, n, h) for n, h in harnesses.items()]
     return "\n".join("| " + " | ".join(r) + " |" for r in rows)
 
 
+def _parts(text: str) -> tuple[str, str, str] | None:
+    """The page split into (before BEGIN, the table, from END on), or None without both markers."""
+    head, begin, rest = text.partition(BEGIN)
+    table, end, tail = rest.partition(END)
+    return (head, table.strip(), end + tail) if begin and end else None
+
+
 def current(text: str) -> str | None:
     """The table between the markers in the page's text, or None when a marker is missing."""
-    if BEGIN not in text or END not in text:
-        return None
-    return text.split(BEGIN, 1)[1].split(END, 1)[0].strip()
+    parts = _parts(text)
+    return parts[1] if parts else None
 
 
 def write(root: Path | None = None) -> bool:
-    """Rewrite the page's table from harnesses.toml; True if it changed."""
+    """Rewrite the page's table from harnesses.toml; True if it changed. Raises ConfigError."""
     root = root or config.REPO
     page = root / PAGE
     text = page.read_text()
-    if current(text) is None:
-        raise SystemExit(f"{PAGE}: the {BEGIN!r} and {END!r} lines are missing")
-    head, rest = text.split(BEGIN, 1)
-    new = f"{head}{BEGIN}\n{render(root)}\n{END}{rest.split(END, 1)[1]}"
-    if new != text:
+    parts = _parts(text)
+    if parts is None:
+        raise ConfigError(f"{PAGE}: the BEGIN and END capability matrix marker lines are missing")
+    new = f"{parts[0]}{BEGIN}\n{render(root)}\n{parts[2]}"
+    changed = new != text
+    if changed:
         page.write_text(new)
-    return new != text
+    return changed
+
+
+def cmd_capabilities(write_page: bool) -> int:
+    """Print the matrix, or with write_page rewrite docs/capabilities.md (from a checkout only)."""
+    if write_page and config.installed():
+        print(f"ERROR capabilities --write writes the repo's {PAGE}; run it from a checkout: "
+              "python3 scripts/brainrc.py capabilities --write")
+        return 1
+    try:
+        if write_page:
+            print(f"{PAGE}: {'updated' if write() else 'up to date'}")
+        else:
+            print(render())
+    except ConfigError as e:
+        print(f"ERROR {e}")
+        return 1
+    return 0

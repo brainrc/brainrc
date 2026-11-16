@@ -1,6 +1,6 @@
 """A small JSON Schema validator: the subset docs/schemas/ uses, so brainrc stays stdlib-only.
 
-Supported keywords: type, const, enum, pattern, minLength, minimum, items, properties, required,
+Supported keywords: type, const, enum, pattern, minLength, minimum, minItems, items, properties, required,
 additionalProperties, propertyNames, $ref (to #/$defs/<name>), not, oneOf, anyOf. Anything else
 in a schema is ignored, so a schema that needs more must grow this file first.
 """
@@ -18,6 +18,8 @@ TYPES = {"object": dict, "array": list, "string": str, "boolean": bool}
 def _is(value, kind: str) -> bool:
     if kind == "integer":
         return isinstance(value, int) and not isinstance(value, bool)
+    if kind == "number":
+        return isinstance(value, (int, float)) and not isinstance(value, bool)
     return isinstance(value, TYPES[kind])
 
 
@@ -59,6 +61,8 @@ def errors(value, schema: dict, root: dict | None = None, path: tuple = (),
     if "minimum" in schema and isinstance(value, (int, float)) and not isinstance(value, bool) \
             and value < schema["minimum"]:
         found.append(f"{where}: must be at least {schema['minimum']}")
+    if isinstance(value, list) and len(value) < schema.get("minItems", 0):
+        found.append(f"{where}: must not be empty")
     if isinstance(value, list) and "items" in schema:
         for i, item in enumerate(value):
             found += errors(item, schema["items"], root, path + (i,), unknown)
@@ -81,12 +85,29 @@ def errors(value, schema: dict, root: dict | None = None, path: tuple = (),
                 found += errors(item, schema["additionalProperties"], root, path + (key,), unknown)
     if "not" in schema and not errors(value, schema["not"], root, path):
         found.append(f"{where}: {_not_message(schema['not'])}")
-    if "anyOf" in schema and all(errors(value, s, root, path) for s in schema["anyOf"]):
-        found.append(f"{where}: matches none of the allowed forms")
+    if "anyOf" in schema:
+        matched = _matches(value, schema["anyOf"], root, path, unknown)
+        if not matched:
+            found.append(f"{where}: matches none of the allowed forms")
+        elif unknown is not None:
+            unknown += matched[0]
     if "oneOf" in schema:
-        matched = [s for s in schema["oneOf"] if not errors(value, s, root, path)]
+        matched = _matches(value, schema["oneOf"], root, path, unknown)
         if len(matched) != 1:
             found.append(f"{where}: {_one_of_message(value, schema['oneOf'])}")
+        elif unknown is not None:
+            unknown += matched[0]
+    return found
+
+
+def _matches(value, forms: list[dict], root: dict, path: tuple, unknown: list | None) -> list[list]:
+    """The unknown keys of each form value matches. When unknown keys are collected, a form whose
+    only problem is an unknown key still matches (the key is a warning, not a failure)."""
+    found = []
+    for form in forms:
+        mine = [] if unknown is not None else None
+        if not errors(value, form, root, path, mine):
+            found.append(mine or [])
     return found
 
 

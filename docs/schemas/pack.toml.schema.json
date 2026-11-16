@@ -18,8 +18,7 @@
     },
     "id": {
       "description": "The <owner>/<pack> ID the pack is published under (docs/packs.md#naming).",
-      "type": "string",
-      "minLength": 1
+      "type": "string"
     },
     "description": {
       "description": "One line on what the pack is for.",
@@ -27,12 +26,11 @@
     },
     "requires_core": {
       "description": "Core versions the pack works with, e.g. \">=0.8, <0.9\" (docs/packs.md#compatibility).",
-      "type": "string",
-      "minLength": 1
+      "type": "string"
     },
     "max_always_tokens": {
       "description": "Budget for the tokens the pack loads into every session: rules plus descriptions (docs/packs.md#context-cost).",
-      "type": "integer",
+      "type": "number",
       "minimum": 0
     },
     "validator": {

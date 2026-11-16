@@ -1,0 +1,30 @@
+name: hook-latency
+
+# What core's hooks add to each tool call, on Linux and macOS (#299, docs/hook-latency.md).
+# Informational: it reports the numbers in the job summary and fails only if the script breaks.
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "overrides/**"
+      - "scripts/hook_latency.py"
+      - ".github/workflows/hook-latency.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  measure:
+    name: hook latency (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - run: python3 scripts/hook_latency.py --runs 100 --summary "$GITHUB_STEP_SUMMARY"

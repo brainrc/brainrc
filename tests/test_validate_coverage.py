@@ -1,6 +1,5 @@
 """validate covers more (#137): links in a pack's README and docs/**, skills named in prose ("the x
 skill"), references inside rules, and a pack's own OpenCode plugin."""
-import json
 import os
 import shutil
 import sys
@@ -58,6 +57,35 @@ class ProseReferencesTest(TempRepoCase):
         skill.write_text(text + "```\nthe prose-ghost skill (in a code block)\n```\n")
         _, out = self.validate()
         self.assertNotIn("prose:skills/prose-deploy", out)
+
+    def test_apply_still_installs_the_pack(self):
+        from brainrc.sources import sources
+        from brainrc.validate import pack_errors
+        self.assertEqual(pack_errors([*sources(), load_pack(self.pack)]), [])
+
+    def test_root_relative_and_escaped_links_resolve(self):
+        (self.pack / "docs/my notes.md").write_text("# Notes\n")
+        (self.pack / "docs/runbook.md").write_text("# Runbook\n")
+        readme = self.pack / "README.md"
+        readme.write_text("[a](/docs/guide.md) [b](docs/my%20notes.md) [c](/docs/gone.md)\n")
+        _, out = self.validate()
+        self.assertNotIn("README.md: broken link `/docs/guide.md`", out)
+        self.assertNotIn("my%20notes", out)
+        self.assertIn("prose:README.md: broken link `/docs/gone.md`", out)
+
+    def test_a_relative_link_in_a_rule_warns(self):
+        rule = self.pack / "rules/50-prose.md"
+        rule.write_text(rule.read_text() + "\nSee [the runbook](../docs/guide.md) or [the site](https://e.example).\n")
+        _, out = self.validate()
+        self.assertIn("WARN prose:rules/50-prose.md: relative link `../docs/guide.md` won't resolve", out)
+        self.assertNotIn("https://e.example", out)
+
+    def test_a_skill_set_and_a_lone_head_are_prose(self):
+        skill = self.pack / "skills/prose-deploy/SKILL.md"
+        skill.write_text(skill.read_text() + "\nUse the prose-specific skill set, and the deploy-ish skill.\n")
+        _, out = self.validate()
+        self.assertNotIn("prose-specific", out)
+        self.assertNotIn("deploy-ish", out)
 
     def test_a_core_rule_reference_is_checked(self):
         (self.repo / "rules/90-test.md").write_text(
@@ -117,10 +145,21 @@ class PackPluginTest(TempRepoCase):
         self.assertEqual(code, 1, out)
         self.assertIn("acme:overrides/claude/plugin.js: no harness in harnesses.toml loads a plugin", out)
 
+    def test_the_link_goes_when_the_packs_entry_is_deleted(self):
+        code, out = quiet(brainrc.cmd_sync, True, None, False, True)
+        self.assertEqual(code, 0, out)
+        self.assertTrue((self.plugins / "brainrc-guard-acme.js").is_symlink())
+        (self.repo / "packs.local.toml").write_text("")
+        code, out = quiet(brainrc.cmd_sync, True, None, False, True)
+        self.assertEqual(code, 0, out)
+        self.assertFalse((self.plugins / "brainrc-guard-acme.js").is_symlink())
+        self.assertTrue((self.plugins / "brainrc-guard.js").is_symlink())
+
     def test_the_plugin_path(self):
         self.assertEqual(config.pack_plugin_path("~/.config/opencode/plugins/brainrc-guard.js", "acme"),
                          "~/.config/opencode/plugins/brainrc-guard-acme.js")
         self.assertEqual(config.pack_plugin_path("~/p.d/guard", "acme"), "~/p.d/guard-acme")
+        self.assertEqual(config.pack_plugin_path("~/plugins/.guard", "acme"), "~/plugins/.guard-acme")
 
 
 if __name__ == "__main__":

@@ -163,6 +163,13 @@ def hooks_copy_current(overrides: Path, copy_root: Path) -> bool:
     return copy_root.is_dir() and _hook_files(overrides) == _hook_files(copy_root)
 
 
+def _pack_plugin(target: Path) -> bool:
+    """True if target is some pack's overrides/<harness>/plugin.js, whether or not the pack is
+    still configured."""
+    t = Path(os.path.abspath(target))
+    return t.name == "plugin.js" and t.parent.parent.name == "overrides"
+
+
 def _managed_target(target: Path, roots: list[Path]) -> bool:
     """True if target is a path brainrc itself links to: in a source root, or the hooks copy."""
     t = Path(os.path.abspath(target)).resolve()
@@ -247,6 +254,7 @@ def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
     # disabled harnesses). Only symlinks pointing at a path brainrc links to are touched.
     wanted = {link.dest for link in links}
     candidates: set[Path] = set()
+    orphans: set[Path] = set()
     for h in _scoped(load_harnesses(include_disabled=True)).values():
         for kind in KINDS:
             d = expand(h[kind]) if kind in h else None
@@ -258,12 +266,17 @@ def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
             candidates.add(expand(h["plugin"]))
             candidates.update(expand(old) for old in config.former_plugin_paths(h["plugin"]))
             candidates.update(expand(config.pack_plugin_path(h["plugin"], s.name)) for s in every_src)
+            # A pack's plugin runs on every tool call, so its link goes with the pack even when the
+            # pack's entry was deleted from packs.toml (every_src no longer names it).
+            mine = expand(config.pack_plugin_path(h["plugin"], "*"))
+            orphans.update(q for q in (mine.parent.glob(mine.name) if mine.parent.is_dir() else [])
+                           if q.is_symlink() and _pack_plugin(link_target(q)))
         if "hooks_dir" in h:
             candidates.add(expand(h["hooks_dir"]))
             candidates.update(expand(pack_hooks_dir(h["hooks_dir"], s.name)) for s in every_src)
             for old in config.former_hooks_dirs(h["hooks_dir"]):  # the pre-rename names
                 candidates.add(expand(old))
                 candidates.update(expand(pack_hooks_dir(old, s.name)) for s in every_src)
-    stale = sorted(p for p in candidates
-                   if p.is_symlink() and p not in wanted and _managed_target(link_target(p), roots))
+    stale = sorted(p for p in candidates | orphans
+                   if p.is_symlink() and p not in wanted and (p in orphans or _managed_target(link_target(p), roots)))
     return links, stale, merges

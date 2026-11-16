@@ -44,10 +44,17 @@ jobs:
         run: |
           python3 scripts/brainrc.py apply
           python3 scripts/brainrc.py validate
-      - name: Validate example packs
-        run: |
-          python3 scripts/brainrc.py validate --pack examples/pack-acme
-          python3 scripts/brainrc.py validate --pack examples/pack-homelab
+      # The example packs are checked the way a pack's own CI does it: with the validate-pack
+      # action, here from this checkout (a pack's repository pins a core tag instead).
+      - name: Validate example pack
+        uses: ./.github/actions/validate-pack
+        with:
+          path: examples/pack-acme
+      - name: Validate example pack without the default packs
+        uses: ./.github/actions/validate-pack
+        with:
+          path: examples/pack-homelab
+          default-packs: "false"
       - run: python3 -m unittest discover -s tests -v
       - name: Install brainrc as a package and smoke-test the installed wheel
         run: |

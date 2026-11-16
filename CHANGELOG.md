@@ -12,6 +12,15 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.8.16 (2026-11-16)
+
+- Packs can ship their own tests: `test = "tests"` in `pack.toml` names a directory or `.py` file of
+  unittest tests, and `validate --pack` runs them in a fresh Python, failing when one fails or none
+  is found (`doctor` and `apply` never run them). `brainrc.testing` runs a guard hook as Claude Code
+  does, with `assert_denies`, `assert_asks`, `assert_allows` and `assert_no_opinion`, so hook tests
+  need no scaffolding of their own; core's hook tests use it too. The homelab example's guard tests
+  now live in the pack and run this way, and CI validates both example packs (#138).
+
 ## 0.8.15 (2026-11-16)
 
 - **[pack contract]** `validate` checks more of a pack: relative links in its `README.md` and

@@ -50,7 +50,7 @@ class SchemaFilesTest(unittest.TestCase):
 
     def test_the_validator_knows_every_keyword_the_schemas_use(self):
         known = {"$schema", "$id", "title", "description", "$defs", "type", "const", "enum", "minimum",
-                 "pattern", "minLength", "items", "properties", "required",
+                 "minItems", "pattern", "minLength", "items", "properties", "required",
                  "additionalProperties", "propertyNames", "$ref", "not", "oneOf", "anyOf"}
 
         def keywords(node, under_props=False):

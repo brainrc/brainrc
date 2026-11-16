@@ -65,6 +65,7 @@ class SchemaFilesTest(unittest.TestCase):
         ok = {"servers": {"a": {"command": "npx", "args": ["x"], "env_from": ["TOKEN"]},
                           "b": {"url": "https://example.com/mcp", "harnesses": ["claude"]}}}
         self.assertEqual(schema.errors(ok, s), [])
+        self.assertEqual(schema.errors({"servers": {"a": {"url": "https://e", "env_from": []}}}, s), [])
         for bad in ({"command": "x", "url": "https://e"}, {"url": "https://e", "args": ["x"]},
                     {"url": "https://e", "env_from": ["T"]}, {}, {"command": "x", "env": {"T": "v"}},
                     {"command": "x", "env_from": ["not a name"]}):
@@ -103,6 +104,21 @@ class ValidatorKeywordsTest(unittest.TestCase):
         self.assertEqual(unknown, [((), "b"), (("a",), "c")])
         self.assertEqual(schema.errors({"b": 1}, s), ["the file: unknown key `b`"])
 
+    def test_unknown_keys_inside_a_form_are_collected_from_the_form_that_matches(self):
+        closed = {"type": "object", "additionalProperties": False}
+        s = {"oneOf": [dict(closed, required=["a"], properties={"a": {"type": "string"}}),
+                       dict(closed, required=["b"], properties={"b": {"type": "string"}})],
+             "anyOf": [dict(closed, properties={"a": {"type": "string"}})]}
+        unknown = []
+        self.assertEqual(schema.errors({"a": "x", "typo": 1}, s, unknown=unknown), [])
+        self.assertEqual(unknown, [((), "typo"), ((), "typo")])
+        self.assertNotEqual(schema.errors({"a": "x", "typo": 1}, s), [])
+
+    def test_harness_names_are_any_table_name(self):
+        self.assertEqual(schema.errors({"my_IDE": {"enabled": True}}, schema.load("harnesses.toml")), [])
+        servers = {"servers": {"a": {"command": "x", "harnesses": ["my_IDE"]}}}
+        self.assertEqual(schema.errors(servers, schema.load("mcp-servers.toml")), [])
+
 
 class PackTomlValidateTest(TempRepoCase):
     def setUp(self):
@@ -137,8 +153,34 @@ class PackTomlValidateTest(TempRepoCase):
         self.edit('requires_core = ', 'max_always_tokens = "800"\nid = ["homelab/x"]\nrequires_core = ')
         code, out = self.validate()
         self.assertEqual(code, 1, out)
-        self.assertIn("ERROR homelab:pack.toml: max_always_tokens: must be an integer", out)
-        self.assertIn("ERROR homelab:pack.toml: id: must be a string", out)
+        self.assertIn("ERROR homelab:pack.toml: max_always_tokens: must be a number", out)
+        self.assertIn("`id` must be `<owner>/<pack>`", out)
+        self.assertNotIn("id: must be a string", out)  # one error per mistake
+
+    def test_a_decimal_budget_is_still_a_budget(self):
+        self.edit('requires_core = ', 'max_always_tokens = 1500.0\nrequires_core = ')
+        code, out = self.validate()
+        self.assertEqual(code, 0, out)
+        from brainrc.sources import load_pack
+        from brainrc.tokens import source_budget
+        self.assertEqual(source_budget(load_pack(self.pack)), 1500.0)
+
+    def test_apply_still_installs_a_pack_with_a_wrong_type(self):
+        from brainrc.sources import load_pack, sources
+        from brainrc.validate import pack_errors
+        self.edit('requires_core = ', 'description = 1\nrequires_core = ')
+        self.assertEqual(dict(pack_errors([*sources(), load_pack(self.pack)])).get("homelab", []), [])
+        code, out = self.validate()
+        self.assertEqual(code, 1, out)
+        self.assertIn("homelab:pack.toml: description: must be a string", out)
+
+    def test_a_misspelled_table_header_names_its_line(self):
+        text = self.toml.read_text()
+        self.toml.write_text(text + '\n[[extension.gatework.domains]]\nfiles = "x"\n')
+        line = len(text.splitlines()) + 2
+        code, out = self.validate()
+        self.assertEqual(code, 0, out)
+        self.assertIn(f"WARN homelab:pack.toml:{line}: unknown key `extension` (did you mean `extensions`?)", out)
 
     def test_a_negative_budget_fails(self):
         self.edit('requires_core = ', 'max_always_tokens = -1\nrequires_core = ')
@@ -156,7 +198,7 @@ class PackTomlValidateTest(TempRepoCase):
         for pack in ("pack-acme", "pack-homelab"):
             with self.subTest(pack=pack):
                 _, out = quiet(brainrc.cmd_validate, str(ROOT / "examples" / pack))
-                self.assertNotIn(f":pack.toml:", out.replace("no enabled pack reads", ""))
+                self.assertNotIn(":pack.toml:", out)
 
 
 class ScaffoldedPackTest(TempRepoCase):

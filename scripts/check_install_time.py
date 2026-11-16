@@ -10,7 +10,10 @@ the repo packed with `npm pack`, and a formula for the local sdist in a scratch 
 kept offline, but for the pip that pipx fetches for itself. --published (the default) installs what
 users get: PyPI, `npx github:brainrc/brainrc` and the brainrc/homebrew-tap tap. A route whose tool
 or source is missing (no brew on the machine, no PyPI release yet, the repo not public, no tap)
-prints SKIP, never PASS. Exits 1 on any FAIL.
+prints SKIP, never PASS. A route over its limit is SLOW: a FAIL, but for brew, whose time is
+mostly Homebrew installing Python and swings with the runner, a WARN that doesn't fail the run.
+Exits 1 on any FAIL. Under GitHub Actions a WARN is also a ::warning:: annotation, and every
+route's result goes to the step summary.
 Homebrew runs with HOMEBREW_NO_AUTO_UPDATE and its own download cache, so `brew update` and its
 API data aren't counted; brew skips when brainrc is already installed with Homebrew, and uninstalls
 what it installed afterwards.
@@ -176,7 +179,7 @@ def local_tap(brew: str) -> Path:
 
 
 def run_route(route: str, local: Path | None, limit: float) -> tuple[str, str]:
-    """('PASS'|'FAIL'|'SKIP', detail)."""
+    """('PASS'|'SLOW'|'FAIL'|'SKIP', detail): SLOW installed and ran, but over the limit."""
     work = Path(tempfile.mkdtemp(prefix=f"install-time-{route}-"))
     planned = False
     try:
@@ -201,7 +204,7 @@ def run_route(route: str, local: Path | None, limit: float) -> tuple[str, str]:
             tail = (r.stdout + r.stderr)[-800:]
             return "FAIL", f"exit {r.returncode} after {took:.1f} s\n{tail}"
         if took > limit:
-            return "FAIL", f"{took:.1f} s to first status, over the {limit:.0f} s limit"
+            return "SLOW", f"{took:.1f} s to first status, over the {limit:.0f} s limit"
         return "PASS", f"{took:.1f} s to first status"
     finally:
         brew = find_brew() if route == "brew" and planned else None
@@ -215,6 +218,25 @@ def run_route(route: str, local: Path | None, limit: float) -> tuple[str, str]:
 # Seconds allowed per route. Homebrew installs python@3.13 and builds a virtualenv, and lands near
 # 60 s on CI runners, so the maintainer set its limit to 90 s (2026-11-15).
 LIMITS = {"uvx": 60.0, "pipx": 60.0, "npx": 60.0, "brew": 90.0}
+# Routes whose limit warns instead of failing. Brew still ran 90-99 s on some runners after the
+# raise, from runner speed rather than brainrc (the other routes take seconds), so a slow brew run
+# warns; a brew install that breaks still fails (2026-11-16).
+WARN_ONLY = {"brew"}
+
+
+def report(result: str, route: str, detail: str) -> None:
+    """Print the route's line; under GitHub Actions, annotate a WARN and add a step summary line."""
+    print(f"{result} {route}: {detail}", flush=True)
+    first = detail.splitlines()[0] if detail else ""
+    if result == "WARN" and os.environ.get("GITHUB_ACTIONS") == "true":
+        print(f"::warning title=install-time {route}::{first.replace('%', '%25')}", flush=True)
+    summary = os.environ.get("GITHUB_STEP_SUMMARY")
+    if summary:
+        try:
+            with open(summary, "a", encoding="utf-8") as f:
+                f.write(f"- {result} {route}: {first}\n")
+        except OSError:
+            pass
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -233,7 +255,9 @@ def main(argv: list[str] | None = None) -> int:
             result, detail = run_route(route, args.local, limit)
         except Exception as e:  # a crash is a FAIL line, never a traceback
             result, detail = "FAIL", f"{type(e).__name__}: {e}"
-        print(f"{result} {route}: {detail}", flush=True)
+        if result == "SLOW":
+            result = "WARN" if route in WARN_ONLY else "FAIL"
+        report(result, route, detail)
         failed = failed or result == "FAIL"
     return 1 if failed else 0
 

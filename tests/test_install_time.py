@@ -59,11 +59,11 @@ class RouteTest(unittest.TestCase):
         self.assertEqual(result, "PASS", detail)
         self.assertRegex(detail, r"^\d+\.\d s to first status$")
 
-    def test_a_slow_route_fails(self):
+    def test_a_route_over_its_limit_is_slow(self):
         stub_command(str(self.stubs), "uvx", STATUS)
         os.environ["STUB_SLEEP"] = "0.3"
         result, detail = cit.run_route("uvx", self.dist, 0.1)
-        self.assertEqual(result, "FAIL")
+        self.assertEqual(result, "SLOW")
         self.assertIn("over the 0 s limit", detail)
 
     def test_a_failing_install_or_missing_status_line_fails(self):
@@ -152,6 +152,50 @@ class RouteTest(unittest.TestCase):
             self.assertEqual(cit.main(["--path", "uvx", "--local", str(self.dist)]), 1)
 
 
+class SlowRouteTest(unittest.TestCase):
+    """A slow route fails the run, but for brew, which warns; a broken brew install still fails."""
+
+    def setUp(self):
+        d = Path(tempfile.mkdtemp()).resolve()
+        self.addCleanup(rmtree, d, True)
+        self.summary = d / "summary.md"
+        patcher = mock.patch.dict(os.environ, {"GITHUB_ACTIONS": "true", "GITHUB_STEP_SUMMARY": str(self.summary)})
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def run_main(self, result, detail, route):
+        out = io.StringIO()
+        with mock.patch.object(cit, "run_route", return_value=(result, detail)), contextlib.redirect_stdout(out):
+            code = cit.main(["--path", route])
+        return code, out.getvalue()
+
+    def test_slow_brew_warns_and_passes(self):
+        code, out = self.run_main("SLOW", "98.7 s to first status, over the 90 s limit", "brew")
+        self.assertEqual(code, 0, out)
+        self.assertIn("WARN brew: 98.7 s to first status, over the 90 s limit\n", out)
+        self.assertIn("::warning title=install-time brew::98.7 s to first status, over the 90 s limit\n", out)
+        self.assertEqual(self.summary.read_text(), "- WARN brew: 98.7 s to first status, over the 90 s limit\n")
+
+    def test_slow_uvx_still_fails(self):
+        code, out = self.run_main("SLOW", "70.0 s to first status, over the 60 s limit", "uvx")
+        self.assertEqual(code, 1, out)
+        self.assertIn("FAIL uvx: 70.0 s", out)
+        self.assertNotIn("::warning", out)
+
+    def test_a_broken_brew_install_still_fails(self):
+        code, out = self.run_main("FAIL", "exit 1 after 40.0 s\nError: no formula", "brew")
+        self.assertEqual(code, 1, out)
+        self.assertNotIn("::warning", out)
+        self.assertEqual(self.summary.read_text(), "- FAIL brew: exit 1 after 40.0 s\n")
+
+    def test_outside_github_actions_there_is_no_annotation_or_summary(self):
+        os.environ.pop("GITHUB_ACTIONS")
+        os.environ.pop("GITHUB_STEP_SUMMARY")
+        code, out = self.run_main("SLOW", "95.0 s to first status, over the 90 s limit", "brew")
+        self.assertEqual((code, out), (0, "WARN brew: 95.0 s to first status, over the 90 s limit\n"))
+        self.assertFalse(self.summary.exists())
+
+
 class OnPypiTest(unittest.TestCase):
     def answer(self, code, out="", err=""):
         return mock.patch.object(cit.subprocess, "run", return_value=mock.Mock(returncode=code, stdout=out, stderr=err))
@@ -192,6 +236,7 @@ class WorkflowTest(unittest.TestCase):
         self.assertNotIn("--limit", self.text)
         self.assertEqual(cit.LIMITS, {"uvx": 60.0, "pipx": 60.0, "npx": 60.0, "brew": 90.0})
         self.assertEqual(set(cit.LIMITS), set(cit.PATHS))
+        self.assertEqual(cit.WARN_ONLY, {"brew"})
 
     def test_main_passes_each_route_its_limit_unless_limit_is_given(self):
         seen = []

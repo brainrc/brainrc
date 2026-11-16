@@ -14,10 +14,10 @@ from pathlib import Path
 from .. import config
 from ..config import ConfigError, config_path, expand, table_span, tilde, write_text_atomic
 from ..scaffold import PackSpec, render_pack, write_pack
-from . import instructions
+from . import cursor, instructions
 
 # Format name -> importer module, in the order discover() lists what it finds.
-FORMATS = {"instructions": instructions}
+FORMATS = {"instructions": instructions, "cursor": cursor}
 DEFAULT_NAME = "imported"
 
 
@@ -57,8 +57,8 @@ def plan(sources: list[tuple[str, Path]], name: str = DEFAULT_NAME, prefix: str 
         # A file another source inlines (CLAUDE.md's `@AGENTS.md`) comes in there, whatever the order.
         by = [p for j, (_, p) in enumerate(sources) if j != i and me in got[j].read and p.resolve() not in one.read]
         if me in kept_reads or by:
-            warnings.append(f"{tilde(path)}: already imported through an @import in "
-                            f"{tilde(by[0]) if by else 'a file above'}; skipped")
+            warnings.append(f"{tilde(path)}: already imported with "
+                            f"{tilde(by[0]) if by else 'a source above'}; skipped")
             continue
         kept_reads |= one.read
         used.append((fmt, path))
@@ -87,9 +87,13 @@ def resolve(paths: list[str], fmt: str | None = None) -> list[tuple[str, Path]]:
         if not path.exists():
             raise ConfigError(f"{raw}: no such file or folder")
         if fmt:
-            if path.is_dir():
-                raise ConfigError(f"{raw}: --format reads files; name the files, not a folder")
-            out.append((fmt, path))
+            if path.is_dir() and not FORMATS[fmt].detect(path):
+                inside = [(f, p) for f, p in discover(path) if f == fmt]
+                if not inside:
+                    raise ConfigError(f"{raw}: a folder with no {fmt} sources in it; name the files")
+                out += inside
+            else:
+                out.append((fmt, path))
         elif found := detect(path):
             out.append((found, path))
         elif path.is_dir() and (inside := discover(path)):

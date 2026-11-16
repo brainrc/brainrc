@@ -1,0 +1,7 @@
+---
+description: Python conventions
+globs: *.py, scripts/**/*.py
+alwaysApply: false
+---
+- Type-annotate public functions.
+- Use `pathlib`, not `os.path`.

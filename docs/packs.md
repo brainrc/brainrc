@@ -157,6 +157,8 @@ when = "every ticket"
 connector = "brainrc-ticket-jira"
 refs = ["ACME-*"]
 host = "acme.example.net"
+blocked_status = "Blocked"
+instructions = "Link the PR in the ticket's Development panel."   # see Connector config
 ```
 
 `validate` checks `pack.toml` against
@@ -199,6 +201,30 @@ A pack has at most one `[extensions.ticket]`: one connector and the refs it hand
 with two ticket systems splits them into two packs. The connector, core or the pack's own,
 must follow the [connector contract](https://github.com/brainrc/gatework/blob/main/skills/brainrc-gatework/references/connectors.md), which
 `validate` checks.
+
+### Connector config
+
+A connector skill declares the keys its table takes, and their types, in its SKILL.md frontmatter
+under the [Agent Skills](https://agentskills.io) `metadata` map, so every harness still loads it:
+
+```markdown
+---
+name: acme-ticket-desk
+description: Ticket connector for the Acme service desk. Use for DESK- refs.
+metadata:
+  brainrc-config: "refs: list required; queue: integer; blocked_status: string"
+---
+```
+
+Each `key: type` entry is one of `string`, `integer`, `boolean` or `list` (of strings), followed by
+`required` when the table must set it. `validate` then checks every pack table that names the skill
+as its `connector`: a key of the wrong type or a missing required key fails, and a key the
+connector doesn't declare warns. Only `validate` reports these; `apply` still installs the pack. A
+connector that declares nothing, or a declaration with a mistake (which fails on the skill), isn't
+checked. Every table may also set `instructions`: what the pack tells the connector about its
+tickets, in place of free-form keys such as `notes`. It reaches the model, so the pack's
+[tripwires](#tripwirestoml) check it like the pack's other text, unless a tripwire sets `paths` or
+`exclude`s `pack.toml`.
 
 ## Validator plugins
 

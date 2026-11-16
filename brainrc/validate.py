@@ -12,7 +12,7 @@ from pathlib import Path
 from .mcp import check_servers
 from .naming import check_pack_names, unprefixed_ok
 from .plugins import extension_errors, extension_warnings, plugin_errors, validators
-from . import config, schema
+from . import config, connectors, schema
 from .config import (
     ConfigError,
     HOOKS_DIR_PLACEHOLDER,
@@ -23,7 +23,9 @@ from .config import (
     SKILL_NAME,
     _read_toml,
     check_config,
+    did_you_mean,
     expand,
+    key_line,
     line_of,
     load_harnesses,
 )
@@ -170,23 +172,11 @@ def pack_toml_findings(src: Source) -> tuple[list[str], list[str]]:
               if not e.startswith("id:")]  # check_pack_names reports any bad `id`, apply too
     warnings = []
     for table, key in unknown:
-        props = known["properties"] if not table else {}
-        close = difflib.get_close_matches(key, props, n=1, cutoff=0.75)
-        hint = f" (did you mean `{close[0]}`?)" if close else ""
-        name = ".".join(map(str, (*table, key)))
-        warnings.append(f"{where}:{_key_line(text, table, key)}: unknown key `{name}`{hint}; brainrc ignores it")
+        hint = did_you_mean(key, known["properties"] if not table else {})
+        path_ = tuple(map(str, (*table, key)))
+        warnings.append(f"{where}:{key_line(text, path_)}: unknown key `{'.'.join(path_)}`{hint}; "
+                        "brainrc ignores it")
     return errors, warnings
-
-
-def _key_line(text: str, table: tuple, key: str) -> int:
-    """The line that sets `key` in `table`: `key =`, a dotted `key.x =`, or a `[key...]` or
-    `[[key...]]` header; else what line_of finds."""
-    dotted = re.escape(".".join(map(str, (*table, key))))
-    found = re.compile(rf"^\s*(\[\[?\s*{dotted}\s*[\].]|{dotted}\s*[=.])")
-    for n, line in enumerate(text.splitlines(), 1):
-        if found.match(line):
-            return n
-    return line_of(text, ".".join(map(str, table)), key) if table else line_of(text, key)
 
 
 def _validate_pack(src: Source) -> list[str]:
@@ -213,6 +203,8 @@ def _tripwire_files(src: Source, patterns: list[str]) -> list[Path]:
 def _check_tripwires(src: Source) -> list[str]:
     """Stale facts that must not come back: tripwires.toml [[tripwire]] pattern/message/allow/paths."""
     errors = []
+    pack_toml = src.root / "pack.toml"
+    instructions = connectors.instruction_texts(src) if not src.is_core and pack_toml.is_file() else []
     for t in _read_toml(src.root / "tripwires.toml").get("tripwire", []):
         tid = t.get("id", "?")
         try:
@@ -222,14 +214,33 @@ def _check_tripwires(src: Source) -> list[str]:
             errors.append(f"{src.name}:tripwires.toml: tripwire {tid} is invalid ({e})")
             continue
         exclude = t.get("exclude", ["tripwires.toml"])
+        scanned = False
         for p in _tripwire_files(src, t.get("paths", ["*.md"])):
             rel = p.relative_to(src.root).as_posix()
             if any(fnmatch.fnmatch(rel, pat) for pat in exclude):
                 continue
+            scanned = scanned or p == pack_toml
             for n, line in enumerate(p.read_text(errors="replace").splitlines(), 1):
                 if pattern.search(line) and not (allow and allow.search(line)):
                     errors.append(f"{src.rel(p)}:{n}: tripwire {tid}: {t.get('message', t['pattern'])}")
+        # What a pack tells a connector reaches the model too (#136): checked unless the tripwire
+        # scanned pack.toml already, names other paths, or excludes it.
+        if scanned or "paths" in t or any(fnmatch.fnmatch("pack.toml", pat) for pat in exclude):
+            continue
+        for name, text in instructions:
+            hits = [line for line in text.splitlines() if pattern.search(line) and not (allow and allow.search(line))]
+            if hits:
+                errors.append(f"{src.rel(pack_toml)}:{_text_line(pack_toml, name, hits[0])}: "
+                              f"[{name}] instructions: tripwire {tid}: {t.get('message', t['pattern'])}")
     return errors
+
+
+def _text_line(pack_toml: Path, table: str, text: str) -> int:
+    """The line of pack.toml holding `text` (a line of a table's `instructions`), at or after the
+    line that sets it."""
+    lines = pack_toml.read_text().splitlines()
+    start = line_of("\n".join(lines), table, "instructions")
+    return next((n for n, line in enumerate(lines[start - 1:], start) if text.strip() in line), start)
 
 
 LOCAL_TRIPWIRES = "tripwires.local.toml"
@@ -317,7 +328,8 @@ def cmd_validate(pack: str | None = None, key: str = "") -> int:
         print(f"ERROR {e}")
         return 1
     agent_names = {f.stem for s in srcs for f in markdown_files("agents", s)}
-    skill_names = {p.name for s in srcs for p in skills(s)}
+    skill_dirs = {p.name: p for s in srcs for p in skills(s)}
+    skill_names = set(skill_dirs)
     errors = duplicate_packs(srcs) + collisions(srcs)
     for src in srcs:
         try:
@@ -330,11 +342,12 @@ def cmd_validate(pack: str | None = None, key: str = "") -> int:
         errors.append(str(e))
     errors += check_servers(srcs)
     warnings = config_warnings + extension_warnings(srcs, plugins)
-    for src in srcs:
+    for src in srcs:  # validate-only, like pack.toml's schema: apply installs a pack whatever these say
+        errors += connectors.declaration_errors(src)
         if not src.is_core:
-            found = pack_toml_findings(src)
-            errors += found[0]
-            warnings += found[1]
+            for found in (pack_toml_findings(src), connectors.check(src, skill_dirs)):
+                errors += found[0]
+                warnings += found[1]
     try:
         errors += check_changelog(core_version())
         compat_errors, compat_warnings = check_packs(srcs)

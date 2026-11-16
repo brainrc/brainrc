@@ -30,3 +30,6 @@ connector = "brainrc-ticket-jira"
 refs = ["ACME-*"]
 host = "acme.example.net"
 review_status = "In Review"
+blocked_status = "Blocked"
+# What the connector should know about this team's tickets: a defined field that tripwires check.
+instructions = "Link the PR in the ticket's Development panel, not in a comment."

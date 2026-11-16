@@ -17,7 +17,8 @@ Instructions...
 ```
 
 Optional siblings: `scripts/`, `references/`, `assets/`. Reference them with
-relative paths from SKILL.md.
+relative paths from SKILL.md. A connector skill declares its config under `metadata` as
+`brainrc-config` ([packs.md](packs.md#connector-config)).
 
 ## Agents: `agents/<name>.md`
 

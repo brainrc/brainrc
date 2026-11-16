@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import contextlib
+import difflib
 import operator
 import os
 import re
@@ -165,6 +166,29 @@ def line_of(text: str, table: str, key: str | None = None) -> int:
         elif current is None and re.match(rf"\s*[\"']?{re.escape(table)}[\"']?\s*=", line):
             inline = n
     return (header if key else None) or inline or header or 1
+
+
+def key_line(text: str, path: tuple[str, ...]) -> int:
+    """The line that sets the key at `path` (a typo included): a `[header]` or `[[header]]` that
+    starts with it, or its dotted rest (`key =`, `a.key =`) under the header holding the rest of
+    it; 1 when none does."""
+    current: tuple[str, ...] = ()
+    for n, line in enumerate(text.splitlines(), 1):
+        if m := re.match(r"^\s*\[\[?\s*([^\]]+?)\s*\]\]?", line):
+            current = tuple(part.strip().strip("\"'") for part in m[1].split("."))
+            if current[:len(path)] == path:
+                return n
+        elif current == path[:len(current)]:
+            rest = ".".join(path[len(current):])
+            if rest and re.match(rf"\s*{re.escape(rest)}\s*[=.]", line):
+                return n
+    return 1
+
+
+def did_you_mean(key: str, known) -> str:
+    """` (did you mean `x`?)` for the known key closest to a typo, or ""."""
+    close = difflib.get_close_matches(key, list(known), n=1, cutoff=0.75)
+    return f" (did you mean `{close[0]}`?)" if close else ""
 
 
 def _read_toml(path: Path) -> dict:

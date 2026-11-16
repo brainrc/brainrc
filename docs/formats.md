@@ -98,6 +98,8 @@ A repo's own packs and the lock that pins them: [project.md](project.md), with J
 
 ## Harness support
 
+Where each kind of content lands per tool, generated from `harnesses.toml`: [capabilities.md](capabilities.md).
+
 | | Claude Code | Codex | OpenCode | Antigravity CLI | Cursor |
 |---|---|---|---|---|---|
 | Skills | ✅ | ✅ | ✅ | ✅ | ✅ |

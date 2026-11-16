@@ -28,7 +28,7 @@ def render(md: str, src_uri: str = "formats.md") -> str:
 
 class DocsSiteTest(unittest.TestCase):
     def test_nav_names_pages_that_exist(self):
-        nav = (REPO / "mkdocs.yml").read_text().split("\nnav:\n", 1)[1]
+        nav = (REPO / "mkdocs.yml").read_text(encoding="utf-8").split("\nnav:\n", 1)[1]
         pages = re.findall(r":\s*(\S+\.md)\s*$", nav, re.M)
         self.assertIn("index.md", pages)
         self.assertEqual([p for p in pages if not (REPO / "docs" / p).is_file()], [])
@@ -67,21 +67,21 @@ class DocsSiteTest(unittest.TestCase):
     def test_docs_link_to_pages_not_directories(self):
         directory = re.compile(r"\]\((?![a-z]+:)[^)#\s]*/(?:#[^)\s]*)?(?:\s+\"[^\"]*\")?\)")
         docs = REPO / "docs"
-        bad = {str(p.relative_to(docs)) for p in docs.rglob("*.md") if directory.search(p.read_text())}
+        bad = {str(p.relative_to(docs)) for p in docs.rglob("*.md") if directory.search(p.read_text(encoding="utf-8"))}
         self.assertEqual(bad, set())
 
     def test_every_schema_is_on_the_schemas_page(self):
-        text = (REPO / "docs/schemas.md").read_text()
+        text = (REPO / "docs/schemas.md").read_text(encoding="utf-8")
         for schema in (REPO / "docs/schemas").glob("*.json"):
             self.assertIn(f"(schemas/{schema.name})", text)
 
     def test_the_tools_are_pinned_with_hashes(self):
-        reqs = (REPO / ".github/docs-requirements.txt").read_text()
+        reqs = (REPO / ".github/docs-requirements.txt").read_text(encoding="utf-8")
         for tool in ("mkdocs", "mkdocs-material", "mike"):
             self.assertRegex(reqs, rf"(?m)^{tool}==\d+\.\d+\.\d+ ")
         pins = re.findall(r"(?m)^[a-z0-9_.-]+==\S+(?:\s*\\\n\s*--hash=sha256:[0-9a-f]{64})+", reqs)
         self.assertEqual(len(pins), len(re.findall(r"(?m)^[a-z0-9_.-]+==", reqs)))
-        workflow = (REPO / ".github/workflows/docs.yml").read_text()
+        workflow = (REPO / ".github/workflows/docs.yml").read_text(encoding="utf-8")
         self.assertNotRegex(workflow, r"pip install (?!--require-hashes)")
 
 if __name__ == "__main__":

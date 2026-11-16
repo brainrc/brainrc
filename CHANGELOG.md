@@ -12,6 +12,13 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.8.18 (2026-11-16)
+
+- A docs site built from `docs/` with MkDocs Material (`mkdocs.yml`), with search, a JSON Schemas
+  page and one version per minor release. The new `docs` workflow builds it with `--strict` on
+  pull requests and, after each release, publishes the release's tag to the `gh-pages` branch
+  for GitHub Pages at the default URL (#197).
+
 ## 0.8.17 (2026-11-16)
 
 - A pack's CI can check it in one step: `uses: brainrc/brainrc/.github/actions/validate-pack@<core

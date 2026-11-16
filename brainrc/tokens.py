@@ -44,7 +44,12 @@ def always_tokens(src: Source) -> tuple[int, list[tuple[int, str]]]:
 
 
 def source_budget(src: Source) -> int | None:
-    return CORE_ALWAYS_BUDGET if src.is_core else src.meta.get("max_always_tokens")
+    """Core's budget, or the pack's `max_always_tokens` (None when it isn't a number: validate
+    reports the type from pack.toml's schema)."""
+    if src.is_core:
+        return CORE_ALWAYS_BUDGET
+    budget = src.meta.get("max_always_tokens")
+    return budget if isinstance(budget, int) and not isinstance(budget, bool) else None
 
 
 def check_budgets(srcs: list[Source]) -> tuple[list[str], list[str]]:

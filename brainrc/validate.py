@@ -1,6 +1,7 @@
 """Validation: frontmatter, references, packs, tripwires, and local tripwires (used in CI)."""
 from __future__ import annotations
 
+import difflib
 import fnmatch
 import json
 import os
@@ -11,7 +12,7 @@ from pathlib import Path
 from .mcp import check_servers
 from .naming import check_pack_names, unprefixed_ok
 from .plugins import extension_errors, extension_warnings, plugin_errors, validators
-from . import config
+from . import config, schema
 from .config import (
     ConfigError,
     HOOKS_DIR_PLACEHOLDER,
@@ -23,6 +24,7 @@ from .config import (
     _read_toml,
     check_config,
     expand,
+    line_of,
     load_harnesses,
 )
 from .sources import (
@@ -152,8 +154,29 @@ def _validate_source(src: Source, agent_names: set[str], skill_names: set[str], 
     return errors
 
 
+def pack_toml_findings(src: Source) -> tuple[list[str], list[str]]:
+    """(errors, warnings) for a pack's pack.toml against docs/schemas/pack.toml.schema.json: a known
+    key with a value of the wrong type fails; a key the schema doesn't know warns, naming the known
+    key it is closest to (a typo such as `max_always_token` would otherwise be silently ignored)."""
+    path = src.root / "pack.toml"
+    where = src.rel(path)
+    if not path.is_file():
+        return [], []
+    text = path.read_text()
+    known = schema.load("pack.toml")
+    unknown: list[tuple[tuple, str]] = []
+    errors = [f"{where}: {e}" for e in schema.errors(src.meta, known, unknown=unknown)]
+    warnings = []
+    for table, key in unknown:
+        props = known["properties"] if not table else {}
+        close = difflib.get_close_matches(key, props, n=1, cutoff=0.75)
+        hint = f" (did you mean `{close[0]}`?)" if close else ""
+        warnings.append(f"{where}:{line_of(text, key)}: unknown key `{key}`{hint}; brainrc ignores it")
+    return errors, warnings
+
+
 def _validate_pack(src: Source) -> list[str]:
-    errors = check_pack_names(src)
+    errors = check_pack_names(src) + pack_toml_findings(src)[0]
     for kind in KINDS:
         for p in items(src, kind):
             if not item_name(p).startswith(src.prefix) and not unprefixed_ok(src, item_name(p)):
@@ -293,6 +316,7 @@ def cmd_validate(pack: str | None = None, key: str = "") -> int:
         errors.append(str(e))
     errors += check_servers(srcs)
     warnings = config_warnings + extension_warnings(srcs, plugins)
+    warnings += [w for src in srcs if not src.is_core for w in pack_toml_findings(src)[1]]
     try:
         errors += check_changelog(core_version())
         compat_errors, compat_warnings = check_packs(srcs)

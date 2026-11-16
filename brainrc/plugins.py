@@ -75,9 +75,15 @@ def namespace(me: Source, mod: ModuleType) -> str:
     return getattr(mod, "NAMESPACE", me.name)
 
 
+def extensions(src: Source) -> dict:
+    """src's [extensions], or {} when pack.toml's `extensions` isn't a table (validate reports it)."""
+    ext = src.meta.get("extensions", {})
+    return ext if isinstance(ext, dict) else {}
+
+
 def table(src: Source, me: Source, mod: ModuleType) -> dict:
     """src's [extensions] for this plugin: legacy top-level keys, then older tables, then its own."""
-    ext = src.meta.get("extensions", {})
+    ext = extensions(src)
     found = {k: v for k, v in ext.items() if k in getattr(mod, "LEGACY_KEYS", ())}
     for ns in (*getattr(mod, "LEGACY_NAMESPACES", ()), namespace(me, mod)):
         if isinstance(ext.get(ns), dict):
@@ -102,7 +108,7 @@ def extension_warnings(srcs: list[Source], plugins: list[tuple[Source, ModuleTyp
     warnings = []
     for src in srcs:
         where = f"{src.name}:pack.toml"
-        for key in src.meta.get("extensions", {}):
+        for key in extensions(src):
             if key in owners:
                 continue
             if found := legacy.get(key) or old_ns.get(key):

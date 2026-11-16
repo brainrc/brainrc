@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/brainrc/brainrc/blob/main/docs/schemas/mcp-servers.toml.schema.json",
+  "title": "mcp/servers.toml",
+  "description": "A source's MCP server registry, after it is parsed as TOML (docs/formats.md#mcp-servers-mcpserverstoml). Never put secret values here: name variables in env_from.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "servers": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[A-Za-z0-9_-]+$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/server"
+      }
+    }
+  },
+  "$defs": {
+    "server": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "description": "A stdio server: the program to run.",
+          "type": "string",
+          "minLength": 1
+        },
+        "args": {
+          "description": "Arguments for command.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "url": {
+          "description": "An HTTP server: its URL.",
+          "type": "string",
+          "minLength": 1
+        },
+        "env_from": {
+          "description": "Environment variables the harness passes to command; names only, never values.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+          }
+        },
+        "harnesses": {
+          "description": "The harnesses that get this server; default: every one brainrc writes MCP servers for.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          }
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "command"
+          ],
+          "not": {
+            "required": [
+              "url"
+            ]
+          }
+        },
+        {
+          "required": [
+            "url"
+          ],
+          "not": {
+            "anyOf": [
+              {
+                "required": [
+                  "command"
+                ]
+              },
+              {
+                "required": [
+                  "args"
+                ]
+              },
+              {
+                "required": [
+                  "env_from"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,6 +1,6 @@
 """A small JSON Schema validator: the subset docs/schemas/ uses, so brainrc stays stdlib-only.
 
-Supported keywords: type, const, enum, pattern, minLength, items, properties, required,
+Supported keywords: type, const, enum, pattern, minLength, minimum, items, properties, required,
 additionalProperties, propertyNames, $ref (to #/$defs/<name>), not, oneOf, anyOf. Anything else
 in a schema is ignored, so a schema that needs more must grow this file first.
 """
@@ -33,12 +33,15 @@ def _where(path: tuple) -> str:
     return out or "the file"
 
 
-def errors(value, schema: dict, root: dict | None = None, path: tuple = ()) -> list[str]:
-    """Every way value fails schema, as `<where>: <what>`; [] when it conforms."""
+def errors(value, schema: dict, root: dict | None = None, path: tuple = (),
+           unknown: list[tuple[tuple, str]] | None = None) -> list[str]:
+    """Every way value fails schema, as `<where>: <what>`; [] when it conforms. With unknown, a key
+    that additionalProperties: false refuses goes there instead, as (path of its table, key), so a
+    caller can warn about it (a typo) rather than fail."""
     root = root if root is not None else schema
     if "$ref" in schema:
         name = schema["$ref"].removeprefix("#/$defs/")
-        return errors(value, root["$defs"][name], root, path)
+        return errors(value, root["$defs"][name], root, path, unknown)
     where = _where(path)
     kind = schema.get("type")
     if kind and not _is(value, kind):
@@ -53,9 +56,12 @@ def errors(value, schema: dict, root: dict | None = None, path: tuple = ()) -> l
             found.append(f"{where}: must not be empty")
         if "pattern" in schema and not re.search(schema["pattern"], value):
             found.append(f"{where}: {json.dumps(value)} is not allowed here")
+    if "minimum" in schema and isinstance(value, (int, float)) and not isinstance(value, bool) \
+            and value < schema["minimum"]:
+        found.append(f"{where}: must be at least {schema['minimum']}")
     if isinstance(value, list) and "items" in schema:
         for i, item in enumerate(value):
-            found += errors(item, schema["items"], root, path + (i,))
+            found += errors(item, schema["items"], root, path + (i,), unknown)
     if isinstance(value, dict):
         props = schema.get("properties", {})
         for key in schema.get("required", []):
@@ -65,11 +71,14 @@ def errors(value, schema: dict, root: dict | None = None, path: tuple = ()) -> l
             if "propertyNames" in schema and errors(key, schema["propertyNames"], root):
                 found.append(f"{where}: key {json.dumps(key)} is not allowed")
             if key in props:
-                found += errors(item, props[key], root, path + (key,))
+                found += errors(item, props[key], root, path + (key,), unknown)
             elif schema.get("additionalProperties") is False:
-                found.append(f"{where}: unknown key `{key}`")
+                if unknown is None:
+                    found.append(f"{where}: unknown key `{key}`")
+                else:
+                    unknown.append((path, key))
             elif isinstance(schema.get("additionalProperties"), dict):
-                found += errors(item, schema["additionalProperties"], root, path + (key,))
+                found += errors(item, schema["additionalProperties"], root, path + (key,), unknown)
     if "not" in schema and not errors(value, schema["not"], root, path):
         found.append(f"{where}: {_not_message(schema['not'])}")
     if "anyOf" in schema and all(errors(value, s, root, path) for s in schema["anyOf"]):

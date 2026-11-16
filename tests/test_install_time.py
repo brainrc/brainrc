@@ -28,6 +28,16 @@ print("Dry run. Run `apply` to write.")
 sys.exit(int(os.environ.get("STUB_EXIT", "0")))"""
 
 
+def setUpModule():
+    # Under CI, main() would otherwise annotate and write these tests' made-up results into the
+    # real job summary; ReportTest sets both back on its own.
+    patcher = mock.patch.dict(os.environ)
+    patcher.start()
+    unittest.addModuleCleanup(patcher.stop)
+    for key in ("GITHUB_ACTIONS", "GITHUB_STEP_SUMMARY"):
+        os.environ.pop(key, None)
+
+
 class LocalFormulaTest(unittest.TestCase):
     def test_points_the_release_formula_at_the_local_sdist(self):
         d = Path(tempfile.mkdtemp()).resolve()
@@ -59,12 +69,24 @@ class RouteTest(unittest.TestCase):
         self.assertEqual(result, "PASS", detail)
         self.assertRegex(detail, r"^\d+\.\d s to first status$")
 
-    def test_a_route_over_its_limit_is_slow(self):
+    def test_a_slow_route_fails(self):
         stub_command(str(self.stubs), "uvx", STATUS)
         os.environ["STUB_SLEEP"] = "0.3"
         result, detail = cit.run_route("uvx", self.dist, 0.1)
-        self.assertEqual(result, "SLOW")
+        self.assertEqual(result, "FAIL")
         self.assertIn("over the 0 s limit", detail)
+
+    def test_with_a_ceiling_a_slow_route_warns_up_to_it_and_fails_over_it(self):
+        stub_command(str(self.stubs), "uvx", STATUS)
+        os.environ["STUB_SLEEP"] = "0.3"
+        result, detail = cit.run_route("uvx", self.dist, 0.1, ceiling=60)
+        self.assertEqual(result, "WARN")
+        self.assertIn("over the 0 s limit", detail)
+        result, detail = cit.run_route("uvx", self.dist, 0.1, ceiling=0.2)
+        self.assertEqual(result, "FAIL")
+        self.assertIn("over the 0 s ceiling", detail)
+        os.environ["STUB_EXIT"] = "1"  # a broken install fails under the ceiling too
+        self.assertEqual(cit.run_route("uvx", self.dist, 0.1, ceiling=60)[0], "FAIL")
 
     def test_a_failing_install_or_missing_status_line_fails(self):
         stub_command(str(self.stubs), "uvx", STATUS)
@@ -152,8 +174,9 @@ class RouteTest(unittest.TestCase):
             self.assertEqual(cit.main(["--path", "uvx", "--local", str(self.dist)]), 1)
 
 
-class SlowRouteTest(unittest.TestCase):
-    """A slow route fails the run, but for brew, which warns; a broken brew install still fails."""
+class ReportTest(unittest.TestCase):
+    """A WARN leaves the exit code at 0; under GitHub Actions it's annotated, and every result goes
+    to the step summary."""
 
     def setUp(self):
         d = Path(tempfile.mkdtemp()).resolve()
@@ -170,16 +193,15 @@ class SlowRouteTest(unittest.TestCase):
         return code, out.getvalue()
 
     def test_slow_brew_warns_and_passes(self):
-        code, out = self.run_main("SLOW", "98.7 s to first status, over the 90 s limit", "brew")
+        code, out = self.run_main("WARN", "98.7 s to first status, over the 90 s limit", "brew")
         self.assertEqual(code, 0, out)
         self.assertIn("WARN brew: 98.7 s to first status, over the 90 s limit\n", out)
         self.assertIn("::warning title=install-time brew::98.7 s to first status, over the 90 s limit\n", out)
         self.assertEqual(self.summary.read_text(), "- WARN brew: 98.7 s to first status, over the 90 s limit\n")
 
-    def test_slow_uvx_still_fails(self):
-        code, out = self.run_main("SLOW", "70.0 s to first status, over the 60 s limit", "uvx")
+    def test_a_fail_fails_the_run_without_an_annotation(self):
+        code, out = self.run_main("FAIL", "200.0 s to first status, over the 180 s ceiling", "brew")
         self.assertEqual(code, 1, out)
-        self.assertIn("FAIL uvx: 70.0 s", out)
         self.assertNotIn("::warning", out)
 
     def test_a_broken_brew_install_still_fails(self):
@@ -190,8 +212,7 @@ class SlowRouteTest(unittest.TestCase):
 
     def test_outside_github_actions_there_is_no_annotation_or_summary(self):
         os.environ.pop("GITHUB_ACTIONS")
-        os.environ.pop("GITHUB_STEP_SUMMARY")
-        code, out = self.run_main("SLOW", "95.0 s to first status, over the 90 s limit", "brew")
+        code, out = self.run_main("WARN", "95.0 s to first status, over the 90 s limit", "brew")
         self.assertEqual((code, out), (0, "WARN brew: 95.0 s to first status, over the 90 s limit\n"))
         self.assertFalse(self.summary.exists())
 
@@ -236,15 +257,19 @@ class WorkflowTest(unittest.TestCase):
         self.assertNotIn("--limit", self.text)
         self.assertEqual(cit.LIMITS, {"uvx": 60.0, "pipx": 60.0, "npx": 60.0, "brew": 90.0})
         self.assertEqual(set(cit.LIMITS), set(cit.PATHS))
-        self.assertEqual(cit.WARN_ONLY, {"brew"})
+        self.assertEqual(cit.CEILINGS, {"brew": 180.0})
 
     def test_main_passes_each_route_its_limit_unless_limit_is_given(self):
         seen = []
-        with mock.patch.object(cit, "run_route", lambda r, local, limit: seen.append((r, limit)) or ("PASS", "")), \
-                contextlib.redirect_stdout(io.StringIO()):
+
+        def run(r, local, limit, ceiling):
+            seen.append((r, limit, ceiling))
+            return "PASS", ""
+        with mock.patch.object(cit, "run_route", run), contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(cit.main(["--path", "uvx", "--path", "brew"]), 0)
             self.assertEqual(cit.main(["--path", "brew", "--limit", "30"]), 0)
-        self.assertEqual(seen, [("uvx", 60.0), ("brew", 90.0), ("brew", 30.0)])
+        # brew warns from 90 s and fails over 180 s; an explicit --limit is hard, for brew too
+        self.assertEqual(seen, [("uvx", 60.0, None), ("brew", 90.0, 180.0), ("brew", 30.0, None)])
 
 
 if __name__ == "__main__":

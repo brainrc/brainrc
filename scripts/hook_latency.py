@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import math
 import os
 import platform
 import re
@@ -27,8 +28,11 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+from brainrc.plan import render_fragment  # noqa: E402  (the same rendering `apply` installs)
+
 CLAUDE = ROOT / "overrides" / "claude"
-CURSOR_GUARD = ROOT / "overrides" / "cursor" / "hooks" / "guard.py"
+CURSOR = ROOT / "overrides" / "cursor"
 WARMUP = 3
 
 # A tiny MCP server: answers initialize and tools/list over stdio, like the ones `pin-mcp` pins.
@@ -58,23 +62,41 @@ CALLS = [
 def percentile(values: list[float], pct: float) -> float:
     """Nearest-rank percentile: the smallest value with at least pct% of values at or below it."""
     ordered = sorted(values)
-    return ordered[max(0, -(-len(ordered) * pct // 100) - 1)] if ordered else 0.0
+    return ordered[max(0, math.ceil(len(ordered) * pct / 100) - 1)] if ordered else 0.0
+
+
+def matches(matcher: str | None, tool: str) -> bool:
+    """Claude Code's matcher: empty or `*` is every tool, anything else a regex on the whole name."""
+    return not matcher or matcher == "*" or re.fullmatch(matcher, tool) is not None
 
 
 def hook_commands(event: str, tool: str | None = None) -> list[str]:
-    """The fragment's commands for event (and tool, by each matcher as a full regex), with
-    {{hooks_dir}} pointing at the checkout's hooks."""
-    fragment = json.loads((CLAUDE / "settings.fragment.json").read_text())
-    commands = []
-    for group in fragment["hooks"].get(event, []):
-        if tool is None or re.fullmatch(group.get("matcher", ".*"), tool):
-            commands += [h["command"].replace("{{hooks_dir}}", str(CLAUDE / "hooks")) for h in group["hooks"]]
-    return commands
+    """Claude Code's fragment commands for event (and tool), rendered as `apply` renders them, with
+    the hooks directory at the checkout's."""
+    fragment = render_fragment(CLAUDE / "settings.fragment.json", str(CLAUDE / "hooks"))
+    return [h["command"] for group in fragment["hooks"].get(event, [])
+            if tool is None or matches(group.get("matcher"), tool) for h in group["hooks"]]
 
 
-def run(command: str, payload: str, env: dict) -> None:
-    subprocess.run(["sh", "-c", command], input=payload, capture_output=True, text=True, env=env,
-                   timeout=30, check=False)
+def cursor_commands(event: str) -> list[str]:
+    fragment = render_fragment(CURSOR / "settings.fragment.json", str(CURSOR / "hooks"))
+    return [h["command"] for h in fragment["hooks"].get(event, [])]
+
+
+def run(command: str, payload: str, env: dict) -> subprocess.CompletedProcess:
+    return subprocess.run(["sh", "-c", command], input=payload, capture_output=True, text=True, env=env,
+                          timeout=30, check=False)
+
+
+def checked(command: str, payload: str, env: dict) -> None:
+    """Run once untimed and fail loudly if the hook is missing, fails or objects: a skipped or
+    broken hook would otherwise be timed as a fast success."""
+    script = re.search(r'f="([^"]+)"', command)
+    if script and not Path(script[1]).is_file():
+        raise SystemExit(f"hook not found: {script[1]}")
+    done = run(command, payload, env)
+    if done.returncode != 0 or re.search(r'"(deny|ask)"', done.stdout):
+        raise SystemExit(f"hook failed or objected ({done.returncode}): {command}\n{done.stdout}{done.stderr}")
 
 
 def timed(fn, runs: int) -> list[float]:
@@ -88,20 +110,27 @@ def timed(fn, runs: int) -> list[float]:
     return out
 
 
+def parallel(commands: list[str], payload: str, env: dict):
+    """One call of the tool: its hooks in parallel, as Claude Code runs them. The pool is made
+    once, outside the timed calls."""
+    for c in commands:
+        checked(c, payload, env)
+    if len(commands) <= 1:
+        return lambda: [run(c, payload, env) for c in commands]
+    pool = ThreadPoolExecutor(len(commands))
+    return lambda: list(pool.map(lambda c: run(c, payload, env), commands))
+
+
 def claude_call(tool: str, tool_input: dict, env: dict):
     commands = hook_commands("PreToolUse", tool)
     payload = json.dumps({"hook_event_name": "PreToolUse", "tool_name": tool, "tool_input": tool_input,
                           "cwd": "/tmp/project", "session_id": "bench"})
-
-    def call():  # Claude Code runs the matching hooks of one call in parallel
-        with ThreadPoolExecutor(len(commands)) as pool:
-            list(pool.map(lambda c: run(c, payload, env), commands))
-    return call, len(commands)
+    return parallel(commands, payload, env), len(commands)
 
 
 def cursor_call(event: dict, env: dict):
-    payload = json.dumps(event)
-    return lambda: run(f'python3 "{CURSOR_GUARD}"', payload, env)
+    commands = cursor_commands(event["hook_event_name"])
+    return parallel(commands, json.dumps(event), env), len(commands)
 
 
 def cases(home: Path) -> list[tuple[str, str, int, object]]:
@@ -111,13 +140,13 @@ def cases(home: Path) -> list[tuple[str, str, int, object]]:
     for name, tool, tool_input in CALLS:
         fn, hooks = claude_call(tool, tool_input, env)
         out.append(("Claude Code", name, hooks, fn))
-    out.append(("Cursor", "shell command", 2, cursor_call(
-        {"hook_event_name": "beforeShellExecution", "command": "git status"}, env)))
-    out.append(("Cursor", "file read", 1, cursor_call(
-        {"hook_event_name": "beforeReadFile", "file_path": "src/app.py"}, env)))
+    # Cursor runs one hook per event; its guard.py runs the Claude guards the event needs.
+    fn, _ = cursor_call({"hook_event_name": "beforeShellExecution", "command": "git status"}, env)
+    out.append(("Cursor", "shell command", 2, fn))
+    fn, _ = cursor_call({"hook_event_name": "beforeReadFile", "file_path": "src/app.py"}, env)
+    out.append(("Cursor", "file read", 1, fn))
     start = hook_commands("SessionStart")
-    session = lambda: [run(c, "{}", env) for c in start]  # noqa: E731
-    out.append(("Claude Code", "session start, no MCP pins", len(start), session))
+    out.append(("Claude Code", "session start, no MCP pins", len(start), parallel(start, "{}", env)))
     pinned = home.parent / "pinned"
     pinned.mkdir()
     (pinned / "server.py").write_text(SERVER)
@@ -129,8 +158,11 @@ def cases(home: Path) -> list[tuple[str, str, int, object]]:
         "command": sys.executable, "args": [str(pinned / "server.py")],
         "tools": {t["name"]: pins.tool_hash(t) for t in tools}}}}))
     penv = {**env, "BRAINRC_HOME": str(pinned)}
-    out.append(("Claude Code", "session start, 1 pinned server", len(start),
-                lambda: [run(c, "{}", penv) for c in start]))
+    fn = parallel(start, "{}", penv)
+    outcome = json.loads((pinned / pins.LAST).read_text())["servers"].get("bench")
+    if outcome != "same":  # the hook fails open, so check it really reached the server
+        raise SystemExit(f"the pinned server wasn't checked: {outcome}")
+    out.append(("Claude Code", "session start, 1 pinned server", len(start), fn))
     return out
 
 
@@ -143,11 +175,14 @@ def measure(runs: int) -> dict:
             ms = timed(fn, runs)
             rows.append({"tool": tool, "case": case, "hooks": hooks, "runs": runs,
                          "median_ms": round(statistics.median(ms), 1), "p95_ms": round(percentile(ms, 95), 1)})
-    return {"os": f"{platform.system()} {platform.machine()}", "python": platform.python_version(), "rows": rows}
+    hooks_python = subprocess.run(["python3", "-c", "import platform; print(platform.python_version())"],
+                                  capture_output=True, text=True, check=False).stdout.strip()
+    return {"os": f"{platform.system()} {platform.machine()}", "python": hooks_python, "rows": rows}
 
 
 def table(result: dict) -> str:
-    lines = [f"Hook latency on {result['os']}, Python {result['python']}, {result['rows'][0]['runs']} runs each",
+    lines = [f"Hook latency on {result['os']}, hooks' python3 {result['python']}, "
+             f"{result['rows'][0]['runs']} runs each",
              "", "| Tool | Call | Hooks | Median ms | p95 ms |", "| --- | --- | --- | --- | --- |"]
     lines += [f"| {r['tool']} | {r['case']} | {r['hooks']} | {r['median_ms']} | {r['p95_ms']} |"
               for r in result["rows"]]

@@ -20,6 +20,13 @@ class HookLatencyTest(unittest.TestCase):
         self.assertEqual(hook_latency.percentile(values, 95), 95)
         self.assertEqual(hook_latency.percentile(values, 50), 50)
         self.assertEqual(hook_latency.percentile([7.0], 95), 7.0)
+        self.assertEqual(hook_latency.percentile([1.0, 2.0], 99.9), 2.0)  # a float pct works
+
+    def test_matchers_follow_claude_code(self):
+        self.assertTrue(hook_latency.matches("*", "Bash"))
+        self.assertTrue(hook_latency.matches("", "Read"))
+        self.assertTrue(hook_latency.matches("Bash|mcp__.*", "mcp__x__y"))
+        self.assertFalse(hook_latency.matches("Bash", "BashOutput"))
 
     def test_each_tool_fires_the_hooks_its_matchers_name(self):
         names = lambda tool: [c.rsplit("/", 1)[1].split('"')[0] for c in hook_latency.hook_commands("PreToolUse", tool)]  # noqa: E731
@@ -28,6 +35,10 @@ class HookLatencyTest(unittest.TestCase):
         self.assertEqual(names("mcp__github__get_issue"), ["guard_outward.py"])
         self.assertEqual(names("WebFetch"), [])
         self.assertEqual(len(hook_latency.hook_commands("SessionStart")), 1)
+
+    def test_a_missing_hook_fails_instead_of_timing_nothing(self):
+        with self.assertRaises(SystemExit):
+            hook_latency.checked('f="/nonexistent/guard.py"; [ ! -f "$f" ] || python3 "$f"', "{}", {})
 
     def test_a_short_run_reports_every_case(self):
         out = io.StringIO()

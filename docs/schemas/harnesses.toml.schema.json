@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/brainrc/brainrc/blob/main/docs/schemas/harnesses.toml.schema.json",
+  "title": "harnesses.toml",
+  "description": "Where each AI harness reads its user-level config, and harnesses.local.toml over it, after they are parsed as TOML. Paths expand ~ and $ENV_VARS; ${VAR:-default} uses default when VAR is unset, empty or relative.",
+  "type": "object",
+  "propertyNames": {
+    "minLength": 1
+  },
+  "additionalProperties": {
+    "$ref": "#/$defs/harness"
+  },
+  "$defs": {
+    "harness": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "description": "false: brainrc leaves the harness alone; true in harnesses.local.toml manages it even when it isn't installed.",
+          "type": "boolean"
+        },
+        "home": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Directory whose existence means the harness is installed; default: the folder holding instructions or skills."
+        },
+        "skills": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Directory; each skills/<name>/ is linked into it."
+        },
+        "agents": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Directory; each agents/<name>.md is linked into it."
+        },
+        "agents_format": {
+          "description": "\"claude\" links agents as written; \"opencode\" links copies rendered in OpenCode's format.",
+          "type": "string",
+          "enum": [
+            "claude",
+            "opencode"
+          ]
+        },
+        "commands": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Directory; each commands/<name>.md is linked into it."
+        },
+        "plugin": {
+          "type": "string",
+          "minLength": 1,
+          "description": "File; linked to overrides/<harness>/plugin.js."
+        },
+        "instructions": {
+          "type": "string",
+          "minLength": 1,
+          "description": "File; linked to the rendered instructions."
+        },
+        "hooks_dir": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Directory; linked to overrides/<harness>/hooks, and {{hooks_dir}} in fragments."
+        },
+        "settings": {
+          "type": "string",
+          "minLength": 1,
+          "description": "JSON file that hooks from overrides/<harness>/settings.fragment.json are merged into."
+        },
+        "mcp": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The harness's MCP config file that servers from mcp/servers.toml are merged into."
+        },
+        "project_skills": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Repo path; each project skill is copied here too. Read from core's harnesses.toml only."
+        },
+        "project_instructions": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Repo file that gets a marked block importing AGENTS.md. Read from core's harnesses.toml only."
+        }
+      }
+    }
+  }
+}

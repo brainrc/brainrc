@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/brainrc/brainrc/blob/main/docs/schemas/pack.toml.schema.json",
+  "title": "pack.toml",
+  "description": "A brainrc pack's manifest, after it is parsed as TOML (docs/packs.md#packtoml). validate warns on a key not listed here.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "description": "The pack's name; default: its packs.toml table or folder name.",
+      "type": "string",
+      "minLength": 1
+    },
+    "prefix": {
+      "description": "What every skill, agent, command and MCP server name starts with; default: \"<name>-\" (docs/packs.md#naming).",
+      "type": "string",
+      "minLength": 1
+    },
+    "id": {
+      "description": "The <owner>/<pack> ID the pack is published under (docs/packs.md#naming).",
+      "type": "string"
+    },
+    "description": {
+      "description": "One line on what the pack is for.",
+      "type": "string"
+    },
+    "requires_core": {
+      "description": "Core versions the pack works with, e.g. \">=0.8, <0.9\" (docs/packs.md#compatibility).",
+      "type": "string"
+    },
+    "max_always_tokens": {
+      "description": "Budget for the tokens the pack loads into every session: rules plus descriptions (docs/packs.md#context-cost).",
+      "type": "number",
+      "minimum": 0
+    },
+    "validator": {
+      "description": "A Python module in the pack that checks what only it understands (docs/packs.md#validator-plugins).",
+      "type": "string",
+      "minLength": 1
+    },
+    "extensions": {
+      "description": "Tables other packs read, one per namespace, e.g. [extensions.gatework]; the pack that owns a namespace checks it (docs/packs.md#extensions).",
+      "type": "object"
+    }
+  }
+}

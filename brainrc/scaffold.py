@@ -48,6 +48,8 @@ class PackSpec:
 
 
 SLUG_MAX = 40
+# Taplo's directive for pack.toml's JSON Schema: completion and checks in editors (docs/packs.md).
+PACK_SCHEMA = "#:schema https://raw.githubusercontent.com/brainrc/brainrc/main/docs/schemas/pack.toml.schema.json"
 
 
 def slugify(text: str, fallback: str = "rules") -> str:
@@ -97,7 +99,7 @@ def render_pack(spec: PackSpec) -> dict[str, str]:
     """The pack's files, path -> text, in the order they are written."""
     check_name(spec.name, spec.prefix)
     files: dict[str, str] = {}
-    lines = [f"name = {_toml_string(spec.name)}", f"prefix = {_toml_string(spec.prefix)}"]
+    lines = [PACK_SCHEMA, f"name = {_toml_string(spec.name)}", f"prefix = {_toml_string(spec.prefix)}"]
     if spec.description:
         lines.append(f"description = {_toml_string(spec.description)}")
     lines.append(f"requires_core = {_toml_string(spec.requires_core or _core_pin())}")

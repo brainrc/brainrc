@@ -1,6 +1,7 @@
 """Validation: frontmatter, references, packs, tripwires, and local tripwires (used in CI)."""
 from __future__ import annotations
 
+import difflib
 import fnmatch
 import json
 import os
@@ -11,7 +12,7 @@ from pathlib import Path
 from .mcp import check_servers
 from .naming import check_pack_names, unprefixed_ok
 from .plugins import extension_errors, extension_warnings, plugin_errors, validators
-from . import config
+from . import config, schema
 from .config import (
     ConfigError,
     HOOKS_DIR_PLACEHOLDER,
@@ -23,6 +24,7 @@ from .config import (
     _read_toml,
     check_config,
     expand,
+    line_of,
     load_harnesses,
 )
 from .sources import (
@@ -150,6 +152,41 @@ def _validate_source(src: Source, agent_names: set[str], skill_names: set[str], 
     if src.is_core:
         errors += _check_local_tripwires(src)
     return errors
+
+
+def pack_toml_findings(src: Source) -> tuple[list[str], list[str]]:
+    """(errors, warnings) for a pack's pack.toml against docs/schemas/pack.toml.schema.json: a known
+    key with a value of the wrong type fails; a key the schema doesn't know warns, naming the known
+    key it is closest to (a typo such as `max_always_token` would otherwise be silently ignored).
+    Only validate reports these: apply installs a pack whatever they say, as it did before."""
+    path = src.root / "pack.toml"
+    where = src.rel(path)
+    if not path.is_file():
+        return [], []
+    text = path.read_text()
+    known = schema.load("pack.toml")
+    unknown: list[tuple[tuple, str]] = []
+    errors = [f"{where}: {e}" for e in schema.errors(src.meta, known, unknown=unknown)
+              if not e.startswith("id:")]  # check_pack_names reports any bad `id`, apply too
+    warnings = []
+    for table, key in unknown:
+        props = known["properties"] if not table else {}
+        close = difflib.get_close_matches(key, props, n=1, cutoff=0.75)
+        hint = f" (did you mean `{close[0]}`?)" if close else ""
+        name = ".".join(map(str, (*table, key)))
+        warnings.append(f"{where}:{_key_line(text, table, key)}: unknown key `{name}`{hint}; brainrc ignores it")
+    return errors, warnings
+
+
+def _key_line(text: str, table: tuple, key: str) -> int:
+    """The line that sets `key` in `table`: `key =`, a dotted `key.x =`, or a `[key...]` or
+    `[[key...]]` header; else what line_of finds."""
+    dotted = re.escape(".".join(map(str, (*table, key))))
+    found = re.compile(rf"^\s*(\[\[?\s*{dotted}\s*[\].]|{dotted}\s*[=.])")
+    for n, line in enumerate(text.splitlines(), 1):
+        if found.match(line):
+            return n
+    return line_of(text, ".".join(map(str, table)), key) if table else line_of(text, key)
 
 
 def _validate_pack(src: Source) -> list[str]:
@@ -293,6 +330,11 @@ def cmd_validate(pack: str | None = None, key: str = "") -> int:
         errors.append(str(e))
     errors += check_servers(srcs)
     warnings = config_warnings + extension_warnings(srcs, plugins)
+    for src in srcs:
+        if not src.is_core:
+            found = pack_toml_findings(src)
+            errors += found[0]
+            warnings += found[1]
     try:
         errors += check_changelog(core_version())
         compat_errors, compat_warnings = check_packs(srcs)

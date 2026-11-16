@@ -1,3 +1,4 @@
+#:schema https://raw.githubusercontent.com/brainrc/brainrc/main/docs/schemas/pack.toml.schema.json
 # Example pack: guard hooks for a Proxmox and Talos homelab (see README.md).
 name = "homelab"
 prefix = "homelab-"               # skills, agents, and commands must start with this

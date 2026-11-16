@@ -120,4 +120,4 @@ SPLIT_NAMES = {"brainrc/gatework": frozenset({*SKILL_ALIASES, *AGENT_ALIASES})}
 def unprefixed_ok(src: Source, name: str) -> bool:
     """True for an item an official pack may keep without its prefix (SPLIT_NAMES)."""
     pack_id = src.meta.get("id")
-    return pack_id in OFFICIAL_PACK_IDS and name in SPLIT_NAMES.get(pack_id, frozenset())
+    return isinstance(pack_id, str) and pack_id in OFFICIAL_PACK_IDS and name in SPLIT_NAMES.get(pack_id, frozenset())

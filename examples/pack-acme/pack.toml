@@ -1,3 +1,4 @@
+#:schema https://raw.githubusercontent.com/brainrc/brainrc/main/docs/schemas/pack.toml.schema.json
 # Example pack: copy this directory to start your own (see README.md).
 name = "acme"
 prefix = "acme-"                  # skills, agents, and commands must start with this

@@ -49,8 +49,8 @@ class SchemaFilesTest(unittest.TestCase):
             self.assertIn(f"schemas/{name}.schema.json", doc)
 
     def test_the_validator_knows_every_keyword_the_schemas_use(self):
-        known = {"$schema", "$id", "title", "description", "$defs", "type", "const", "enum",
-                 "pattern", "minLength", "items", "properties", "required",
+        known = {"$schema", "$id", "title", "description", "$defs", "type", "const", "enum", "minimum",
+                 "minItems", "pattern", "minLength", "items", "properties", "required",
                  "additionalProperties", "propertyNames", "$ref", "not", "oneOf", "anyOf"}
 
         def keywords(node, under_props=False):
@@ -63,7 +63,7 @@ class SchemaFilesTest(unittest.TestCase):
                 for item in node:
                     yield from keywords(item)
 
-        for name in SCHEMAS.values():
+        for name in (*SCHEMAS.values(), "pack.toml", "mcp-servers.toml", "harnesses.toml"):
             used = set(keywords(schema.load(name)))
             self.assertEqual(used - known, set(), name)
 

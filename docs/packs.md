@@ -159,6 +159,27 @@ refs = ["ACME-*"]
 host = "acme.example.net"
 ```
 
+`validate` checks `pack.toml` against
+[`schemas/pack.toml.schema.json`](schemas/pack.toml.schema.json): a known key with a value of the
+wrong type fails, and a key it doesn't know warns, naming the closest known key
+(`max_always_token` → `max_always_tokens`), since brainrc would otherwise ignore it. Only
+`validate` reports these; `apply` still installs the pack.
+
+### Editor completion
+
+A pack's `pack.toml` and `mcp/servers.toml` have JSON Schemas in [`docs/schemas/`](schemas/)
+(`pack.toml`, `mcp-servers.toml`), as does core's `harnesses.toml`. Editors that use
+[Taplo](https://taplo.tamasfe.dev/) (VS Code's Even Better TOML, Zed, Helix) complete keys and flag
+wrong ones from a first line naming the schema, which `brainrc import` writes for you:
+
+```toml
+#:schema https://raw.githubusercontent.com/brainrc/brainrc/main/docs/schemas/pack.toml.schema.json
+name = "acme"
+```
+
+In a checkout of this repo, [`.taplo.toml`](../.taplo.toml) maps each file to its schema. Files
+outside it (a pack's own repo, `~/.config/brainrc/harnesses.local.toml`) take the `#:schema` line.
+
 ## Extensions
 
 `[extensions.<namespace>]` is a table another pack reads; core passes it through untouched. The

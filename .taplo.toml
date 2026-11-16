@@ -1,0 +1,24 @@
+# Editor completion and checks for brainrc's TOML files: Taplo, which VS Code's Even Better TOML
+# extension runs, reads this file. A pack in its own repo gets the same with a first line of
+# `#:schema https://raw.githubusercontent.com/brainrc/brainrc/main/docs/schemas/pack.toml.schema.json`
+# (docs/packs.md#editor-completion).
+
+[[rule]]
+include = ["pack.toml", "**/pack.toml"]
+schema = { path = "./docs/schemas/pack.toml.schema.json" }
+
+[[rule]]
+include = ["mcp/servers.toml", "**/mcp/servers.toml"]
+schema = { path = "./docs/schemas/mcp-servers.toml.schema.json" }
+
+[[rule]]
+include = ["harnesses.toml", "harnesses.local.toml"]
+schema = { path = "./docs/schemas/harnesses.toml.schema.json" }
+
+[[rule]]
+include = ["brainrc.toml", "**/brainrc.toml"]
+schema = { path = "./docs/schemas/brainrc.toml.schema.json" }
+
+[[rule]]
+include = ["brainrc.lock", "**/brainrc.lock"]
+schema = { path = "./docs/schemas/brainrc.lock.schema.json" }

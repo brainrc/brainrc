@@ -3,7 +3,7 @@
 A pack names its tests in pack.toml (`test = "tests"`) and `brainrc validate --pack` runs them with
 this package importable:
 
-    from brainrc.testing import assert_allows, assert_asks, assert_denies
+    from brainrc.testing import assert_allows, assert_asks, assert_denies, assert_no_opinion
 
     HOOK = Path(__file__).resolve().parent.parent / "overrides/claude/hooks/guard_acme.py"
 
@@ -32,25 +32,33 @@ def bash(command: str) -> dict:
 
 
 def run_hook(hook: str | Path, payload: dict | str, timeout: float = 30) -> str | None:
-    """The decision `hook` makes on `payload` ("allow", "ask" or "deny"), or None for no opinion.
-    payload: a dict sent as JSON, or a str sent as is (to test a payload that isn't JSON). Exit
-    code 2 is a block, so it reads as "deny"; any other failure raises AssertionError."""
+    """The decision `hook` makes on `payload` ("allow", "ask" or "deny"), or None for no opinion
+    (no output, or JSON with no permissionDecision). payload: a dict sent as JSON, or a str sent as
+    is (to test a payload that isn't JSON). Exit code 2 is a block, so it reads as "deny"; a hook
+    that is missing, fails, hangs or prints something else raises AssertionError."""
+    name = Path(hook).name
+    if not Path(hook).is_file():
+        raise AssertionError(f"no hook at {hook}")
     stdin = payload if isinstance(payload, str) else json.dumps(payload)
-    done = subprocess.run([sys.executable, str(hook)], input=stdin, capture_output=True, text=True,
-                          timeout=timeout)
+    try:
+        done = subprocess.run([sys.executable, str(hook)], input=stdin, capture_output=True, text=True,
+                              timeout=timeout)
+    except subprocess.TimeoutExpired:
+        raise AssertionError(f"{name} took over {timeout}s") from None
     if done.returncode == 2:
         return "deny"
     if done.returncode != 0:
-        raise AssertionError(f"{Path(hook).name} exited {done.returncode}: {done.stderr.strip()}")
+        raise AssertionError(f"{name} exited {done.returncode}: {done.stderr.strip()}")
     out = done.stdout.strip()
     if not out:
         return None
     try:
-        decision = json.loads(out)["hookSpecificOutput"]["permissionDecision"]
-    except (ValueError, KeyError, TypeError):
-        raise AssertionError(f"{Path(hook).name} printed something that isn't a decision: {out!r}") from None
-    if decision not in DECISIONS:
-        raise AssertionError(f"{Path(hook).name} decided {decision!r}, not one of {', '.join(DECISIONS)}")
+        data = json.loads(out)
+        decision = data.get("hookSpecificOutput", {}).get("permissionDecision")
+    except (ValueError, AttributeError):
+        raise AssertionError(f"{name} printed something that isn't hook JSON: {out!r}") from None
+    if decision is not None and decision not in DECISIONS:
+        raise AssertionError(f"{name} decided {decision!r}, not one of {', '.join(DECISIONS)}")
     return decision
 
 
@@ -59,7 +67,13 @@ def _check(hook: str | Path, cases: tuple, want: set, label: str) -> None:
         raise AssertionError(f"no commands to check that {Path(hook).name} {label}")
     wrong = []
     for case in cases:
-        got = run_hook(hook, bash(case) if isinstance(case, str) else case)
+        try:
+            got = run_hook(hook, bash(case) if isinstance(case, str) else case)
+        except AssertionError as e:
+            if not Path(hook).is_file():
+                raise
+            wrong.append(f"  {case!r}: {e}")
+            continue
         if got not in want:
             wrong.append(f"  {case!r}: {got or 'no opinion'}")
     if wrong:
@@ -79,3 +93,9 @@ def assert_asks(hook: str | Path, *cases: str | dict) -> None:
 def assert_allows(hook: str | Path, *cases: str | dict) -> None:
     """No case is denied or asked about: the hook allows it or has no opinion."""
     _check(hook, cases, {"allow", None}, "allow")
+
+
+def assert_no_opinion(hook: str | Path, *cases: str | dict) -> None:
+    """The hook stays out of every case, so Claude Code's own permission check (and any later
+    guard) still decides. Stricter than assert_allows, which also passes an "allow"."""
+    _check(hook, cases, {None}, "have no opinion")

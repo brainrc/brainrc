@@ -11,7 +11,8 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import TempRepoCase, brainrc, quiet  # noqa: E402
 from brainrc import testing  # noqa: E402
-from brainrc.testing import assert_allows, assert_asks, assert_denies, bash, run_hook  # noqa: E402
+from brainrc.testing import (assert_allows, assert_asks, assert_denies, assert_no_opinion,  # noqa: E402
+                             bash, run_hook)
 from support import rmtree  # noqa: E402
 
 HOOK = "overrides/claude/hooks/guard_homelab.py"
@@ -35,19 +36,24 @@ if cmd == "block":
     sys.exit(2)
 if cmd == "crash":
     sys.exit("boom")
+if cmd == "hang":
+    import time; time.sleep(30)
 if cmd == "noise":
     print("not a decision")
+elif cmd == "context":
+    print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse", "additionalContext": "x"}}))
 elif cmd in ("allow", "ask", "deny", "maybe"):
     print(json.dumps({"hookSpecificOutput": {"permissionDecision": cmd}}))
 """)
 
     def test_run_hook_reads_each_decision(self):
-        for cmd, want in [("allow", "allow"), ("ask", "ask"), ("deny", "deny"), ("block", "deny"), ("ls", None)]:
+        for cmd, want in [("allow", "allow"), ("ask", "ask"), ("deny", "deny"), ("block", "deny"), ("ls", None),
+                          ("context", None)]:
             with self.subTest(cmd=cmd):
                 self.assertEqual(run_hook(self.hook, bash(cmd)), want)
 
     def test_a_hook_that_fails_or_prints_nonsense_is_an_assertion_error(self):
-        for cmd, why in [("crash", "exited 1: boom"), ("noise", "isn't a decision"), ("maybe", "decided 'maybe'")]:
+        for cmd, why in [("crash", "exited 1: boom"), ("noise", "isn't hook JSON"), ("maybe", "decided 'maybe'")]:
             with self.subTest(cmd=cmd), self.assertRaises(AssertionError) as raised:
                 run_hook(self.hook, bash(cmd))
             self.assertIn(why, str(raised.exception))
@@ -65,6 +71,20 @@ elif cmd in ("allow", "ask", "deny", "maybe"):
         with self.assertRaises(AssertionError) as raised:
             assert_allows(self.hook, "ask")
         self.assertIn("'ask': ask", str(raised.exception))
+
+    def test_a_missing_hook_fails_rather_than_counting_as_a_deny(self):
+        with self.assertRaisesRegex(AssertionError, "no hook at"):
+            assert_denies(self.dir / "gone.py", "rm -rf /")
+
+    def test_a_hung_hook_fails_naming_the_wait(self):
+        with self.assertRaises(AssertionError) as raised:
+            run_hook(self.hook, bash("hang"), timeout=0.5)
+        self.assertIn("took over 0.5s", str(raised.exception))
+
+    def test_no_opinion_is_stricter_than_allows(self):
+        assert_no_opinion(self.hook, "ls", "context")
+        with self.assertRaisesRegex(AssertionError, "'allow': allow"):
+            assert_no_opinion(self.hook, "ls", "allow")
 
     def test_no_cases_is_a_mistake(self):
         with self.assertRaisesRegex(AssertionError, "no commands to check"):
@@ -105,6 +125,24 @@ class ValidateRunsPackTestsTest(TempRepoCase):
         guard.write_text(guard.read_text().replace("|rollback|migrate)", "|rollback)"))
         code, out = quiet(brainrc.cmd_validate, str(self.pack), "homelab")
         self.assertEqual(code, 0, out)
+
+    def test_the_report_stays_in_view_when_a_test_prints(self):
+        test = self.pack / "tests/test_guard.py"
+        test.write_text(test.read_text().replace("    def test_asks_before_changing_a_guest(self):\n",
+                                                 "    def test_asks_before_changing_a_guest(self):\n"
+                                                 "        print('\\n'.join(f'debug {i}' for i in range(40)))\n"
+                                                 "        self.fail('the rule is gone')\n", 1))
+        code, out = self.validate()
+        self.assertEqual(code, 1, out)
+        self.assertIn("the rule is gone", out)
+        self.assertIn("FAILED (failures=1)", out)
+
+    def test_a_file_unittest_cannot_import_is_named(self):
+        shutil.copy(self.pack / "tests/test_guard.py", self.pack / "tests/guard-tests.py")
+        self.edit('test = "tests"', 'test = "tests/guard-tests.py"')
+        code, out = self.validate()
+        self.assertEqual(code, 1, out)
+        self.assertIn("unittest can't import guard-tests.py", out)
 
     def test_a_single_file_runs_too(self):
         self.edit('test = "tests"', 'test = "tests/test_guard.py"')

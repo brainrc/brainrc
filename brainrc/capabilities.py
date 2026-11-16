@@ -30,7 +30,7 @@ def _hooks(root: Path, name: str, h: dict) -> str:
     if "settings" not in h:
         return NONE
     fragment = root / "overrides" / name / "settings.fragment.json"
-    events = sorted(json.loads(fragment.read_text()).get("hooks", {})) if fragment.is_file() else []
+    events = sorted(json.loads(fragment.read_text(encoding="utf-8")).get("hooks", {})) if fragment.is_file() else []
     return f"{_path(h, 'settings')}: {', '.join(events)}" if events else NONE
 
 
@@ -78,14 +78,14 @@ def write(root: Path | None = None) -> bool:
     """Rewrite the page's table from harnesses.toml; True if it changed. Raises ConfigError."""
     root = root or config.REPO
     page = root / PAGE
-    text = page.read_text()
+    text = page.read_text(encoding="utf-8")
     parts = _parts(text)
     if parts is None:
         raise ConfigError(f"{PAGE}: the BEGIN and END capability matrix marker lines are missing")
     new = f"{parts[0]}{BEGIN}\n{render(root)}\n{parts[2]}"
     changed = new != text
     if changed:
-        page.write_text(new)
+        page.write_text(new, encoding="utf-8")
     return changed
 
 

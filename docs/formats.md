@@ -88,13 +88,13 @@ SessionStart hook warns when one changes ([guardrails](guardrails.md#claude-code
 A separate repo with the same layout plus a `pack.toml`, layered on top of this one per
 machine. Format and extension points: [packs.md](packs.md).
 
-`pack.toml`, `mcp/servers.toml` and `harnesses.toml` have JSON Schemas in [`schemas/`](schemas/),
+`pack.toml`, `mcp/servers.toml` and `harnesses.toml` have JSON Schemas in [`schemas/`](schemas.md),
 for editor completion ([packs.md](packs.md#editor-completion)).
 
 ## Project manifest and lock: `brainrc.toml`, `brainrc.lock`
 
 A repo's own packs and the lock that pins them: [project.md](project.md), with JSON Schemas in
-[`schemas/`](schemas/).
+[`schemas/`](schemas.md).
 
 ## Harness support
 

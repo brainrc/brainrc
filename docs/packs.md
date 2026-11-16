@@ -172,7 +172,7 @@ wrong type fails, and a key it doesn't know warns, naming the closest known key
 
 ### Editor completion
 
-A pack's `pack.toml` and `mcp/servers.toml` have JSON Schemas in [`docs/schemas/`](schemas/)
+A pack's `pack.toml` and `mcp/servers.toml` have JSON Schemas in [`docs/schemas/`](schemas.md)
 (`pack.toml`, `mcp-servers.toml`), as does core's `harnesses.toml`. Editors that use
 [Taplo](https://taplo.tamasfe.dev/) (VS Code's Even Better TOML, Zed, Helix) complete keys and flag
 wrong ones from a first line naming the schema, which `brainrc import` writes for you:
@@ -274,7 +274,7 @@ class GuardTest(unittest.TestCase):
 `assert_allows` passes when the hook allows or has no opinion, and `assert_no_opinion` only when it
 stays out, so Claude Code's own permission check still decides; `assert_denies` counts exit code 2
 as a deny. Each lists every case that came out wrong, and a missing, failing or hung hook fails.
-`run_hook(hook, payload)` returns the decision itself. [pack-homelab](https://github.com/brainrc/brainrc/blob/main/examples/pack-homelab/tests/test_guard.py)
+`run_hook(hook, payload)` returns the decision itself. [pack-homelab](../examples/pack-homelab/tests/test_guard.py)
 has a full example.
 
 ## Default packs

@@ -1,8 +1,10 @@
 """The docs site (#197): mkdocs.yml's nav names real pages, and the build hook points links that
 leave docs/ at GitHub."""
 import importlib.util
+import os
 import re
 import unittest
+import unittest.mock
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -12,8 +14,16 @@ hooks = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(hooks)
 
 
+CONFIG = {"repo_url": "https://github.com/acme/brainrc/"}
+BLOB = "https://github.com/acme/brainrc/blob/main/"
+
+
 def page(src_uri: str):
     return SimpleNamespace(file=SimpleNamespace(src_uri=src_uri))
+
+
+def render(md: str, src_uri: str = "formats.md") -> str:
+    return hooks.on_page_markdown(md, page(src_uri), CONFIG)
 
 
 class DocsSiteTest(unittest.TestCase):
@@ -24,26 +34,55 @@ class DocsSiteTest(unittest.TestCase):
         self.assertEqual([p for p in pages if not (REPO / "docs" / p).is_file()], [])
 
     def test_links_out_of_docs_go_to_github_and_others_stay(self):
-        md = "[log](../CHANGELOG.md) [ex](../examples/pack-acme/README.md#top) [p](packs.md) [s](schemas/)"
-        out = hooks.on_page_markdown(md, page("formats.md"))
-        self.assertIn(f"]({hooks.BLOB}CHANGELOG.md)", out)
-        self.assertIn(f"]({hooks.BLOB}examples/pack-acme/README.md#top)", out)
+        md = '[log](../CHANGELOG.md) [ex](../examples/pack-acme/README.md#top) [t](../VERSION "v") [p](packs.md)'
+        out = render(md)
+        self.assertIn(f"]({BLOB}CHANGELOG.md)", out)
+        self.assertIn(f"]({BLOB}examples/pack-acme/README.md#top)", out)
+        self.assertIn(f'](https://github.com/acme/brainrc/blob/main/VERSION "v")', out)
         self.assertIn("](packs.md)", out)
-        self.assertIn("](schemas.md)", out)
 
     def test_a_relative_link_that_stays_in_docs_is_left_alone(self):
-        self.assertEqual(hooks.on_page_markdown("[a](../install.md)", page("guides/x.md")), "[a](../install.md)")
+        self.assertEqual(render("[a](../install.md)", "guides/x.md"), "[a](../install.md)")
+
+    def test_links_inside_code_are_left_alone(self):
+        md = (
+            "`[a](../a.md)` ``[b](../b.md) ` x`` \n\n"
+            "- item\n\n  ```md\n  [c](../c.md)\n  ```\n\n"
+            "````md\n```\n[d](../d.md)\n```\n[e](../e.md)\n````\n\n[f](../f.md)"
+        )
+        out = render(md)
+        for kept in ("[a](../a.md)", "[b](../b.md)", "[c](../c.md)", "[d](../d.md)", "[e](../e.md)"):
+            self.assertIn(kept, out)
+        self.assertIn(f"]({BLOB}f.md)", out)
+
+    def test_without_a_repo_url_links_stay_as_written(self):
+        md = "[log](../CHANGELOG.md)"
+        self.assertEqual(hooks.on_page_markdown(md, page("formats.md"), {"repo_url": None}), md)
+
+    def test_a_published_version_links_to_its_own_tag(self):
+        with unittest.mock.patch.dict(os.environ, {"BRAINRC_DOCS_REF": "v1.2.3"}):
+            out = render("[log](../CHANGELOG.md)")
+        self.assertIn("](https://github.com/acme/brainrc/blob/v1.2.3/CHANGELOG.md)", out)
+
+    def test_docs_link_to_pages_not_directories(self):
+        directory = re.compile(r"\]\((?![a-z]+:)[^)#\s]*/(?:#[^)\s]*)?(?:\s+\"[^\"]*\")?\)")
+        docs = REPO / "docs"
+        bad = {str(p.relative_to(docs)) for p in docs.rglob("*.md") if directory.search(p.read_text())}
+        self.assertEqual(bad, set())
 
     def test_every_schema_is_on_the_schemas_page(self):
         text = (REPO / "docs/schemas.md").read_text()
         for schema in (REPO / "docs/schemas").glob("*.json"):
             self.assertIn(f"(schemas/{schema.name})", text)
 
-    def test_the_workflow_pins_its_tools(self):
-        workflow = (REPO / ".github/workflows/docs.yml").read_text()
+    def test_the_tools_are_pinned_with_hashes(self):
+        reqs = (REPO / ".github/docs-requirements.txt").read_text()
         for tool in ("mkdocs", "mkdocs-material", "mike"):
-            self.assertRegex(workflow, rf"\b{tool}==\d+\.\d+\.\d+")
-
+            self.assertRegex(reqs, rf"(?m)^{tool}==\d+\.\d+\.\d+ ")
+        pins = re.findall(r"(?m)^[a-z0-9_.-]+==\S+(?:\s*\\\n\s*--hash=sha256:[0-9a-f]{64})+", reqs)
+        self.assertEqual(len(pins), len(re.findall(r"(?m)^[a-z0-9_.-]+==", reqs)))
+        workflow = (REPO / ".github/workflows/docs.yml").read_text()
+        self.assertNotRegex(workflow, r"pip install (?!--require-hashes)")
 
 if __name__ == "__main__":
     unittest.main()

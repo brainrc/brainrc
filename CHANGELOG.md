@@ -12,6 +12,14 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.8.13 (2026-11-16)
+
+- **[pack contract]** JSON Schemas for `pack.toml`, `mcp/servers.toml` and `harnesses.toml` in
+  `docs/schemas/`, with `.taplo.toml` and a `#:schema` first line (written by `brainrc import`) for
+  editor completion. `validate` checks a pack's `pack.toml` against its schema: a known key of the
+  wrong type fails, and an unknown key warns with the closest known one (`max_always_token`).
+  `apply` still installs such a pack, as before (#135).
+
 ## 0.8.12 (2026-11-16)
 
 - Install-time check: a Homebrew route over its 90-second limit is now a warning (a `WARN` line, a

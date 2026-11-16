@@ -51,7 +51,7 @@
           "type": "array",
           "items": {
             "type": "string",
-            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+            "minLength": 1
           }
         }
       },
@@ -85,7 +85,12 @@
               {
                 "required": [
                   "env_from"
-                ]
+                ],
+                "properties": {
+                  "env_from": {
+                    "minItems": 1
+                  }
+                }
               }
             ]
           }

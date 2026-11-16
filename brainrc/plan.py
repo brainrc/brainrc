@@ -210,6 +210,9 @@ def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
             links.append(Link(name, expand(h["instructions"]), rendered_instructions()))
         if "plugin" in h and hooks_on:  # one file the harness loads as a plugin (OpenCode's guards)
             links.append(Link(name, expand(h["plugin"]), config.REPO / "overrides" / name / "plugin.js"))
+            links += [Link(name, expand(config.pack_plugin_path(h["plugin"], src.name)), own)  # a pack's own (#137)
+                      for src in srcs if not src.is_core
+                      if (own := src.root / "overrides" / name / "plugin.js").is_file()]
         fragments: list[tuple[Path, str | None]] = []
         for src in srcs if hooks_on else []:
             hooks = src.root / "overrides" / name / "hooks"
@@ -254,6 +257,7 @@ def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
         if "plugin" in h:
             candidates.add(expand(h["plugin"]))
             candidates.update(expand(old) for old in config.former_plugin_paths(h["plugin"]))
+            candidates.update(expand(config.pack_plugin_path(h["plugin"], s.name)) for s in every_src)
         if "hooks_dir" in h:
             candidates.add(expand(h["hooks_dir"]))
             candidates.update(expand(pack_hooks_dir(h["hooks_dir"], s.name)) for s in every_src)

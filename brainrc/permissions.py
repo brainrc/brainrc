@@ -29,7 +29,8 @@ def digest(text: str) -> str:
 
 
 def _hooks(src: Source) -> tuple[list[str], list[str]]:
-    """(hook entries, settings grants) from each overrides/<harness>/settings.fragment.json."""
+    """(hook entries, settings grants) from each overrides/<harness>/settings.fragment.json, and a
+    hook entry for each overrides/<harness>/plugin.js."""
     hooks, grants = [], []
     for fragment in sorted((src.root / "overrides").glob("*/settings.fragment.json")):
         harness = fragment.parent.name
@@ -57,6 +58,8 @@ def _hooks(src: Source) -> tuple[list[str], list[str]]:
             else:  # the value too, so a changed command (statusLine, apiKeyHelper) shows as a change
                 text = json.dumps(value, sort_keys=True, ensure_ascii=False)
                 grants.append(f"{harness} sets {key} = " + (text if len(text) <= 200 else digest(text)))
+    for plugin in sorted((src.root / "overrides").glob("*/plugin.js")):  # code the harness runs, like a hook
+        hooks.append(f"{plugin.parent.name} plugin overrides/{plugin.parent.name}/plugin.js")
     return hooks, grants
 
 

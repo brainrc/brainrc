@@ -117,7 +117,9 @@ With this setup, a bypassed hook produces an access-denied error rather than a c
 
 OpenCode runs the same guards through a plugin (`overrides/opencode/plugin.js`), with one
 difference: a plugin can't prompt, so anything the guards would ask about is blocked, and the
-model is told to ask you to run it yourself. MCP tools aren't guarded there yet.
+model is told to ask you to run it yourself. MCP tools aren't guarded there yet. A pack can ship its own
+OpenCode plugin as `overrides/opencode/plugin.js`; `apply` links it beside core's, and the lock
+records it with the pack's hooks ([packs](packs.md#layout)).
 
 Cursor runs them through `overrides/cursor/hooks/guard.py` on `beforeShellExecution` (both
 guards) and `beforeReadFile` (secrets), from `~/.cursor/hooks.json` (`brainrc`) or the plugin's

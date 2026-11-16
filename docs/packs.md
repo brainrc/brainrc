@@ -89,6 +89,7 @@ acme-ai-pack/
   rules/NN-*.md          rendered after all core rules, as one labelled block (see Rules)
   overrides/claude/hooks/                 linked to <hooks_dir>-acme (e.g. ~/.claude/hooks/brainrc-acme)
   overrides/claude/settings.fragment.json merged after the core fragment; {{hooks_dir}} = the pack's hooks dir
+  overrides/opencode/plugin.js            linked beside core's guard plugin, as brainrc-guard-acme.js
   mcp/servers.toml       MCP servers, synced after core's (see formats.md#mcp-servers-mcpserverstoml)
   tripwires.toml         patterns that must not appear in the pack (checked by validate)
 ```
@@ -319,9 +320,13 @@ python3 core/scripts/brainrc.py validate --pack .
 ```
 
 This checks the core, the default packs on disk and that pack, whatever else is in `packs.toml`:
-frontmatter, cross-references (pack files may reference core's and Gatework's skills and agents),
-the [naming](#naming) rules,
-collisions, `pack.toml` extension references, `requires_core`, and tripwires.
+frontmatter; `pack.toml` against [its schema](#packtoml); cross-references in skills, agents,
+commands, rules, `README.md` and `docs/**` (relative links, `[agent: x]` tags, and skills named
+as "`x` skill" or in prose as "the x skill"; pack files may reference core's and Gatework's skills
+and agents); the [naming](#naming) rules; collisions; extension references and
+[connector config](#connector-config); `requires_core`; and tripwires. A skill named in prose counts
+only when its name has a hyphen and starts like a known skill's or the pack's prefix, so "the
+follow-up skill" stays prose.
 
 ## Packs and Claude Code plugins
 

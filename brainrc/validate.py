@@ -62,7 +62,14 @@ AGENT_TAG = re.compile(r"\[agent:\s*([a-z0-9-]+)\]")
 SKILL_MENTION = re.compile(r"`([a-z0-9-]+)` skill")
 
 
+# A skill named in prose, without backticks: "the acme-deploy skill" (#137). Only a hyphenated name
+# whose first part is a known skill's or the pack's own counts, so "the write-up skill" doesn't.
+PROSE_SKILL = re.compile(r"\b(?i:the)\s+([a-z0-9]+(?:-[a-z0-9]+)+)\s+skill\b")
+
+
 def _check_references(src: Source, path: Path, agent_names: set[str], skill_names: set[str]) -> list[str]:
+    """Broken relative links, unknown `[agent: x]` tags, and unknown skills named as "`x` skill" or
+    in prose as "the x skill"."""
     rel = src.rel(path)
     text = FENCE.sub("", path.read_text())
     errors = []
@@ -73,7 +80,16 @@ def _check_references(src: Source, path: Path, agent_names: set[str], skill_name
             errors.append(f"{rel}: broken link `{target}`")
     errors += [f"{rel}: unknown agent `{a}`" for a in AGENT_TAG.findall(text) if a not in agent_names]
     errors += [f"{rel}: unknown skill `{s}`" for s in SKILL_MENTION.findall(text) if s not in skill_names]
+    heads = {n.split("-", 1)[0] for n in skill_names} | {src.prefix.split("-", 1)[0]} - {""}
+    errors += [f"{rel}: unknown skill `{s}` (named as \"the {s} skill\")" for s in PROSE_SKILL.findall(text)
+               if s not in skill_names and s.split("-", 1)[0] in heads]
     return errors
+
+
+def _docs(src: Source) -> list[Path]:
+    """A pack's README.md and docs/**/*.md, whose links and references validate checks too."""
+    readme = [src.root / name for name in ("README.md",) if (src.root / name).is_file()]
+    return readme + (_markdown_under(src.root / "docs") if (src.root / "docs").is_dir() else [])
 
 
 # Harness built-in names a core skill must not take.
@@ -137,6 +153,9 @@ def _validate_source(src: Source, agent_names: set[str], skill_names: set[str], 
             errors.append(f"{src.rel(f)}: missing `description`")
         errors += _check_references(src, f, agent_names, skill_names)
 
+    for f in markdown_files("rules", src) + ([] if src.is_core else _docs(src)):
+        errors += _check_references(src, f, agent_names, skill_names)
+
     overrides = src.root / "overrides"
     for fragment in sorted(overrides.glob("*/settings.fragment.json")) if overrides.is_dir() else []:
         try:
@@ -149,6 +168,10 @@ def _validate_source(src: Source, agent_names: set[str], skill_names: set[str], 
                           f"[{fragment.parent.name}] has no hooks_dir")
 
     if not src.is_core:
+        harnesses = load_harnesses(include_disabled=True)
+        errors += [f"{src.rel(p)}: no harness in harnesses.toml loads a plugin from overrides/{p.parent.name}/ "
+                   "(only one with `plugin` set does)" for p in sorted(overrides.glob("*/plugin.js"))
+                   if overrides.is_dir() and "plugin" not in harnesses.get(p.parent.name, {})]
         errors += _validate_pack(src)
         errors += extension_errors(src, list(plugins), skill_names, agent_names)
         errors += connectors.check(src, skill_dirs or {})[0]

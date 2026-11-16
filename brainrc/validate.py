@@ -1,7 +1,6 @@
 """Validation: frontmatter, references, packs, tripwires, and local tripwires (used in CI)."""
 from __future__ import annotations
 
-import difflib
 import fnmatch
 import json
 import os
@@ -11,6 +10,7 @@ from pathlib import Path
 
 from .mcp import check_servers
 from .naming import check_pack_names, unprefixed_ok
+from .packs import pinned_defaults
 from .plugins import extension_errors, extension_warnings, plugin_errors, validators
 from . import config, connectors, packtests, schema
 from .config import (
@@ -363,16 +363,19 @@ def pack_errors(srcs: list[Source]) -> list[tuple[Source, list[str]]]:
     return [(src, errors) for src, errors in found if errors]
 
 
-def cmd_validate(pack: str | None = None, key: str = "") -> int:
+def cmd_validate(pack: str | None = None, key: str = "", fetch_defaults: bool = False) -> int:
     """key: the pack's packs.toml table when doctor checks an enabled pack, so its validator runs
     only if the user trusts it and its tests don't run (`validate --pack` from the command line
-    runs both)."""
+    runs both). fetch_defaults: check against core's default packs at the refs core pins."""
     try:
         config_warnings = check_config()
         if pack:
             root = expand(pack).resolve()
             checked = load_pack(root, key or None)
-            defaults, missing = default_sources(skip=checked.name)
+            if fetch_defaults:  # at the refs core pins, in clones of their own (the action, pre-commit)
+                defaults, missing = pinned_defaults(skip=checked.name), []
+            else:
+                defaults, missing = default_sources(skip=checked.name)
             srcs = [Source("core", config.REPO), *defaults, checked]
             config_warnings += missing
         else:

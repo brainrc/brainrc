@@ -19,28 +19,30 @@ class ActionTest(unittest.TestCase):
     def test_a_composite_action_with_its_inputs(self):
         action = text(ACTION)
         self.assertIn("using: composite", action)
-        for name, default in (("path", '"."'), ("default-packs", '"true"'), ("python-version", '"3.12"')):
+        for name, default in (("path", '"."'), ("default-packs", '"true"'), ("python-version", '""')):
             with self.subTest(input=name):
                 self.assertRegex(action, rf"\n  {name}:\n(    .*\n)*?    default: {re.escape(default)}\n")
 
     def test_it_runs_the_core_it_is_pinned_to(self):
         action = text(ACTION)
-        self.assertEqual(action.count("CORE: ${{ github.action_path }}/../../.."), 2)
+        self.assertIn("CORE: ${{ github.action_path }}/../../..", action)
         self.assertTrue((ACTION.parent / "../../../scripts/brainrc.py").resolve().is_file())
-        self.assertIn('python "$CORE/scripts/brainrc.py" validate --pack "$PACK"', action)
-        self.assertIn('python "$CORE/scripts/brainrc.py" apply', action)
+        self.assertIn('"$python" "$CORE/scripts/brainrc.py" "${args[@]}"', action)
+        self.assertIn('args=(validate --pack "$PACK")', action)
+        self.assertIn('if [ "$DEFAULT_PACKS" = true ]; then args+=(--fetch-defaults); fi', action)
 
     def test_inputs_reach_the_shell_only_through_env(self):
         # `${{ inputs.x }}` inside run: would be pasted into the script; env keeps it a value.
         runs = re.findall(r"run: \|\n((?:        .*\n)+)", text(ACTION))
-        self.assertEqual(len(runs), 2)
-        for script in runs:
-            self.assertNotIn("${{", script)
+        self.assertEqual(len(runs), 1)
+        self.assertNotIn("${{", runs[0])
 
-    def test_it_writes_to_a_home_of_its_own(self):
+    def test_each_call_gets_a_settings_home_of_its_own(self):
+        self.assertIn('BRAINRC_HOME="$(mktemp -d', text(ACTION))
+
+    def test_python_is_set_up_only_when_asked(self):
         action = text(ACTION)
-        self.assertEqual(action.count('HOME="$WORK/home" USERPROFILE="$WORK/home" BRAINRC_HOME="$WORK/settings"'), 2)
-        self.assertIn("WORK: ${{ runner.temp }}/brainrc-validate-pack", action)
+        self.assertIn("- if: ${{ inputs.python-version != '' }}\n      uses: actions/setup-python@", action)
 
     def test_actions_it_uses_are_pinned_like_cores_ci(self):
         uses = re.findall(r"uses: (\S+) # (\S+)", text(ACTION))
@@ -59,7 +61,7 @@ class PreCommitHookTest(unittest.TestCase):
     def test_the_hook_runs_the_installed_console_script(self):
         hooks = text(HOOKS)
         self.assertIn("- id: brainrc-validate-pack", hooks)
-        self.assertIn("entry: brainrc validate --pack .", hooks)
+        self.assertIn("entry: brainrc validate --fetch-defaults --pack\n  args: [\".\"]", hooks)
         self.assertIn("language: python", hooks)
         self.assertIn("pass_filenames: false", hooks)
         scripts = tomllib.loads(text(ROOT / "pyproject.toml"))["project"]["scripts"]

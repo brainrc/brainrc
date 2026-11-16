@@ -4,13 +4,15 @@
 #     rev: <core tag>          # the core the pack is checked against
 #     hooks:
 #       - id: brainrc-validate-pack
+#         # args: [pack]       # the pack's directory, when it isn't the repository root
 #
-# It checks the repository root as a pack, against that core and the default packs this machine
-# has fetched (run `brainrc apply` once for Gatework). See docs/packs.md (Validate a pack in its own CI).
+# It checks the pack against that core and the default packs (Gatework) at the versions that core
+# pins, fetched once into a cache of their own. See docs/packs.md (Validate a pack in its own CI).
 - id: brainrc-validate-pack
   name: brainrc validate --pack
   description: Check this pack against the pinned brainrc core (frontmatter, pack.toml, references, tripwires, its tests).
-  entry: brainrc validate --pack .
+  entry: brainrc validate --fetch-defaults --pack
+  args: ["."]
   language: python
   pass_filenames: false
   require_serial: true

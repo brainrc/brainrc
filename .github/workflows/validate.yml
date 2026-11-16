@@ -50,13 +50,11 @@ jobs:
         uses: ./.github/actions/validate-pack
         with:
           path: examples/pack-acme
-          python-version: ${{ matrix.python-version }}
       - name: Validate example pack without the default packs
         uses: ./.github/actions/validate-pack
         with:
           path: examples/pack-homelab
           default-packs: "false"
-          python-version: ${{ matrix.python-version }}
       - run: python3 -m unittest discover -s tests -v
       - name: Install brainrc as a package and smoke-test the installed wheel
         run: |

@@ -1,5 +1,7 @@
 """A pack's own tests (#138): pack.toml `test` names them, `validate --pack` runs them, and
 brainrc.testing runs a guard hook for them."""
+import json
+import os
 import shutil
 import sys
 import tempfile
@@ -119,6 +121,34 @@ class ValidateRunsPackTestsTest(TempRepoCase):
         self.assertEqual(code, 1, out)
         self.assertIn("ERROR homelab:tests: the pack's tests failed:", out)
         self.assertIn("'qm migrate 105 node2': no opinion", out)
+
+    def test_fetch_defaults_uses_clones_of_its_own_at_the_pinned_ref(self):
+        from unittest import mock
+        from brainrc import packs
+        home = Path(tempfile.mkdtemp()).resolve()
+        self.addCleanup(rmtree, home)
+        gatework = ROOT / "tests/fixtures/default-pack"
+        (self.repo / "packs.toml").write_text('[gatework]\ngit = "https://example.invalid/gatework.git"\n'
+                                              'ref = "v9.9.9"\n')
+        fetched = []
+
+        def fake_fetch(key, cfg, root, commit=None, depth=1):
+            fetched.append((key, cfg.get("ref"), root))
+            shutil.copytree(gatework, root, symlinks=True)
+            (root / ".git").mkdir()
+            (root / packs.FETCHED).write_text(json.dumps(packs._wanted(cfg)) + "\n")
+
+        with mock.patch.dict(os.environ, {"BRAINRC_HOME": str(home)}), \
+                mock.patch.object(packs, "fetch_pack", fake_fetch):
+            for _ in range(2):
+                code, out = quiet(brainrc.cmd_validate, str(self.pack), "", True)
+                self.assertEqual(code, 0, out)
+                self.assertIn("(packs: gatework, homelab)", out)
+        self.assertEqual(len(fetched), 1)  # the second run reuses the clone
+        key, ref, root = fetched[0]
+        self.assertEqual((key, ref), ("gatework", "v9.9.9"))
+        self.assertEqual(root.parent, home / "validate-packs")
+        self.assertFalse((home / "packs").exists())  # never the clone apply links
 
     def test_doctor_does_not_run_them(self):
         guard = self.pack / HOOK

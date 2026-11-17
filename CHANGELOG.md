@@ -12,6 +12,11 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.8.25 (2026-11-17)
+
+- Docs rewritten to be easier to follow and to match brainrc as it is now. The README and install page lead with the one-line install; new pages cover getting started, configuration, every command (checked against the CLI by a test), plugins, MCP servers and upgrading. The site nav is regrouped into Get started, Guides, Gatework and Reference.
+- spec-agent is now called Gatework throughout the docs. `docs/gatework.md` replaces `docs/spec-agent.md`, which stays as a pointer, and the old names are listed once in `docs/upgrade.md`.
+
 ## 0.8.24 (2026-11-17)
 
 - CI: the Windows `validate` jobs get 15 minutes instead of 10. Their tests take about 8 minutes,

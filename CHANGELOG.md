@@ -12,6 +12,13 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.8.22 (2026-11-17)
+
+- `scripts/hook_latency.py` measures the median and p95 wall time core's hooks add to each tool
+  call (Claude Code and Cursor) and to session start, and the `hook-latency` workflow runs it on
+  Linux and macOS. `docs/hook-latency.md` records the numbers against the 50 ms p95 bar: under on
+  Linux, over on macOS runners, so the outcome is to port only the guard evaluator to Go (#299).
+
 ## 0.8.21 (2026-11-17)
 
 - The README opens with one sentence on what brainrc is and names Gatework as the home of

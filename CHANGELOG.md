@@ -12,6 +12,11 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.8.19 (2026-11-17)
+
+- `docs/roadmap.md` groups open epics by release gate (A, B, C) to match the GitHub milestones,
+  names E26 to E33, and `test_roadmap.py` checks the gate order and those epics (#300).
+
 ## 0.8.18 (2026-11-16)
 
 - A docs site built from `docs/` with MkDocs Material (`mkdocs.yml`), with search, a JSON Schemas

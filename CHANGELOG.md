@@ -12,6 +12,11 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.8.24 (2026-11-17)
+
+- CI: the Windows `validate` jobs get 15 minutes instead of 10. Their tests take about 8 minutes,
+  so a slow runner was hitting the limit and cancelling the job; other platforms keep 10.
+
 ## 0.8.23 (2026-11-17)
 
 - Docs site publishing is safer and more exact (#197): the build runs with no write token and a

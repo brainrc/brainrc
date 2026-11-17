@@ -12,6 +12,12 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.8.21 (2026-11-17)
+
+- The README opens with one sentence on what brainrc is and names Gatework as the home of
+  spec-agent, and the new `docs/concepts.md` explains harness, item, pack, profile, lockfile and
+  scope in plain words (#296).
+
 ## 0.8.20 (2026-11-17)
 
 - New `docs/capabilities.md`: one row per tool with where its skills, rules, agents, commands,

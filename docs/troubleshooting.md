@@ -15,7 +15,7 @@ says `brainrc`.
 Run `brainrc apply`. Skills, agents, and commands are symlinks, so edits to
 existing ones show up at once, but new or removed ones need `apply`. Rules are different:
 they're rendered into `~/.config/brainrc/instructions.md`, so **every** change to a rule needs
-`apply`, edits included. `status` doesn't show an edited rule; `doctor` does. Start a new session
+`apply`, edits included; `status` lists `instructions.md` as `UPDATE` until you do. Start a new session
 in the tool afterwards.
 
 If you moved a clone or upgraded brainrc, the old links are broken and `apply` reports each as a `CONFLICT`. Run

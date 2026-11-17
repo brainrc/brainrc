@@ -34,7 +34,7 @@ from .uninstall import cmd_uninstall, finish_purge
 from .opencode import rendered_agents
 from .packs import adopt_record, describe, fetch_pack, git_packs, pinned, to_fetch
 from . import update as pin_update
-from .plan import hooks_copy_current, invalid_fragments, link_target, old_root, plan, stale_hooks_copy
+from .plan import hooks_copy_current, invalid_fragments, link_target, old_root, plan, stale_hooks_copy, stale_renders
 from .mcp import check_servers, mcp_change, mcp_plan, record_owned, write_mcp
 from .settings import FileChanged, read_current, settings_change, write_settings
 from .plugin import cmd_plugin
@@ -251,6 +251,11 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True, moved: frozens
         mcp_pins.prune(claude_mcp[0].servers)
         mcp_pins.report_unpinned(claude_mcp[0].servers)
 
+    # Rendered files, not links: an edited rule changes the instructions file and no link.
+    renders = stale_renders(srcs, extensions, agents)
+    for path, exists in renders:
+        print(f"{'UPDATE' if exists else 'CREATE':9} {'':9} {tilde(path)}"
+              + ("  (rules or packs changed since the last apply)" if exists else ""))
     if apply:
         rendered = rendered_instructions()
         rendered.parent.mkdir(parents=True, exist_ok=True)
@@ -278,7 +283,7 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True, moved: frozens
 
     old, prune = _old_roots(srcs, roots) if repair else (None, None)
     links, stale, merges = plan(srcs, old_roots=prune)
-    conflicts, changed, changes, repairable = 0, 0, len(pending) + len(perms), 0
+    conflicts, changed, changes, repairable = 0, 0, len(pending) + len(perms) + len(renders), 0
     for link in links:
         state = link.state(roots, old)
         if state == "ok":

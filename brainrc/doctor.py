@@ -18,9 +18,7 @@ from .config import (
     check_config,
     command,
     expand,
-    home_extensions_file,
     load_harnesses,
-    rendered_instructions,
     tilde,
 )
 from .sources import (
@@ -31,11 +29,10 @@ from .sources import (
     duplicate_packs,
     load_pack,
     pack_compat,
-    render_instructions,
 )
 from .opencode import agents_format, rendered_agents
 from .packs import needs_fetch
-from .plan import FragmentError, Link, invalid_fragments, link_target, moved_item, plan
+from .plan import FragmentError, Link, invalid_fragments, link_target, moved_item, plan, stale_renders
 from .settings import _owned, settings_change
 from .manifest import checked_manifest
 from .mcp import check_servers, mcp_change, mcp_plan
@@ -100,21 +97,15 @@ def _doctor_sources() -> tuple[list[Source], list[Source], list[Finding]]:
 
 
 def _render_findings(srcs: list[Source]) -> list[Finding]:
-    found = []
-    targets = [(rendered_instructions(), lambda: render_instructions(srcs))]
     try:
         extensions = render_extensions(srcs)
     except ConfigError:  # a validator that won't load: doctor_findings reports it
         extensions = None
-    if extensions is not None:
-        targets.append((home_extensions_file(), lambda: extensions))
-    targets += [(path, lambda text=text: text) for path, text in rendered_agents(srcs).items()]
-    for path, render in targets:
+    found = []
+    for path, exists in stale_renders(srcs, extensions, rendered_agents(srcs)):
         rel = tilde(path) if not path.is_relative_to(config.REPO) else path.relative_to(config.REPO).as_posix()
-        if not path.is_file():
-            found.append(("FAIL", f"{rel} has not been rendered", command("apply")))
-        elif path.read_text() != render():
-            found.append(("FAIL", f"{rel} is stale (sources changed since the last apply)", command("apply")))
+        found.append(("FAIL", f"{rel} is stale (sources changed since the last apply)" if exists
+                      else f"{rel} has not been rendered", command("apply")))
     return found
 
 

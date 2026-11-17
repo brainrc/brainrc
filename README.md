@@ -1,8 +1,9 @@
 # brainrc
 
-Write your AI-tool config once and sync it into **Claude Code, Codex CLI, OpenCode, Antigravity
-CLI, and Cursor**. Skills reach all five tools. Rules, commands, agents, hooks, and MCP servers
-reach only some, because the tools differ ([harness support](docs/formats.md#harness-support)).
+brainrc installs one set of AI coding-agent config into **Claude Code, Codex CLI, OpenCode, Antigravity CLI, and Cursor**.
+
+Skills reach all five tools; rules, agents, commands, hooks and MCP servers only some
+([harness support](docs/formats.md#harness-support)). New here? [Concepts](docs/concepts.md) explains pack, harness, profile and lockfile.
 
 ## Quickstart
 
@@ -61,16 +62,15 @@ Also see [ruler](https://github.com/intellectronica/ruler) and [dotagents](https
 
 ## spec-agent
 
-**spec-agent** takes a ticket to a reviewed pull request: spec → plan → implement → verify →
-document → deliver, run by a team of small agents, with your approval at three gates. It covers
-application code *and* infrastructure.
+**spec-agent**, from the default pack [Gatework](https://github.com/brainrc/gatework), takes a ticket to a reviewed pull request:
+spec → plan → implement → verify → document → deliver, run by small agents, for application code *and* infrastructure.
 
 ```
 /brainrc-work gh:42                 # or: /brainrc-work local:tickets/7.md · /brainrc-work add a --dry-run flag to the sync CLI
 ```
 
 You approve the **spec**, the **plan**, and **delivery** (push, PR, ticket update). Everything
-between runs on its own, with evidence at every step. It lives in [Gatework](https://github.com/brainrc/gatework), the default pack. Details: [docs/spec-agent.md](docs/spec-agent.md).
+between runs on its own, with evidence at every step. Details: [docs/spec-agent.md](docs/spec-agent.md).
 
 > **Harness support is not equal.** Each role gets a fresh context, and the guard hooks are
 > enforced, only in **Claude Code**. **OpenCode** also runs roles as real subagents, but every

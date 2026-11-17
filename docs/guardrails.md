@@ -90,7 +90,7 @@ that can apply, mutate a cluster, or write to a cloud account.
 
 ### Recommended setup for runs that touch infrastructure
 
-1. **Read-only credentials by default.** spec-agent's live evidence (plan, diff, describe) needs
+1. **Read-only credentials by default.** Gatework's live evidence (plan, diff, describe) needs
    reads only (`targets` in `state.json`). Give runs credentials that can do nothing else:
    - AWS: a dedicated profile that assumes a role with `ReadOnlyAccess` (or a narrower
      `ViewOnlyAccess` plus the specific reads you need). Export only that

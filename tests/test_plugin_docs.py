@@ -4,8 +4,8 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-DOCS = ["README.md", "docs/install.md", "docs/troubleshooting.md", "docs/spec-agent.md",
-        "docs/harness-packages.md"]
+DOCS = ["README.md", "docs/install.md", "docs/plugins.md", "docs/upgrade.md",
+        "docs/troubleshooting.md", "docs/gatework.md", "docs/harness-packages.md"]
 OLD = re.compile(r"ai-config@ai-config|ai-config:<|/ai-config:work|plugins/local/ai-config|\"name\": \"ai-config\"")
 
 
@@ -14,13 +14,13 @@ def text(rel):
 
 
 def without_move_note(rel):
-    """install.md minus its 'Moving from ai-config' section."""
-    return re.sub(r"(?ms)^### Moving from ai-config\n.*?(?=^#{1,3} |\Z)", "", text(rel))
+    """upgrade.md minus its 'From ai-config' section, which names the old plugin on purpose."""
+    return re.sub(r"(?ms)^## From ai-config\n.*?(?=^#{1,2} |\Z)", "", text(rel))
 
 
 class PluginDocsTest(unittest.TestCase):
     def test_install_commands_use_new_names(self):
-        install = text("docs/install.md")
+        install = text("docs/plugins.md")
         for want in ("/plugin install brainrc@brainrc", "codex plugin add brainrc@brainrc",
                      "~/.cursor/plugins/local/brainrc", "/gatework:brainrc-work", "gatework@gatework",
                      "agy plugin install https://github.com/brainrc/gatework"):
@@ -31,11 +31,11 @@ class PluginDocsTest(unittest.TestCase):
         for rel in DOCS:
             if rel == "docs/troubleshooting.md":
                 continue
-            body = without_move_note(rel) if rel == "docs/install.md" else text(rel)
+            body = without_move_note(rel) if rel == "docs/upgrade.md" else text(rel)
             self.assertIsNone(OLD.search(body), rel)
 
     def test_move_note(self):
-        note = re.search(r"(?ms)^### Moving from ai-config\n(.*?)(?=^#{1,3} |\Z)", text("docs/install.md"))
+        note = re.search(r"(?ms)^### Moving from ai-config\n(.*?)(?=^#{1,3} |\Z)", text("docs/upgrade.md"))
         self.assertIsNotNone(note)
         for want in ("/plugin uninstall ai-config@ai-config", "/plugin marketplace remove ai-config",
                      "brainrc@brainrc", "brainrc:<name>", "doctor"):

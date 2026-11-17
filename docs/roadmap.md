@@ -1,7 +1,7 @@
 # Roadmap
 
 The plan lives in GitHub epics: each one groups sub-issues in build order and says how to run
-them with Gatework's spec-agent (`/brainrc-work --campaign gh:<epic>`). This page lists every open epic
+them with Gatework (`/brainrc-work --campaign gh:<epic>`). This page lists every open epic
 under the release gate it belongs to, matching the GitHub milestones, in the order to start them.
 Within a gate, the epic's own "Start after" note wins over this order. An epic whose children
 span two gates sits under the gate where most of its open work is, and its line names the child

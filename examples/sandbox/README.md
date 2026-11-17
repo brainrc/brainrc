@@ -1,6 +1,6 @@
 # Sandbox
 
-A tiny stdlib-only Python CLI for trying spec-agent end to end without risk.
+A tiny stdlib-only Python CLI for trying Gatework end to end without risk.
 Copy it out of this repo first so the workflow's branches and commits land in a throwaway repo:
 
 ```bash

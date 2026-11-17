@@ -1,16 +1,18 @@
-# Tutorial: your first pack and domain skill
+# Your first pack
 
-In this tutorial you build a pack called `myteam` with one domain skill for Protocol Buffers,
-install it into your AI tools, and check that spec-agent will load it for `.proto` files. It
-takes about 15 minutes. You need Python 3.11+ and git.
+In this tutorial you build a pack called `myteam` with one skill for Protocol Buffers, install it
+into your AI tools, and check that Gatework will load it for `.proto` files. It takes about 15
+minutes. You need Python 3.11+ and git.
 
-A pack is a separate repo layered on top of brainrc, so you never edit core. If you haven't
-yet, skim the [architecture overview](architecture.md) first.
+A pack is a folder or repo of your own, layered on top of brainrc, so you never edit brainrc
+itself ([packs](packs.md)). This tutorial works from a clone of brainrc so it can run the same
+commands CI does; with the installed command, type `brainrc` where it says
+`python3 scripts/brainrc.py`, and put `packs.local.toml` in `~/.config/brainrc/`.
 
-Run every command from the core checkout unless a step says otherwise. CI runs steps 1-5 of this
+Run every command from the brainrc clone unless a step says otherwise. CI runs steps 1-5 of this
 page on every change (`scripts/check_tutorial.py`), so they stay accurate.
 
-## 1. Clone core, install it, and check it
+## 1. Clone brainrc, install it, and check it
 
 ```bash
 git clone <this-repo> ~/brainrc
@@ -19,16 +21,15 @@ python3 scripts/brainrc.py apply
 python3 scripts/brainrc.py validate
 ```
 
-`apply` fetches the default pack, [Gatework](https://github.com/brainrc/gatework), and installs
-core and Gatework into your AI tools. `validate` should then print a line starting with `OK:`
+`apply` fetches the default pack, [Gatework](gatework.md), and installs brainrc and Gatework into
+your AI tools. `validate` should then print a line starting with `OK:`
 that counts skills, agents, and commands.
 
 ## 2. Create the pack
 
-A pack needs a `pack.toml`. The `prefix` keeps your names apart from core's, `requires_core`
-says which core versions you tested against (copy the range from core's `VERSION`), and the
-`[[extensions.gatework.domains]]` row tells spec-agent (in the default Gatework pack) which files
-load your skill.
+A pack needs a `pack.toml`. The `prefix` keeps your item names apart from everyone else's,
+`requires_core` says which brainrc versions you tested against (see brainrc's `VERSION`), and the
+`[[extensions.gatework.domains]]` row tells Gatework which files load your skill.
 
 ```bash
 mkdir -p ~/src/myteam-ai-pack/skills/myteam-protobuf
@@ -45,8 +46,9 @@ EOF
 
 ## 3. Write the domain skill
 
-Domain skills have four sections: how to validate offline, conventions, a review checklist,
-and what never to do without approval. The `description` is what makes an AI tool load it.
+A domain skill, one for a single stack, has four sections: how to validate offline,
+conventions, a review checklist, and what never to do without approval. The `description` is
+what makes an AI tool load it.
 
 ```bash
 cat > ~/src/myteam-ai-pack/skills/myteam-protobuf/SKILL.md <<'EOF'
@@ -82,7 +84,7 @@ EOF
 python3 scripts/brainrc.py validate --pack ~/src/myteam-ai-pack
 ```
 
-You should see `OK:` with `(packs: gatework, myteam)` at the end: core, the default pack it
+You should see `OK:` with `(packs: gatework, myteam)` at the end: brainrc, the default pack it
 fetched in step 1, and yours. A common mistake is a skill without
 the prefix. `validate` then names it, for example
 ``myteam:skills/protobuf: pack skills must start with `myteam-` ``.
@@ -114,7 +116,7 @@ python3 scripts/brainrc.py tokens | grep myteam
 ```
 
 You should see `SKILL.md`, a Domains row for `` `*.proto`, `buf.yaml` `` naming
-`myteam-protobuf`, and the skill's cost in tokens. spec-agent reads that Domains row at the
+`myteam-protobuf`, and the skill's cost in tokens. Gatework reads that Domains row at the
 start of every ticket, so a ticket touching a `.proto` file now loads your skill.
 
 ## 7. Put the pack under version control
@@ -126,19 +128,21 @@ git add .
 git -c user.name=you -c user.email=you@example.com commit -qm "Add myteam pack"
 ```
 
-Then validate it in the pack's own CI on every push, against the core version you pin
+Then validate it in the pack's own CI on every push, against the brainrc version you pin
 ([Validate a pack in its own CI](packs.md#validate-a-pack-in-its-own-ci)):
 
 ```yaml
 - uses: actions/checkout@<sha>
-- uses: brainrc/brainrc/.github/actions/validate-pack@<core tag>
+- uses: brainrc/brainrc/.github/actions/validate-pack@<brainrc tag>
 ```
 
 ## Next steps
 
 - [examples/pack-acme](../examples/pack-acme/README.md) shows every other pack feature: an
   intake context skill, a ticket connector, Deliver checks, rules, commands, and tripwires.
-- [docs/packs.md](packs.md) is the full pack reference.
+- [Packs](packs.md) is the full pack reference.
+- To share the pack with a repo's agents instead of one machine, list it in the repo's
+  `brainrc.toml` ([team setup](project.md)).
 - To add a domain skill to Gatework for everyone instead, open a pull request on
   [brainrc/gatework](https://github.com/brainrc/gatework): the skill goes in `skills/<stack>/`
   with a row in the Domains table of `skills/brainrc-gatework/SKILL.md`.

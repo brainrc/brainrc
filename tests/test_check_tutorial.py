@@ -300,13 +300,13 @@ class RealReadmeTest(unittest.TestCase):
     def test_at_most_100_lines(self):
         self.assertLessEqual(len(self.text.splitlines()), 100)
 
-    def test_lead_precedes_spec_agent_and_names_five_tools(self):
+    def test_lead_precedes_gatework_and_names_five_tools(self):
         lead = " ".join(self.text.split("\n## ", 1)[0].split())
         for name in ("Claude Code", "Codex CLI", "OpenCode", "Antigravity CLI", "Cursor"):
             self.assertIn(name, lead)
-        self.assertIn("docs/formats.md#harness-support", lead)
-        self.assertLess(self.text.index("Quickstart"), self.text.index("## spec-agent"))
-        self.assertLess(self.text.index("## Install"), self.text.index("## spec-agent"))
+        self.assertIn("docs/capabilities.md", lead)
+        self.assertLess(self.text.index("Quickstart"), self.text.index("## Gatework"))
+        self.assertLess(self.text.index("## Install"), self.text.index("## Gatework"))
 
 
 if __name__ == "__main__":

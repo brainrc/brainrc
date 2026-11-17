@@ -1,8 +1,8 @@
 # Canonical formats
 
-Every source uses the most widely adopted format so most harnesses consume it
-as-is. Adapters translate only where a harness needs another shape (OpenCode agents, Cursor
-and OpenCode guard hooks).
+The file formats a pack (and brainrc itself) uses. Each is the most widely adopted format for
+its kind, so most tools read it as is. brainrc translates only where a tool needs another shape:
+OpenCode's agents, and the OpenCode and Cursor guard hooks.
 
 ## Skills: `skills/<name>/SKILL.md`
 
@@ -34,14 +34,14 @@ model: sonnet             # optional: haiku | sonnet | opus | inherit, or a full
 System prompt...
 ```
 
-spec-agent reads these files through Gatework's `skills/brainrc-gatework/roles`, a symlink to `../../agents`.
-Keep it a symlink: `validate` fails otherwise ([Platforms](install.md#platforms)).
+Gatework reads its role files through `skills/brainrc-gatework/roles`, a symlink to `../../agents`.
+Keep it a symlink: `validate` fails otherwise ([platforms](install.md#platforms)).
 
 ## Commands: `commands/<name>.md`
 
-For packs. Core ships its slash commands as user-invoked skills instead (`disable-model-invocation:
-true` and `argument-hint` in `SKILL.md`), because Codex skips commands that use `$ARGUMENTS`;
-a pack that targets Codex should do the same.
+For packs. Gatework ships its slash commands as user-invoked skills instead
+(`disable-model-invocation: true` and `argument-hint` in `SKILL.md`), because Codex skips commands
+that use `$ARGUMENTS`; a pack that targets Codex should do the same.
 
 ```markdown
 ---
@@ -73,7 +73,7 @@ url = "https://docs.example.com/mcp"          # HTTP instead of `command`
 `apply` writes each server into the harness's own config: `~/.claude.json` (`mcpServers`),
 `~/.codex/config.toml` (a marked `[mcp_servers]` block), and `~/.config/opencode/opencode.json`
 (`mcp`; `opencode.jsonc` when only that exists, edited in place so its comments stay). Each
-moves with its harness's variable ([install](install.md)). `env_from` becomes a reference the harness expands when it starts the server
+moves with its harness's variable ([configuration](configuration.md#environment-variables)). `env_from` becomes a reference the harness expands when it starts the server
 (`${NAME}`, `env_vars`, `{env:NAME}`), so no value is written anywhere; `validate` rejects an
 `env` table. Only servers brainrc wrote are replaced or removed (tracked in
 `$BRAINRC_HOME/mcp-owned.json`). A server you defined yourself under the same name is reported as a
@@ -85,42 +85,16 @@ SessionStart hook warns when one changes ([guardrails](guardrails.md#claude-code
 
 ## Packs: `pack.toml`
 
-A separate repo with the same layout plus a `pack.toml`, layered on top of this one per
-machine. Format and extension points: [packs.md](packs.md).
+A folder or repo with this layout plus a `pack.toml`: [packs](packs.md#packtoml).
 
 `pack.toml`, `mcp/servers.toml` and `harnesses.toml` have JSON Schemas in [`schemas/`](schemas.md),
 for editor completion ([packs.md](packs.md#editor-completion)).
 
 ## Project manifest and lock: `brainrc.toml`, `brainrc.lock`
 
-A repo's own packs and the lock that pins them: [project.md](project.md), with JSON Schemas in
+A repo's own packs and the lock that pins them: [team setup](project.md), with JSON Schemas in
 [`schemas/`](schemas.md).
 
 ## Harness support
 
-Where each kind of content lands per tool, generated from `harnesses.toml`: [capabilities.md](capabilities.md).
-
-| | Claude Code | Codex | OpenCode | Antigravity CLI | Cursor |
-|---|---|---|---|---|---|
-| Skills | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Rules | ✅ CLAUDE.md | ✅ AGENTS.md | ✅ AGENTS.md | ✅ AGENTS.md | ↪ plugin only (`alwaysApply`) |
-| Commands | ✅ | ✅ prompts | ✅ | ➖ none: skills are its slash commands | ⏳ |
-| Agents | ✅ subagents | ↪ role-switch fallback | ✅ subagents (rendered) | ↪ fallback | ↪ fallback; the plugin ships them (unverified) |
-| Guard hooks | ✅ | ❌ rules only | ✅ plugin, deny only | ❌ | ✅ shell and reads, deny only |
-| MCP | ✅ `~/.claude.json` | ✅ `config.toml` | ✅ `opencode.json` | ⏳ | ⏳ |
-
-Cursor has no user rules file: `brainrc` links skills and merges guard hooks into
-`~/.cursor/hooks.json`, and rules arrive only through the plugin (`.cursor-plugin/`, see the
-[install](install.md#cursor)), which loads each `rules/*.md` because it
-carries `alwaysApply: true`.
-
-OpenCode can't read Claude's agent frontmatter (a `tools: Read, Grep` string makes its whole config
-invalid), so `apply` links copies rendered to `$BRAINRC_HOME/opencode/agents/`
-(`agents_format = "opencode"` in `harnesses.toml`). Each copy has `mode: subagent` and a `deny` for
-every tool the agent lacks; tools it has follow your own OpenCode permissions. Lossy: `model` is
-dropped (the subagent uses its caller's model) and `mcp__*` tools aren't mapped.
-
-Antigravity CLI paths (`~/.gemini/config/`) come from its changelog and user reports, not a live
-run. It can also install brainrc as a plugin ([install](install.md#antigravity-cli)).
-
-Harness paths change often. If one moves, update `harnesses.toml`.
+Which of these formats each tool loads, and where: [what reaches each tool](capabilities.md).

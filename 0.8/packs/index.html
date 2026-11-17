@@ -1406,8 +1406,8 @@
 <p>A pack is a separate repo layered on top of this one. Use it for content that must not live
 here: an employer's facts, internal skills, private review rules. This repo stays generic,
 and each machine picks the packs it needs.</p>
-<p>To start one, copy the working example in <a href="https://github.com/brainrc/brainrc/blob/v0.8.23/examples/pack-acme/README.md">examples/pack-acme</a>.
-For a pack with a guard hook, see <a href="https://github.com/brainrc/brainrc/blob/v0.8.23/examples/pack-homelab/README.md">examples/pack-homelab</a>.
+<p>To start one, copy the working example in <a href="https://github.com/brainrc/brainrc/blob/v0.8.24/examples/pack-acme/README.md">examples/pack-acme</a>.
+For a pack with a guard hook, see <a href="https://github.com/brainrc/brainrc/blob/v0.8.24/examples/pack-homelab/README.md">examples/pack-homelab</a>.
 Or start from the instructions you already have: <code>brainrc import</code> turns them into a pack
 (<a href="#import">Import</a>).</p>
 <h2 id="enable-a-pack">Enable a pack<a class="headerlink" href="#enable-a-pack" title="Permanent link">&para;</a></h2>
@@ -1602,7 +1602,7 @@ wrong ones from a first line naming the schema, which <code>brainrc import</code
 <div class="highlight"><pre><span></span><code><span class="c1">#:schema https://raw.githubusercontent.com/brainrc/brainrc/main/docs/schemas/pack.toml.schema.json</span>
 <span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"acme"</span>
 </code></pre></div>
-<p>In a checkout of this repo, <a href="https://github.com/brainrc/brainrc/blob/v0.8.23/.taplo.toml"><code>.taplo.toml</code></a> maps each file to its schema. Files
+<p>In a checkout of this repo, <a href="https://github.com/brainrc/brainrc/blob/v0.8.24/.taplo.toml"><code>.taplo.toml</code></a> maps each file to its schema. Files
 outside it (a pack's own repo, <code>~/.config/brainrc/harnesses.local.toml</code>) take the <code>#:schema</code> line.</p>
 <h2 id="extensions">Extensions<a class="headerlink" href="#extensions" title="Permanent link">&para;</a></h2>
 <p><code>[extensions.&lt;namespace&gt;]</code> is a table another pack reads; core passes it through untouched. The
@@ -1704,7 +1704,7 @@ test needs no scaffolding of its own. A string is a Bash command; a dict is the 
 <p><code>assert_allows</code> passes when the hook allows or has no opinion, and <code>assert_no_opinion</code> only when it
 stays out, so Claude Code's own permission check still decides; <code>assert_denies</code> counts exit code 2
 as a deny. Each lists every case that came out wrong, and a missing, failing or hung hook fails.
-<code>run_hook(hook, payload)</code> returns the decision itself. <a href="https://github.com/brainrc/brainrc/blob/v0.8.23/examples/pack-homelab/tests/test_guard.py">pack-homelab</a>
+<code>run_hook(hook, payload)</code> returns the decision itself. <a href="https://github.com/brainrc/brainrc/blob/v0.8.24/examples/pack-homelab/tests/test_guard.py">pack-homelab</a>
 has a full example.</p>
 <h2 id="default-packs">Default packs<a class="headerlink" href="#default-packs" title="Permanent link">&para;</a></h2>
 <p>A default pack is a table in core's shipped <code>packs.toml</code>: core turns it on unless
@@ -1739,7 +1739,7 @@ that it isn't fetched yet. <code>--fetch-defaults</code> fetches them at the ver
 not contradict them: a pack rule that contradicts core is a bug in the pack. Write it as a
 narrower case ("in Acme repos, also ...") instead.</p>
 <h2 id="compatibility">Compatibility<a class="headerlink" href="#compatibility" title="Permanent link">&para;</a></h2>
-<p>Core's version is in <code>VERSION</code>. <a href="https://github.com/brainrc/brainrc/blob/v0.8.23/CHANGELOG.md">CHANGELOG.md</a> tags changes that affect packs
+<p>Core's version is in <code>VERSION</code>. <a href="https://github.com/brainrc/brainrc/blob/v0.8.24/CHANGELOG.md">CHANGELOG.md</a> tags changes that affect packs
 with <strong>[pack contract]</strong>. Declare the versions your pack supports with <code>requires_core</code>:
 comma-separated clauses of <code>&gt;=</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&lt;</code>, <code>==</code>, <code>!=</code> and a version (missing parts
 are zero, and a bare version means <code>&gt;=</code>).</p>

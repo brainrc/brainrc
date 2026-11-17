@@ -104,8 +104,8 @@ brainrc apply
 ```
 
 Rules are rendered into one file, so every change to a rule needs `apply`. Until then, `status`
-lists that file as `UPDATE ... instructions.md (rules or packs changed since the last apply)`. For more than a rule
-or two, or to share them, make a [pack](packs.md): a folder or git repo of your own rules and
+lists `~/.config/brainrc/instructions.md` as `UPDATE`. For more than a rule or two, or to share
+them, make a [pack](packs.md): a folder or git repo of your own rules and
 skills. [Your first pack](tutorial.md) builds one step by step.
 
 ## 6. Check the install

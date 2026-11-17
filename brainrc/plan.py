@@ -34,9 +34,17 @@ def stale_renders(srcs: list[Source], extensions: str | None, agents: dict[Path,
     if extensions is not None:
         targets.append((config.home_extensions_file(), lambda: extensions))
     targets += [(path, lambda text=text: text) for path, text in agents.items()]
-    return [(path, path.is_file()) for path, render in targets
-            if not path.is_file() or path.read_text() != render()]
+    return [(path, exists) for path, render in targets
+            if not (exists := path.is_file()) or path.read_text() != render()]
 
+
+def obsolete_renders(extensions: str | None, agents: dict[Path, str]) -> list[Path]:
+    """Rendered files apply deletes: extensions.md once no enabled pack renders it, and OpenCode
+    agent copies whose agent is gone."""
+    gone = [config.home_extensions_file()] if extensions is None and config.home_extensions_file().is_file() else []
+    if rendered_agents_dir().is_dir():
+        gone += sorted(p for p in rendered_agents_dir().glob("*.md") if p not in agents)
+    return gone
 
 @dataclass
 class Link:

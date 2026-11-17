@@ -33,7 +33,7 @@ class StatusRendersTest(TempRepoCase):
         code, out = quiet(brainrc.cmd_sync, False)
         self.assertEqual(code, 0, out)
         self.assertNotIn("Everything in sync.", out)
-        self.assertIn(f"UPDATE{' ' * 14}{brainrc.config.tilde(self.rendered)}  (rules or packs changed", out)
+        self.assertIn(f"UPDATE{' ' * 14}{brainrc.config.tilde(self.rendered)}  (a rule or pack changed", out)
         self.assertIn("Dry run.", out)
         stale = [f for f in brainrc.doctor_findings() if "is stale" in f[1]]
         self.assertEqual(len(stale), 1, stale)  # the same file, found the same way
@@ -60,7 +60,20 @@ class StatusRendersTest(TempRepoCase):
         quiet(brainrc.cmd_sync, True)
         self.rendered.write_text("edited by hand\n")
         out = quiet(brainrc.cmd_sync, False)[1]
-        self.assertIn("(rules or packs changed since the last apply)", out)
+        self.assertIn("(a rule or pack changed, or the file was edited, since the last apply)", out)
+
+
+    def test_status_lists_the_extensions_file_apply_deletes(self):
+        quiet(brainrc.cmd_sync, True)
+        extensions = brainrc.config.home_extensions_file()
+        self.assertTrue(extensions.is_file())
+        (self.repo / "packs.local.toml").write_text("[gatework]\nenabled = false\n")
+        out = quiet(brainrc.cmd_sync, False)[1]
+        self.assertIn(f"PRUNE{' ' * 15}{brainrc.config.tilde(extensions)}\n", out)
+        self.assertTrue(extensions.is_file())
+        quiet(brainrc.cmd_sync, True)
+        self.assertFalse(extensions.exists())
+        self.assertIn("Everything in sync.", quiet(brainrc.cmd_sync, False)[1])
 
 
 if __name__ == "__main__":

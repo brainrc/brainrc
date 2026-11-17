@@ -17,7 +17,8 @@ jobs:
   validate:
     name: validate (${{ matrix.os }}, ${{ matrix.python-version }})
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 10
+    # Windows runs the same suite several times slower (about 8 minutes of tests), so it gets 15.
+    timeout-minutes: ${{ matrix.os == 'windows-latest' && 15 || 10 }}
     # Windows is reported but never fails the workflow: docs/install.md (Platforms) documents
     # macOS and Linux only (symlinks, `python3` in hook commands). Promote it once it passes.
     continue-on-error: ${{ matrix.os == 'windows-latest' }}

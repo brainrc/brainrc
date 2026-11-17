@@ -13,7 +13,7 @@ import shutil
 import sys
 from pathlib import Path
 
-from . import config
+from . import capabilities, config
 from .config import (
     ConfigError,
     check_config,
@@ -618,6 +618,8 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--dry-run", action="store_true", help="only print the move")
     add("tokens", "estimate the context cost of every skill, agent and command")
     add("plugin", "write the plugin manifests (.claude-plugin/, plugin.json)", hidden=True)
+    p = add("capabilities", "print the capability matrix from harnesses.toml", hidden=True)
+    p.add_argument("--write", action="store_true", help=f"rewrite its table in {capabilities.PAGE}")
     p = add("release", "fold changelog.d/ into CHANGELOG.md, bump VERSION, rewrite the manifests",
             hidden=True)
     group = p.add_mutually_exclusive_group()
@@ -670,6 +672,8 @@ def _dispatch(argv: list[str]) -> int:
         return cmd_validate(args.pack, fetch_defaults=args.fetch_defaults) if args.pack else cmd_validate()
     if cmd == "plugin":
         return cmd_plugin()
+    if cmd == "capabilities":
+        return capabilities.cmd_capabilities(args.write)
     if cmd == "release":
         return cmd_release_notes(args.notes) if args.notes else cmd_release(dry_run=args.dry_run)
     if cmd == "doctor":

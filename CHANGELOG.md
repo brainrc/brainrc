@@ -12,6 +12,13 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.8.23 (2026-11-17)
+
+- Docs site publishing is safer and more exact (#197): the build runs with no write token and a
+  separate job pushes `gh-pages`, every build tool is pinned with hashes in
+  `.github/docs-requirements.txt`, each release publishes the tag it made, `latest` moves only for
+  the newest tag, and links that leave `docs/` point at that tag on GitHub (not inside code).
+
 ## 0.8.22 (2026-11-17)
 
 - `scripts/hook_latency.py` measures the median and p95 wall time core's hooks add to each tool

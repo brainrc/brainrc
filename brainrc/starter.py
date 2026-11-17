@@ -18,7 +18,7 @@ from .config import PROFILES, TABLE_HEADER, ConfigError
 from .sources import Source, excluded, frontmatter, markdown_files, render_instructions, skills
 from .tokens import estimate_tokens
 
-# Gatework's infrastructure domain skills (docs/spec-agent.md § Domain skills).
+# Gatework's infrastructure domain skills (docs/gatework.md § Domain skills).
 INFRA_SKILLS = ("brainrc-terraform", "brainrc-aws", "brainrc-kubernetes", "brainrc-gitops")
 APP_EXCLUDE = tuple(f"gatework:skills/{s}" for s in INFRA_SKILLS)
 STARTERS: dict[str, tuple[str, tuple[str, ...]]] = {

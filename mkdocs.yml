@@ -8,6 +8,8 @@ repo_url: https://github.com/brainrc/brainrc
 repo_name: brainrc/brainrc
 edit_uri: edit/main/docs/
 docs_dir: docs
+not_in_nav: |
+  spec-agent.md
 strict: true
 validation:
   anchors: warn  # a link to a missing heading fails the strict build too
@@ -48,20 +50,31 @@ nav:
   - Home: index.md
   - Get started:
       - Install: install.md
-      - Tutorial: tutorial.md
-      - Troubleshooting: troubleshooting.md
+      - Getting started: getting-started.md
+      - Concepts: concepts.md
   - Guides:
       - Packs: packs.md
-      - Project manifest and lockfile: project.md
+      - Your first pack: tutorial.md
+      - Team setup: project.md
+      - MCP servers: mcp.md
       - Guardrails: guardrails.md
-      - Harness packages: harness-packages.md
-      - spec-agent: spec-agent.md
+      - Plugins: plugins.md
+      - Upgrading: upgrade.md
+      - Troubleshooting: troubleshooting.md
+  - Gatework:
+      - Overview: gatework.md
       - After delivery: post-deliver.md
+      - Efficiency: efficiency.md
       - Evals: evals.md
       - End-to-end runs: e2e-runs.md
   - Reference:
-      - Formats: formats.md
-      - Schemas: schemas.md
+      - Commands: commands.md
+      - Configuration: configuration.md
+      - What reaches each tool: capabilities.md
+      - File formats: formats.md
+      - JSON Schemas: schemas.md
       - Architecture: architecture.md
-      - Efficiency: efficiency.md
+  - Project:
       - Roadmap: roadmap.md
+      - Harness packages research: harness-packages.md
+      - Hook latency: hook-latency.md

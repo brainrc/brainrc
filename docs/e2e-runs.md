@@ -1,6 +1,6 @@
 # E2E runs
 
-Real spec-agent runs on the [sandbox](../examples/sandbox/README.md), graded with
+Real Gatework runs on the [sandbox](../examples/sandbox/README.md), graded with
 `python3 scripts/evals.py check` ([evals](evals.md)). Add a section per session, newest first.
 CONTRIBUTING.md § Releases says when a run is required.
 

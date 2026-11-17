@@ -46,7 +46,7 @@ terms = ["Initech", "initech.internal"]
 5. Open a pull request that says why, what changed, and how to verify it, with `Closes #N`
    for the issue. CI runs the same checks.
 
-PRs are **squash-merged**: one commit per change on `main`, titled by the PR. A spec-agent
+PRs are **squash-merged**: one commit per change on `main`, titled by the PR. A Gatework
 branch's checkpoint commits stay on the branch; its `specs/<slug>/` folder carries the record.
 
 ## Releases
@@ -81,16 +81,16 @@ Gatework, the default pack, is released the same way from
 core, bump `ref` under `[gatework]` in `packs.toml` to its tag, in a PR with its own fragment.
 
 Before merging a PR whose fragment says `bump: minor` (or one that moves the Gatework `ref` in
-`packs.toml`, which changes spec-agent's roles, references, or templates), run the sandbox evals in Claude Code and grade them
+`packs.toml`, which changes Gatework's roles, references, or templates), run the sandbox evals in Claude Code and grade them
 ([evals](docs/evals.md)). Record the run in [docs/e2e-runs.md](docs/e2e-runs.md). Unit tests
 show that the syncer works, and only evals show that the agent still behaves.
 
-## Using spec-agent
+## Using Gatework
 
-You can let spec-agent do the work: in an AI tool with this repo installed, run
+You can let Gatework do the work: in an AI tool with this repo installed, run
 `/brainrc-work gh:<issue>`. It stops for your approval at the spec, the plan, and delivery. It writes
 its record (spec, plan, verification, retro) to `specs/<slug>/`, and that folder ships with
-the PR so reviewers can see why each change was made. See [docs/spec-agent.md](docs/spec-agent.md).
+the PR so reviewers can see why each change was made. See [docs/gatework.md](docs/gatework.md).
 
 ## Where things are
 

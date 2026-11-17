@@ -1,17 +1,23 @@
 # Packs
 
-A pack is a separate repo layered on top of this one. Use it for content that must not live
-here: an employer's facts, internal skills, private review rules. This repo stays generic,
-and each machine picks the packs it needs.
+A pack is a folder or git repo of rules, skills, agents, commands, hooks and MCP servers, with a
+`pack.toml` that names it. brainrc layers each pack you turn on over its own rules and guard hooks,
+and installs the lot into every tool.
 
-To start one, copy the working example in [examples/pack-acme](../examples/pack-acme/README.md).
-For a pack with a guard hook, see [examples/pack-homelab](../examples/pack-homelab/README.md).
-Or start from the instructions you already have: `brainrc import` turns them into a pack
-([Import](#import)).
+Use a pack for anything brainrc itself shouldn't carry: your team's conventions, internal skills,
+an employer's facts, private review rules. Each machine picks the packs it needs, and a repo can
+pin its own ([team setup](project.md)).
+
+- **Use packs**: [enable one](#enable-a-pack), [turn the default pack off or pin it](#default-packs),
+  or [import the instruction files you have](#import).
+- **Write one**: start from [your first pack](tutorial.md), or copy
+  [examples/pack-acme](../examples/pack-acme/README.md) (every feature but hooks) or
+  [examples/pack-homelab](../examples/pack-homelab/README.md) (a guard hook). The rest of this
+  page is the reference.
 
 ## Enable a pack
 
-List it in `packs.local.toml` (gitignored; for an installed `brainrc`, in `~/.config/brainrc/`),
+List it in `packs.local.toml` ([where that file lives](configuration.md#where-the-files-live)),
 then apply:
 
 ```toml
@@ -21,11 +27,11 @@ path = "~/src/acme-ai-pack"   # ~ and $VARS expand; relative paths are relative 
 ```
 
 ```bash
-python3 scripts/brainrc.py status   # dry run
-python3 scripts/brainrc.py apply
+brainrc status   # preview
+brainrc apply
 ```
 
-Or name it by git URL and let `brainrc` fetch it, with no clone of your own:
+Or name it by git URL and let brainrc fetch it, with no clone of your own:
 
 ```toml
 [acme]
@@ -33,20 +39,55 @@ git = "git@github.com:acme/acme-ai-pack.git"   # any URL git accepts; private re
 ref = "v1.2.0"                                 # tag, branch, or commit; default: the remote's default branch
 ```
 
-`apply` fetches it (shallow, detached) into `~/.config/brainrc/packs/acme` and records the URL
-and `ref` it fetched; after that it works offline. Change `ref` or `git` and the next `apply`
-fetches again (`status` shows the `FETCH` line first). `apply` records the commit each ref resolved
-to, and a hash of every file it installed, in `~/.config/brainrc/brainrc.lock`, and from then on
-keeps the pack at that commit, even when the tag or branch moves. `brainrc update [<pack> ...]`
-(or `python3 scripts/brainrc.py update`) moves the pin: it refetches the packs at their `ref`, prints
-the commits and installed files that change, then applies ([pinned commits](project.md)). Both
-refuse a clone with local changes, and stop any git call after 60s. Pin a tag, and bump `ref` to
-upgrade. `doctor` reports a git pack that hasn't been fetched yet or whose clone doesn't match its
+`apply` fetches it into `~/.config/brainrc/packs/acme`; after that it works offline. It records
+the commit the ref resolved to, and a hash of every file it installed, in
+`~/.config/brainrc/brainrc.lock`, and from then on **keeps the pack at that commit**, even when the
+tag or branch moves. To move it:
+
+- `brainrc update [<pack> ...]` refetches at the `ref`, prints the commits and files that change,
+  then applies ([pinned commits](project.md#pinned-commits-and-update)).
+- Changing `ref` or `git` fetches the new one on the next `apply` (`status` shows a `FETCH` line).
+
+Both refuse a clone with local changes, and stop any git call after 60 seconds. Pin a tag, and
+bump `ref` to upgrade. `doctor` reports a git pack that isn't fetched yet or doesn't match its
 `git` and `ref`.
 
 The lock also records what each pack can do: its hooks, MCP servers, tool grants and network
 domains. `status` lists any added (`PERMS ... +`) or removed, and `apply` asks before adding any
 unless you pass `--yes` ([permissions](project.md#permissions)).
+
+## Default packs
+
+A default pack is on unless you turn it off. [Gatework](gatework.md) is the only one: its engine
+(the `brainrc-gatework` skill), its roles, the ticket connectors and the domain skills. It lives in
+[brainrc/gatework](https://github.com/brainrc/gatework), and brainrc's own `packs.toml` pins it to a
+release tag, so `apply` fetches it like any git pack.
+
+In `packs.local.toml`:
+
+```toml
+[gatework]
+enabled = false        # turn it off: brainrc then installs only its rules and guard hooks
+```
+
+```toml
+[gatework]
+ref = "v<X.Y.Z>"       # pin another Gatework release; its git URL is kept
+```
+
+```toml
+[gatework]
+path = "~/src/gatework"   # work on a clone; replaces the shipped git and ref
+```
+
+`brainrc init` asks whether to keep it. Gatework still installs its old names (`spec-agent`,
+`spec-status`, `kubernetes` and the rest, listed in `brainrc/naming.py`) as deprecated aliases;
+they are the only unprefixed names naming rule 7 lets it keep ([old names](upgrade.md#from-spec-agent)).
+
+`validate --pack` checks a pack against brainrc and the default packs on disk, so a pack that
+extends Gatework is checked against it once `apply` has fetched it; until then `validate` warns.
+`--fetch-defaults` fetches them at the versions brainrc pins instead
+([CI](#validate-a-pack-in-its-own-ci)).
 
 ## Import
 
@@ -73,20 +114,20 @@ brainrc import . --to tools/agent-pack --dry-run          # what a repo's files 
 The pack goes to `$BRAINRC_HOME/imported/<name>` unless `--to` names a folder, and is checked as
 `validate --pack` would. `import` never overwrites a folder with files in it; `--force` replaces
 an earlier pack there (a folder with a `pack.toml`), never one that holds a source. `--enable` adds it to `packs.local.toml`; for one project, list it in `brainrc.toml` instead
-([project](project.md)).
+([team setup](project.md)).
 
 ## Layout
 
-Same as this repo. Every folder is optional.
+Every folder is optional.
 
 ```
 acme-ai-pack/
   pack.toml              name, prefix, extensions for other packs (see Extensions)
   validator.py           optional checks and renders of its own (see Validator plugins)
   tests/                 the pack's own tests, which validate --pack runs (see Pack tests)
-  skills/acme-*/         linked next to the core skills
-  agents/acme-*.md       linked next to the core agents
-  commands/acme-*.md
+  skills/acme-*/         linked into each tool's skills folder
+  agents/acme-*.md       linked into each tool's agents folder
+  commands/acme-*.md     linked into each tool's commands folder
   rules/NN-*.md          rendered after all core rules, as one labelled block (see Rules)
   overrides/claude/hooks/                 linked to <hooks_dir>-acme (e.g. ~/.claude/hooks/brainrc-acme)
   overrides/claude/settings.fragment.json merged after the core fragment; {{hooks_dir}} = the pack's hooks dir
@@ -97,40 +138,7 @@ acme-ai-pack/
 
 Skills, agents, commands, and MCP servers must start with the pack's `prefix`, and no name may
 exist in two sources. `apply` refuses to write anything if one does. The full rules are in
-[Naming](#naming).
-
-## Naming
-
-A clear name is the cheapest trust signal a pack has. Every pack follows these seven rules:
-
-1. **`brainrc-` and `brainrc/` are reserved for official packs.** No other pack's name, prefix
-   or ID starts with them.
-2. **A registry prefix starts with the owner's handle.** A pack published as `jdoe/k8s-tools`
-   uses a prefix such as `jdoe-` or `jdoe-k8s-`.
-3. **No vendor names without verification.** A pack's name, prefix and ID don't use a vendor's
-   name (`aws`, `github`, `openai` and the like) unless the vendor itself is verified as its owner.
-4. **No names one or two edits from an official name.** The official names are `brainrc` and
-   the IDs in the table below, so `brainrx-` and `brianrc/review` are refused.
-5. **ASCII lowercase letters, digits and hyphens only**, in names, prefixes, IDs and item names.
-6. **A prefix is 2 to 24 characters**, not counting its trailing hyphen.
-7. **Item names are prefix-scoped.** Every skill, agent, command and MCP server starts with the
-   pack's prefix, so two packs' items can't collide.
-
-`validate` and `apply` refuse a pack that breaks one. The vendor names and the official IDs it
-checks are listed in `brainrc/naming.py`.
-
-A pack's ID is `<owner>/<pack>`, where the owner is the GitHub user or organization that
-publishes it. Official packs are owned by `brainrc`:
-
-| ID | What it holds | Issue |
-|---|---|---|
-| `brainrc/gatework` | the default pack: spec-agent, its roles, ticket connectors and domain skills ([brainrc/gatework](https://github.com/brainrc/gatework)) | [#172](https://github.com/brainrc/brainrc/issues/172) |
-| `brainrc/starter` | the small, measured base for the default profile | [#313](https://github.com/brainrc/brainrc/issues/313) |
-| `brainrc/review` | review, PR description, commit message and unslop | [#314](https://github.com/brainrc/brainrc/issues/314) |
-| `brainrc/go` | Go, built from today's `brainrc-go-service` skill | [#315](https://github.com/brainrc/brainrc/issues/315) |
-| `brainrc/terraform-aws` | Terraform and AWS | [#316](https://github.com/brainrc/brainrc/issues/316) |
-| `brainrc/kubernetes` | Kubernetes, including GitOps | [#317](https://github.com/brainrc/brainrc/issues/317) |
-| `brainrc/security-baseline` | the default guard policy, secret protection and a sandbox profile | [#323](https://github.com/brainrc/brainrc/issues/323) |
+[Naming](#naming), and each file's format in [formats](formats.md).
 
 ## pack.toml
 
@@ -142,17 +150,17 @@ requires_core = ">=0.7, <0.9"   # core versions this pack works with (see Compat
 max_always_tokens = 800   # optional budget for rules + descriptions (see Context cost)
 test = "tests"            # optional: tests validate --pack runs (see Pack tests)
 
-[extensions.gatework]      # what the gatework pack (spec-agent) reads; see Extensions
+[extensions.gatework]      # what Gatework reads; see Extensions
 deliver_checks = [        # listed in the Deliver gate as done / not applicable / not run
   "Deploy plan reviewed by the owning team",
 ]
 
-[[extensions.gatework.domains]]   # extra rows for spec-agent's Domains table
+[[extensions.gatework.domains]]   # extra rows for Gatework's Domains table
 files = "`deploy/*.yaml`, `charts/acme-*`"
 skills = ["acme-deploy"]
 reviewer = "brainrc-infra-reviewer"
 
-[[extensions.gatework.intake_context]]   # skills spec-agent runs after fetching the ticket
+[[extensions.gatework.intake_context]]   # skills Gatework runs after fetching the ticket
 skill = "acme-context"
 when = "every ticket"
 
@@ -185,22 +193,67 @@ name = "acme"
 In a checkout of this repo, [`.taplo.toml`](../.taplo.toml) maps each file to its schema. Files
 outside it (a pack's own repo, `~/.config/brainrc/harnesses.local.toml`) take the `#:schema` line.
 
+## Naming
+
+A clear name is the cheapest trust signal a pack has. Every pack follows these seven rules:
+
+1. **`brainrc-` and `brainrc/` are reserved for official packs.** No other pack's name, prefix
+   or ID starts with them.
+2. **A registry prefix starts with the owner's handle.** A pack published as `jdoe/k8s-tools`
+   uses a prefix such as `jdoe-` or `jdoe-k8s-`.
+3. **No vendor names without verification.** A pack's name, prefix and ID don't use a vendor's
+   name (`aws`, `github`, `openai` and the like) unless the vendor itself is verified as its owner.
+4. **No names one or two edits from an official name.** The official names are `brainrc` and
+   the IDs in the table below, so `brainrx-` and `brianrc/review` are refused.
+5. **ASCII lowercase letters, digits and hyphens only**, in names, prefixes, IDs and item names.
+6. **A prefix is 2 to 24 characters**, not counting its trailing hyphen.
+7. **Item names are prefix-scoped.** Every skill, agent, command and MCP server starts with the
+   pack's prefix, so two packs' items can't collide.
+
+`validate` and `apply` refuse a pack that breaks one. The vendor names and the official IDs it
+checks are listed in `brainrc/naming.py`.
+
+A pack's ID is `<owner>/<pack>`, where the owner is the GitHub user or organization that
+publishes it. Official packs are owned by `brainrc`:
+
+| ID | What it holds | Issue |
+|---|---|---|
+| `brainrc/gatework` | the default pack: Gatework's engine, its roles, ticket connectors and domain skills ([brainrc/gatework](https://github.com/brainrc/gatework)) | [#172](https://github.com/brainrc/brainrc/issues/172) |
+| `brainrc/starter` | the small, measured base for the default profile | [#313](https://github.com/brainrc/brainrc/issues/313) |
+| `brainrc/review` | review, PR description, commit message and unslop | [#314](https://github.com/brainrc/brainrc/issues/314) |
+| `brainrc/go` | Go, built from today's `brainrc-go-service` skill | [#315](https://github.com/brainrc/brainrc/issues/315) |
+| `brainrc/terraform-aws` | Terraform and AWS | [#316](https://github.com/brainrc/brainrc/issues/316) |
+| `brainrc/kubernetes` | Kubernetes, including GitOps | [#317](https://github.com/brainrc/brainrc/issues/317) |
+| `brainrc/security-baseline` | the default guard policy, secret protection and a sandbox profile | [#323](https://github.com/brainrc/brainrc/issues/323) |
+
+## Rules
+
+The rendered instructions file has three parts, in this order:
+
+1. Core rules, in filename order.
+2. Each enabled pack's rules, one block per pack in `packs.toml` order, filename order inside.
+   Each block starts with `<!-- pack: <name> -->` and a line telling the model the rules refine
+   the ones above.
+3. `*.local.md` rules from any source, under `<!-- local -->`.
+
+Pack rule numbers only order rules within the pack. Later rules refine earlier ones and must
+not contradict them: a pack rule that contradicts core is a bug in the pack. Write it as a
+narrower case ("in Acme repos, also ...") instead.
+
 ## Extensions
 
 `[extensions.<namespace>]` is a table another pack reads; core passes it through untouched. The
 pack that owns the namespace checks it with its [validator plugin](#validator-plugins), and
 `validate` warns about a table no enabled pack reads. Gatework, the default pack, owns
 `[extensions.gatework]` above. `apply` renders every enabled pack's table into
-`$BRAINRC_HOME/extensions.md` (default `~/.config/brainrc/extensions.md`), which spec-agent reads
-at intake. With no other packs enabled, the file says so and spec-agent runs as before; with
+`$BRAINRC_HOME/extensions.md` (default `~/.config/brainrc/extensions.md`), which Gatework reads
+at intake. With no other packs enabled, the file says so and Gatework runs as before; with
 Gatework disabled, there is no file.
 
-The forms from before 0.7.0, the same keys directly under `[extensions]` or under
-`[extensions.spec-agent]`, still work and warn until 0.8.0: move them under
-`[extensions.gatework]`. `apply` no longer writes the old copy at
-`skills/spec-agent/references/extensions.md`, and removes it.
+The old forms from before 0.7.0, the same keys directly under `[extensions]` or under
+`[extensions.spec-agent]`, still work with a warning: move them under `[extensions.gatework]`.
 
-A pack has at most one `[extensions.ticket]`: one connector and the refs it handles. A team
+A pack has at most one `[extensions.gatework.ticket]`: one connector and the refs it handles. A team
 with two ticket systems splits them into two packs. The connector, core or the pack's own,
 must follow the [connector contract](https://github.com/brainrc/gatework/blob/main/skills/brainrc-gatework/references/connectors.md), which
 `validate` checks.
@@ -277,59 +330,6 @@ as a deny. Each lists every case that came out wrong, and a missing, failing or 
 `run_hook(hook, payload)` returns the decision itself. [pack-homelab](../examples/pack-homelab/tests/test_guard.py)
 has a full example.
 
-## Default packs
-
-A default pack is a table in core's shipped `packs.toml`: core turns it on unless
-`packs.local.toml` says otherwise. Gatework is the only one: spec-agent (the `brainrc-gatework`
-skill), its roles, the ticket connectors and the domain skills. It lives in
-[brainrc/gatework](https://github.com/brainrc/gatework), and `packs.toml` pins it by `git` and a
-release tag `ref`, so `apply` fetches it like any git pack (`update` refetches). Before 0.7.1 it
-shipped inside core as `packs/gatework`.
-
-Its names before 0.7.0 (`spec-agent`, `spec-status`, `ticket-github`, `kubernetes` and the rest,
-listed in `brainrc/naming.py`) are deprecated aliases until 0.8.0, and the only names naming rule
-7 lets it keep without its prefix. `[gatework]` with `enabled = false` in `packs.local.toml` turns
-it off (`brainrc init` asks), and core then installs its rules and guard hooks and nothing else.
-To try another version, set only `ref` there; to work on a clone, set `path`, which replaces the
-shipped `git` and `ref`:
-
-```toml
-[gatework]
-path = "~/src/gatework"
-```
-
-`validate --pack` checks a pack against core and the default packs on disk, so a pack that
-extends Gatework is checked against it once `apply` has fetched it; until then `validate` warns
-that it isn't fetched yet. `--fetch-defaults` fetches them at the versions core pins instead (see
-[Validate a pack in its own CI](#validate-a-pack-in-its-own-ci)).
-
-## Rules
-
-The rendered instructions file has three parts, in this order:
-
-1. Core rules, in filename order.
-2. Each enabled pack's rules, one block per pack in `packs.toml` order, filename order inside.
-   Each block starts with `<!-- pack: <name> -->` and a line telling the model the rules refine
-   the ones above.
-3. `*.local.md` rules from any source, under `<!-- local -->`.
-
-Pack rule numbers only order rules within the pack. Later rules refine earlier ones and must
-not contradict them: a pack rule that contradicts core is a bug in the pack. Write it as a
-narrower case ("in Acme repos, also ...") instead.
-
-## Compatibility
-
-Core's version is in `VERSION`. [CHANGELOG.md](../CHANGELOG.md) tags changes that affect packs
-with **[pack contract]**. Declare the versions your pack supports with `requires_core`:
-comma-separated clauses of `>=`, `>`, `<=`, `<`, `==`, `!=` and a version (missing parts
-are zero, and a bare version means `>=`).
-
-- Not satisfied → `validate` fails and `apply`/`status` write nothing, naming the pack.
-- Missing → allowed, with a warning.
-- Policy: semver. While core is `0.x`, a breaking pack-contract change bumps MINOR, so pin
-  `">=0.N, <0.N+1"`. After `1.0`, breaking changes bump MAJOR: pin `">=1.N, <2"`.
-  Other changes (new skills, fixes, docs) bump PATCH and never break a pin.
-
 ## tripwires.toml
 
 Stale facts that must not come back, checked by `validate`:
@@ -343,6 +343,35 @@ allow = '(?i)replaced|decommissioned|never'   # lines matching this pass (they w
 paths = ["*.md"]                              # default; fnmatch against the path in the pack
 ```
 
+## Compatibility
+
+brainrc's version is in `VERSION`. [CHANGELOG.md](../CHANGELOG.md) tags changes that affect packs
+with **[pack contract]**. Declare the versions your pack supports with `requires_core`:
+comma-separated clauses of `>=`, `>`, `<=`, `<`, `==`, `!=` and a version (missing parts
+are zero, and a bare version means `>=`).
+
+- Not satisfied → `validate` fails and `apply`/`status` write nothing, naming the pack.
+- Missing → allowed, with a warning.
+- Policy: semver. While core is `0.x`, a breaking pack-contract change bumps MINOR, so pin
+  `">=0.N, <0.N+1"`. After `1.0`, breaking changes bump MAJOR: pin `">=1.N, <2"`.
+  Other changes (new skills, fixes, docs) bump PATCH and never break a pin.
+
+## Context cost
+
+`brainrc tokens` estimates tokens per skill, agent, and command across all
+enabled sources. It also shows what loads in every session (rules and descriptions) versus on
+use. Keep pack rules short: they load in every session on that machine.
+
+`validate` enforces a budget on each source's always-loaded tokens (its rules plus its skill,
+agent, and command descriptions). Core's is 3,000. A pack declares its own in `pack.toml`:
+
+```toml
+max_always_tokens = 800
+```
+
+Over a declared budget, `validate` fails and names the biggest items. A pack without
+`max_always_tokens` gets a warning above 1,000 tokens. Any description over 100 tokens gets a
+warning: say what the skill does and when to use it, and move the rest into the body.
 ## Validate a pack in its own CI
 
 The `validate-pack` action checks a pack against the core version you pin, and against core's
@@ -394,24 +423,7 @@ tags, links in skills, agents and commands); the rest only `validate` reports.
 
 ## Packs and Claude Code plugins
 
-Core also ships as a Claude Code plugin (README, Install). Packs stay `brainrc` packs: a plugin
-could carry a pack's skills, agents, and hooks, but not its rules or its spec-agent extensions
-(domains, ticket connector, Deliver checks), which `brainrc apply` renders for Gatework. Revisit if
-plugins gain a way to extend another plugin.
-
-## Context cost
-
-`python3 scripts/brainrc.py tokens` estimates tokens per skill, agent, and command across all
-enabled sources. It also shows what loads in every session (rules and descriptions) versus on
-use. Keep pack rules short: they load in every session on that machine.
-
-`validate` enforces a budget on each source's always-loaded tokens (its rules plus its skill,
-agent, and command descriptions). Core's is 3,000. A pack declares its own in `pack.toml`:
-
-```toml
-max_always_tokens = 800
-```
-
-Over a declared budget, `validate` fails and names the biggest items. A pack without
-`max_always_tokens` gets a warning above 1,000 tokens. Any description over 100 tokens gets a
-warning: say what the skill does and when to use it, and move the rest into the body.
+brainrc also ships as a Claude Code plugin ([plugins](plugins.md)), but packs need the `brainrc`
+command: a plugin could carry a pack's skills, agents and hooks, but not its rules or its Gatework
+extensions (domains, ticket connector, Deliver checks), which `brainrc apply` renders. This may
+change if plugins gain a way to extend another plugin.

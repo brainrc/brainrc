@@ -9,11 +9,11 @@ consumer accounts on 2026-06-18; [Antigravity CLI](#antigravity-cli) replaced it
 
 | Harness | Package and install | Rules without a clone | Hooks | Agents | Packs |
 |---|---|---|---|---|---|
-| Claude Code | `.claude-plugin/` ([shipped](install.md#claude-code)); `/plugin install` | `SessionStart` hook output (10,000-char cap) | yes: allow, ask, deny | yes, as `<plugin>:<name>` (`gatework:brainrc-work`) | plugin `dependencies` with semver ranges |
+| Claude Code | `.claude-plugin/` ([shipped](plugins.md#claude-code)); `/plugin install` | `SessionStart` hook output (10,000-char cap) | yes: allow, ask, deny | yes, as `<plugin>:<name>` (`gatework:brainrc-work`) | plugin `dependencies` with semver ranges |
 | Codex | `.codex-plugin/` **or `.claude-plugin/`** (verified); `codex plugin marketplace add owner/repo` | no plugin route: `~/.codex/AGENTS.md` or config `developer_instructions` | yes: `PreToolUse`, `SessionStart` | TOML roles in config; not shippable in a plugin | separate plugin; no dependencies found |
-| Antigravity CLI | root `plugin.json` ([shipped](install.md#antigravity-cli), unverified); `agy plugin install <git url>` | plugin `rules/*.md` with `trigger:` frontmatter | yes: `PreToolUse` ask or deny; no known "no opinion" reply | markdown, `agents/` | separate plugin; no dependencies found |
+| Antigravity CLI | root `plugin.json` ([shipped](plugins.md#antigravity-cli), unverified); `agy plugin install <git url>` | plugin `rules/*.md` with `trigger:` frontmatter | yes: `PreToolUse` ask or deny; no known "no opinion" reply | markdown, `agents/` | separate plugin; no dependencies found |
 | OpenCode | JS plugin (npm or `~/.config/opencode/plugins/`): hooks and tools only | `instructions[]` config or `AGENTS.md` | blocks by throwing; no ask | markdown files with a different frontmatter | `plugin[]`, `instructions[]`, `skills.paths` |
-| Cursor | `.cursor-plugin/plugin.json` ([shipped](install.md#cursor), unverified); symlink a checkout to `~/.cursor/plugins/local/` | plugin `rules/` with `alwaysApply: true` | yes: allow, deny; ask reported broken | markdown, `agents/` | separate plugin; a `.cursor-plugin/marketplace.json` lists several |
+| Cursor | `.cursor-plugin/plugin.json` ([shipped](plugins.md#cursor), unverified); symlink a checkout to `~/.cursor/plugins/local/` | plugin `rules/` with `alwaysApply: true` | yes: allow, deny; ask reported broken | markdown, `agents/` | separate plugin; a `.cursor-plugin/marketplace.json` lists several |
 
 ## Claude Code
 
@@ -41,7 +41,7 @@ here): `codex-rs/core-plugins/`, `codex-rs/hooks/`, `codex-rs/agent-roles/`.
   `.codex-plugin/`. **Verified** with Codex 0.161.0: `codex plugin marketplace add <repo>` and
   `codex plugin add brainrc@brainrc` install our plugin unchanged. Gatework's plugin
   (brainrc/gatework) works the same way. The install copy **drops symlinks**
-  (`skills/brainrc-gatework/roles`), so spec-agent falls back to `../../agents/`.
+  (`skills/brainrc-gatework/roles`), so Gatework falls back to `../../agents/`.
 - Skills come from the manifest's `skills` field when it has one, and only from there, so Gatework's names
   `./skills/` as one string, the form Codex's docs give. Core's own plugin has no skills.
 - Skills: native, `~/.agents/skills` (`~/.codex/skills` deprecated). Custom prompts are deprecated
@@ -123,7 +123,7 @@ community [`cursor-hooks`](https://www.npmjs.com/package/cursor-hooks) package.
 
 ## Proposed order for #50
 
-1. Render to `$BRAINRC_HOME`; spec-agent reads extensions from there (every harness needs it).
+1. Render to `$BRAINRC_HOME`; Gatework reads extensions from there (every harness needs it).
 2. Codex through the existing `.claude-plugin/`: test the install, convert commands to skills.
 3. Antigravity plugin: root `plugin.json`, rule triggers (done, unverified); hooks after a live test.
 4. OpenCode: agent transform (#19, done); guard plugin (deny only) done in 0.3.25.

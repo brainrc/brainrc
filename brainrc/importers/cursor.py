@@ -1,7 +1,7 @@
 """Cursor rules (#164): `.cursor/rules/**/*.mdc`, and the older `.cursorrules`.
 
 An `alwaysApply: true` rule becomes a rule. A rule scoped by `globs` becomes a skill, with a row in
-Gatework's Domains table (`[[extensions.gatework.domains]]`) for those globs, so spec-agent loads
+Gatework's Domains table (`[[extensions.gatework.domains]]`) for those globs, so Gatework loads
 it for those files. A rule with only a `description` (Cursor applies it when the model asks)
 becomes a skill with that description; one with neither (applied only when named) becomes a skill
 too, and a warning says so. Files are read in path order, which is Cursor's order.

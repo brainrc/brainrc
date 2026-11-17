@@ -1,6 +1,6 @@
 ---
 name: acme-context
-description: Adds Acme team context to a Gatework run at intake (owning team, service tier, related runbooks). Use right after a ticket is fetched, as a spec-agent intake context skill.
+description: Adds Acme team context to a Gatework run at intake (owning team, service tier, related runbooks). Use right after a ticket is fetched, as a Gatework intake context skill.
 ---
 
 # acme-context

@@ -2,7 +2,8 @@
 
 Every `brainrc` command and option. `brainrc --help` lists the commands and
 `brainrc <command> --help` shows one command's options. From a clone, run
-`python3 scripts/brainrc.py <command>` instead. `brainrc` with no command runs `status`.
+`python3 scripts/brainrc.py <command>` instead. `brainrc` with no command runs `status`, and
+`brainrc --version` prints the version.
 
 A test checks this page against the command's own help, so it lists every command and option
 there is.
@@ -15,7 +16,7 @@ there is.
 ## brainrc init
 
 First run: pick the tools to manage, adopt your existing instruction files, and choose how much
-to install. It writes `harnesses.local.toml` and `brainrc.local.toml`, and never runs `apply`
+to install. It writes `harnesses.local.toml`, `packs.local.toml` and `brainrc.local.toml`, and never runs `apply`
 ([getting started](getting-started.md#1-choose-what-to-install-optional)).
 
 | Option | Does |

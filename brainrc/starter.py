@@ -1,7 +1,7 @@
 """Starter profiles for `brainrc init` (#297), and the counts init shows before it writes.
 
 A starter profile is a first answer to "what should this machine install": an install profile
-(`minimal`, `recommended`, `full`; docs/install.md) plus the `exclude` patterns that fit the work.
+(`minimal`, `recommended`, `full`; docs/configuration.md) plus the `exclude` patterns that fit the work.
 
 - minimal: the rules only.
 - app: skills, agents, commands and hooks, without the infrastructure domain skills.

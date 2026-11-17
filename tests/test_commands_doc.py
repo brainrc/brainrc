@@ -35,7 +35,7 @@ class CommandsDocTest(unittest.TestCase):
                         continue
                     if action.option_strings:
                         for opt in action.option_strings:
-                            self.assertIn(f"`{opt}", body, f"{name}: {opt} is not documented")
+                            self.assertRegex(body, rf"`{re.escape(opt)}(?![\w-])", f"{name}: {opt} is not documented")
                     else:
                         self.assertIn(f"`{action.metavar or action.dest}", body,
                                       f"{name}: argument {action.metavar or action.dest} is not documented")
@@ -44,9 +44,11 @@ class CommandsDocTest(unittest.TestCase):
         documented = set(re.findall(r"(?m)^## brainrc ([a-z-]+)$", self.text))
         self.assertEqual(documented - set(visible_commands()), set())
 
-    def test_hidden_commands_stay_out(self):
-        for name in ("plugin", "capabilities", "release"):
-            self.assertIsNone(section(self.text, name), name)
+    def test_top_level_options(self):
+        for action in cli._parser()._actions:
+            if action.option_strings and not isinstance(action, (argparse._HelpAction, argparse._SubParsersAction)):
+                for opt in action.option_strings:
+                    self.assertRegex(self.text, rf"`brainrc {re.escape(opt)}(?![\w-])", opt)
 
 
 if __name__ == "__main__":

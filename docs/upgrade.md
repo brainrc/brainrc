@@ -44,7 +44,8 @@ the old `~/.config/ai-config`. If you used the old name:
    The `aicfg` command was removed in 0.5.0: use `brainrc`.
 2. Move the old settings home: `brainrc migrate --dry-run` shows the move, `brainrc migrate`
    does it and runs `apply`. With the old `AICFG_HOME` set, set `BRAINRC_HOME` to the new place
-   first. Until you migrate, `init`, `status`, `apply` and `update` refuse and write nothing.
+   first. Until you migrate, `init`, `status`, `apply`, `update`, `install`, `uninstall` and
+   `pin-mcp` refuse and write nothing.
 3. Replace the old plugin, as below.
 
 ### Moving from ai-config

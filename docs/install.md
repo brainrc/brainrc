@@ -49,6 +49,9 @@ brainrc apply --repair
 `--repair` relinks anything that still points at the old version. Moving packs to newer commits
 is a separate step, `brainrc update` ([upgrading](upgrade.md)).
 
+<a id="moving-from-ai-config"></a>
+Coming from the old names, `ai-config` or spec-agent? [Upgrading](upgrade.md#from-ai-config) has the steps.
+
 ## Uninstall
 
 ```bash

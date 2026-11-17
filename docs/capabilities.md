@@ -10,7 +10,7 @@ Skills reach every tool. The rest depends on what each tool can load.
 | Rules | ✅ `CLAUDE.md` | ✅ `AGENTS.md` | ✅ `AGENTS.md` | ✅ `AGENTS.md` | ↪ [plugin](plugins.md#cursor) only |
 | Commands | ✅ | ✅ prompts | ✅ | ➖ skills are its slash commands | ⏳ |
 | Agents | ✅ subagents | ↪ role-switch fallback | ✅ subagents (rendered) | ↪ fallback | ↪ fallback |
-| Guard hooks | ✅ allow, ask, deny | ❌ rules only | ✅ plugin, deny only | ❌ rules only | ✅ shell and reads, deny only |
+| Guard hooks | ✅ allow, ask, deny | ❌ rules only | ✅ plugin, deny only | ⏳ rules only | ✅ shell and reads, deny only |
 | MCP servers | ✅ | ✅ | ✅ | ⏳ | ⏳ |
 
 ✅ supported · ↪ partly, or another way · ⏳ not yet · ➖ not needed · ❌ not possible today
@@ -23,8 +23,8 @@ switches roles inside one session.
 One row per tool: where `apply` puts each kind of content, and what a repo's `brainrc.toml`
 writes for it ([team setup](project.md)). A dash means that tool gets none of it. Paths are the
 defaults; the variables in the last column move them ([configuration](configuration.md#environment-variables)).
-The table is generated from [`harnesses.toml`](../harnesses.toml), and a test fails when the two
-disagree.
+This table is generated from [`harnesses.toml`](../harnesses.toml), and a test fails when the two
+disagree. The table at the top is written by hand: when you change `harnesses.toml`, update it too.
 
 <!-- BEGIN capability matrix: generated from harnesses.toml by `brainrc capabilities --write` -->
 | Tool | Skills | Rules | Agents | Commands | Guard hooks | MCP servers | In a repo | Moves with |

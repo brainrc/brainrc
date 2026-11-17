@@ -10,7 +10,7 @@ ten minutes. It assumes you [installed](install.md) the `brainrc` command; from 
 brainrc init
 ```
 
-`init` asks three things, then shows how many files, hooks and tokens the result costs before it
+`init` asks four things, then shows how many files, hooks and tokens the result costs before it
 writes anything:
 
 1. **Which tools to manage.** It lists the AI tools it finds (a tool counts as installed when its
@@ -20,7 +20,9 @@ writes anything:
    `~/.codex/AGENTS.md`, brainrc can't link its own file there. `init` copies your text into a
    local rule, which every tool then loads, and moves the original aside as
    `<file>.bak-brainrc-<time>`.
-3. **How much to install**, as a starter profile:
+3. **Whether to install each default pack**, such as Gatework. Your answer goes in
+   `packs.local.toml` ([default packs](packs.md#default-packs)).
+4. **How much to install**, as a starter profile:
 
     | Starter | Installs |
     |---|---|

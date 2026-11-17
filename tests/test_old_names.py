@@ -75,6 +75,8 @@ ALLOW = [
     ("brainrc/packs.py", r"\.git/aicfg-fetched\.json", "D: the fetch record"),
     # E. Docs sentences about old names: exact tokens, or lines that say old/former/deprecated/legacy.
     ("docs/commands.md", OLD_LINE, "E: what migrate moves"),
+    ("docs/install.md", r"moving-from-ai-config", "E: old anchor kept for CHANGELOG links"),
+    ("docs/install.md", OLD_LINE, "E: pointer to the upgrade notes"),
     ("docs/commands.md", r"upgrade\.md#from-ai-config", "E: link to the upgrade notes"),
     ("docs/upgrade.md", r"The `aicfg` command was removed in 0\.5\.0", "E: the removed command"),
     ("docs/upgrade.md", OLD_LINE, "E: upgrade and old-name notes"),

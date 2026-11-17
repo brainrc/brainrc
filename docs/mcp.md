@@ -57,8 +57,8 @@ brainrc pin-mcp
 It starts each stdio server brainrc installs, lists its tools, shows what changed since the last
 pin, and on your yes records a hash of each tool's definition. At the start of each Claude Code
 session a hook checks the tools again. If one changed, it warns you and tells the model not to call
-it until you run `pin-mcp` again. HTTP servers aren't pinned, and a server that doesn't answer in 4
-seconds is skipped ([guardrails](guardrails.md#claude-code-hooks)).
+it until you run `pin-mcp` again. HTTP servers aren't pinned, and the check gets 4 seconds for all servers
+together: a server it can't reach in that time is skipped ([guardrails](guardrails.md#claude-code-hooks)).
 
 `apply` names each stdio server whose tools aren't pinned yet.
 

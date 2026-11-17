@@ -12,6 +12,13 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.8.20 (2026-11-17)
+
+- New `docs/capabilities.md`: one row per tool with where its skills, rules, agents, commands,
+  guard hooks and MCP servers land, and what a repo gets. The table is generated from
+  `harnesses.toml` (`brainrc capabilities --write`), and `tests/test_capabilities.py` fails when
+  the two disagree (#298).
+
 ## 0.8.19 (2026-11-17)
 
 - `docs/roadmap.md` groups open epics by release gate (A, B, C) to match the GitHub milestones,

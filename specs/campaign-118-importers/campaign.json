@@ -12,16 +12,6 @@
       "approved_at": "2026-11-15T16:20:00Z"
     }
   },
-  "skipped": [
-    {
-      "ref": "gh:166",
-      "why": "left for later (brief)"
-    },
-    {
-      "ref": "gh:167",
-      "why": "left for later (brief)"
-    }
-  ],
   "members": [
     {
       "ref": "gh:163",
@@ -104,6 +94,38 @@
           "init --profile can't repair a bad profile line: check_config already refused it before this PR"
         ]
       }
+    },
+    {
+      "ref": "gh:166",
+      "order": 5,
+      "params": {
+        "format": "Windsurf rules",
+        "source": ".windsurfrules, global_rules.md, .windsurf/rules/*.md",
+        "maps_to": "rules + globs -> domains"
+      },
+      "depends_on": [],
+      "status": "in_review",
+      "slug": "166-import-windsurf",
+      "branch": "claude/project-thread-qe7dlt",
+      "pr": null,
+      "base": "main",
+      "merged": false
+    },
+    {
+      "ref": "gh:167",
+      "order": 6,
+      "params": {
+        "format": "Claude Code plugin",
+        "source": ".claude-plugin/plugin.json and its folders",
+        "maps_to": "skills, agents, commands, hooks, MCP servers"
+      },
+      "depends_on": [],
+      "status": "in_review",
+      "slug": "167-import-plugin",
+      "branch": "claude/project-thread-qe7dlt",
+      "pr": null,
+      "base": "main",
+      "merged": false
     }
   ]
 }

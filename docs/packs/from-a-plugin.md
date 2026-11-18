@@ -35,10 +35,14 @@ naming the file and lines it came from.
   name to `env_from` ([MCP servers](../formats.md#mcp-servers-mcpserverstoml)).
 - **A server that runs the plugin's own files** (`${CLAUDE_PLUGIN_ROOT}` in its command): install
   them somewhere, then add the server to `mcp/servers.toml` by hand.
+- **A hook that runs none of the plugin's files**, such as `npx prettier --write` or a prompt hook:
+  `apply` knows the pack's hooks by `{{hooks_dir}}` in their command, so put it in a script in
+  `overrides/claude/hooks/` and run that.
 - **A link** inside a skill: copy what it points at into the skill.
 
 In `settings.fragment.json`, `${CLAUDE_PLUGIN_ROOT}/hooks/x` became `{{hooks_dir}}/x`, which
-`apply` fills in ([layout](../packs.md#layout)). Test each hook with `brainrc.testing` in the
+`apply` fills in, and the MCP tool names in hook matchers and agents' `tools` follow the servers' new
+names ([layout](../packs.md#layout)). Test each hook with `brainrc.testing` in the
 pack's `tests/` ([pack tests](../packs.md#pack-tests));
 [examples/pack-homelab](../../examples/pack-homelab/README.md) has one.
 

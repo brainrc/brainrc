@@ -107,9 +107,15 @@
       "status": "in_review",
       "slug": "166-import-windsurf",
       "branch": "claude/project-thread-qe7dlt",
-      "pr": null,
+      "pr": 386,
       "base": "main",
-      "merged": false
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 10,
+        "fixed": 10,
+        "on": "the whole PR"
+      }
     },
     {
       "ref": "gh:167",
@@ -123,9 +129,15 @@
       "status": "in_review",
       "slug": "167-import-plugin",
       "branch": "claude/project-thread-qe7dlt",
-      "pr": null,
+      "pr": 386,
       "base": "main",
-      "merged": false
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 10,
+        "fixed": 10,
+        "on": "the whole PR"
+      }
     }
   ]
 }

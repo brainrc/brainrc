@@ -34,7 +34,14 @@ class Skill:
     text: str        # SKILL.md's body
     provenance: str = ""
     extra: list[str] = field(default_factory=list)  # other frontmatter lines, as written
-    files: dict[str, str | bytes] = field(default_factory=dict)  # its other files, by path in its folder
+    files: dict[str, str | Copied] = field(default_factory=dict)  # its other files, by path in its folder
+
+
+@dataclass(frozen=True)
+class Copied:
+    """A file copied as it was: its bytes, and whether it was executable where it came from."""
+    data: bytes
+    executable: bool = False
 
 
 @dataclass
@@ -73,7 +80,7 @@ class PackSpec:
     max_always_tokens: int = 0
     test: str = ""            # the pack's own tests, which validate --pack runs
     ticket: dict = field(default_factory=dict)  # [extensions.gatework.ticket]: strings and lists of strings
-    files: dict[str, str | bytes] = field(default_factory=dict)  # any other file, path -> content, written last
+    files: dict[str, str | Copied] = field(default_factory=dict)  # any other file, path -> content, written last
     notes: dict[str, str] = field(default_factory=dict)  # pack.toml key -> a comment at the end of its line
 
     def __post_init__(self) -> None:
@@ -181,10 +188,16 @@ def _unique(prefix: str, slug: str, seen: set[str]) -> str:
     return name
 
 
-def render_pack(spec: PackSpec) -> dict[str, str | bytes]:
+def domains_row(files: str, skills: list[str]) -> str:
+    """One [[extensions.gatework.domains]] row: the files (`glob`, ...) and the skills they load."""
+    return (f"[[extensions.gatework.domains]]\nfiles = {_toml_string(files)}\n"
+            f"skills = [{', '.join(map(_toml_string, skills))}]\n")
+
+
+def render_pack(spec: PackSpec) -> dict[str, str | Copied]:
     """The pack's files, path -> text, in the order they are written."""
     check_name(spec.name, spec.prefix, spec.id)
-    files: dict[str, str | bytes] = {}
+    files: dict[str, str | Copied] = {}
 
     def key(name: str, value: str) -> str:
         note = spec.notes.get(name)
@@ -201,9 +214,7 @@ def render_pack(spec: PackSpec) -> dict[str, str | bytes]:
     if spec.test:
         lines.append(key("test", _toml_string(spec.test)))
     for row in spec.domains:
-        lines += ["", "[[extensions.gatework.domains]]",
-                  f"files = {_toml_string(row['files'])}",
-                  "skills = [" + ", ".join(_toml_string(s) for s in row["skills"]) + "]"]
+        lines += ["", *domains_row(row["files"], row["skills"]).splitlines()]
     if spec.ticket:
         lines += ["", "[extensions.gatework.ticket]"]
         lines += [f"{k} = " + ("[" + ", ".join(map(_toml_string, v)) + "]" if isinstance(v, list) else _toml_string(v))
@@ -233,7 +244,7 @@ def render_pack(spec: PackSpec) -> dict[str, str | bytes]:
     return files
 
 
-def check_dest(dest: Path, files: dict[str, str | bytes], force: bool = False, sources: list[Path] = ()) -> None:
+def check_dest(dest: Path, files: dict[str, str | Copied], force: bool = False, sources: list[Path] = ()) -> None:
     """Raise ConfigError if write_pack would refuse dest: so a caller can check before it asks."""
     if dest.is_symlink() or (dest.exists() and not dest.is_dir()):
         raise ConfigError(f"{tilde(dest)} is a link or a file, not a folder")
@@ -256,18 +267,18 @@ def _check_paths(dest: Path, files: dict) -> None:
             raise ConfigError(f"refusing to write {rel} outside {tilde(dest)}")
 
 
-def _write(path: Path, data: str | bytes) -> None:
-    """One file: text as UTF-8, bytes as they are. A file that starts with `#!` is a script (a
-    hook, a skill's helper), so it is made executable, as it was where it came from."""
-    if isinstance(data, bytes):
-        path.write_bytes(data)
+def _write(path: Path, data: str | Copied) -> None:
+    """One file: text as UTF-8 with \n line ends, a copied file byte for byte. A copied file keeps
+    its executable bit; text that starts with `#!` is a script, so it is made executable."""
+    if isinstance(data, Copied):
+        path.write_bytes(data.data)
     else:
-        path.write_text(data, encoding="utf-8")
-    if (data[:2] == b"#!" if isinstance(data, bytes) else data.startswith("#!")):
+        path.write_text(data, encoding="utf-8", newline="\n")
+    if data.executable if isinstance(data, Copied) else data.startswith("#!"):
         path.chmod(path.stat().st_mode | 0o111)
 
 
-def write_pack(dest: Path, files: dict[str, str | bytes], force: bool = False, sources: list[Path] = ()) -> list[Path]:
+def write_pack(dest: Path, files: dict[str, str | Copied], force: bool = False, sources: list[Path] = ()) -> list[Path]:
     """Write files under dest: into a temporary folder beside it, then moved into place. dest must
     not exist, or be empty but for `.git`. With force it may also be an earlier pack (it has a
     pack.toml), which is replaced, but never a folder that holds one of the sources or is a link.

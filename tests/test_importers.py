@@ -557,9 +557,9 @@ class PluginImportTest(ImportCase):
             self.assertTrue(os.access(skill / "scripts/check.sh", os.X_OK))
         agent = frontmatter(pack / "agents/team-auditor.md")
         self.assertEqual((agent["name"], agent["tools"], agent["model"], agent["color"]),
-                         ("team-auditor", "Read, Grep, Glob", "sonnet", "red"))
+                         ("team-auditor", "Read, Grep, Glob, mcp__team-tracker__search", "sonnet", "red"))
         self.assertEqual(frontmatter(pack / "commands/team-notes.md"),
-                         {"description": "Write release notes", "argument-hint": "<version>"})
+                         {"description": "Write release notes", "argument-hint": "<version>", "model": "haiku"})
 
     def test_names_in_the_text_follow_the_new_names(self):
         pack, _ = self.import_fixture()
@@ -570,15 +570,58 @@ class PluginImportTest(ImportCase):
         self.assertIn("`team-deploy` skill", (pack / "agents/team-auditor.md").read_text())
 
     def test_hooks_move_into_overrides_claude(self):
-        pack, _ = self.import_fixture()
+        pack, out = self.import_fixture()
         fragment = json.loads((pack / "overrides/claude/settings.fragment.json").read_text())
         commands = [h["command"] for groups in fragment["hooks"].values() for g in groups for h in g["hooks"]]
-        self.assertEqual(commands, ['python3 "{{hooks_dir}}/guard.py"', "{{hooks_dir}}/scripts/hello.sh"])
+        self.assertEqual(commands, ['python3 "{{hooks_dir}}/guard.py"', "{{hooks_dir}}/scripts/hello.sh",
+                                    "{{hooks_dir}}/lint"])
+        self.assertEqual(fragment["hooks"]["PostToolUse"][0]["matcher"], "mcp__team-tracker__.*")
         hooks = pack / "overrides/claude/hooks"
         self.assertEqual(sorted(p.relative_to(hooks).as_posix() for p in hooks.rglob("*") if p.is_file()),
-                         ["guard.py", "scripts/hello.sh"])
+                         ["guard.py", "lint", "scripts/hello.sh"])
         if os.name != "nt":
             self.assertTrue(os.access(hooks / "guard.py", os.X_OK))
+            self.assertTrue(os.access(hooks / "lint", os.X_OK))  # no `#!`: executable because it was
+
+    def test_a_hook_that_runs_no_file_of_the_plugin_is_left_out(self):
+        """apply owns a hook by `{{hooks_dir}}`; another would be added on every apply, never removed."""
+        _, out = self.import_fixture()
+        self.assertIn("runs `npx prettier --write`, not a file of the plugin's; left out", out)
+        self.assertIn("runs a `prompt` hook, not a file of the plugin's; left out", out)
+
+    def plugin(self, files: dict[str, str | bytes]) -> Path:
+        root = self.tmp / "src"
+        for rel, data in {".claude-plugin/plugin.json": '{"name": "kit"}', **files}.items():
+            path = root / rel
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(data if isinstance(data, bytes) else data.encode())
+        return root
+
+    def test_files_are_copied_byte_for_byte(self):
+        crlf = b"line one\r\nline two\r\n"
+        root = self.plugin({"skills/x/SKILL.md": "---\nname: x\ndescription: X.\n---\n\nDo x.\n",
+                            "skills/x/notes.txt": crlf, "skills/x/blob.bin": b"\x00\xff\r\n"})
+        code, out = self.run_import(str(root), "--to", "kit", "--name", "kit")
+        self.assertEqual(code, 0, out)
+        self.assertEqual((self.tmp / "kit/skills/kit-x/notes.txt").read_bytes(), crlf)
+        self.assertEqual((self.tmp / "kit/skills/kit-x/blob.bin").read_bytes(), b"\x00\xff\r\n")
+
+    def test_same_names_are_numbered_and_references_follow_the_first(self):
+        agent = "---\nname: reviewer\ndescription: Reviews.\n---\n\nReview.\n"
+        root = self.plugin({
+            ".claude-plugin/plugin.json": '{"name": "kit", "agents": ["more/a.md", "more/b.md"]}',
+            "agents/reviewer.md": agent, "more/a.md": agent, "more/b.md": agent,
+            "skills/x/SKILL.md": "---\nname: x\ndescription: X.\n---\n\nAsk [agent: reviewer].\n",
+            ".mcp.json": '{"mcpServers": {"my_tracker": {"command": "a"}, "my-tracker": {"command": "b"}}}'})
+        code, out = self.run_import(str(root), "--to", "kit", "--name", "kit")
+        self.assertEqual(code, 0, out)
+        pack = self.tmp / "kit"
+        self.assertEqual(sorted(p.name for p in (pack / "agents").iterdir()),
+                         ["kit-reviewer-2.md", "kit-reviewer-3.md", "kit-reviewer.md"])
+        self.assertIn("[agent: kit-reviewer]", (pack / "skills/kit-x/SKILL.md").read_text())
+        servers = tomllib.loads((pack / "mcp/servers.toml").read_text())["servers"]
+        self.assertEqual(servers, {"kit-my-tracker": {"command": "a"}, "kit-my-tracker-2": {"command": "b"}})
+        self.assertIn("another server is also `my-tracker`", out)
 
     def test_mcp_servers_keep_env_names_only(self):
         pack, out = self.import_fixture()

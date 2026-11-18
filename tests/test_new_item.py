@@ -71,6 +71,22 @@ class NewSkillTest(NewItemCase):
         self.ok("skill", "protobuf", "--domain", "*.proto", "--force")
         self.assertEqual(len(tomllib.loads((self.pack / "pack.toml").read_text())["extensions"]["gatework"]["domains"]), 1)
 
+    def test_a_pack_toml_that_cant_take_a_row_is_an_error_not_a_crash(self):
+        path = self.pack / "pack.toml"
+        good = path.read_text()
+        for text, says in ((good + '\n[extensions.gatework]\ndomains = [{files = "`*.go`", skills = ["acme-go"]}]\n',
+                            "write them as [[extensions.gatework.domains]] tables"),
+                           (good + "\nbroken = \n", "pack.toml:")):
+            with self.subTest(says):
+                path.write_text(text)
+                for extra in ([], ["--dry-run"]):
+                    code, out = self.item("skill", "protobuf", "--domain", "*.proto", *extra)
+                    self.assertEqual(code, 1, out)
+                    self.assertIn("ERROR", out)
+                    self.assertIn(says, out)
+                self.assertFalse((self.pack / "skills/acme-protobuf").exists())
+                self.assertEqual(path.read_text(), text)
+
     def test_a_plain_skill_needs_a_description_when_nothing_can_ask(self):
         code, out = self.item("skill", "deploy")
         self.assertEqual(code, 1)
@@ -172,6 +188,12 @@ class NewCommandTest(NewItemCase):
         self.assertEqual((meta["name"], meta["disable-model-invocation"], meta["argument-hint"]),
                          ("acme-ship", "true", "<version>"))
         self.assertIn("$ARGUMENTS", (self.pack / "skills/acme-ship/SKILL.md").read_text())
+
+    def test_only_an_installed_codex_counts(self):
+        def harnesses(include_missing=False, **_):
+            return {"codex": {}} if include_missing else {"claude": {}}  # enabled, but not installed
+        with mock.patch.object(newitem, "load_harnesses", side_effect=harnesses):
+            self.assertFalse(newitem.codex_targeted())
 
     def test_in_a_terminal_codex_is_offered_the_skill_form(self):
         with mock.patch.object(newitem, "codex_targeted", return_value=True), \

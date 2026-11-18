@@ -33,3 +33,16 @@ tagging and closing the epics stay with the maintainer.
 ## 2026-11-18T14:40:00Z · Deliver gate · auto-approved
 One draft PR, base main, one commit per issue. Next: code review, fixes, CI, then the maintainer
 decides whether to merge. #117 and #118 stay open until then.
+
+## 2026-11-18 · review · code-review (high) on PR #386
+10 found, 10 fixed, on the whole PR (all six issues share one branch):
+- Plugin hooks that run none of the plugin's files (`npx ...`, prompt hooks) are left out with a
+  warning: apply owns a hook only by `{{hooks_dir}}`, so they would pile up on every apply.
+- Copied files keep their bytes and executable bit (no shebang guess); generated text is
+  written with `\n` line ends on every OS.
+- A plugin command's or skill's `model` is kept; repeated agent, command and server names are
+  numbered -2, -3 and references follow the first; MCP tool names in agents' `tools`, hook
+  matchers and item text follow the servers' new names.
+- `new skill --domain` on a pack.toml it can't add a row to prints an ERROR (no traceback) and
+  writes the row with the same helper as `render_pack`.
+- The Codex note and prompt need Codex installed, not only enabled.

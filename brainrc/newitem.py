@@ -13,9 +13,10 @@ import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from .config import KNOWN_MODELS, KNOWN_TOOLS, MODEL_ID, ConfigError, expand, load_harnesses, tilde, write_text_atomic
+from .config import (KNOWN_MODELS, KNOWN_TOOLS, MODEL_ID, ConfigError, expand, load_harnesses, tilde, toml_error,
+                     write_text_atomic)
 from .naming import NAME
-from .scaffold import (Agent, Command, Rule, Skill, _toml_string, add_files, agent_text, command_text,
+from .scaffold import (Agent, Command, Rule, Skill, _toml_string, add_files, agent_text, command_text, domains_row,
                        render_rule, skill_text)
 from .sources import Source, load_pack, markdown_files
 
@@ -82,24 +83,33 @@ def next_rule_number(src: Source) -> str:
     return f"{nn:0{width}d}"
 
 
-def domains_row(text: str, globs: list[str], name: str) -> str:
+def add_domains_row(path: Path, globs: list[str], name: str) -> str:
     """pack.toml with a [[extensions.gatework.domains]] row for the skill at the end, unless a row
-    already names it; the rest of the file as written."""
-    meta = tomllib.loads(text)
+    already names it; the rest of the file as written. A pack.toml that holds `domains` as an
+    inline array can't take a row appended: that is an error, with what to do."""
+    text = path.read_text(encoding="utf-8")
+    try:
+        meta = tomllib.loads(text)
+    except tomllib.TOMLDecodeError as e:
+        raise toml_error(path, text, e) from None
     rows = meta.get("extensions", {}).get("gatework", {}).get("domains", [])
-    if any(isinstance(r, dict) and name in r.get("skills", []) for r in rows if isinstance(rows, list)):
+    if isinstance(rows, list) and any(isinstance(r, dict) and name in r.get("skills", []) for r in rows):
         return text
-    files = ", ".join(f"`{g}`" for g in globs)
-    row = f"[[extensions.gatework.domains]]\nfiles = {_toml_string(files)}\nskills = [{_toml_string(name)}]\n"
+    row = domains_row(", ".join(f"`{g}`" for g in globs), [name])
     after = f"{text.rstrip(chr(10))}\n\n{row}" if text.strip() else row
-    tomllib.loads(after)  # fail loudly rather than write a pack.toml nothing can read
+    try:
+        tomllib.loads(after)
+    except tomllib.TOMLDecodeError:
+        raise ConfigError(f"{tilde(path)}: can't add a [[extensions.gatework.domains]] row after its `domains`; "
+                          "write them as [[extensions.gatework.domains]] tables, then run this again") from None
     return after
 
 
 def codex_targeted() -> bool:
-    """Whether Codex is one of the harnesses this machine manages: it skips commands that use
-    $ARGUMENTS, so a command is better written as a user-invoked skill (docs/formats.md)."""
-    return "codex" in load_harnesses(include_missing=True)
+    """Whether Codex is one of the harnesses this machine manages (enabled and installed): it
+    skips commands that use $ARGUMENTS, so a command is better written as a user-invoked skill
+    (docs/formats.md)."""
+    return "codex" in load_harnesses()
 
 
 def render(src: Source, item: Item) -> tuple[dict[str, str], str]:
@@ -124,7 +134,7 @@ def render(src: Source, item: Item) -> tuple[dict[str, str], str]:
         rel = f"skills/{name}/SKILL.md"
         files = {rel: skill_text(name, Skill(slug, item.description, _fill(body, values)))}
         if item.domain:
-            files["pack.toml"] = domains_row((src.root / "pack.toml").read_text(encoding="utf-8"), item.domain, name)
+            files["pack.toml"] = add_domains_row(src.root / "pack.toml", item.domain, name)
         return files, rel
     if item.kind == "agent":
         tools = [t.strip() for t in item.tools.split(",") if t.strip()]

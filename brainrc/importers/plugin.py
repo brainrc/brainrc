@@ -19,7 +19,7 @@ import re
 from pathlib import Path
 
 from ..config import tilde
-from ..scaffold import Agent, Command, Skill, slugify
+from ..scaffold import Agent, Command, Copied, Skill, slugify
 from ..sources import parse_frontmatter
 from .model import Imported
 
@@ -38,15 +38,12 @@ def detect(path: Path) -> bool:
     return path.is_dir() and path.name == ".claude-plugin" and (path / "plugin.json").is_file()
 
 
-def _content(path: Path) -> str | bytes:
-    data = path.read_bytes()
-    try:
-        return data.decode("utf-8")
-    except UnicodeDecodeError:
-        return data
+def _content(path: Path) -> Copied:
+    """The file byte for byte (line ends included), and whether it is executable."""
+    return Copied(path.read_bytes(), bool(path.stat().st_mode & 0o111))
 
 
-def _tree(root: Path, out: Imported) -> dict[str, str | bytes]:
+def _tree(root: Path, out: Imported) -> dict[str, Copied]:
     """Every file under root, by its path in root, in path order; links are skipped with a warning."""
     found = {}
     for p in sorted(root.rglob("*"), key=lambda p: p.relative_to(root).as_posix()):
@@ -80,12 +77,14 @@ def _split(text: str) -> tuple[list[tuple[str, list[str]]], str, int]:
     return fields, body, lead + 1
 
 
-def _item(path: Path, label: str):
-    """(frontmatter values, the other frontmatter lines, body, provenance) of one item file."""
+def _item(path: Path, label: str, agent: bool = False):
+    """(frontmatter values, the other frontmatter lines, body, provenance) of one item file. An
+    agent's `tools` and `model` are written by agent_text, so they aren't among the other lines."""
     text = path.read_text(encoding="utf-8-sig")
     meta, _ = parse_frontmatter(text.splitlines())
     fields, body, first = _split(text)
-    extra = [line for key, lines in fields if key not in ("name", "description", "tools", "model") for line in lines]
+    own = ("name", "description", "tools", "model") if agent else ("name", "description")
+    extra = [line for key, lines in fields if key not in own for line in lines]
     last = len(text.rstrip().splitlines())
     return meta, extra, body, f"imported by brainrc from {label}, lines {first}-{last}"
 
@@ -124,20 +123,24 @@ def _skills(root: Path, manifest: dict, out: Imported) -> None:
                 out.warnings.append(f"{label}: no description; add one, or the skill never loads on its own")
             out.skills.append(Skill(slug, meta.get("description") or f"The plugin skill `{name}`.", body,
                                     provenance, extra=extra, files=files))
-            olds[name] = olds[d.name] = slug
+            olds.setdefault(name, slug)
+            olds.setdefault(d.name, slug)
 
 
 def _agents_and_commands(root: Path, manifest: dict, out: Imported) -> None:
     for kind in ("agents", "commands"):
         olds = out.renames.setdefault(kind, {})
+        used: set[str] = set()
         for f in _md_files(_paths(root, manifest, kind, kind)):
             out.read.add(f.resolve())
             label = tilde(f)
-            meta, extra, body, provenance = _item(f, label)
+            meta, extra, body, provenance = _item(f, label, agent=kind == "agents")
             name = (meta.get("name") or f.stem) if kind == "agents" else f.stem  # a command is its file's name
-            slug = slugify(name, kind[:-1])
-            while slug in olds.values():
-                slug += "-2"
+            base = slug = slugify(name, kind[:-1])
+            n = 2
+            while slug in used:
+                slug, n = f"{base}-{n}", n + 1
+            used.add(slug)
             description = meta.get("description", "")
             if not description:
                 out.warnings.append(f"{label}: no description; validate needs one")
@@ -150,7 +153,7 @@ def _agents_and_commands(root: Path, manifest: dict, out: Imported) -> None:
                                         model=meta.get("model", ""), extra=extra))
             else:
                 out.commands.append(Command(slug, description, body, provenance, extra=extra))
-            olds[name] = slug
+            olds.setdefault(name, slug)  # the plugin's name means the first item that has it
 
 
 def _load_json(path: Path, out: Imported) -> dict:
@@ -221,10 +224,33 @@ def _hooks(root: Path, manifest: dict, out: Imported) -> None:
 
     for label, hooks in _hook_source(root, manifest, out):
         for event, groups in hooks.items():
-            if isinstance(groups, list):
-                out.hooks.setdefault(event, []).extend(walk(groups))
-            else:
+            if not isinstance(groups, list):
                 out.warnings.append(f"{label}: hooks `{event}` is not a list; skipped")
+                continue
+            for group in walk(groups):
+                kept = _owned_hooks(group, f"{label}: a `{event}` hook", out)
+                if kept:
+                    out.hooks.setdefault(event, []).append(kept)
+
+
+def _owned_hooks(group, where: str, out: Imported) -> dict | None:
+    """group with only the hooks that run a file in the pack. apply knows a hook is the pack's by
+    `{{hooks_dir}}` in its command; any other (`npx prettier`, a prompt hook) would be added again
+    on every apply and never removed, so it is left out with a warning."""
+    if not isinstance(group, dict) or not isinstance(group.get("hooks"), list):
+        out.warnings.append(f"{where}: not a matcher group with a `hooks` list; skipped")
+        return None
+    hooks = []
+    for h in group["hooks"]:
+        command = h.get("command", "") if isinstance(h, dict) else ""
+        if isinstance(command, str) and "{{hooks_dir}}" in command:
+            hooks.append(h)
+        else:
+            what = f"`{command}`" if command else f"a `{h.get('type', '?') if isinstance(h, dict) else '?'}` hook"
+            out.warnings.append(f"{where} runs {what}, not a file of the plugin's; left out. To keep it, "
+                                "put it in a script in overrides/claude/hooks/ and run that as "
+                                "{{hooks_dir}}/<script> in settings.fragment.json")
+    return {**group, "hooks": hooks} if hooks else None
 
 
 def _servers(root: Path, manifest: dict, out: Imported) -> None:
@@ -276,7 +302,14 @@ def _servers(root: Path, manifest: dict, out: Imported) -> None:
         if any(ENV_REF.search(a) for a in table.get("args", [])) or ENV_REF.search(table.get("url", "")):
             out.warnings.append(f"{where}: `$VARIABLE`s in its args or url are passed as written; not every "
                                 "tool expands them")
-        out.servers[slugify(name, "server")] = table
+        base = slug = slugify(name, "server")
+        n = 2
+        while slug in out.servers:
+            slug, n = f"{base}-{n}", n + 1
+        if slug != base:
+            out.warnings.append(f"{where}: another server is also `{base}`; this one is `{slug}`")
+        out.servers[slug] = table
+        out.server_names[name] = slug
 
 
 def read(path: Path) -> Imported:

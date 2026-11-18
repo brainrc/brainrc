@@ -30,9 +30,15 @@
       "status": "in_review",
       "slug": "159-new-skill",
       "branch": "claude/project-thread-qe7dlt",
-      "pr": null,
+      "pr": 386,
       "base": "main",
-      "merged": false
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 10,
+        "fixed": 10,
+        "on": "the whole PR"
+      }
     },
     {
       "ref": "gh:160",
@@ -48,9 +54,15 @@
       "status": "in_review",
       "slug": "160-new-agent",
       "branch": "claude/project-thread-qe7dlt",
-      "pr": null,
+      "pr": 386,
       "base": "main",
-      "merged": false
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 10,
+        "fixed": 10,
+        "on": "the whole PR"
+      }
     },
     {
       "ref": "gh:161",
@@ -66,9 +78,15 @@
       "status": "in_review",
       "slug": "161-new-rule",
       "branch": "claude/project-thread-qe7dlt",
-      "pr": null,
+      "pr": 386,
       "base": "main",
-      "merged": false
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 10,
+        "fixed": 10,
+        "on": "the whole PR"
+      }
     },
     {
       "ref": "gh:162",
@@ -84,9 +102,15 @@
       "status": "in_review",
       "slug": "162-new-command",
       "branch": "claude/project-thread-qe7dlt",
-      "pr": null,
+      "pr": 386,
       "base": "main",
-      "merged": false
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 10,
+        "fixed": 10,
+        "on": "the whole PR"
+      }
     }
   ]
 }

@@ -77,22 +77,27 @@ def plan(sources: list[tuple[str, Path]], name: str = DEFAULT_NAME, prefix: str 
                 taken.add((kind, slug))
         names = {kind: {old: f"{spec.prefix}{renamed[(kind, slug)]}" for old, slug in olds.items()}
                  for kind, olds in one.renames.items()}
-        for item in (*one.skills, *one.agents, *one.commands):
-            item.text = _rewrite(item.text, names, one.namespace)
-        spec.rules += one.rules
-        spec.skills += one.skills
-        spec.agents += one.agents
-        spec.commands += one.commands
-        spec.domains += [{**row, "skills": [f"{spec.prefix}{renamed.get(('skills', s), s)}" for s in row["skills"]]}
-                         for row in one.domains]
+        server_slugs = {}
         for name, table in one.servers.items():
             base = name.removeprefix(spec.prefix) or name
             slug, n = base, 2
             while slug in spec.servers:
                 slug, n = f"{base}-{n}", n + 1
             spec.servers[slug] = table
+            server_slugs[name] = slug
+        servers = {old: f"{spec.prefix}{server_slugs[slug]}" for old, slug in one.server_names.items()}
+        for item in (*one.skills, *one.agents, *one.commands):
+            item.text = _rewrite_tools(_rewrite(item.text, names, one.namespace), servers, one.namespace)
+        for agent in one.agents:
+            agent.tools = _rewrite_tools(agent.tools, servers, one.namespace)
+        spec.rules += one.rules
+        spec.skills += one.skills
+        spec.agents += one.agents
+        spec.commands += one.commands
+        spec.domains += [{**row, "skills": [f"{spec.prefix}{renamed.get(('skills', s), s)}" for s in row["skills"]]}
+                         for row in one.domains]
         for event, groups in one.hooks.items():
-            hooks.setdefault(event, []).extend(groups)
+            hooks.setdefault(event, []).extend(json.loads(_rewrite_tools(json.dumps(groups), servers, one.namespace)))
         for rel, data in one.pack_files.items():
             if rel in spec.files:
                 raise ConfigError(f"two sources both write {rel}; import them one at a time")
@@ -116,6 +121,16 @@ def _rewrite(text: str, names: dict[str, dict[str, str]], namespace: str) -> str
     if namespace and every:
         alts = "|".join(map(re.escape, sorted(every, key=len, reverse=True)))
         text = re.sub(rf"(?<![\w-]){re.escape(namespace)}:({alts})(?![\w-])", lambda m: every[m[1]], text)
+    return text
+
+
+def _rewrite_tools(text: str, servers: dict[str, str], namespace: str) -> str:
+    """text with a source's MCP tool names (`mcp__<server>__x`, and a plugin's own
+    `mcp__plugin_<plugin>_<server>__x`) changed to the server's name in the pack."""
+    for old, new in sorted(servers.items(), key=lambda kv: len(kv[0]), reverse=True):
+        olds = [f"mcp__plugin_{namespace}_{old}__"] if namespace else []
+        for o in [*olds, f"mcp__{old}__"]:
+            text = re.sub(rf"(?<![\w-]){re.escape(o)}", f"mcp__{new}__", text)
     return text
 
 

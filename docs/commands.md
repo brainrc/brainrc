@@ -32,7 +32,7 @@ to install. It writes `harnesses.local.toml`, `packs.local.toml` and `brainrc.lo
 ## brainrc import
 
 Turn instruction files you already have into a pack: one rule per section, in order
-([packs](packs.md#import)).
+([packs](packs/import.md)).
 
 ```bash
 brainrc import ~/.claude/CLAUDE.md --name mine --enable
@@ -53,7 +53,7 @@ brainrc import ~/.claude/CLAUDE.md --name mine --enable
 
 Start a pack of your own that validates on its first run: `pack.toml`, a README, an `AGENTS.md`
 for whoever edits it, a first rule, a facts skill, tripwires, tests, a CI workflow, a pre-commit
-config and a `.gitignore` ([packs](packs.md#start-a-pack)). In a terminal it asks for what you
+config and a `.gitignore` ([packs](packs.md#what-new-pack-writes)). In a terminal it asks for what you
 don't give it; otherwise it takes the defaults. Then it checks the pack as `validate --pack` does.
 
 ```bash
@@ -159,7 +159,7 @@ one. Changes nothing. No options.
 
 Check every source: frontmatter, links and references, pack names, collisions, `requires_core`,
 token budgets and tripwires. CI runs it on brainrc itself; pack authors run it with `--pack`
-([packs](packs.md#validate-a-pack-in-its-own-ci)).
+([packs](packs/validate-in-ci.md)).
 
 | Option | Does |
 |---|---|

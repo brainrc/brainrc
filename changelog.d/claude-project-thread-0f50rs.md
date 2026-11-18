@@ -10,3 +10,8 @@ bump: patch
   the tutorial's first three pack steps are now this one command (#150).
 - `brainrc import` and `brainrc new pack` check every naming rule (reserved, vendor and look-alike
   names too) before they write a pack, not only in the `validate` that follows.
+- The pack docs are split by what you came for: the tutorial, how-to guides (use, import, validate
+  in CI, and start an employer, team, personal or stack pack, or one from a Claude Code plugin),
+  the reference in `docs/packs.md`, whose key tables are generated from the JSON Schemas, and an
+  explanation of why packs exist and what you trust when you turn one on. Each page states its
+  type, and a test keeps the tables, the types and the nav in step (#152).

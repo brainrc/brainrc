@@ -1,3 +1,4 @@
+<!-- divio: tutorial -->
 # Your first pack
 
 In this tutorial you build a pack called `myteam` with one skill for Protocol Buffers, install it
@@ -38,7 +39,7 @@ You should see `OK:` with `(packs: gatework, myteam)` at the end: brainrc, the d
 fetched in step 1, and yours. The pack's `pack.toml` sets its `prefix`, `myteam-`, which keeps
 your item names apart from everyone else's, and `requires_core`, the brainrc versions it works
 with. The pack also has a facts skill, `myteam-facts`, a rule that points at it, tripwires, tests
-and a CI workflow ([what each file is for](packs.md#start-a-pack)).
+and a CI workflow ([what each file is for](packs.md#what-new-pack-writes)).
 
 ## 3. Add a domain skill
 
@@ -127,7 +128,7 @@ git -c user.name=you -c user.email=you@example.com commit -qm "Add myteam pack"
 
 Push it, and the CI workflow `new pack` wrote (`.github/workflows/validate.yml`) checks the pack
 on every push with the `validate-pack` action, against the brainrc version it pins
-([Validate a pack in its own CI](packs.md#validate-a-pack-in-its-own-ci)). Move that pin, and
+([Validate a pack in its own CI](packs/validate-in-ci.md)). Move that pin, and
 `requires_core`, when you test against a newer brainrc.
 
 ## Next steps

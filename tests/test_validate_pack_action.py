@@ -70,7 +70,7 @@ class PreCommitHookTest(unittest.TestCase):
 
 class DocsTest(unittest.TestCase):
     def test_docs_and_the_acme_example_show_both(self):
-        docs = text(ROOT / "docs/packs.md")
+        docs = text(ROOT / "docs/packs/validate-in-ci.md")
         readme = text(ROOT / "examples/pack-acme/README.md")
         self.assertTrue("uses: brainrc/brainrc/.github/actions/validate-pack@" in docs)
         self.assertTrue("id: brainrc-validate-pack" in docs)

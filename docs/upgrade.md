@@ -75,7 +75,8 @@ Gatework's engine was called spec-agent before brainrc 0.7. Its skills and agent
 | `analyst`, `verifier` and the other agents | `brainrc-analyst`, `brainrc-verifier`, ... |
 | `[extensions]`, `[extensions.spec-agent]` in `pack.toml` | `[extensions.gatework]` |
 
-The old names in this table are still installed as deprecated aliases, so you may see both in
-your tools; `validate` warns when a pack uses one. Use the new names. The older `/work`,
-`/review`, `/plan`, `aws` and `terraform` were removed in 0.6.0: use `/brainrc-work`,
-`/brainrc-review`, `/brainrc-plan`, `brainrc-aws` and `brainrc-terraform`.
+Gatework 0.8.0 no longer installs the old names in this table: the next `brainrc apply` removes
+their links. A pack that still names one in `[extensions.gatework]` works with a warning until
+Gatework 0.9.0. Use the new names. The older `/work`, `/review`, `/plan`, `aws` and `terraform`
+were removed in 0.6.0: use `/brainrc-work`, `/brainrc-review`, `/brainrc-plan`, `brainrc-aws`
+and `brainrc-terraform`.

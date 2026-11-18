@@ -20,7 +20,7 @@ brainrc status              # check: prints "Everything in sync."
 
 ```text
 $ uvx brainrc status
-FETCH     gatework  https://github.com/brainrc/gatework.git (v0.7.2)
+FETCH     gatework  https://github.com/brainrc/gatework.git (v0.8.0)
 CREATE    claude    ~/.claude/CLAUDE.md
 MERGE     claude    ~/.claude/settings.json  (hooks)
 ...

@@ -37,7 +37,7 @@ class SecretsTest(unittest.TestCase):
         for path in text_files():
             for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
                 if SECRET.search(line):  # named, never printed
-                    self.fail(f"{path.relative_to(PACK)}:{n} looks like a secret")
+                    self.fail(f"{path.relative_to(PACK).as_posix()}:{n} looks like a secret")
 
 
 if __name__ == "__main__":

@@ -17,3 +17,7 @@ bump: patch
 - `brainrc import` reads Windsurf rules: `.windsurfrules`, `global_rules.md` and
   `.windsurf/rules/`. `always_on` rules become rules; `glob`, `model_decision` and `manual` rules
   become skills, a glob rule with a Domains row (#166).
+- `brainrc import` turns a Claude Code plugin into a pack: its skills with every file in them,
+  agents and commands get the pack's prefix (and references to their old names are rewritten),
+  its hooks become a Claude settings fragment with their scripts, and `.mcp.json` becomes
+  `mcp/servers.toml` with variable names only. What it can't move is named in a warning (#167).

@@ -6,6 +6,7 @@ importers in the order the sources were given and joins what they return into on
 """
 from __future__ import annotations
 
+import json
 import re
 import tomllib
 from dataclasses import dataclass, field
@@ -14,11 +15,13 @@ from pathlib import Path
 from .. import config
 from ..config import ConfigError, config_path, expand, table_span, tilde, write_text_atomic
 from ..scaffold import PackSpec, render_pack, write_pack
-from . import copilot, cursor, instructions, windsurf
+from . import copilot, cursor, instructions, plugin, windsurf
 
 # Format name -> importer module, in the order discover() lists what it finds.
-FORMATS = {"instructions": instructions, "cursor": cursor, "copilot": copilot, "windsurf": windsurf}
+FORMATS = {"instructions": instructions, "cursor": cursor, "copilot": copilot, "windsurf": windsurf,
+           "plugin": plugin}
 DEFAULT_NAME = "imported"
+HOOKS_FRAGMENT = "overrides/claude/settings.fragment.json"
 
 
 def detect(path: Path) -> str | None:
@@ -52,6 +55,7 @@ def plan(sources: list[tuple[str, Path]], name: str = DEFAULT_NAME, prefix: str 
     warnings: list[str] = []
     got = [FORMATS[fmt].read(path) for fmt, path in sources]
     used, taken, kept_reads = [], set(), set()
+    hooks: dict[str, list] = {}
     for i, ((fmt, path), one) in enumerate(zip(sources, got)):
         me = path.resolve()
         # A file another source inlines (CLAUDE.md's `@AGENTS.md`) comes in there, whatever the order.
@@ -63,20 +67,56 @@ def plan(sources: list[tuple[str, Path]], name: str = DEFAULT_NAME, prefix: str 
         kept_reads |= one.read
         used.append((fmt, path))
         renamed = {}
-        for skill in one.skills:  # two sources with a skill of the same name: number the later one
-            slug, n = skill.slug, 2
-            while slug in taken:
-                slug, n = f"{skill.slug}-{n}", n + 1
-            renamed[skill.slug], skill.slug = slug, slug
-            taken.add(slug)
+        for kind, found in (("skills", one.skills), ("agents", one.agents), ("commands", one.commands)):
+            for item in found:  # two sources with an item of the same name: number the later one
+                base = item.slug.removeprefix(spec.prefix) or item.slug  # `acme-x` is `x` in acme
+                slug, n = base, 2
+                while (kind, slug) in taken:
+                    slug, n = f"{base}-{n}", n + 1
+                renamed[(kind, item.slug)], item.slug = slug, slug
+                taken.add((kind, slug))
+        names = {kind: {old: f"{spec.prefix}{renamed[(kind, slug)]}" for old, slug in olds.items()}
+                 for kind, olds in one.renames.items()}
+        for item in (*one.skills, *one.agents, *one.commands):
+            item.text = _rewrite(item.text, names, one.namespace)
         spec.rules += one.rules
         spec.skills += one.skills
-        spec.domains += [{**row, "skills": [f"{spec.prefix}{renamed.get(s, s)}" for s in row["skills"]]}
+        spec.agents += one.agents
+        spec.commands += one.commands
+        spec.domains += [{**row, "skills": [f"{spec.prefix}{renamed.get(('skills', s), s)}" for s in row["skills"]]}
                          for row in one.domains]
+        for name, table in one.servers.items():
+            base = name.removeprefix(spec.prefix) or name
+            slug, n = base, 2
+            while slug in spec.servers:
+                slug, n = f"{base}-{n}", n + 1
+            spec.servers[slug] = table
+        for event, groups in one.hooks.items():
+            hooks.setdefault(event, []).extend(groups)
+        for rel, data in one.pack_files.items():
+            if rel in spec.files:
+                raise ConfigError(f"two sources both write {rel}; import them one at a time")
+            spec.files[rel] = data
         warnings += one.warnings
+    if hooks:
+        spec.files[HOOKS_FRAGMENT] = json.dumps({"hooks": hooks}, indent=2) + "\n"
     spec.description = "Imported by brainrc import from " + ", ".join(
         f"{p.parent.name}/{p.name}" if p.is_dir() else p.name for _, p in used)
     return Plan(spec, render_pack(spec), used, warnings)
+
+
+def _rewrite(text: str, names: dict[str, dict[str, str]], namespace: str) -> str:
+    """text with a source's own names for its skills and agents changed to the pack's: in
+    `[agent: x]` tags, "`x` skill", and a plugin's `namespace:x` (Claude Code's `/plugin:skill`)."""
+    for old, new in names.get("agents", {}).items():
+        text = re.sub(rf"\[agent:\s*{re.escape(old)}\]", f"[agent: {new}]", text)
+    for old, new in names.get("skills", {}).items():
+        text = text.replace(f"`{old}` skill", f"`{new}` skill")
+    every = {old: new for olds in names.values() for old, new in olds.items()}
+    if namespace and every:
+        alts = "|".join(map(re.escape, sorted(every, key=len, reverse=True)))
+        text = re.sub(rf"(?<![\w-]){re.escape(namespace)}:({alts})(?![\w-])", lambda m: every[m[1]], text)
+    return text
 
 
 def resolve(paths: list[str], fmt: str | None = None) -> list[tuple[str, Path]]:
@@ -108,8 +148,13 @@ def summary(spec: PackSpec, files: dict[str, str]) -> str:
     from ..tokens import estimate_tokens
     always = sum(estimate_tokens(t) for rel, t in files.items() if rel.startswith("rules/"))
     always += sum(estimate_tokens(s.description) for s in spec.skills)
-    return (f"{len(files)} files: {len(spec.rules)} rules, {len(spec.skills)} skills, "
-            f"~{always} always-loaded tokens")
+    always += sum(estimate_tokens(i.description) for i in (*spec.agents, *spec.commands))
+    parts = [f"{len(spec.rules)} rules", f"{len(spec.skills)} skills"]
+    parts += [f"{len(found)} {kind}" for kind, found in (("agents", spec.agents), ("commands", spec.commands),
+                                                         ("MCP servers", spec.servers)) if found]
+    if HOOKS_FRAGMENT in spec.files:
+        parts.append("hooks")
+    return f"{len(files)} files: {', '.join(parts)}, ~{always} always-loaded tokens"
 
 
 def set_pack_path(text: str, name: str, path: str) -> str:
@@ -162,7 +207,8 @@ def cmd_import(paths: list[str], to: str | None = None, name: str = DEFAULT_NAME
     try:
         sources = resolve(paths, fmt)
         p = plan(sources, name, prefix)
-        if not p.spec.rules and not p.spec.skills:
+        if not (p.spec.rules or p.spec.skills or p.spec.agents or p.spec.commands or p.spec.servers
+                or p.spec.files):
             raise ConfigError("nothing to import: " + "; ".join(p.warnings or ["the sources are empty"]))
         dest = expand(to) if to else default_dest(name)
         dest = dest if dest.is_absolute() else Path.cwd() / dest

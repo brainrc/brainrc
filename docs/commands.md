@@ -28,13 +28,14 @@ to install. It writes `harnesses.local.toml`, `packs.local.toml` and `brainrc.lo
 | `--no-adopt` | leave your instruction files where they are |
 | `--profile minimal\|recommended\|full` | set the profile ([configuration](configuration.md#brainrclocaltoml)) |
 | `--starter minimal\|app\|infra` | set a starter profile instead: rules only; no infrastructure skills; everything |
-| `--import` | import this folder's CLAUDE.md, AGENTS.md, Cursor, Copilot and Windsurf files into the pack `imported` without asking |
+| `--import` | import this folder's CLAUDE.md, AGENTS.md, Cursor, Copilot and Windsurf files and Claude Code plugin into the pack `imported` without asking |
 | `--dry-run` | print what `init` would do, write nothing |
 
 ## brainrc import
 
-Turn instruction files you already have into a pack: one rule per section, in order
-([packs](packs/import.md)).
+Turn instruction files you already have, or a Claude Code plugin, into a pack: one rule per
+section, in order ([packs](packs/import.md)). `--format` takes `instructions`, `cursor`,
+`copilot`, `windsurf` or `plugin`.
 
 ```bash
 brainrc import ~/.claude/CLAUDE.md --name mine --enable
@@ -45,7 +46,7 @@ brainrc import ~/.claude/CLAUDE.md --name mine --enable
 | `PATH ...` | files or folders to import, in order |
 | `--to DIR` | where to write the pack (default `$BRAINRC_HOME/imported/<name>`) |
 | `--name NAME` | the pack's name (default `imported`) |
-| `--prefix PREFIX` | the prefix for its skills (default `<name>-`) |
+| `--prefix PREFIX` | the prefix for its skills, agents, commands and MCP servers (default `<name>-`) |
 | `--format FORMAT` | read every PATH as this format, whatever its name |
 | `--force` | replace an earlier pack in that folder |
 | `--enable` | add the pack to `packs.local.toml` |

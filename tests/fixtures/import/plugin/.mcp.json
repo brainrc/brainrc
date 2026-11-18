@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "tracker": {
+      "command": "npx",
+      "args": ["-y", "@example/tracker-mcp"],
+      "env": {"TRACKER_TOKEN": "${TRACKER_TOKEN}", "LOG_LEVEL": "debug"}
+    },
+    "docs": {"type": "http", "url": "https://docs.example.com/mcp"},
+    "local": {"command": "${CLAUDE_PLUGIN_ROOT}/bin/server"}
+  }
+}

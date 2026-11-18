@@ -527,19 +527,22 @@ def _parser() -> argparse.ArgumentParser:
                        "rules only; app is recommended without the infrastructure domain skills; infra "
                        "is full")
     p.add_argument("--import", dest="import_files", action="store_true",
-                   help="import the CLAUDE.md, AGENTS.md, Cursor, Copilot and Windsurf files in this folder into "
-                   "the pack `imported` without asking (init asks when it asks questions)")
+                   help="import the CLAUDE.md, AGENTS.md, Cursor, Copilot and Windsurf files and the Claude "
+                   "Code plugin in this folder into the pack `imported` without asking (init asks when it "
+                   "asks questions)")
     p.add_argument("--dry-run", action="store_true", help="print what init would do, write nothing")
     p = add("import", "turn CLAUDE.md, AGENTS.md and other tools' instruction files into a pack",
             "Read instruction files other tools load and write them as a pack: one rule per "
             "section, in order, each with a comment naming the file and lines it came from. A "
             "folder means the files in it brainrc can read. The pack goes to "
             "$BRAINRC_HOME/imported/<name> unless --to names a folder, and is checked as "
-            "`validate --pack` would. --enable adds it to packs.local.toml.")
+            "`validate --pack` would. A Claude Code plugin's skills, agents, commands, hooks and MCP "
+            "servers move over with the pack's prefix. --enable adds it to packs.local.toml.")
     p.add_argument("paths", nargs="+", metavar="PATH", help="files or folders to import, in order")
     p.add_argument("--to", metavar="DIR", help="where to write the pack (default: $BRAINRC_HOME/imported/<name>)")
     p.add_argument("--name", default="imported", help="the pack's name (default: imported)")
-    p.add_argument("--prefix", default="", help="the prefix for its skills (default: <name>-)")
+    p.add_argument("--prefix", default="",
+                   help="the prefix for its skills, agents, commands and MCP servers (default: <name>-)")
     p.add_argument("--format", dest="fmt", choices=sorted(IMPORT_FORMATS),
                    help="read every PATH as this format, whatever its name")
     p.add_argument("--force", action="store_true", help="replace the folder if it already has files")

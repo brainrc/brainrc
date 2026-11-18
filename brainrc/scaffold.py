@@ -1,4 +1,5 @@
-"""Write a pack's layout: pack.toml, rules/NN-*.md, skills/<prefix>*/SKILL.md, and an item in one.
+"""Write a pack's layout: pack.toml, rules/NN-*.md, skills/<prefix>*/SKILL.md, agents, commands,
+MCP servers and any other file.
 
 One small writer for everything that creates a pack or an item in one: the importers
 (`brainrc import`, #163), `brainrc init`'s import offer, `brainrc new pack` (#150,
@@ -33,6 +34,7 @@ class Skill:
     text: str        # SKILL.md's body
     provenance: str = ""
     extra: list[str] = field(default_factory=list)  # other frontmatter lines, as written
+    files: dict[str, str | bytes] = field(default_factory=dict)  # its other files, by path in its folder
 
 
 @dataclass
@@ -63,12 +65,15 @@ class PackSpec:
     requires_core: str = ""   # default: this core's minor series
     rules: list[Rule] = field(default_factory=list)
     skills: list[Skill] = field(default_factory=list)
+    agents: list[Agent] = field(default_factory=list)
+    commands: list[Command] = field(default_factory=list)
+    servers: dict[str, dict] = field(default_factory=dict)  # mcp/servers.toml, by name after the prefix
     domains: list[dict] = field(default_factory=list)  # [[extensions.gatework.domains]] rows
     id: str = ""              # <owner>/<pack>, when it is published under one
     max_always_tokens: int = 0
     test: str = ""            # the pack's own tests, which validate --pack runs
     ticket: dict = field(default_factory=dict)  # [extensions.gatework.ticket]: strings and lists of strings
-    files: dict[str, str] = field(default_factory=dict)  # any other file, path -> text, written last
+    files: dict[str, str | bytes] = field(default_factory=dict)  # any other file, path -> content, written last
     notes: dict[str, str] = field(default_factory=dict)  # pack.toml key -> a comment at the end of its line
 
     def __post_init__(self) -> None:
@@ -155,6 +160,17 @@ def render_rule(r: Rule, frontmatter: bool = False) -> str:
     return f"{head}{_comment(r.provenance)}{r.text.strip()}\n"
 
 
+def servers_text(servers: dict[str, dict]) -> str:
+    """mcp/servers.toml for these servers (docs/formats.md#mcp-servers-mcpserverstoml)."""
+    def value(v) -> str:
+        return "[" + ", ".join(map(_toml_string, v)) + "]" if isinstance(v, list) else _toml_string(v)
+    tables = []
+    for name, table in servers.items():
+        key = name if re.fullmatch(r"[A-Za-z0-9_-]+", name) else _toml_string(name)
+        tables.append("\n".join([f"[servers.{key}]", *(f"{k} = {value(v)}" for k, v in table.items())]))
+    return "\n\n".join(tables) + "\n"
+
+
 def _unique(prefix: str, slug: str, seen: set[str]) -> str:
     """prefix + slug, numbered -2, -3... when an item of that kind already has the name: two
     sources with the same name keep both."""
@@ -165,10 +181,10 @@ def _unique(prefix: str, slug: str, seen: set[str]) -> str:
     return name
 
 
-def render_pack(spec: PackSpec) -> dict[str, str]:
+def render_pack(spec: PackSpec) -> dict[str, str | bytes]:
     """The pack's files, path -> text, in the order they are written."""
     check_name(spec.name, spec.prefix, spec.id)
-    files: dict[str, str] = {}
+    files: dict[str, str | bytes] = {}
 
     def key(name: str, value: str) -> str:
         note = spec.notes.get(name)
@@ -198,6 +214,18 @@ def render_pack(spec: PackSpec) -> dict[str, str]:
     for s in spec.skills:
         name = _unique(spec.prefix, s.slug, seen)
         files[f"skills/{name}/SKILL.md"] = skill_text(name, s)
+        for rel, data in s.files.items():
+            files[f"skills/{name}/{rel}"] = data
+    seen = set()
+    for a in spec.agents:
+        name = _unique(spec.prefix, a.slug, seen)
+        files[f"agents/{name}.md"] = agent_text(name, a)
+    seen = set()
+    for c in spec.commands:
+        files[f"commands/{_unique(spec.prefix, c.slug, seen)}.md"] = command_text(c)
+    if spec.servers:
+        seen = set()
+        files["mcp/servers.toml"] = servers_text({_unique(spec.prefix, n, seen): t for n, t in spec.servers.items()})
     for rel, text in spec.files.items():
         if rel in files:
             raise ConfigError(f"{rel} is written twice")
@@ -205,7 +233,7 @@ def render_pack(spec: PackSpec) -> dict[str, str]:
     return files
 
 
-def check_dest(dest: Path, files: dict[str, str], force: bool = False, sources: list[Path] = ()) -> None:
+def check_dest(dest: Path, files: dict[str, str | bytes], force: bool = False, sources: list[Path] = ()) -> None:
     """Raise ConfigError if write_pack would refuse dest: so a caller can check before it asks."""
     if dest.is_symlink() or (dest.exists() and not dest.is_dir()):
         raise ConfigError(f"{tilde(dest)} is a link or a file, not a folder")
@@ -228,7 +256,18 @@ def _check_paths(dest: Path, files: dict) -> None:
             raise ConfigError(f"refusing to write {rel} outside {tilde(dest)}")
 
 
-def write_pack(dest: Path, files: dict[str, str], force: bool = False, sources: list[Path] = ()) -> list[Path]:
+def _write(path: Path, data: str | bytes) -> None:
+    """One file: text as UTF-8, bytes as they are. A file that starts with `#!` is a script (a
+    hook, a skill's helper), so it is made executable, as it was where it came from."""
+    if isinstance(data, bytes):
+        path.write_bytes(data)
+    else:
+        path.write_text(data, encoding="utf-8")
+    if (data[:2] == b"#!" if isinstance(data, bytes) else data.startswith("#!")):
+        path.chmod(path.stat().st_mode | 0o111)
+
+
+def write_pack(dest: Path, files: dict[str, str | bytes], force: bool = False, sources: list[Path] = ()) -> list[Path]:
     """Write files under dest: into a temporary folder beside it, then moved into place. dest must
     not exist, or be empty but for `.git`. With force it may also be an earlier pack (it has a
     pack.toml), which is replaced, but never a folder that holds one of the sources or is a link.
@@ -239,10 +278,10 @@ def write_pack(dest: Path, files: dict[str, str], force: bool = False, sources: 
     git = dest / ".git"
     old = None
     try:
-        for rel, text in files.items():
+        for rel, data in files.items():
             path = tmp / rel
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(text, encoding="utf-8")
+            _write(path, data)
         if git.exists() and not git.is_symlink():
             os.replace(git, tmp / ".git")
         if dest.exists():  # moved aside first, so a failure leaves the earlier pack whole

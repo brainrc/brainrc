@@ -1,0 +1,6 @@
+# Check the pack before each commit, against the same brainrc core as CI: `pre-commit install`.
+repos:
+  - repo: https://github.com/brainrc/brainrc
+    rev: v0.8.27
+    hooks:
+      - id: brainrc-validate-pack

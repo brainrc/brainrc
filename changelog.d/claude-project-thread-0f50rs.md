@@ -15,3 +15,6 @@ bump: patch
   the reference in `docs/packs.md`, whose key tables are generated from the JSON Schemas, and an
   explanation of why packs exist and what you trust when you turn one on. Each page states its
   type, and a test keeps the tables, the types and the nav in step (#152).
+- `examples/pack-template` is `new pack`'s output for a pack called `mypack`, with steps for
+  renaming it: the contents for a GitHub template repository. `scripts/pack_template.py` keeps it
+  in step with `new pack`, and CI validates it with the validate-pack action (#151).

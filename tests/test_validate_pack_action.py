@@ -50,10 +50,10 @@ class ActionTest(unittest.TestCase):
         self.assertIn(f"uses: {uses[0][0]} # {uses[0][1]}", text(WORKFLOW))
         self.assertRegex(uses[0][0], r"@[0-9a-f]{40}$")
 
-    def test_cores_ci_checks_both_example_packs_with_it(self):
+    def test_cores_ci_checks_the_example_packs_and_the_template_with_it(self):
         workflow = text(WORKFLOW)
-        self.assertEqual(workflow.count("uses: ./.github/actions/validate-pack"), 2)
-        for pack in ("examples/pack-acme", "examples/pack-homelab"):
+        self.assertEqual(workflow.count("uses: ./.github/actions/validate-pack"), 3)
+        for pack in ("examples/pack-acme", "examples/pack-homelab", "examples/pack-template"):
             self.assertIn(f"path: {pack}", workflow)
 
 

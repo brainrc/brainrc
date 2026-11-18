@@ -56,6 +56,10 @@ jobs:
         with:
           path: examples/pack-homelab
           default-packs: "false"
+      - name: Validate the pack template (the brainrc/pack-template repository's contents)
+        uses: ./.github/actions/validate-pack
+        with:
+          path: examples/pack-template
       - run: python3 -m unittest discover -s tests -v
       - name: Install brainrc as a package and smoke-test the installed wheel
         run: |

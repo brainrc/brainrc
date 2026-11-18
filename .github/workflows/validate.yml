@@ -56,6 +56,10 @@ jobs:
         with:
           path: examples/pack-homelab
           default-packs: "false"
+      - name: Validate the pack template (the brainrc/pack-template repository's contents)
+        uses: ./.github/actions/validate-pack
+        with:
+          path: examples/pack-template
       - run: python3 -m unittest discover -s tests -v
       - name: Install brainrc as a package and smoke-test the installed wheel
         run: |
@@ -68,7 +72,7 @@ jobs:
           python3 -m pip install build==1.6.1 hatchling==1.33.0
           python3 -m build --no-isolation --outdir "$RUNNER_TEMP/dist"
           python3 scripts/check_dist.py "$RUNNER_TEMP/dist"
-      - name: Run the tutorial's steps 1-5
+      - name: Run the tutorial's steps 1-4
         run: python3 scripts/check_tutorial.py
       # The quickstart runs as written (`uvx brainrc status`, `uv tool install brainrc`, ...), with uv
       # and pip resolving brainrc to a wheel of this checkout, offline, instead of PyPI.

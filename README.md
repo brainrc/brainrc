@@ -61,7 +61,7 @@ and you approve three times: the spec, the plan, and the push.
 
 It works best in Claude Code, where each role gets a fresh context and the guard hooks are
 enforced. Elsewhere it is best effort ([details](docs/gatework.md#harness-support)). Don't want
-it? Turn it off and brainrc installs only its rules and guard hooks ([packs](docs/packs.md#default-packs)).
+it? Turn it off and brainrc installs only its rules and guard hooks ([packs](docs/packs/use-a-pack.md#turn-the-default-pack-off-or-pin-it)).
 
 ## Why not …
 

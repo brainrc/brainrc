@@ -386,7 +386,7 @@ def cmd_init(yes: bool = False, harnesses: list[str] | None = None, adopt: bool 
         if not dry_run and (why := _write_import(imported, import_dest)):
             print(f"ERROR {why}\nNothing else was written.")
             return 1
-        print(f"{verb} {tilde(import_dest)}: {importers.summary(imported)}, from "
+        print(f"{verb} {tilde(import_dest)}: {importers.summary(imported.spec, imported.files)}, from "
               + ", ".join(tilde(p) for _, p in imported.sources) + ".")
     if after == before:
         print(f"brainrc manages {', '.join(chosen) or 'no harness'}; {tilde(local)} needs no change.")

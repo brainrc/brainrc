@@ -75,6 +75,13 @@ def checks(work: str, env: dict[str, str], scripts: dict[str, str]) -> None:
     report("AC9 brainrc validate --pack runs a pack's tests from the installed package",
            r.returncode == 0, f"exit {r.returncode}\n{r.stdout[-800:]}{r.stderr[-500:]}")
 
+    # `new pack` writes its files from the templates the wheel carries (brainrc/_templates).
+    r = sh("brainrc", "new", "pack", "smoke", "--yes")
+    made = Path(work) / "smoke"
+    report("AC10 brainrc new pack writes a pack from the installed templates, and it validates",
+           r.returncode == 0 and (made / ".github/workflows/validate.yml").is_file(),
+           f"exit {r.returncode}\n{r.stdout[-800:]}{r.stderr[-500:]}")
+
     new = sh("brainrc", "status")
     report("AC3 brainrc status",
            new.returncode == 0 and bool(new.stdout.strip()) and not new.stderr.strip(),

@@ -11,10 +11,16 @@ PAGE = REPO / "docs/commands.md"
 
 
 def visible_commands() -> dict[str, argparse.ArgumentParser]:
+    """Each visible command by name; a command with kinds of its own (`new pack`) as one per kind."""
     parser = cli._parser()
     sub = next(a for a in parser._actions if isinstance(a, argparse._SubParsersAction))
     shown = {a.dest for a in sub._choices_actions if a.help != argparse.SUPPRESS}
-    return {name: p for name, p in sub.choices.items() if name in shown}
+    found = {}
+    for name, p in sub.choices.items():
+        kinds = next((a for a in p._actions if isinstance(a, argparse._SubParsersAction)), None)
+        if name in shown:
+            found.update({f"{name} {kind}": kp for kind, kp in kinds.choices.items()} if kinds else {name: p})
+    return found
 
 
 def section(text: str, name: str) -> str | None:
@@ -41,7 +47,7 @@ class CommandsDocTest(unittest.TestCase):
                                       f"{name}: argument {action.metavar or action.dest} is not documented")
 
     def test_no_section_for_a_command_that_does_not_exist(self):
-        documented = set(re.findall(r"(?m)^## brainrc ([a-z-]+)$", self.text))
+        documented = set(re.findall(r"(?m)^## brainrc ([a-z -]+)$", self.text))
         self.assertEqual(documented - set(visible_commands()), set())
 
     def test_top_level_options(self):

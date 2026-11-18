@@ -52,9 +52,19 @@ nav:
       - Install: install.md
       - Getting started: getting-started.md
       - Concepts: concepts.md
-  - Guides:
-      - Packs: packs.md
+  - Packs:
       - Your first pack: tutorial.md
+      - Use a pack: packs/use-a-pack.md
+      - Import your instructions: packs/import.md
+      - Start an employer pack: packs/employer-pack.md
+      - Share a team pack: packs/team-pack.md
+      - Keep a personal pack: packs/personal-pack.md
+      - Publish a stack pack: packs/stack-pack.md
+      - Turn a plugin into a pack: packs/from-a-plugin.md
+      - Validate a pack in CI: packs/validate-in-ci.md
+      - Packs reference: packs.md
+      - Why packs: packs/why-packs.md
+  - Guides:
       - Team setup: project.md
       - MCP servers: mcp.md
       - Guardrails: guardrails.md

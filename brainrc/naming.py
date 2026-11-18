@@ -44,27 +44,30 @@ def _reserved(value: str) -> bool:
 
 
 def check_pack_names(src: Source) -> list[str]:
-    where = f"{src.name}:pack.toml"
-    stem = src.prefix[:-1] if src.prefix.endswith("-") else src.prefix
+    return name_errors(src.name, src.prefix, src.meta.get("id"), f"{src.name}:pack.toml") + _item_names(src)
+
+
+def name_errors(name: str, prefix: str, pack_id: object = None, where: str = "pack.toml") -> list[str]:
+    """Rules 1 to 6 for a pack's own name, prefix and ID: what validate checks in pack.toml, and what
+    `brainrc new pack` and `brainrc import` check before they write one."""
+    stem = prefix[:-1] if prefix.endswith("-") else prefix
     errors = []
-    if not NAME.fullmatch(src.name):
-        errors.append(f"{where}: `name` must be ASCII lowercase letters, digits and hyphens")
-    if not src.prefix.endswith("-") or not NAME.fullmatch(stem):
-        errors.append(f"{where}: `prefix` must be ASCII lowercase letters, digits and hyphens, ending with '-'")
+    if not NAME.fullmatch(name):
+        errors.append(f"{where}: `name` `{name}` must be ASCII lowercase letters, digits and hyphens")
+    if not prefix.endswith("-") or not NAME.fullmatch(stem):
+        errors.append(f"{where}: `prefix` `{prefix}` must be ASCII lowercase letters, digits and hyphens, ending with '-'")
     elif not PREFIX_MIN <= len(stem) <= PREFIX_MAX:
-        errors.append(f"{where}: `prefix` `{src.prefix}` must be {PREFIX_MIN} to {PREFIX_MAX} characters "
+        errors.append(f"{where}: `prefix` `{prefix}` must be {PREFIX_MIN} to {PREFIX_MAX} characters "
                       "before its '-'")
-    pack_id = src.meta.get("id")
     if pack_id is not None and not (isinstance(pack_id, str) and PACK_ID.fullmatch(pack_id)):
-        errors.append(f"{where}: `id` must be `<owner>/<pack>` in ASCII lowercase letters, digits and hyphens")
+        errors.append(f"{where}: `id` `{pack_id}` must be `<owner>/<pack>` in ASCII lowercase letters, digits and hyphens")
         pack_id = None
     owner = pack_id.split("/")[0] if pack_id else ""
-    if owner and not src.prefix.startswith(f"{owner}-"):
-        errors.append(f"{where}: `prefix` `{src.prefix}` must start with the owner handle `{owner}-` from `id`")
-    official = pack_id in OFFICIAL_PACK_IDS
-    if official:
-        return errors + _item_names(src)
-    fields = [("name", src.name), ("prefix", src.prefix)] + ([("id", pack_id)] if pack_id else [])
+    if owner and not prefix.startswith(f"{owner}-"):
+        errors.append(f"{where}: `prefix` `{prefix}` must start with the owner handle `{owner}-` from `id`")
+    if pack_id in OFFICIAL_PACK_IDS:
+        return errors
+    fields = [("name", name), ("prefix", prefix)] + ([("id", pack_id)] if pack_id else [])
     vendors = VENDOR_NAMES - VERIFIED_VENDORS.get(owner, frozenset())
     for key, value in fields:
         if _reserved(value):
@@ -73,12 +76,12 @@ def check_pack_names(src: Source) -> list[str]:
             errors.append(f"{where}: `{key}` `{value}` uses the vendor name `{vendor}`; only that vendor's "
                           "verified packs may")
     # Rule 4: the whole name and its first word, so `brainrx-tools` is caught as well as `brainrx`.
-    looks = {src.name, stem, src.name.split("-")[0], stem.split("-")[0], owner} - {""}
+    looks = {name, stem, name.split("-")[0], stem.split("-")[0], owner} - {""}
     errors += [f"{where}: `{n}` is one or two edits from the official name `{OFFICIAL}`"
                for n in sorted(looks) if 1 <= edits(n, OFFICIAL) <= 2]
     errors += [f"{where}: `id` `{pack_id}` is one or two edits from the official pack `{o}`"
                for o in sorted(OFFICIAL_PACK_IDS) if pack_id and 1 <= edits(pack_id, o) <= 2]
-    return errors + _item_names(src)
+    return errors
 
 
 def _item_names(src: Source) -> list[str]:

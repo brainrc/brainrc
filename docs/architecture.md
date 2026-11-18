@@ -55,7 +55,7 @@ and `frozen` (project scope and the lockfile), `mcp` and `mcp_pins`, `validate`,
 - **Harness**: an AI coding tool brainrc syncs into: Claude Code, Codex, OpenCode, Antigravity CLI, Cursor ([support](capabilities.md)).
 - **Core**: brainrc's own repo. Generic content only, versioned by `VERSION` ([CHANGELOG](../CHANGELOG.md)).
 - **Pack**: a folder or repo layered on core for content that doesn't belong in it ([packs](packs.md)).
-- **Default pack**: a pack core's `packs.toml` turns on: Gatework, which holds its engine, its agents and the domain skills ([packs](packs.md#default-packs)).
+- **Default pack**: a pack core's `packs.toml` turns on: Gatework, which holds its engine, its agents and the domain skills ([packs](packs/use-a-pack.md#turn-the-default-pack-off-or-pin-it)).
 - **Skill**: instructions a tool loads on demand, triggered by its description ([format](formats.md#skills-skillsnameskillmd)).
 - **Domain skill**: a skill for one stack (Terraform, Kubernetes, ...) that Gatework loads only when the ticket touches it ([list](gatework.md#domain-skills)).
 - **Agent**: one role in a Gatework run, such as analyst or verifier ([roles](gatework.md#roles)).

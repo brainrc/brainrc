@@ -8,7 +8,7 @@ between runs on its own, and every step leaves evidence in files.
 
 It is brainrc's default pack, so `brainrc apply` installs it. It lives in its own repo,
 [brainrc/gatework](https://github.com/brainrc/gatework). To leave it out, see
-[packs](packs.md#default-packs).
+[packs](packs/use-a-pack.md#turn-the-default-pack-off-or-pin-it).
 
 > **Best in Claude Code.** Each role gets a fresh context there, and the guard hooks are enforced.
 > OpenCode also runs each role as its own subagent, but all on one model, and its hooks block

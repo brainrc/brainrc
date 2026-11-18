@@ -104,11 +104,11 @@ def resolve(paths: list[str], fmt: str | None = None) -> list[tuple[str, Path]]:
     return list(dict.fromkeys(out))
 
 
-def summary(p: Plan) -> str:
+def summary(spec: PackSpec, files: dict[str, str]) -> str:
     from ..tokens import estimate_tokens
-    always = sum(estimate_tokens(t) for rel, t in p.files.items() if rel.startswith("rules/"))
-    always += sum(estimate_tokens(s.description) for s in p.spec.skills)
-    return (f"{len(p.files)} files: {len(p.spec.rules)} rules, {len(p.spec.skills)} skills, "
+    always = sum(estimate_tokens(t) for rel, t in files.items() if rel.startswith("rules/"))
+    always += sum(estimate_tokens(s.description) for s in spec.skills)
+    return (f"{len(files)} files: {len(spec.rules)} rules, {len(spec.skills)} skills, "
             f"~{always} always-loaded tokens")
 
 
@@ -173,7 +173,7 @@ def cmd_import(paths: list[str], to: str | None = None, name: str = DEFAULT_NAME
         if dry_run:
             for rel in p.files:
                 print(f"  would write {rel}")
-            print(f"Would write {tilde(dest)}: {summary(p)}.")
+            print(f"Would write {tilde(dest)}: {summary(p.spec, p.files)}.")
             if enable_pack:
                 print(enable(name, dest, dry_run=True))
             return 0
@@ -184,11 +184,17 @@ def cmd_import(paths: list[str], to: str | None = None, name: str = DEFAULT_NAME
     except (OSError, UnicodeDecodeError) as e:
         print(f"ERROR {why(e)}")
         return 1
-    print(f"Wrote {tilde(dest)}: {summary(p)}.")
+    print(f"Wrote {tilde(dest)}: {summary(p.spec, p.files)}.")
     from ..validate import cmd_validate
     code = cmd_validate(pack=str(dest))
     if code:
         return code
+    return next_steps(name, dest, enable_pack, " (or import again with --enable)")
+
+
+def next_steps(name: str, dest: Path, enable_pack: bool, again: str = "") -> int:
+    """After a new pack is written and validates: add it to packs.local.toml, or say how to load it,
+    on this machine or (when it's inside the current folder) for this project in brainrc.toml."""
     if enable_pack:
         try:
             print(enable(name, dest))
@@ -196,10 +202,10 @@ def cmd_import(paths: list[str], to: str | None = None, name: str = DEFAULT_NAME
             print(f"ERROR {e}")
             return 1
         print(f"Next: `{config.command('status')}` to see the changes, then `{config.command('apply')}`.")
-    else:
-        print(f"To load it on this machine, add it to packs.local.toml (or import again with --enable):\n\n"
-              f"[{name}]\npath = \"{config_path(dest)}\"")
-        if dest.is_relative_to(Path.cwd()):
-            print(f"\nOr, for this project only, to brainrc.toml:\n\n[packs.{name}]\n"
-                  f"path = \"{dest.relative_to(Path.cwd()).as_posix()}\"")
+        return 0
+    print(f"To load it on this machine, add it to packs.local.toml{again}:\n\n"
+          f"[{name}]\npath = \"{config_path(dest)}\"")
+    if dest.is_relative_to(Path.cwd()):
+        print(f"\nOr, for this project only, to brainrc.toml:\n\n[packs.{name}]\n"
+              f"path = \"{dest.relative_to(Path.cwd()).as_posix()}\"")
     return 0

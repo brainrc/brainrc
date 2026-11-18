@@ -8,7 +8,7 @@ Every `brainrc` command and option. `brainrc --help` lists the commands and
 A test checks this page against the command's own help, so it lists every command and option
 there is.
 
-**Set up**: [init](#brainrc-init) · [import](#brainrc-import) ·
+**Set up**: [init](#brainrc-init) · [import](#brainrc-import) · [new pack](#brainrc-new-pack) ·
 **Install**: [status](#brainrc-status) · [apply](#brainrc-apply) · [update](#brainrc-update) · [install](#brainrc-install) · [uninstall](#brainrc-uninstall) ·
 **Check**: [check](#brainrc-check) · [audit](#brainrc-audit) · [doctor](#brainrc-doctor) · [validate](#brainrc-validate) · [tokens](#brainrc-tokens) ·
 **Other**: [pin-mcp](#brainrc-pin-mcp) · [migrate](#brainrc-migrate)
@@ -32,7 +32,7 @@ to install. It writes `harnesses.local.toml`, `packs.local.toml` and `brainrc.lo
 ## brainrc import
 
 Turn instruction files you already have into a pack: one rule per section, in order
-([packs](packs.md#import)).
+([packs](packs/import.md)).
 
 ```bash
 brainrc import ~/.claude/CLAUDE.md --name mine --enable
@@ -46,6 +46,35 @@ brainrc import ~/.claude/CLAUDE.md --name mine --enable
 | `--prefix PREFIX` | the prefix for its skills (default `<name>-`) |
 | `--format FORMAT` | read every PATH as this format, whatever its name |
 | `--force` | replace an earlier pack in that folder |
+| `--enable` | add the pack to `packs.local.toml` |
+| `--dry-run` | print the files it would write, write nothing |
+
+## brainrc new pack
+
+Start a pack of your own that validates on its first run: `pack.toml`, a README, an `AGENTS.md`
+for whoever edits it, a first rule, a facts skill, tripwires, tests, a CI workflow, a pre-commit
+config and a `.gitignore` ([packs](packs.md#what-new-pack-writes)). In a terminal it asks for what you
+don't give it; otherwise it takes the defaults. A folder that holds only `.git`, such as a fresh
+clone, counts as empty. Then it checks the pack as `validate --pack` does.
+
+```bash
+brainrc new pack acme
+brainrc validate --pack acme
+```
+
+| Option | Does |
+|---|---|
+| `NAME` | the pack's name (asked for in a terminal) |
+| `--to DIR` | where to write it (default `./<name>`) |
+| `--prefix PREFIX` | the prefix for its items (default `<name>-`, or `<owner>-` with `--id`) |
+| `--id OWNER/PACK` | the ID it is published under ([naming](packs.md#naming)) |
+| `--description TEXT` | one line on what the pack is for |
+| `--harness HARNESS` | the tools you'll edit it with: `claude` adds a `CLAUDE.md`, `gemini` a `GEMINI.md`, each pointing at `AGENTS.md` (default: every enabled tool) |
+| `--ticket none\|github\|jira\|local` | the ticket system Gatework uses for the pack's refs (default `none`) |
+| `--refs REF,...` | the ticket refs it handles, such as `ACME-*` (default: from the ticket system) |
+| `--host HOST` | with `--ticket jira`: the Jira site, such as `acme.atlassian.net` |
+| `--yes`, `-y` | ask nothing: take the defaults |
+| `--force` | replace an earlier pack in that folder; its `.git` stays |
 | `--enable` | add the pack to `packs.local.toml` |
 | `--dry-run` | print the files it would write, write nothing |
 
@@ -131,7 +160,7 @@ one. Changes nothing. No options.
 
 Check every source: frontmatter, links and references, pack names, collisions, `requires_core`,
 token budgets and tripwires. CI runs it on brainrc itself; pack authors run it with `--pack`
-([packs](packs.md#validate-a-pack-in-its-own-ci)).
+([packs](packs/validate-in-ci.md)).
 
 | Option | Does |
 |---|---|

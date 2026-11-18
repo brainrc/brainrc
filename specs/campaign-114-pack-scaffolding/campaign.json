@@ -1,0 +1,47 @@
+{
+  "ref": "gh:114",
+  "shape": "ordered",
+  "dependency_source": "brief",
+  "started_at": "2026-11-18T02:30:00Z",
+  "delivery": "sequential",
+  "auto": true,
+  "gates": {
+    "campaign": {
+      "presented_at": "2026-11-18T02:35:00Z",
+      "approved_at": "2026-11-18T02:35:00Z"
+    },
+    "deliver": {
+      "presented_at": "2026-11-18T04:50:00Z",
+      "approved_at": "2026-11-18T04:50:00Z"
+    }
+  },
+  "members": [
+    {
+      "ref": "gh:150",
+      "order": 1,
+      "depends_on": [],
+      "status": "delivered",
+      "slug": "150-new-pack",
+      "branch": "claude/project-thread-0f50rs",
+      "pr": "https://github.com/brainrc/brainrc/pull/385"
+    },
+    {
+      "ref": "gh:152",
+      "order": 2,
+      "depends_on": ["gh:150"],
+      "status": "delivered",
+      "slug": "152-pack-author-docs",
+      "branch": "claude/project-thread-0f50rs",
+      "pr": "https://github.com/brainrc/brainrc/pull/385"
+    },
+    {
+      "ref": "gh:151",
+      "order": 3,
+      "depends_on": ["gh:150"],
+      "status": "delivered",
+      "slug": "151-pack-template",
+      "branch": "claude/project-thread-0f50rs",
+      "pr": "https://github.com/brainrc/brainrc/pull/385"
+    }
+  ]
+}

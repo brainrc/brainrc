@@ -21,7 +21,7 @@ writes anything:
    local rule, which every tool then loads, and moves the original aside as
    `<file>.bak-brainrc-<time>`.
 3. **Whether to install each default pack**, such as Gatework. Your answer goes in
-   `packs.local.toml` ([default packs](packs.md#default-packs)).
+   `packs.local.toml` ([default packs](packs/use-a-pack.md#turn-the-default-pack-off-or-pin-it)).
 4. **How much to install**, as a starter profile:
 
     | Starter | Installs |
@@ -31,7 +31,7 @@ writes anything:
     | `infra` | everything, MCP servers included |
 
 Run in a project folder, `init` also offers to turn that project's `CLAUDE.md`, `AGENTS.md`,
-Cursor rules and Copilot instructions into a pack ([import](packs.md#import)).
+Cursor rules and Copilot instructions into a pack ([import](packs/import.md)).
 
 `init` never runs `apply`. You can skip it: without it, brainrc manages every tool it finds and
 installs everything. `brainrc init --yes` takes those defaults without asking.
@@ -119,6 +119,6 @@ broken links, stale rules, hooks that can't run, a pack that isn't fetched.
 
 ## Next
 
-- Turn Gatework off, or pin it: [packs](packs.md#default-packs).
+- Turn Gatework off, or pin it: [packs](packs/use-a-pack.md#turn-the-default-pack-off-or-pin-it).
 - Give a repo's agents a shared, pinned setup: [team setup](project.md).
 - Every command and option: [commands](commands.md).

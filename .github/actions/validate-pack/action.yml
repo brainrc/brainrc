@@ -6,8 +6,8 @@
 #       path: .            # the pack's directory in your repository
 #
 # The ref you pin is the core the pack is checked against: GitHub checks out this whole repository at
-# that ref to run the action, so there is nothing else to clone. See docs/packs.md (Validate a pack
-# in its own CI).
+# that ref to run the action, so there is nothing else to clone. See
+# docs/packs/validate-in-ci.md.
 name: Validate a brainrc pack
 description: Run `brainrc validate --pack` against a pinned brainrc core and the default packs it pins.
 author: brainrc

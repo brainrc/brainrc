@@ -1,0 +1,8 @@
+# Stale facts and leaks that must not come back. `brainrc validate --pack .` fails on a line that
+# matches `pattern` in a file that matches `paths`, unless `allow` matches the line too.
+
+[[tripwire]]
+id = "home-folder-path"
+pattern = '(?:/Users|/home)/[A-Za-z][\w.-]*/'
+message = "Write ~ instead of a home folder path: this pack runs on other people's machines."
+paths = ["*.md", "*.toml", "*.py", "*.json"]

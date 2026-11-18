@@ -12,6 +12,13 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.8.27 (2026-11-18)
+
+- The default pack is now Gatework v0.8.0, which no longer installs the old spec-agent names
+  (`spec-agent`, `kubernetes`, `analyst` and the rest). The next `apply` removes their links; use
+  the `brainrc-` names. A pack that still names an old one in `[extensions.gatework]` gets a warning
+  until Gatework 0.9.0.
+
 ## 0.8.26 (2026-11-18)
 
 - `status` (and `apply`) now list rendered files that are out of date, such as `instructions.md`

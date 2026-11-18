@@ -30,6 +30,7 @@ from .sources import (
 )
 from .importers import FORMATS as IMPORT_FORMATS, cmd_import
 from .init import cmd_init
+from .newpack import TICKETS, cmd_new_pack
 from .uninstall import cmd_uninstall, finish_purge
 from .opencode import rendered_agents
 from .packs import adopt_record, describe, fetch_pack, git_packs, pinned, to_fetch
@@ -542,6 +543,33 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--force", action="store_true", help="replace the folder if it already has files")
     p.add_argument("--enable", action="store_true", help="add the pack to packs.local.toml")
     p.add_argument("--dry-run", action="store_true", help="print the files it would write, write nothing")
+    p = add("new", "start a new pack, or (later) an item in one", "Write a new pack from brainrc's "
+            "templates. Run `new pack --help` for its options.")
+    kinds = p.add_subparsers(dest="kind", metavar="<kind>", title="kinds", required=True)
+    p = kinds.add_parser("pack", help="write a new pack that validates on its first run",
+                         description="Write a new pack: pack.toml, a README, an AGENTS.md for whoever edits it, "
+                         "a first rule, a facts skill, tripwires, tests, a CI workflow, a pre-commit config "
+                         "and a .gitignore. It asks for the name, prefix, harnesses and ticket system when "
+                         "stdin is a terminal and they aren't given, then checks the pack as "
+                         "`validate --pack` would.")
+    p.add_argument("name", nargs="?", metavar="NAME", help="the pack's name")
+    p.add_argument("--to", metavar="DIR", help="where to write it (default: ./<name>)")
+    p.add_argument("--prefix", default="", help="the prefix for its items (default: <name>-, or <owner>- with --id)")
+    p.add_argument("--id", dest="pack_id", default="", metavar="OWNER/PACK",
+                   help="the <owner>/<pack> ID it is published under")
+    p.add_argument("--description", default="", help="one line on what the pack is for")
+    p.add_argument("--harness", action="append", type=_harness_list, metavar="HARNESS",
+                   help="the harnesses you'll edit it with: claude adds a CLAUDE.md, gemini a GEMINI.md, "
+                   "each pointing at AGENTS.md (default: every enabled harness)")
+    p.add_argument("--ticket", choices=list(TICKETS),
+                   help="the ticket system Gatework uses for its refs (default: none)")
+    p.add_argument("--refs", type=_harness_list, metavar="REF,...",
+                   help="the ticket refs it handles, e.g. ACME-* (default: from the ticket system)")
+    p.add_argument("--host", default="", help="with --ticket jira: the Jira site, e.g. acme.atlassian.net")
+    p.add_argument("--yes", "-y", action="store_true", help="ask nothing: take the defaults")
+    p.add_argument("--force", action="store_true", help="replace an earlier pack in that folder")
+    p.add_argument("--enable", action="store_true", help="add the pack to packs.local.toml")
+    p.add_argument("--dry-run", action="store_true", help="print the files it would write, write nothing")
     repair_help = ("also relink broken links to where an item used to be: after moving the checkout, "
                    "or a package upgrade to a new Python")
     only_help = ("only these harnesses (repeat it, or separate names with commas); the others "
@@ -671,6 +699,12 @@ def _dispatch(argv: list[str]) -> int:
     if cmd == "import":
         return cmd_import(args.paths, to=args.to, name=args.name, prefix=args.prefix, fmt=args.fmt,
                           force=args.force, dry_run=args.dry_run, enable_pack=args.enable)
+    if cmd == "new":
+        named = [n for names in args.harness for n in names] if args.harness else None
+        return cmd_new_pack(args.name, to=args.to, prefix=args.prefix, pack_id=args.pack_id,
+                            description=args.description, harnesses=named, ticket=args.ticket,
+                            refs=args.refs, host=args.host, yes=args.yes, force=args.force, dry_run=args.dry_run,
+                            enable_pack=args.enable)
     if cmd == "validate":
         if args.fetch_defaults and not args.pack:
             parser.print_usage(sys.stderr)

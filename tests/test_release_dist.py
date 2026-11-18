@@ -32,7 +32,7 @@ def job(text: str, name: str) -> str:
 
 
 class CheckDistTest(unittest.TestCase):
-    def make(self, sdist_extra=(), metadata=METADATA, skip_core=False) -> Path:
+    def make(self, sdist_extra=(), metadata=METADATA, skip_core=False, skip_templates=False) -> Path:
         d = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, d, ignore_errors=True)
         root = f"brainrc-{VERSION}"
@@ -44,7 +44,7 @@ class CheckDistTest(unittest.TestCase):
                 tf.addfile(info, io.BytesIO(data))
         with zipfile.ZipFile(d / f"{root}-py3-none-any.whl", "w") as zf:
             zf.writestr(f"{root}.dist-info/METADATA", metadata)
-            for dest in CORE.values():
+            for dest in [*CORE.values(), *([] if skip_templates else check_dist.templates())]:
                 zf.writestr(dest, "x")
         return d
 
@@ -70,6 +70,12 @@ class CheckDistTest(unittest.TestCase):
         code, out = self.run_main(self.make(skip_core=True))
         self.assertEqual(code, 1)
         self.assertIn("FAIL sdist carries core", out)
+
+    def test_a_wheel_without_the_new_pack_templates_fails(self):
+        self.assertIn("brainrc/_templates/pack/dot-github/workflows/validate.yml", check_dist.templates())
+        code, out = self.run_main(self.make(skip_templates=True))
+        self.assertEqual(code, 1)
+        self.assertIn("FAIL wheel carries the `new pack` templates", out)
 
     def test_a_dependency_or_another_version_fails(self):
         code, out = self.run_main(self.make(metadata=METADATA + "Requires-Dist: requests\n"))

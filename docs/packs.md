@@ -10,7 +10,8 @@ pin its own ([team setup](project.md)).
 
 - **Use packs**: [enable one](#enable-a-pack), [turn the default pack off or pin it](#default-packs),
   or [import the instruction files you have](#import).
-- **Write one**: start from [your first pack](tutorial.md), or copy
+- **Write one**: [`brainrc new pack`](#start-a-pack) writes one that validates, and
+  [your first pack](tutorial.md) walks through it. Or copy
   [examples/pack-acme](../examples/pack-acme/README.md) (every feature but hooks) or
   [examples/pack-homelab](../examples/pack-homelab/README.md) (a guard hook). The rest of this
   page is the reference.
@@ -88,6 +89,32 @@ path = "~/src/gatework"   # work on a clone; replaces the shipped git and ref
 extends Gatework is checked against it once `apply` has fetched it; until then `validate` warns.
 `--fetch-defaults` fetches them at the versions brainrc pins instead
 ([CI](#validate-a-pack-in-its-own-ci)).
+
+## Start a pack
+
+`brainrc new pack <name>` writes a pack that validates on its first run, with everything its own
+repository needs ([options](commands.md#brainrc-new-pack)):
+
+```bash
+brainrc new pack acme              # writes ./acme, then checks it as validate --pack does
+brainrc validate --pack acme
+```
+
+| File | What it's for |
+|---|---|
+| `pack.toml` | name, prefix, `requires_core` for this core's minor series, a [token budget](#context-cost) and `test` |
+| `rules/10-<name>.md` | one short rule: load the facts skill instead of guessing |
+| `skills/<prefix>facts/SKILL.md` | the facts agents would otherwise guess: repositories, hosts, tools, teams |
+| `tripwires.toml` | a [tripwire](#tripwirestoml) against home folder paths; add one for each stale fact |
+| `tests/test_pack.py` | [pack tests](#pack-tests): rules stay short, no secret values |
+| `README.md`, `AGENTS.md` | how to use the pack, and the rules for whoever edits it; `CLAUDE.md` and `GEMINI.md` point at `AGENTS.md` for the tools that need it |
+| `.github/workflows/validate.yml`, `.pre-commit-config.yaml` | the [validate-pack](#validate-a-pack-in-its-own-ci) action and hook, pinned to this core's tag |
+| `.gitignore` | keeps `*.local.*` files and caches out |
+
+In a terminal it asks for the name, prefix, the tools you'll edit the pack with, and a ticket
+system (`github`, `jira` or `local`), which becomes an `[extensions.gatework.ticket]` table. It
+checks the [naming rules](#naming) before it writes anything, never writes into a folder with files
+in it (`--force` replaces an earlier pack), and `--enable` adds the pack to `packs.local.toml`.
 
 ## Import
 

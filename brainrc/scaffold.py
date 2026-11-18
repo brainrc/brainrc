@@ -1,7 +1,7 @@
 """Write a pack's layout: pack.toml, rules/NN-*.md, skills/<prefix>*/SKILL.md.
 
-One small writer for everything that creates a pack: the importers (`brainrc import`, #163) and
-`brainrc init`'s import offer use it today, and `brainrc new pack` (#150) is meant to. `render_pack`
+One small writer for everything that creates a pack: the importers (`brainrc import`, #163),
+`brainrc init`'s import offer and `brainrc new pack` (#150, brainrc/newpack.py). `render_pack`
 returns the files as text, so a caller can show what it would write (file count, tokens) before
 `write_pack` touches the disk.
 """
@@ -15,7 +15,7 @@ from pathlib import Path, PurePosixPath, PureWindowsPath
 
 from . import config
 from .config import ConfigError, tilde
-from .naming import NAME, PREFIX_MAX, PREFIX_MIN
+from .naming import name_errors
 
 
 @dataclass
@@ -42,6 +42,12 @@ class PackSpec:
     rules: list[Rule] = field(default_factory=list)
     skills: list[Skill] = field(default_factory=list)
     domains: list[dict] = field(default_factory=list)  # [[extensions.gatework.domains]] rows
+    id: str = ""              # <owner>/<pack>, when it is published under one
+    max_always_tokens: int = 0
+    test: str = ""            # the pack's own tests, which validate --pack runs
+    ticket: dict = field(default_factory=dict)  # [extensions.gatework.ticket]: strings and lists of strings
+    files: dict[str, str] = field(default_factory=dict)  # any other file, path -> text, written last
+    notes: dict[str, str] = field(default_factory=dict)  # pack.toml key -> a comment at the end of its line
 
     def __post_init__(self) -> None:
         self.prefix = self.prefix or f"{self.name}-"
@@ -58,14 +64,12 @@ def slugify(text: str, fallback: str = "rules") -> str:
     return slug or fallback
 
 
-def check_name(name: str, prefix: str) -> None:
-    """The naming rules a pack's own name and prefix must meet before anything is written."""
-    stem = prefix[:-1] if prefix.endswith("-") else prefix
-    if not NAME.fullmatch(name):
-        raise ConfigError(f"pack name `{name}`: use ASCII lowercase letters, digits and hyphens")
-    if not prefix.endswith("-") or not NAME.fullmatch(stem) or not PREFIX_MIN <= len(stem) <= PREFIX_MAX:
-        raise ConfigError(f"prefix `{prefix}`: {PREFIX_MIN} to {PREFIX_MAX} lowercase letters, digits "
-                          "and hyphens, then '-'")
+def check_name(name: str, prefix: str, pack_id: str = "") -> None:
+    """The naming rules (docs/packs.md#naming) a pack's own name, prefix and ID must meet before
+    anything is written."""
+    errors = name_errors(name, prefix, pack_id or None, "pack")
+    if errors:
+        raise ConfigError("; ".join(e.removeprefix("pack: ") for e in errors))
 
 
 def _toml_string(value: str) -> str:
@@ -97,16 +101,31 @@ def _frontmatter_value(value: str) -> str:
 
 def render_pack(spec: PackSpec) -> dict[str, str]:
     """The pack's files, path -> text, in the order they are written."""
-    check_name(spec.name, spec.prefix)
+    check_name(spec.name, spec.prefix, spec.id)
     files: dict[str, str] = {}
-    lines = [PACK_SCHEMA, f"name = {_toml_string(spec.name)}", f"prefix = {_toml_string(spec.prefix)}"]
+
+    def key(name: str, value: str) -> str:
+        note = spec.notes.get(name)
+        return f"{name} = {value}" + (f"  # {note}" if note else "")
+
+    lines = [PACK_SCHEMA, key("name", _toml_string(spec.name)), key("prefix", _toml_string(spec.prefix))]
+    if spec.id:
+        lines.append(key("id", _toml_string(spec.id)))
     if spec.description:
-        lines.append(f"description = {_toml_string(spec.description)}")
-    lines.append(f"requires_core = {_toml_string(spec.requires_core or _core_pin())}")
+        lines.append(key("description", _toml_string(spec.description)))
+    lines.append(key("requires_core", _toml_string(spec.requires_core or _core_pin())))
+    if spec.max_always_tokens:
+        lines.append(key("max_always_tokens", str(spec.max_always_tokens)))
+    if spec.test:
+        lines.append(key("test", _toml_string(spec.test)))
     for row in spec.domains:
         lines += ["", "[[extensions.gatework.domains]]",
                   f"files = {_toml_string(row['files'])}",
                   "skills = [" + ", ".join(_toml_string(s) for s in row["skills"]) + "]"]
+    if spec.ticket:
+        lines += ["", "[extensions.gatework.ticket]"]
+        lines += [f"{k} = " + ("[" + ", ".join(map(_toml_string, v)) + "]" if isinstance(v, list) else _toml_string(v))
+                  for k, v in spec.ticket.items()]
     files["pack.toml"] = "\n".join(lines) + "\n"
     files.update(rule_files(spec.rules))
     seen: set[str] = set()
@@ -119,6 +138,10 @@ def render_pack(spec: PackSpec) -> dict[str, str]:
         files[f"skills/{name}/SKILL.md"] = (
             f"---\nname: {name}\ndescription: {_frontmatter_value(s.description)}\n---\n\n"
             f"{_comment(s.provenance)}{s.text.strip()}\n")
+    for rel, text in spec.files.items():
+        if rel in files:
+            raise ConfigError(f"{rel} is written twice")
+        files[rel] = text
     return files
 
 

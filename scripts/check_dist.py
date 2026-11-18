@@ -24,6 +24,13 @@ def force_include(repo: Path = REPO) -> dict[str, str]:
     return pyproject["tool"]["hatch"]["build"]["targets"]["wheel"]["force-include"]
 
 
+def templates(repo: Path = REPO) -> list[str]:
+    """The files under brainrc/_templates that `brainrc new pack` reads, as wheel paths."""
+    root = repo / "brainrc" / "_templates"
+    return sorted(p.relative_to(repo).as_posix() for p in root.rglob("*")
+                  if p.is_file() and "__pycache__" not in p.parts)
+
+
 def has(names: list[str], path: str) -> bool:
     """The archive holds `path`, as a file or as a directory with something in it."""
     return any(n == path or n.startswith(path + "/") for n in names)
@@ -65,6 +72,8 @@ def check(dist: Path, version: str, core: dict[str, str] | None = None) -> list[
         results.append(("wheel has no dependencies", not deps, f"Requires-Dist {deps}"))
         missing = [dest for dest in core.values() if not has(files, dest)]
         results.append(("wheel bundles core", not missing, f"missing {missing}"))
+        missing = [rel for rel in templates() if rel not in files]
+        results.append(("wheel carries the `new pack` templates", not missing, f"missing {missing}"))
     return results
 
 

@@ -9,7 +9,7 @@ itself ([packs](packs.md)). This tutorial works from a clone of brainrc so it ca
 commands CI does; with the installed command, type `brainrc` where it says
 `python3 scripts/brainrc.py`, and put `packs.local.toml` in `~/.config/brainrc/`.
 
-Run every command from the brainrc clone unless a step says otherwise. CI runs steps 1-5 of this
+Run every command from the brainrc clone unless a step says otherwise. CI runs steps 1-4 of this
 page on every change (`scripts/check_tutorial.py`), so they stay accurate.
 
 ## 1. Clone brainrc, install it, and check it
@@ -27,30 +27,28 @@ that counts skills, agents, and commands.
 
 ## 2. Create the pack
 
-A pack needs a `pack.toml`. The `prefix` keeps your item names apart from everyone else's,
-`requires_core` says which brainrc versions you tested against (see brainrc's `VERSION`), and the
-`[[extensions.gatework.domains]]` row tells Gatework which files load your skill.
+`new pack` writes a pack that validates, then checks it. `--yes` takes the defaults; without it,
+in a terminal, it asks for the prefix, the tools you'll edit the pack with, and a ticket system.
 
 ```bash
-mkdir -p ~/src/myteam-ai-pack/skills/myteam-protobuf
-cat > ~/src/myteam-ai-pack/pack.toml <<'EOF'
-name = "myteam"
-prefix = "myteam-"
-requires_core = ">=0.6, <0.9"
-
-[[extensions.gatework.domains]]
-files = "`*.proto`, `buf.yaml`"
-skills = ["myteam-protobuf"]
-EOF
+python3 scripts/brainrc.py new pack myteam --to ~/src/myteam-ai-pack --yes
 ```
 
-## 3. Write the domain skill
+You should see `OK:` with `(packs: gatework, myteam)` at the end: brainrc, the default pack it
+fetched in step 1, and yours. The pack's `pack.toml` sets its `prefix`, `myteam-`, which keeps
+your item names apart from everyone else's, and `requires_core`, the brainrc versions it works
+with. The pack also has a facts skill, `myteam-facts`, a rule that points at it, tripwires, tests
+and a CI workflow ([what each file is for](packs.md#start-a-pack)).
+
+## 3. Add a domain skill
 
 A domain skill, one for a single stack, has four sections: how to validate offline,
 conventions, a review checklist, and what never to do without approval. The `description` is
-what makes an AI tool load it.
+what makes an AI tool load it, and the `[[extensions.gatework.domains]]` row tells Gatework which
+files load it.
 
 ```bash
+mkdir -p ~/src/myteam-ai-pack/skills/myteam-protobuf
 cat > ~/src/myteam-ai-pack/skills/myteam-protobuf/SKILL.md <<'EOF'
 ---
 name: myteam-protobuf
@@ -76,20 +74,19 @@ buf breaking --against '.git#branch=main'
 ## Never without approval
 - Publishing generated code or pushing to a schema registry.
 EOF
-```
+cat >> ~/src/myteam-ai-pack/pack.toml <<'EOF'
 
-## 4. Validate the pack
-
-```bash
+[[extensions.gatework.domains]]
+files = "`*.proto`, `buf.yaml`"
+skills = ["myteam-protobuf"]
+EOF
 python3 scripts/brainrc.py validate --pack ~/src/myteam-ai-pack
 ```
 
-You should see `OK:` with `(packs: gatework, myteam)` at the end: brainrc, the default pack it
-fetched in step 1, and yours. A common mistake is a skill without
-the prefix. `validate` then names it, for example
-``myteam:skills/protobuf: pack skills must start with `myteam-` ``.
+`validate` should print `OK:` again. A common mistake is a skill without the prefix. `validate`
+then names it, for example ``myteam:skills/protobuf: pack skills must start with `myteam-` ``.
 
-## 5. Enable and install it
+## 4. Enable and install it
 
 Packs are enabled per machine in `packs.local.toml`, which git ignores. `status` is a dry run
 and `apply` writes.
@@ -104,10 +101,10 @@ python3 scripts/brainrc.py apply
 python3 scripts/brainrc.py status | grep 'Everything in sync.'
 ```
 
-The first `status` lists `CREATE` lines, including one for `myteam-protobuf` in each
-harness's skills directory. After `apply`, `status` prints `Everything in sync.`
+The first `status` lists `CREATE` lines, including ones for `myteam-protobuf` and `myteam-facts`
+in each harness's skills directory. After `apply`, `status` prints `Everything in sync.`
 
-## 6. Check what your AI tools now see
+## 5. Check what your AI tools now see
 
 ```bash
 ls ~/.claude/skills/myteam-protobuf
@@ -119,7 +116,7 @@ You should see `SKILL.md`, a Domains row for `` `*.proto`, `buf.yaml` `` naming
 `myteam-protobuf`, and the skill's cost in tokens. Gatework reads that Domains row at the
 start of every ticket, so a ticket touching a `.proto` file now loads your skill.
 
-## 7. Put the pack under version control
+## 6. Put the pack under version control
 
 ```bash
 cd ~/src/myteam-ai-pack
@@ -128,13 +125,10 @@ git add .
 git -c user.name=you -c user.email=you@example.com commit -qm "Add myteam pack"
 ```
 
-Then validate it in the pack's own CI on every push, against the brainrc version you pin
-([Validate a pack in its own CI](packs.md#validate-a-pack-in-its-own-ci)):
-
-```yaml
-- uses: actions/checkout@<sha>
-- uses: brainrc/brainrc/.github/actions/validate-pack@<brainrc tag>
-```
+Push it, and the CI workflow `new pack` wrote (`.github/workflows/validate.yml`) checks the pack
+on every push with the `validate-pack` action, against the brainrc version it pins
+([Validate a pack in its own CI](packs.md#validate-a-pack-in-its-own-ci)). Move that pin, and
+`requires_core`, when you test against a newer brainrc.
 
 ## Next steps
 

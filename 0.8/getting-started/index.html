@@ -1676,9 +1676,9 @@ before it runs. Type <code>/brainrc-work</code> with a sentence describing a sma
 <span class="nb">echo</span><span class="w"> </span><span class="s2">"- Answer in British English."</span><span class="w"> </span>&gt;<span class="w"> </span>~/.config/brainrc/rules/90-spelling.local.md
 brainrc<span class="w"> </span>apply
 </code></pre></div>
-<p>Rules are rendered into one file, so every change to a rule needs <code>apply</code>. <code>status</code> doesn't list
-an edited rule, but <code>doctor</code> does (<code>instructions.md is stale</code>). For more than a rule
-or two, or to share them, make a <a href="../packs/">pack</a>: a folder or git repo of your own rules and
+<p>Rules are rendered into one file, so every change to a rule needs <code>apply</code>. Until then, <code>status</code>
+lists <code>~/.config/brainrc/instructions.md</code> as <code>UPDATE</code>. For more than a rule or two, or to share
+them, make a <a href="../packs/">pack</a>: a folder or git repo of your own rules and
 skills. <a href="../tutorial/">Your first pack</a> builds one step by step.</p>
 <h2 id="6-check-the-install">6. Check the install<a class="headerlink" href="#6-check-the-install" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>brainrc<span class="w"> </span>doctor

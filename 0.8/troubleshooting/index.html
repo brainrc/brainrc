@@ -1605,7 +1605,7 @@ says <code>brainrc</code>.</p>
 <p>Run <code>brainrc apply</code>. Skills, agents, and commands are symlinks, so edits to
 existing ones show up at once, but new or removed ones need <code>apply</code>. Rules are different:
 they're rendered into <code>~/.config/brainrc/instructions.md</code>, so <strong>every</strong> change to a rule needs
-<code>apply</code>, edits included. <code>status</code> doesn't show an edited rule; <code>doctor</code> does. Start a new session
+<code>apply</code>, edits included; <code>status</code> lists <code>instructions.md</code> as <code>UPDATE</code> until you do. Start a new session
 in the tool afterwards.</p>
 <p>If you moved a clone or upgraded brainrc, the old links are broken and <code>apply</code> reports each as a <code>CONFLICT</code>. Run
 <code>brainrc apply --repair</code> from the new location: it relinks every broken link

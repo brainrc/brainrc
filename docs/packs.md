@@ -80,9 +80,9 @@ ref = "v<X.Y.Z>"       # pin another Gatework release; its git URL is kept
 path = "~/src/gatework"   # work on a clone; replaces the shipped git and ref
 ```
 
-`brainrc init` asks whether to keep it. Gatework still installs its old names (`spec-agent`,
-`spec-status`, `kubernetes` and the rest, listed in `brainrc/naming.py`) as deprecated aliases;
-they are the only unprefixed names naming rule 7 lets it keep ([old names](upgrade.md#from-spec-agent)).
+`brainrc init` asks whether to keep it. Gatework 0.8.0 stopped installing its old names
+(`spec-agent`, `spec-status`, `kubernetes` and the rest); the next `apply` removes their links
+([old names](upgrade.md#from-spec-agent)).
 
 `validate --pack` checks a pack against brainrc and the default packs on disk, so a pack that
 extends Gatework is checked against it once `apply` has fetched it; until then `validate` warns.

@@ -166,6 +166,7 @@ token budgets and tripwires. CI runs it on brainrc itself; pack authors run it w
 |---|---|
 | `--pack DIR` | check core plus this pack only, and run the pack's own tests |
 | `--fetch-defaults` | with `--pack`: check it against the default packs at the versions core pins, fetched into separate clones |
+| `--local-tripwires FILE` | read local tripwire terms from FILE instead of `tripwires.local.toml`; FILE must exist and list a term (CI writes it from a secret) |
 
 ## brainrc tokens
 

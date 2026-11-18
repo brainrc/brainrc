@@ -11,3 +11,6 @@ bump: patch
 - `brainrc new rule <name>` writes `rules/NN-<name>.md` after the pack's last rule, with core's
   rule frontmatter, and prints what it adds to every session against the pack's
   `max_always_tokens` budget (#161).
+- `brainrc new command <name>` writes a command with `$ARGUMENTS`. When this machine manages
+  Codex, which skips such commands, it says so, and `--as-skill` (offered in a terminal) writes the
+  user-invoked skill form instead (#162).

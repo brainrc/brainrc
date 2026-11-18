@@ -10,6 +10,7 @@ there is.
 
 **Set up**: [init](#brainrc-init) · [import](#brainrc-import) · [new pack](#brainrc-new-pack) ·
 [new skill](#brainrc-new-skill) · [new agent](#brainrc-new-agent) · [new rule](#brainrc-new-rule) ·
+[new command](#brainrc-new-command) ·
 **Install**: [status](#brainrc-status) · [apply](#brainrc-apply) · [update](#brainrc-update) · [install](#brainrc-install) · [uninstall](#brainrc-uninstall) ·
 **Check**: [check](#brainrc-check) · [audit](#brainrc-audit) · [doctor](#brainrc-doctor) · [validate](#brainrc-validate) · [tokens](#brainrc-tokens) ·
 **Other**: [pin-mcp](#brainrc-pin-mcp) · [migrate](#brainrc-migrate)
@@ -131,6 +132,25 @@ carry. Then it prints what the rule adds to every session and what the pack now 
 | `--dry-run` | print the file it would write, write nothing |
 
 A rule of the same name is refused: it never replaces one.
+
+## brainrc new command
+
+Write a command in the pack you are in: `commands/<prefix><name>.md` with its `description` and
+`$ARGUMENTS`. Codex skips commands that use `$ARGUMENTS`, so when brainrc manages Codex it offers
+the user-invoked skill form instead, `skills/<prefix><name>/SKILL.md` with
+`disable-model-invocation: true` ([formats](formats.md#commands-commandsnamemd)), which every tool runs.
+
+| Option | Does |
+|---|---|
+| `NAME` | the command's name; the pack's prefix is added when it's missing |
+| `--pack DIR` | the pack to write it in (default: the nearest folder from here up with a `pack.toml`) |
+| `--description TEXT` | one line shown in the command picker (asked for in a terminal) |
+| `--as-skill` | write the user-invoked skill form |
+| `--as-command` | write `commands/<prefix><name>.md` without asking |
+| `--argument-hint TEXT` | what to type after the command, shown in the picker |
+| `--yes`, `-y` | ask nothing: take the defaults |
+| `--force` | replace a command of that name |
+| `--dry-run` | print the files it would write, write nothing |
 
 ## brainrc status
 

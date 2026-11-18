@@ -153,6 +153,35 @@ class NewRuleTest(NewItemCase):
         self.assertIn("Over budget", out)
 
 
+class NewCommandTest(NewItemCase):
+    """#162"""
+
+    def test_a_command_gets_its_description_and_arguments(self):
+        out = self.ok("command", "release", "--description", "Cut an acme release", "--as-command")
+        self.assertNotIn("NOTE", out)
+        command = self.pack / "commands/acme-release.md"
+        self.assertEqual(frontmatter(command), {"description": "Cut an acme release"})
+        self.assertIn("$ARGUMENTS", command.read_text())
+
+    def test_codex_gets_a_note_and_the_skill_form_on_request(self):
+        with mock.patch.object(newitem, "codex_targeted", return_value=True):
+            out = self.ok("command", "release", "--description", "Cut an acme release")
+            self.assertIn("NOTE Codex skips commands", out)
+            self.ok("command", "ship", "--description", "Ship it", "--as-skill", "--argument-hint", "<version>")
+        meta = frontmatter(self.pack / "skills/acme-ship/SKILL.md")
+        self.assertEqual((meta["name"], meta["disable-model-invocation"], meta["argument-hint"]),
+                         ("acme-ship", "true", "<version>"))
+        self.assertIn("$ARGUMENTS", (self.pack / "skills/acme-ship/SKILL.md").read_text())
+
+    def test_in_a_terminal_codex_is_offered_the_skill_form(self):
+        with mock.patch.object(newitem, "codex_targeted", return_value=True), \
+                mock.patch("sys.stdin.isatty", return_value=True), mock.patch("builtins.input", return_value=""):
+            code, out = self.item("command", "ship", "--description", "Ship it")
+        self.assertEqual(code, 0, out)
+        self.assertTrue((self.pack / "skills/acme-ship/SKILL.md").is_file())
+        self.assertFalse((self.pack / "commands").exists())
+
+
 class FindPackTest(NewItemCase):
     def test_it_finds_the_pack_from_a_folder_inside_it(self):
         os.chdir(self.pack / "skills")
@@ -165,6 +194,14 @@ class FindPackTest(NewItemCase):
         self.assertEqual(code, 1)
         self.assertIn("--pack DIR", out)
         self.ok("skill", "deploy", "--description", "Deploy.", "--pack", "acme")
+
+    def test_options_for_another_kind_are_refused(self):
+        with contextlib.redirect_stderr(io.StringIO()):
+            code, _ = self.item("skill", "deploy", "--description", "Deploy.", "--argument-hint", "x")
+        self.assertEqual(code, 2)  # argparse: the skill parser has no such option
+        code, out = quiet(lambda: newitem.cmd_new_item("skill", "deploy", description="Deploy.", argument_hint="x"))
+        self.assertEqual(code, 1)
+        self.assertIn("are for a command", out)
 
     def test_dry_run_writes_nothing(self):
         before = sorted(p.relative_to(self.pack) for p in self.pack.rglob("*"))

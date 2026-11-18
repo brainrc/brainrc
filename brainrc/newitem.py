@@ -1,4 +1,4 @@
-"""`brainrc new skill|agent|rule NAME` (E8, #159 to #161): an item that validates, inside a pack.
+"""`brainrc new skill|agent|rule|command NAME` (E8, #159 to #162): an item that validates, inside a pack.
 
 Run in a pack (or name one with --pack): the prefix is applied, the frontmatter filled in and the
 body taken from brainrc/_templates/items; brainrc.scaffold renders and writes it, as it does for
@@ -13,13 +13,14 @@ import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from .config import KNOWN_MODELS, KNOWN_TOOLS, MODEL_ID, ConfigError, expand, tilde, write_text_atomic
+from .config import KNOWN_MODELS, KNOWN_TOOLS, MODEL_ID, ConfigError, expand, load_harnesses, tilde, write_text_atomic
 from .naming import NAME
-from .scaffold import Agent, Rule, Skill, _toml_string, add_files, agent_text, render_rule, skill_text
+from .scaffold import (Agent, Command, Rule, Skill, _toml_string, add_files, agent_text, command_text,
+                       render_rule, skill_text)
 from .sources import Source, load_pack, markdown_files
 
 TEMPLATES = Path(__file__).resolve().parent / "_templates" / "items"
-KINDS = ("skill", "agent", "rule")
+KINDS = ("skill", "agent", "rule", "command")
 AGENT_TOOLS = "Read, Grep, Glob"  # least privilege: it reads; add Edit, Write or Bash when it must
 AGENT_MODEL = "inherit"
 RULE_NN = re.compile(r"^(\d+)-")
@@ -34,6 +35,8 @@ class Item:
     domain: list[str] = field(default_factory=list)  # skill: the globs that make it a domain skill
     tools: str = AGENT_TOOLS
     model: str = AGENT_MODEL
+    as_skill: bool | None = None  # command: the user-invoked skill form instead (None: decide)
+    argument_hint: str = ""
 
 
 def find_pack(where: str | None) -> Source:
@@ -93,6 +96,12 @@ def domains_row(text: str, globs: list[str], name: str) -> str:
     return after
 
 
+def codex_targeted() -> bool:
+    """Whether Codex is one of the harnesses this machine manages: it skips commands that use
+    $ARGUMENTS, so a command is better written as a user-invoked skill (docs/formats.md)."""
+    return "codex" in load_harnesses(include_missing=True)
+
+
 def render(src: Source, item: Item) -> tuple[dict[str, str], str]:
     """(files to write, path of the item) for item in the pack src. pack.toml is among the files
     when a domain skill adds its Domains row."""
@@ -127,6 +136,15 @@ def render(src: Source, item: Item) -> tuple[dict[str, str], str]:
         rel = f"agents/{name}.md"
         return {rel: agent_text(name, Agent(slug, item.description, _fill("agent.md", values),
                                             tools=", ".join(tools), model=item.model))}, rel
+    hint = item.argument_hint or "<what to work on>"
+    if item.as_skill:
+        rel = f"skills/{name}/SKILL.md"
+        extra = [f"argument-hint: {_toml_string(hint)}", "disable-model-invocation: true"]
+        return {rel: skill_text(name, Skill(slug, item.description, _fill("command-skill.md", values),
+                                            extra=extra))}, rel
+    rel = f"commands/{name}.md"
+    extra = [f"argument-hint: {_toml_string(hint)}"] if item.argument_hint else []
+    return {rel: command_text(Command(slug, item.description, _fill("command.md", values), extra=extra))}, rel
 
 
 def _ask(question: str, default: str = "") -> str:
@@ -139,13 +157,17 @@ def _ask(question: str, default: str = "") -> str:
 
 
 def ask(item: Item, src: Source) -> Item:
-    """Ask for what the command line didn't give: the name and the description."""
+    """Ask for what the command line didn't give: the name, the description, and for a command
+    when Codex is managed here, whether to write the skill form."""
     while not item.name:
         item.name = _ask(f"{item.kind.capitalize()} name (after the prefix {src.prefix})")
     if item.kind == "skill" and not item.description and item.domain:
         item.description = default_description(item)
     while item.kind != "rule" and not item.description:
         item.description = _ask("Description: what it does, and when to use it")
+    if item.kind == "command" and item.as_skill is None and codex_targeted():
+        answer = _ask("Codex skips commands that use $ARGUMENTS. Write it as a user-invoked skill instead? (y/n)", "y")
+        item.as_skill = answer.lower().startswith("y")
     return item
 
 
@@ -170,22 +192,29 @@ def token_report(src: Source, rel: str) -> str:
 
 def cmd_new_item(kind: str, name: str | None = None, pack: str | None = None, description: str = "",
                  domain: list[str] | None = None, tools: str | None = None, model: str | None = None,
-                 yes: bool = False,
+                 as_skill: bool | None = None, argument_hint: str = "", yes: bool = False,
                  force: bool = False, dry_run: bool = False) -> int:
     try:
         src = find_pack(pack)
         item = Item(kind, name or "", description, domain or [], tools if tools is not None else AGENT_TOOLS,
-                    model or AGENT_MODEL)
+                    model or AGENT_MODEL, as_skill, argument_hint)
         if kind != "skill" and domain:
             raise ConfigError("--domain is for a skill")
         if kind != "agent" and (tools is not None or model):
             raise ConfigError("--tools and --model are for an agent")
+        if kind != "command" and (as_skill is not None or argument_hint):
+            raise ConfigError("--as-skill, --as-command and --argument-hint are for a command")
         if not yes and sys.stdin.isatty():
             item = ask(item, src)
         elif not item.name:
             raise ConfigError(f"name the {kind}: `brainrc new {kind} <name>`")
         if kind == "skill" and item.domain and not item.description:
             item.description = default_description(item)
+        if kind == "command" and item.as_skill is None:
+            item.as_skill = False
+            if codex_targeted():
+                print("NOTE Codex skips commands that use $ARGUMENTS; --as-skill writes a user-invoked "
+                      "skill instead, which every tool runs (docs/formats.md#commands-commandsnamemd).")
         files, rel = render(src, item)
         if dry_run:
             for path in files:

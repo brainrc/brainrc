@@ -545,7 +545,7 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--force", action="store_true", help="replace the folder if it already has files")
     p.add_argument("--enable", action="store_true", help="add the pack to packs.local.toml")
     p.add_argument("--dry-run", action="store_true", help="print the files it would write, write nothing")
-    p = add("new", "start a new pack, or a skill, agent or rule in one", "Write a new pack, "
+    p = add("new", "start a new pack, or a skill, agent, rule or command in one", "Write a new pack, "
             "or a new item in the pack you are in, from brainrc's templates. Run `new <kind> --help` "
             "for its options.")
     kinds = p.add_subparsers(dest="kind", metavar="<kind>", title="kinds", required=True)
@@ -587,6 +587,10 @@ def _parser() -> argparse.ArgumentParser:
                  "Write a rule in this pack: rules/NN-<name>.md, numbered after its last rule, with the "
                  "frontmatter core's rules carry. Then report what the pack loads in every session "
                  "against its max_always_tokens budget."),
+        "command": ("write commands/<prefix><name>.md, or with --as-skill a user-invoked skill",
+                    "Write a command in this pack: commands/<prefix><name>.md with its description and "
+                    "$ARGUMENTS. Codex skips commands that use $ARGUMENTS, so when it manages Codex it "
+                    "offers the user-invoked skill form (--as-skill) instead."),
     }
     for kind, (short, long) in item_help.items():
         p = kinds.add_parser(kind, help=short, description=long + " Run inside the pack, or name it with "
@@ -602,6 +606,13 @@ def _parser() -> argparse.ArgumentParser:
         if kind == "agent":
             p.add_argument("--tools", help=f"its tools, comma-separated (default: {newitem.AGENT_TOOLS})")
             p.add_argument("--model", help=f"haiku, sonnet, opus, inherit or a full ID (default: {newitem.AGENT_MODEL})")
+        if kind == "command":
+            form = p.add_mutually_exclusive_group()
+            form.add_argument("--as-skill", dest="as_skill", action="store_const", const=True,
+                              help="write a user-invoked skill (disable-model-invocation: true), which Codex runs too")
+            form.add_argument("--as-command", dest="as_skill", action="store_const", const=False,
+                              help="write commands/<prefix><name>.md without asking")
+            p.add_argument("--argument-hint", default="", help="what to type after the command, shown in the picker")
         p.add_argument("--yes", "-y", action="store_true", help="ask nothing: take the defaults")
         if kind != "rule":  # a rule is numbered after the last one, so it never replaces one
             p.add_argument("--force", action="store_true", help=f"replace a {kind} of that name")
@@ -739,7 +750,8 @@ def _dispatch(argv: list[str]) -> int:
         return newitem.cmd_new_item(args.kind, args.name, pack=args.pack,
                                     description=getattr(args, "description", ""),
                                     domain=getattr(args, "domain", None), tools=getattr(args, "tools", None),
-                                    model=getattr(args, "model", None), yes=args.yes,
+                                    model=getattr(args, "model", None), as_skill=getattr(args, "as_skill", None),
+                                    argument_hint=getattr(args, "argument_hint", ""), yes=args.yes,
                                     force=getattr(args, "force", False), dry_run=args.dry_run)
     if cmd == "new":
         named = [n for names in args.harness for n in names] if args.harness else None

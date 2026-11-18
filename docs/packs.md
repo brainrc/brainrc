@@ -158,6 +158,21 @@ called `mypack`, with steps for renaming it: the contents of a GitHub template r
 anyone who would rather start from **Use this template** than install brainrc first.
 `scripts/pack_template.py` keeps it in step with `new pack`, and CI validates it.
 
+## What `new <item>` writes
+
+Inside a pack, `brainrc new <kind> <name>` writes one item that validates, with
+the prefix applied and its frontmatter filled in, then checks the pack as `validate --pack` does
+([options](commands.md#brainrc-new-skill)). It finds the pack from the folder you are in, or takes
+`--pack DIR`, and never replaces an item without `--force`.
+
+| Command | Writes |
+|---|---|
+| `new skill <name>` | `skills/<prefix><name>/SKILL.md` with `name` and `description` |
+| `new skill <name> --domain GLOB,...` | a domain skill: Validate (offline), Conventions, Review checklist and Never without approval, and a [Domains row](#extensions) for those files in `pack.toml` |
+
+The bodies come from `brainrc/_templates/items`: headings with one line each that says what goes
+there. Replace them before you publish the pack.
+
 ## Naming
 
 A clear name is the cheapest trust signal a pack has. Every pack follows these seven rules:

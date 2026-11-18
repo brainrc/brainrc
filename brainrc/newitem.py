@@ -1,0 +1,152 @@
+"""`brainrc new skill NAME` (E8, #159): an item that validates, inside a pack.
+
+Run in a pack (or name one with --pack): the prefix is applied, the frontmatter filled in and the
+body taken from brainrc/_templates/items; brainrc.scaffold renders and writes it, as it does for
+`new pack` and `import`. Then the pack is checked as `validate --pack` does. Asks for a missing
+description when stdin is a terminal.
+"""
+from __future__ import annotations
+
+import re
+import sys
+import tomllib
+from dataclasses import dataclass, field
+from pathlib import Path
+
+from .config import ConfigError, expand, tilde, write_text_atomic
+from .naming import NAME
+from .scaffold import Skill, _toml_string, add_files, skill_text
+from .sources import Source, load_pack
+
+TEMPLATES = Path(__file__).resolve().parent / "_templates" / "items"
+KINDS = ("skill",)
+NAME_MAX = 64  # a skill's name (validate), and so any item's
+
+
+@dataclass
+class Item:
+    kind: str
+    name: str                # as given: with or without the pack's prefix
+    description: str = ""
+    domain: list[str] = field(default_factory=list)  # skill: the globs that make it a domain skill
+
+
+def find_pack(where: str | None) -> Source:
+    """The pack at --pack, or the nearest folder from here up that has a pack.toml."""
+    if where:
+        return load_pack(expand(where).resolve())
+    here = Path.cwd().resolve()
+    for folder in (here, *here.parents):
+        if (folder / "pack.toml").is_file():
+            return load_pack(folder)
+    raise ConfigError("not inside a pack (no pack.toml here or above): cd into one, pass --pack DIR, "
+                      "or start one with `brainrc new pack`")
+
+
+def slug_of(name: str, src: Source, kind: str) -> str:
+    """The name after the pack's prefix: `deploy` and `acme-deploy` are the same skill in acme."""
+    slug = name.removeprefix(src.prefix)
+    if not NAME.fullmatch(slug):
+        raise ConfigError(f"{kind} name `{name}` must be ASCII lowercase letters, digits and hyphens")
+    if len(src.prefix + slug) > NAME_MAX:
+        raise ConfigError(f"{kind} name `{src.prefix}{slug}` is over {NAME_MAX} characters")
+    return slug
+
+
+def _fill(rel: str, values: dict[str, str]) -> str:
+    text = (TEMPLATES / rel).read_text(encoding="utf-8")
+    return re.sub(r"\{\{([a-z_]+)\}\}", lambda m: values[m.group(1)], text)
+
+
+def domains_row(text: str, globs: list[str], name: str) -> str:
+    """pack.toml with a [[extensions.gatework.domains]] row for the skill at the end, unless a row
+    already names it; the rest of the file as written."""
+    meta = tomllib.loads(text)
+    rows = meta.get("extensions", {}).get("gatework", {}).get("domains", [])
+    if any(isinstance(r, dict) and name in r.get("skills", []) for r in rows if isinstance(rows, list)):
+        return text
+    files = ", ".join(f"`{g}`" for g in globs)
+    row = f"[[extensions.gatework.domains]]\nfiles = {_toml_string(files)}\nskills = [{_toml_string(name)}]\n"
+    after = f"{text.rstrip(chr(10))}\n\n{row}" if text.strip() else row
+    tomllib.loads(after)  # fail loudly rather than write a pack.toml nothing can read
+    return after
+
+
+def render(src: Source, item: Item) -> tuple[dict[str, str], str]:
+    """(files to write, path of the item) for item in the pack src. pack.toml is among the files
+    when a domain skill adds its Domains row."""
+    slug = slug_of(item.name, src, item.kind)
+    name = f"{src.prefix}{slug}"
+    if not item.description:
+        raise ConfigError(f"give the {item.kind} a --description: what it does and when to use it")
+    values = {"name": name, "description": " ".join(item.description.split())}
+    if item.kind == "skill":
+        body = "skill.md"
+        if item.domain:
+            body, values["files"] = "domain-skill.md", ", ".join(f"`{g}`" for g in item.domain)
+        rel = f"skills/{name}/SKILL.md"
+        files = {rel: skill_text(name, Skill(slug, item.description, _fill(body, values)))}
+        if item.domain:
+            files["pack.toml"] = domains_row((src.root / "pack.toml").read_text(encoding="utf-8"), item.domain, name)
+        return files, rel
+
+
+def _ask(question: str, default: str = "") -> str:
+    try:
+        line = input(f"{question}{f' [{default}]' if default else ''}: ")
+    except EOFError:
+        print()
+        return default
+    return line.strip() or default
+
+
+def ask(item: Item, src: Source) -> Item:
+    """Ask for what the command line didn't give: the name and the description."""
+    while not item.name:
+        item.name = _ask(f"{item.kind.capitalize()} name (after the prefix {src.prefix})")
+    if item.kind == "skill" and not item.description and item.domain:
+        item.description = default_description(item)
+    while not item.description:
+        item.description = _ask("Description: what it does, and when to use it")
+    return item
+
+
+def default_description(item: Item) -> str:
+    where = ", ".join(f"`{g}`" for g in item.domain)
+    return (f"Offline checks, conventions and a review checklist for {where}. Use when writing, "
+            "changing or reviewing those files.")
+
+
+def cmd_new_item(kind: str, name: str | None = None, pack: str | None = None, description: str = "",
+                 domain: list[str] | None = None, yes: bool = False,
+                 force: bool = False, dry_run: bool = False) -> int:
+    try:
+        src = find_pack(pack)
+        item = Item(kind, name or "", description, domain or [])
+        if kind != "skill" and domain:
+            raise ConfigError("--domain is for a skill")
+        if not yes and sys.stdin.isatty():
+            item = ask(item, src)
+        elif not item.name:
+            raise ConfigError(f"name the {kind}: `brainrc new {kind} <name>`")
+        if kind == "skill" and item.domain and not item.description:
+            item.description = default_description(item)
+        files, rel = render(src, item)
+        if dry_run:
+            for path in files:
+                print(f"  would {'change' if path == 'pack.toml' else 'write'} {path}")
+            print(f"Would add {rel} to the pack {src.name} at {tilde(src.root)}.")
+            return 0
+        add_files(src.root, {k: v for k, v in files.items() if k != "pack.toml"}, force=force)
+        if "pack.toml" in files and files["pack.toml"] != (src.root / "pack.toml").read_text(encoding="utf-8"):
+            write_text_atomic(src.root / "pack.toml", files["pack.toml"])
+            print(f"Added a Domains row for {', '.join(f'`{g}`' for g in item.domain)} to pack.toml.")
+    except ConfigError as e:
+        print(f"ERROR {e}")
+        return 1
+    except OSError as e:
+        print(f"ERROR {tilde(Path(e.filename)) + ': ' if e.filename else ''}{e.strerror or e}")
+        return 1
+    print(f"Wrote {rel} in the pack {src.name} at {tilde(src.root)}.")
+    from .validate import cmd_validate
+    return cmd_validate(pack=str(src.root))

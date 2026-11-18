@@ -9,6 +9,7 @@ A test checks this page against the command's own help, so it lists every comman
 there is.
 
 **Set up**: [init](#brainrc-init) · [import](#brainrc-import) · [new pack](#brainrc-new-pack) ·
+[new skill](#brainrc-new-skill) ·
 **Install**: [status](#brainrc-status) · [apply](#brainrc-apply) · [update](#brainrc-update) · [install](#brainrc-install) · [uninstall](#brainrc-uninstall) ·
 **Check**: [check](#brainrc-check) · [audit](#brainrc-audit) · [doctor](#brainrc-doctor) · [validate](#brainrc-validate) · [tokens](#brainrc-tokens) ·
 **Other**: [pin-mcp](#brainrc-pin-mcp) · [migrate](#brainrc-migrate)
@@ -76,6 +77,27 @@ brainrc validate --pack acme
 | `--yes`, `-y` | ask nothing: take the defaults |
 | `--force` | replace an earlier pack in that folder; its `.git` stays |
 | `--enable` | add the pack to `packs.local.toml` |
+| `--dry-run` | print the files it would write, write nothing |
+
+## brainrc new skill
+
+Write a skill in the pack you are in (the nearest folder from here up with a `pack.toml`), or the
+one `--pack` names: `skills/<prefix><name>/SKILL.md` with its `name` and `description`
+([packs](packs.md#what-new-item-writes)). Then it checks the pack as `validate --pack` does.
+
+```bash
+brainrc new skill deploy --description "Deploy acme services. Use when asked to ship one."
+brainrc new skill protobuf --domain '*.proto,buf.yaml'
+```
+
+| Option | Does |
+|---|---|
+| `NAME` | the skill's name; the pack's prefix is added when it's missing (asked for in a terminal) |
+| `--pack DIR` | the pack to write it in (default: the nearest folder from here up with a `pack.toml`) |
+| `--description TEXT` | what it does and when to use it (asked for in a terminal; a domain skill has one by default) |
+| `--domain GLOB,...` | the files it is for: a domain skill with Validate (offline), Conventions, Review checklist and Never without approval sections, and a `[[extensions.gatework.domains]]` row in `pack.toml` |
+| `--yes`, `-y` | ask nothing: take the defaults |
+| `--force` | replace a skill of that name |
 | `--dry-run` | print the files it would write, write nothing |
 
 ## brainrc status

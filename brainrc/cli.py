@@ -29,8 +29,10 @@ from .sources import (
     check_packs, collisions, core_version, duplicate_packs, render_instructions, sources,
 )
 from .importers import FORMATS as IMPORT_FORMATS, cmd_import
+from .importers.markdown import globs as import_globs
 from .init import cmd_init
 from .newpack import TICKETS, cmd_new_pack
+from . import newitem
 from .uninstall import cmd_uninstall, finish_purge
 from .opencode import rendered_agents
 from .packs import adopt_record, describe, fetch_pack, git_packs, pinned, to_fetch
@@ -543,8 +545,9 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--force", action="store_true", help="replace the folder if it already has files")
     p.add_argument("--enable", action="store_true", help="add the pack to packs.local.toml")
     p.add_argument("--dry-run", action="store_true", help="print the files it would write, write nothing")
-    p = add("new", "start a new pack, or (later) an item in one", "Write a new pack from brainrc's "
-            "templates. Run `new pack --help` for its options.")
+    p = add("new", "start a new pack, or a skill in one", "Write a new pack, "
+            "or a new item in the pack you are in, from brainrc's templates. Run `new <kind> --help` "
+            "for its options.")
     kinds = p.add_subparsers(dest="kind", metavar="<kind>", title="kinds", required=True)
     p = kinds.add_parser("pack", help="write a new pack that validates on its first run",
                          description="Write a new pack: pack.toml, a README, an AGENTS.md for whoever edits it, "
@@ -570,6 +573,28 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--force", action="store_true", help="replace an earlier pack in that folder; its .git stays")
     p.add_argument("--enable", action="store_true", help="add the pack to packs.local.toml")
     p.add_argument("--dry-run", action="store_true", help="print the files it would write, write nothing")
+    item_help = {
+        "skill": ("write skills/<prefix><name>/SKILL.md; --domain makes it a domain skill with a Domains row",
+                  "Write a skill in this pack: skills/<prefix><name>/SKILL.md with its name and description. "
+                  "--domain GLOB,... makes it a domain skill, with Validate (offline), Conventions, Review "
+                  "checklist and Never without approval sections, and adds a [[extensions.gatework.domains]] "
+                  "row for those files to pack.toml."),
+    }
+    for kind, (short, long) in item_help.items():
+        p = kinds.add_parser(kind, help=short, description=long + " Run inside the pack, or name it with "
+                             "--pack; the item is checked as `validate --pack` does.")
+        p.add_argument("name", nargs="?", metavar="NAME", help=f"the {kind}'s name"
+                       + ("" if kind == "rule" else "; the pack's prefix is added when it's missing"))
+        p.add_argument("--pack", metavar="DIR", help="the pack (default: the nearest folder from here up with a pack.toml)")
+        if kind != "rule":
+            p.add_argument("--description", default="", help="what it does and when to use it")
+        if kind == "skill":
+            p.add_argument("--domain", type=import_globs, metavar="GLOB,...",
+                           help="the files it is for, e.g. '*.proto,buf.yaml': a domain skill with a Domains row")
+        p.add_argument("--yes", "-y", action="store_true", help="ask nothing: take the defaults")
+        if kind != "rule":  # a rule is numbered after the last one, so it never replaces one
+            p.add_argument("--force", action="store_true", help=f"replace a {kind} of that name")
+        p.add_argument("--dry-run", action="store_true", help="print the files it would write, write nothing")
     repair_help = ("also relink broken links to where an item used to be: after moving the checkout, "
                    "or a package upgrade to a new Python")
     only_help = ("only these harnesses (repeat it, or separate names with commas); the others "
@@ -699,6 +724,11 @@ def _dispatch(argv: list[str]) -> int:
     if cmd == "import":
         return cmd_import(args.paths, to=args.to, name=args.name, prefix=args.prefix, fmt=args.fmt,
                           force=args.force, dry_run=args.dry_run, enable_pack=args.enable)
+    if cmd == "new" and args.kind != "pack":
+        return newitem.cmd_new_item(args.kind, args.name, pack=args.pack,
+                                    description=getattr(args, "description", ""),
+                                    domain=getattr(args, "domain", None), yes=args.yes,
+                                    force=getattr(args, "force", False), dry_run=args.dry_run)
     if cmd == "new":
         named = [n for names in args.harness for n in names] if args.harness else None
         return cmd_new_pack(args.name, to=args.to, prefix=args.prefix, pack_id=args.pack_id,

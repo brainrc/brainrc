@@ -9,7 +9,7 @@ A test checks this page against the command's own help, so it lists every comman
 there is.
 
 **Set up**: [init](#brainrc-init) · [import](#brainrc-import) · [new pack](#brainrc-new-pack) ·
-[new skill](#brainrc-new-skill) · [new agent](#brainrc-new-agent) ·
+[new skill](#brainrc-new-skill) · [new agent](#brainrc-new-agent) · [new rule](#brainrc-new-rule) ·
 **Install**: [status](#brainrc-status) · [apply](#brainrc-apply) · [update](#brainrc-update) · [install](#brainrc-install) · [uninstall](#brainrc-uninstall) ·
 **Check**: [check](#brainrc-check) · [audit](#brainrc-audit) · [doctor](#brainrc-doctor) · [validate](#brainrc-validate) · [tokens](#brainrc-tokens) ·
 **Other**: [pin-mcp](#brainrc-pin-mcp) · [migrate](#brainrc-migrate)
@@ -115,6 +115,22 @@ read-only `tools` and `model`, and a Handoff section with the block it ends with
 | `--yes`, `-y` | ask nothing: take the defaults |
 | `--force` | replace an agent of that name |
 | `--dry-run` | print the files it would write, write nothing |
+
+## brainrc new rule
+
+Write a rule in the pack you are in: `rules/NN-<name>.md`, numbered after the pack's last rule
+(rounded up to the next ten, so there is room for one between), with the frontmatter core's rules
+carry. Then it prints what the rule adds to every session and what the pack now loads against its
+`max_always_tokens` budget.
+
+| Option | Does |
+|---|---|
+| `NAME` | the rule's name, after its number |
+| `--pack DIR` | the pack to write it in (default: the nearest folder from here up with a `pack.toml`) |
+| `--yes`, `-y` | ask nothing |
+| `--dry-run` | print the file it would write, write nothing |
+
+A rule of the same name is refused: it never replaces one.
 
 ## brainrc status
 

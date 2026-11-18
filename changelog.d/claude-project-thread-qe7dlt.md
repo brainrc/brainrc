@@ -8,3 +8,6 @@ bump: patch
 - `brainrc new agent <name>` writes an agent with read-only tools (`Read, Grep, Glob`),
   `model: inherit` and a Handoff section in Gatework's handoff format. `--tools` and `--model` are
   checked before anything is written (#160).
+- `brainrc new rule <name>` writes `rules/NN-<name>.md` after the pack's last rule, with core's
+  rule frontmatter, and prints what it adds to every session against the pack's
+  `max_always_tokens` budget (#161).

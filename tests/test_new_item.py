@@ -109,6 +109,50 @@ class NewAgentTest(NewItemCase):
                 self.assertFalse((self.pack / "agents/acme-other.md").exists())
 
 
+class NewRuleTest(NewItemCase):
+    """#161"""
+
+    def test_a_rule_takes_the_next_free_number_and_reports_its_cost(self):
+        out = self.ok("rule", "testing")
+        rule = self.pack / "rules/20-testing.md"
+        self.assertEqual(frontmatter(rule), {"trigger": "always_on", "alwaysApply": "true"})
+        self.assertRegex(out, r"The rule adds ~\d+ tokens to every session; the pack now loads ~\d+ of its 800\.")
+        self.ok("rule", "review")
+        self.assertTrue((self.pack / "rules/30-review.md").is_file())
+        text = render_instructions([Source("core", brainrc.config.REPO), load_pack(self.pack)])
+        self.assertNotIn("trigger: always_on\nalwaysApply: true\n---\n\n# Testing", text)  # brainrc strips it
+        self.assertLess(text.index("# Testing"), text.index("# Review"))
+
+    def test_numbering(self):
+        def nn(*names):
+            rules = self.pack / "rules"
+            for p in rules.iterdir():
+                p.unlink()
+            for name in names:
+                (rules / name).write_text("# x\n")
+            return newitem.next_rule_number(load_pack(self.pack))
+        self.assertEqual(nn(), "10")
+        self.assertEqual(nn("10-a.md", "15-b.md"), "20")
+        self.assertEqual(nn("01-a.md", "12-b.md"), "20")
+        self.assertEqual(nn("90-a.md"), "91")
+        self.assertEqual(nn("010-a.md", "120-b.md"), "130")
+        with self.assertRaisesRegex(brainrc.config.ConfigError, "renumber"):
+            nn("99-a.md")
+
+    def test_a_rule_of_that_name_is_refused(self):
+        self.ok("rule", "testing")
+        code, out = self.item("rule", "testing")
+        self.assertEqual(code, 1)
+        self.assertIn("rules/20-testing.md already exists", out)
+
+    def test_over_budget_says_so(self):
+        path = self.pack / "pack.toml"
+        path.write_text(path.read_text().replace("max_always_tokens = 800", "max_always_tokens = 40"))
+        code, out = self.item("rule", "testing")
+        self.assertEqual(code, 1)  # validate fails on the budget
+        self.assertIn("Over budget", out)
+
+
 class FindPackTest(NewItemCase):
     def test_it_finds_the_pack_from_a_folder_inside_it(self):
         os.chdir(self.pack / "skills")

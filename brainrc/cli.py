@@ -545,7 +545,7 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--force", action="store_true", help="replace the folder if it already has files")
     p.add_argument("--enable", action="store_true", help="add the pack to packs.local.toml")
     p.add_argument("--dry-run", action="store_true", help="print the files it would write, write nothing")
-    p = add("new", "start a new pack, or a skill or agent in one", "Write a new pack, "
+    p = add("new", "start a new pack, or a skill, agent or rule in one", "Write a new pack, "
             "or a new item in the pack you are in, from brainrc's templates. Run `new <kind> --help` "
             "for its options.")
     kinds = p.add_subparsers(dest="kind", metavar="<kind>", title="kinds", required=True)
@@ -583,6 +583,10 @@ def _parser() -> argparse.ArgumentParser:
                   "Write an agent in this pack: agents/<prefix><name>.md with its name, description, tools "
                   f"(default: {newitem.AGENT_TOOLS}, read only) and model (default {newitem.AGENT_MODEL}), "
                   "and the handoff block it ends with."),
+        "rule": ("write rules/NN-<name>.md after the pack's last rule, and report its token cost",
+                 "Write a rule in this pack: rules/NN-<name>.md, numbered after its last rule, with the "
+                 "frontmatter core's rules carry. Then report what the pack loads in every session "
+                 "against its max_always_tokens budget."),
     }
     for kind, (short, long) in item_help.items():
         p = kinds.add_parser(kind, help=short, description=long + " Run inside the pack, or name it with "

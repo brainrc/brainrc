@@ -1,4 +1,4 @@
-"""`brainrc new skill|agent NAME` (E8, #159, #160): an item that validates, inside a pack.
+"""`brainrc new skill|agent|rule NAME` (E8, #159 to #161): an item that validates, inside a pack.
 
 Run in a pack (or name one with --pack): the prefix is applied, the frontmatter filled in and the
 body taken from brainrc/_templates/items; brainrc.scaffold renders and writes it, as it does for
@@ -15,13 +15,14 @@ from pathlib import Path
 
 from .config import KNOWN_MODELS, KNOWN_TOOLS, MODEL_ID, ConfigError, expand, tilde, write_text_atomic
 from .naming import NAME
-from .scaffold import Agent, Skill, _toml_string, add_files, agent_text, skill_text
-from .sources import Source, load_pack
+from .scaffold import Agent, Rule, Skill, _toml_string, add_files, agent_text, render_rule, skill_text
+from .sources import Source, load_pack, markdown_files
 
 TEMPLATES = Path(__file__).resolve().parent / "_templates" / "items"
-KINDS = ("skill", "agent")
+KINDS = ("skill", "agent", "rule")
 AGENT_TOOLS = "Read, Grep, Glob"  # least privilege: it reads; add Edit, Write or Bash when it must
 AGENT_MODEL = "inherit"
+RULE_NN = re.compile(r"^(\d+)-")
 NAME_MAX = 64  # a skill's name (validate), and so any item's
 
 
@@ -49,10 +50,10 @@ def find_pack(where: str | None) -> Source:
 
 def slug_of(name: str, src: Source, kind: str) -> str:
     """The name after the pack's prefix: `deploy` and `acme-deploy` are the same skill in acme."""
-    slug = name.removeprefix(src.prefix)
+    slug = name.removeprefix(src.prefix) if kind != "rule" else name
     if not NAME.fullmatch(slug):
         raise ConfigError(f"{kind} name `{name}` must be ASCII lowercase letters, digits and hyphens")
-    if len(src.prefix + slug) > NAME_MAX:
+    if kind != "rule" and len(src.prefix + slug) > NAME_MAX:
         raise ConfigError(f"{kind} name `{src.prefix}{slug}` is over {NAME_MAX} characters")
     return slug
 
@@ -60,6 +61,22 @@ def slug_of(name: str, src: Source, kind: str) -> str:
 def _fill(rel: str, values: dict[str, str]) -> str:
     text = (TEMPLATES / rel).read_text(encoding="utf-8")
     return re.sub(r"\{\{([a-z_]+)\}\}", lambda m: values[m.group(1)], text)
+
+
+def next_rule_number(src: Source) -> str:
+    """The first free NN after the pack's last rule, rounded up to the next ten so there is room
+    to insert one later (10, 20...), with as many digits as its rules use."""
+    found = [m[1] for p in markdown_files("rules", src) if (m := RULE_NN.match(p.name))]
+    if not found:
+        return "10"
+    width = max(len(n) for n in found)
+    last = max(int(n) for n in found)
+    nn = (last // 10 + 1) * 10
+    if nn >= 10 ** width:
+        nn = last + 1
+    if nn >= 10 ** width:
+        raise ConfigError(f"rules/: no number left after {last:0{width}d}; renumber the rules first")
+    return f"{nn:0{width}d}"
 
 
 def domains_row(text: str, globs: list[str], name: str) -> str:
@@ -81,6 +98,13 @@ def render(src: Source, item: Item) -> tuple[dict[str, str], str]:
     when a domain skill adds its Domains row."""
     slug = slug_of(item.name, src, item.kind)
     name = f"{src.prefix}{slug}"
+    if item.kind == "rule":
+        title = slug.replace("-", " ").capitalize()
+        rel = f"rules/{next_rule_number(src)}-{slug}.md"
+        taken = [p.name for p in markdown_files("rules", src) if p.name.split("-", 1)[-1] == f"{slug}.md"]
+        if taken:
+            raise ConfigError(f"rules/{taken[0]} already exists; pick another name")
+        return {rel: render_rule(Rule(slug, _fill("rule.md", {"title": title})), frontmatter=True)}, rel
     if not item.description:
         raise ConfigError(f"give the {item.kind} a --description: what it does and when to use it")
     values = {"name": name, "description": " ".join(item.description.split())}
@@ -120,7 +144,7 @@ def ask(item: Item, src: Source) -> Item:
         item.name = _ask(f"{item.kind.capitalize()} name (after the prefix {src.prefix})")
     if item.kind == "skill" and not item.description and item.domain:
         item.description = default_description(item)
-    while not item.description:
+    while item.kind != "rule" and not item.description:
         item.description = _ask("Description: what it does, and when to use it")
     return item
 
@@ -129,6 +153,19 @@ def default_description(item: Item) -> str:
     where = ", ".join(f"`{g}`" for g in item.domain)
     return (f"Offline checks, conventions and a review checklist for {where}. Use when writing, "
             "changing or reviewing those files.")
+
+
+def token_report(src: Source, rel: str) -> str:
+    """What the new rule costs, and the pack's always-loaded tokens against its budget (#161)."""
+    from .tokens import always_tokens, source_budget
+    total, items = always_tokens(load_pack(src.root))
+    mine = next((n for n, label in items if label.endswith(rel)), 0)
+    budget = source_budget(src)
+    head = f"The rule adds ~{mine} tokens to every session; the pack now loads ~{total}"
+    if budget is None:
+        return f"{head} (no `max_always_tokens` budget in pack.toml)."
+    over = ". Over budget: shorten a rule or move its detail into a skill" if total > budget else ""
+    return f"{head} of its {int(budget)}{over}."
 
 
 def cmd_new_item(kind: str, name: str | None = None, pack: str | None = None, description: str = "",
@@ -166,5 +203,7 @@ def cmd_new_item(kind: str, name: str | None = None, pack: str | None = None, de
         print(f"ERROR {tilde(Path(e.filename)) + ': ' if e.filename else ''}{e.strerror or e}")
         return 1
     print(f"Wrote {rel} in the pack {src.name} at {tilde(src.root)}.")
+    if kind == "rule":
+        print(token_report(src, rel))
     from .validate import cmd_validate
     return cmd_validate(pack=str(src.root))

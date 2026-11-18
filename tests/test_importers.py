@@ -479,6 +479,62 @@ class CopilotImportTest(ImportCase):
         self.assertEqual(rules[-1], "13-everywhere.md")
 
 
+class WindsurfImportTest(ImportCase):
+    """#166: `.windsurfrules`, and `.windsurf/rules/**/*.md` by trigger."""
+
+    def import_fixture(self) -> Path:
+        code, out = self.run_import(str(FIXTURES / "windsurf"), "--to", "team", "--name", "team")
+        self.assertEqual(code, 0, out)
+        self.assertIn("OK:", out)
+        self.assertNotIn("ERROR", out)
+        return self.tmp / "team"
+
+    def test_windsurfrules_imports_into_a_pack_that_renders_the_same_text(self):
+        source = FIXTURES / "windsurf/.windsurfrules"
+        code, out = self.run_import(str(source), "--to", "team", "--name", "team")
+        self.assertEqual(code, 0, out)
+        self.assertIn("OK:", out)
+        pack = self.tmp / "team"
+        self.assertEqual(sorted(p.name for p in (pack / "rules").iterdir()),
+                         ["10-team-rules.md", "20-style.md", "30-testing.md"])
+        self.assertEqual(rendered_pack_text(pack).strip(), normalized(source.read_text()))
+        first = (pack / "rules/20-style.md").read_text().splitlines()[0]
+        self.assertEqual(first, f"<!-- imported by brainrc from {brainrc.config.tilde(source)}, lines 3-6 -->")
+
+    def test_rules_map_by_trigger(self):
+        pack = self.import_fixture()
+        self.assertEqual(sorted(p.name for p in (pack / "rules").iterdir()),
+                         ["10-general.md", "20-team-rules.md", "30-style.md", "40-testing.md"])
+        text = rendered_pack_text(pack)
+        self.assertNotIn("trigger:", text)  # Windsurf's frontmatter stays behind
+        self.assertNotIn("Validate every request body", text)  # a glob rule is a skill
+        skills = {p.name: frontmatter(p / "SKILL.md") for p in (pack / "skills").iterdir()}
+        self.assertEqual(sorted(skills), ["team-backend-api", "team-notes", "team-release"])
+        self.assertEqual(skills["team-backend-api"]["description"], "API handlers. Use when working on `api/**/*.py`, `*.proto`.")
+        self.assertEqual(skills["team-release"]["description"], "Release steps. Use when preparing a release.")
+        self.assertIn("manual rule", skills["team-notes"]["description"])
+        rows = tomllib.loads((pack / "pack.toml").read_text())["extensions"]["gatework"]["domains"]
+        self.assertEqual(rows, [{"files": "`api/**/*.py`, `*.proto`", "skills": ["team-backend-api"]}])
+
+    def test_a_manual_or_unknown_trigger_warns(self):
+        rules = self.tmp / "repo/.windsurf/rules"
+        rules.mkdir(parents=True)
+        (rules / "a.md").write_text("Always do a.\n")
+        (rules / "b.md").write_text("---\ntrigger: sometimes\n---\nDo b.\n")
+        p = plan(resolve([str(self.tmp / "repo")]), "team")
+        self.assertEqual([s.slug for s in p.spec.skills], ["a", "b"])
+        self.assertTrue(any("loads only when asked" in w for w in p.warnings))
+        self.assertTrue(any("unknown trigger `sometimes`" in w for w in p.warnings))
+
+    def test_discover_and_global_rules(self):
+        self.assertEqual([(f, p.name) for f, p in discover(FIXTURES / "windsurf")],
+                         [("windsurf", "rules"), ("windsurf", ".windsurfrules")])
+        global_rules = self.tmp / "global_rules.md"
+        global_rules.write_text("# Mine\n\n- Answer briefly.\n")
+        self.assertEqual(resolve([str(global_rules)]), [("windsurf", global_rules)])
+        self.assertEqual([r.slug for r in plan(resolve([str(global_rules)]), "team").spec.rules], ["mine"])
+
+
 class SetPackPathTest(unittest.TestCase):
     def test_new_table(self):
         self.assertEqual(set_pack_path("", "team", "~/p"), '[team]\npath = "~/p"\n')

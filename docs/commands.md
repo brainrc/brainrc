@@ -28,7 +28,7 @@ to install. It writes `harnesses.local.toml`, `packs.local.toml` and `brainrc.lo
 | `--no-adopt` | leave your instruction files where they are |
 | `--profile minimal\|recommended\|full` | set the profile ([configuration](configuration.md#brainrclocaltoml)) |
 | `--starter minimal\|app\|infra` | set a starter profile instead: rules only; no infrastructure skills; everything |
-| `--import` | import this folder's CLAUDE.md, AGENTS.md, Cursor and Copilot files into the pack `imported` without asking |
+| `--import` | import this folder's CLAUDE.md, AGENTS.md, Cursor, Copilot and Windsurf files into the pack `imported` without asking |
 | `--dry-run` | print what `init` would do, write nothing |
 
 ## brainrc import

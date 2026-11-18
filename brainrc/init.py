@@ -6,8 +6,8 @@ sets what this machine installs (brainrc.local.toml). A harness's instructions f
 that the user wrote would make apply report a CONFLICT, so init copies its text into
 rules/adopted-<harness>.local.md (rendered into every harness's instructions) and moves the
 original aside, leaving the path free for apply's link. Run from a project folder, it offers to
-import that folder's CLAUDE.md, AGENTS.md, Cursor and Copilot files into a pack (#297), and asks
-for a starter profile (brainrc/starter.py). It shows the file, hook and token counts before it
+import that folder's CLAUDE.md, AGENTS.md, Cursor, Copilot and Windsurf files into a pack (#297),
+and asks for a starter profile (brainrc/starter.py). It shows the file, hook and token counts before it
 writes anything. It never runs apply itself.
 """
 from __future__ import annotations
@@ -174,7 +174,7 @@ def _is_checkout(path: Path) -> bool:
 
 def project_sources(cwd: Path, skip: set[Path], roots: list[Path] = ()) -> list[tuple[str, Path]]:
     """Instruction files in the folder init runs from that `brainrc import` reads: CLAUDE.md,
-    AGENTS.md, Cursor rules, Copilot instructions. None in HOME or a brainrc checkout, none that
+    AGENTS.md, Cursor rules, Copilot instructions, Windsurf rules. None in HOME or a brainrc checkout, none that
     init adopts as a harness instructions file, and none that is a link to what brainrc renders."""
     cwd = cwd.resolve()
     if cwd == Path.home().resolve() or _is_checkout(cwd):

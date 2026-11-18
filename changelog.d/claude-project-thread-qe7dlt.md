@@ -14,3 +14,6 @@ bump: patch
 - `brainrc new command <name>` writes a command with `$ARGUMENTS`. When this machine manages
   Codex, which skips such commands, it says so, and `--as-skill` (offered in a terminal) writes the
   user-invoked skill form instead (#162).
+- `brainrc import` reads Windsurf rules: `.windsurfrules`, `global_rules.md` and
+  `.windsurf/rules/`. `always_on` rules become rules; `glob`, `model_decision` and `manual` rules
+  become skills, a glob rule with a Domains row (#166).

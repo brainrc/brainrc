@@ -527,7 +527,7 @@ def _parser() -> argparse.ArgumentParser:
                        "rules only; app is recommended without the infrastructure domain skills; infra "
                        "is full")
     p.add_argument("--import", dest="import_files", action="store_true",
-                   help="import the CLAUDE.md, AGENTS.md, Cursor and Copilot files in this folder into "
+                   help="import the CLAUDE.md, AGENTS.md, Cursor, Copilot and Windsurf files in this folder into "
                    "the pack `imported` without asking (init asks when it asks questions)")
     p.add_argument("--dry-run", action="store_true", help="print what init would do, write nothing")
     p = add("import", "turn CLAUDE.md, AGENTS.md and other tools' instruction files into a pack",

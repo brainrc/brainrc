@@ -1,0 +1,10 @@
+# Team rules
+
+## Style
+
+- Prefer small functions with one job.
+- Name things for what they hold, not their type.
+
+## Testing
+
+- Every bug fix comes with a test that failed before it.

@@ -14,10 +14,10 @@ from pathlib import Path
 from .. import config
 from ..config import ConfigError, config_path, expand, table_span, tilde, write_text_atomic
 from ..scaffold import PackSpec, render_pack, write_pack
-from . import copilot, cursor, instructions
+from . import copilot, cursor, instructions, windsurf
 
 # Format name -> importer module, in the order discover() lists what it finds.
-FORMATS = {"instructions": instructions, "cursor": cursor, "copilot": copilot}
+FORMATS = {"instructions": instructions, "cursor": cursor, "copilot": copilot, "windsurf": windsurf}
 DEFAULT_NAME = "imported"
 
 

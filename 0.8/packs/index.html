@@ -1783,8 +1783,8 @@ pin its own (<a href="../project/">team setup</a>).</p>
 <li><strong>Use packs</strong>: <a href="#enable-a-pack">enable one</a>, <a href="#default-packs">turn the default pack off or pin it</a>,
   or <a href="#import">import the instruction files you have</a>.</li>
 <li><strong>Write one</strong>: start from <a href="../tutorial/">your first pack</a>, or copy
-  <a href="https://github.com/brainrc/brainrc/blob/v0.8.26/examples/pack-acme/README.md">examples/pack-acme</a> (every feature but hooks) or
-  <a href="https://github.com/brainrc/brainrc/blob/v0.8.26/examples/pack-homelab/README.md">examples/pack-homelab</a> (a guard hook). The rest of this
+  <a href="https://github.com/brainrc/brainrc/blob/v0.8.27/examples/pack-acme/README.md">examples/pack-acme</a> (every feature but hooks) or
+  <a href="https://github.com/brainrc/brainrc/blob/v0.8.27/examples/pack-homelab/README.md">examples/pack-homelab</a> (a guard hook). The rest of this
   page is the reference.</li>
 </ul>
 <h2 id="enable-a-pack">Enable a pack<a class="headerlink" href="#enable-a-pack" title="Permanent link">&para;</a></h2>
@@ -1832,9 +1832,9 @@ release tag, so <code>apply</code> fetches it like any git pack.</p>
 <div class="highlight"><pre><span></span><code><span class="k">[gatework]</span>
 <span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"~/src/gatework"</span><span class="w">   </span><span class="c1"># work on a clone; replaces the shipped git and ref</span>
 </code></pre></div>
-<p><code>brainrc init</code> asks whether to keep it. Gatework still installs its old names (<code>spec-agent</code>,
-<code>spec-status</code>, <code>kubernetes</code> and the rest, listed in <code>brainrc/naming.py</code>) as deprecated aliases;
-they are the only unprefixed names naming rule 7 lets it keep (<a href="../upgrade/#from-spec-agent">old names</a>).</p>
+<p><code>brainrc init</code> asks whether to keep it. Gatework 0.8.0 stopped installing its old names
+(<code>spec-agent</code>, <code>spec-status</code>, <code>kubernetes</code> and the rest); the next <code>apply</code> removes their links
+(<a href="../upgrade/#from-spec-agent">old names</a>).</p>
 <p><code>validate --pack</code> checks a pack against brainrc and the default packs on disk, so a pack that
 extends Gatework is checked against it once <code>apply</code> has fetched it; until then <code>validate</code> warns.
 <code>--fetch-defaults</code> fetches them at the versions brainrc pins instead
@@ -1937,7 +1937,7 @@ wrong ones from a first line naming the schema, which <code>brainrc import</code
 <div class="highlight"><pre><span></span><code><span class="c1">#:schema https://raw.githubusercontent.com/brainrc/brainrc/main/docs/schemas/pack.toml.schema.json</span>
 <span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"acme"</span>
 </code></pre></div>
-<p>In a checkout of this repo, <a href="https://github.com/brainrc/brainrc/blob/v0.8.26/.taplo.toml"><code>.taplo.toml</code></a> maps each file to its schema. Files
+<p>In a checkout of this repo, <a href="https://github.com/brainrc/brainrc/blob/v0.8.27/.taplo.toml"><code>.taplo.toml</code></a> maps each file to its schema. Files
 outside it (a pack's own repo, <code>~/.config/brainrc/harnesses.local.toml</code>) take the <code>#:schema</code> line.</p>
 <h2 id="naming">Naming<a class="headerlink" href="#naming" title="Permanent link">&para;</a></h2>
 <p>A clear name is the cheapest trust signal a pack has. Every pack follows these seven rules:</p>
@@ -2115,7 +2115,7 @@ test needs no scaffolding of its own. A string is a Bash command; a dict is the 
 <p><code>assert_allows</code> passes when the hook allows or has no opinion, and <code>assert_no_opinion</code> only when it
 stays out, so Claude Code's own permission check still decides; <code>assert_denies</code> counts exit code 2
 as a deny. Each lists every case that came out wrong, and a missing, failing or hung hook fails.
-<code>run_hook(hook, payload)</code> returns the decision itself. <a href="https://github.com/brainrc/brainrc/blob/v0.8.26/examples/pack-homelab/tests/test_guard.py">pack-homelab</a>
+<code>run_hook(hook, payload)</code> returns the decision itself. <a href="https://github.com/brainrc/brainrc/blob/v0.8.27/examples/pack-homelab/tests/test_guard.py">pack-homelab</a>
 has a full example.</p>
 <h2 id="tripwirestoml">tripwires.toml<a class="headerlink" href="#tripwirestoml" title="Permanent link">&para;</a></h2>
 <p>Stale facts that must not come back, checked by <code>validate</code>:</p>
@@ -2127,7 +2127,7 @@ has a full example.</p>
 <span class="n">paths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"*.md"</span><span class="p">]</span><span class="w">                              </span><span class="c1"># default; fnmatch against the path in the pack</span>
 </code></pre></div>
 <h2 id="compatibility">Compatibility<a class="headerlink" href="#compatibility" title="Permanent link">&para;</a></h2>
-<p>brainrc's version is in <code>VERSION</code>. <a href="https://github.com/brainrc/brainrc/blob/v0.8.26/CHANGELOG.md">CHANGELOG.md</a> tags changes that affect packs
+<p>brainrc's version is in <code>VERSION</code>. <a href="https://github.com/brainrc/brainrc/blob/v0.8.27/CHANGELOG.md">CHANGELOG.md</a> tags changes that affect packs
 with <strong>[pack contract]</strong>. Declare the versions your pack supports with <code>requires_core</code>:
 comma-separated clauses of <code>&gt;=</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&lt;</code>, <code>==</code>, <code>!=</code> and a version (missing parts
 are zero, and a bare version means <code>&gt;=</code>).</p>

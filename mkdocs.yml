@@ -1,6 +1,6 @@
-# The docs site (#197): docs/ built with MkDocs Material, one version per release (mike), deployed
-# to GitHub Pages by .github/workflows/docs.yml. Build it locally:
-#   pip install mkdocs==1.6.1 mkdocs-material==9.7.6 mike==2.1.3 && mkdocs serve
+# The docs site (#197): docs/ built with MkDocs Material, one version per minor release (mike),
+# deployed to GitHub Pages by .github/workflows/docs.yml. Build it locally:
+#   pip install --require-hashes -r .github/docs-requirements.txt && mkdocs serve
 site_name: brainrc
 site_description: One set of AI coding-agent config for Claude Code, Codex CLI, OpenCode, Antigravity CLI and Cursor
 site_url: https://brainrc.github.io/brainrc/
@@ -8,6 +8,8 @@ repo_url: https://github.com/brainrc/brainrc
 repo_name: brainrc/brainrc
 edit_uri: edit/main/docs/
 docs_dir: docs
+not_in_nav: |
+  spec-agent.md
 strict: true
 validation:
   anchors: warn  # a link to a missing heading fails the strict build too
@@ -48,20 +50,41 @@ nav:
   - Home: index.md
   - Get started:
       - Install: install.md
-      - Tutorial: tutorial.md
-      - Troubleshooting: troubleshooting.md
+      - Getting started: getting-started.md
+      - Concepts: concepts.md
+  - Packs:
+      - Your first pack: tutorial.md
+      - Use a pack: packs/use-a-pack.md
+      - Import your instructions: packs/import.md
+      - Start an employer pack: packs/employer-pack.md
+      - Share a team pack: packs/team-pack.md
+      - Keep a personal pack: packs/personal-pack.md
+      - Publish a stack pack: packs/stack-pack.md
+      - Turn a plugin into a pack: packs/from-a-plugin.md
+      - Validate a pack in CI: packs/validate-in-ci.md
+      - Packs reference: packs.md
+      - Why packs: packs/why-packs.md
   - Guides:
-      - Packs: packs.md
-      - Project manifest and lockfile: project.md
+      - Team setup: project.md
+      - MCP servers: mcp.md
       - Guardrails: guardrails.md
-      - Harness packages: harness-packages.md
-      - spec-agent: spec-agent.md
+      - Plugins: plugins.md
+      - Upgrading: upgrade.md
+      - Troubleshooting: troubleshooting.md
+  - Gatework:
+      - Overview: gatework.md
       - After delivery: post-deliver.md
+      - Efficiency: efficiency.md
       - Evals: evals.md
       - End-to-end runs: e2e-runs.md
   - Reference:
-      - Formats: formats.md
-      - Schemas: schemas.md
+      - Commands: commands.md
+      - Configuration: configuration.md
+      - What reaches each tool: capabilities.md
+      - File formats: formats.md
+      - JSON Schemas: schemas.md
       - Architecture: architecture.md
-      - Efficiency: efficiency.md
+  - Project:
       - Roadmap: roadmap.md
+      - Harness packages research: harness-packages.md
+      - Hook latency: hook-latency.md

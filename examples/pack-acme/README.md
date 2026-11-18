@@ -39,7 +39,7 @@ and a tripwire. Format reference: [docs/packs.md](https://github.com/brainrc/bra
    ```
 
    Core's own CI checks this example with the same action. A pre-commit hook and the manual
-   step are in [docs/packs.md](https://github.com/brainrc/brainrc/blob/main/docs/packs.md#validate-a-pack-in-its-own-ci).
+   step are in [docs/packs.md](https://github.com/brainrc/brainrc/blob/main/docs/packs/validate-in-ci.md).
 
 Hooks are left out on purpose: an enabled pack's hooks run on every tool call. To add them,
 see `overrides/` in [docs/packs.md](https://github.com/brainrc/brainrc/blob/main/docs/packs.md#layout) and the

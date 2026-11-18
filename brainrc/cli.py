@@ -13,7 +13,7 @@ import shutil
 import sys
 from pathlib import Path
 
-from . import config
+from . import capabilities, config
 from .config import (
     ConfigError,
     check_config,
@@ -30,11 +30,15 @@ from .sources import (
 )
 from .importers import FORMATS as IMPORT_FORMATS, cmd_import
 from .init import cmd_init
+from .newpack import TICKETS, cmd_new_pack
 from .uninstall import cmd_uninstall, finish_purge
 from .opencode import rendered_agents
 from .packs import adopt_record, describe, fetch_pack, git_packs, pinned, to_fetch
 from . import update as pin_update
-from .plan import hooks_copy_current, invalid_fragments, link_target, old_root, plan, stale_hooks_copy
+from .plan import (
+    hooks_copy_current, invalid_fragments, link_target, obsolete_renders, old_root, plan, stale_hooks_copy,
+    stale_renders,
+)
 from .mcp import check_servers, mcp_change, mcp_plan, record_owned, write_mcp
 from .settings import FileChanged, read_current, settings_change, write_settings
 from .plugin import cmd_plugin
@@ -251,21 +255,25 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True, moved: frozens
         mcp_pins.prune(claude_mcp[0].servers)
         mcp_pins.report_unpinned(claude_mcp[0].servers)
 
+    # Rendered files, not links: an edited rule changes the instructions file and no link.
+    renders = stale_renders(srcs, extensions, agents)
+    for path, exists in renders:
+        print(f"{'UPDATE' if exists else 'CREATE':9} {'':9} {tilde(path)}"
+              + ("  (a rule or pack changed, or the file was edited, since the last apply)" if exists else ""))
+    obsolete = obsolete_renders(extensions, agents)
+    for path in obsolete:
+        print(f"{'PRUNE':9} {'':9} {tilde(path)}")
     if apply:
         rendered = rendered_instructions()
         rendered.parent.mkdir(parents=True, exist_ok=True)
         rendered.write_text(render_instructions(srcs))
         if extensions is not None:
             home_extensions_file().write_text(extensions)
-        elif home_extensions_file().is_file():  # no enabled pack reads it any more
-            home_extensions_file().unlink()
         for path, text in agents.items():
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(text)
-        if rendered_agents_dir().is_dir():
-            for old in rendered_agents_dir().glob("*.md"):
-                if old not in agents:
-                    old.unlink()
+        for old in obsolete:  # extensions.md no enabled pack reads, copies of removed agents
+            old.unlink()
         if not config.installed() and legacy_extensions().is_file():  # left behind by the move to packs/
             legacy_extensions().unlink()
             for d in legacy_extensions().parents[:3]:  # references/, spec-agent/, skills/, if now empty
@@ -278,7 +286,7 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True, moved: frozens
 
     old, prune = _old_roots(srcs, roots) if repair else (None, None)
     links, stale, merges = plan(srcs, old_roots=prune)
-    conflicts, changed, changes, repairable = 0, 0, len(pending) + len(perms), 0
+    conflicts, changed, changes, repairable = 0, 0, len(pending) + len(perms) + len(renders) + len(obsolete), 0
     for link in links:
         state = link.state(roots, old)
         if state == "ok":
@@ -535,6 +543,33 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--force", action="store_true", help="replace the folder if it already has files")
     p.add_argument("--enable", action="store_true", help="add the pack to packs.local.toml")
     p.add_argument("--dry-run", action="store_true", help="print the files it would write, write nothing")
+    p = add("new", "start a new pack, or (later) an item in one", "Write a new pack from brainrc's "
+            "templates. Run `new pack --help` for its options.")
+    kinds = p.add_subparsers(dest="kind", metavar="<kind>", title="kinds", required=True)
+    p = kinds.add_parser("pack", help="write a new pack that validates on its first run",
+                         description="Write a new pack: pack.toml, a README, an AGENTS.md for whoever edits it, "
+                         "a first rule, a facts skill, tripwires, tests, a CI workflow, a pre-commit config "
+                         "and a .gitignore. It asks for the name, prefix, harnesses and ticket system when "
+                         "stdin is a terminal and they aren't given, then checks the pack as "
+                         "`validate --pack` would.")
+    p.add_argument("name", nargs="?", metavar="NAME", help="the pack's name")
+    p.add_argument("--to", metavar="DIR", help="where to write it (default: ./<name>)")
+    p.add_argument("--prefix", default="", help="the prefix for its items (default: <name>-, or <owner>- with --id)")
+    p.add_argument("--id", dest="pack_id", default="", metavar="OWNER/PACK",
+                   help="the <owner>/<pack> ID it is published under")
+    p.add_argument("--description", default="", help="one line on what the pack is for")
+    p.add_argument("--harness", action="append", type=_harness_list, metavar="HARNESS",
+                   help="the harnesses you'll edit it with: claude adds a CLAUDE.md, gemini a GEMINI.md, "
+                   "each pointing at AGENTS.md (default: every enabled harness)")
+    p.add_argument("--ticket", choices=list(TICKETS),
+                   help="the ticket system Gatework uses for its refs (default: none)")
+    p.add_argument("--refs", type=_harness_list, metavar="REF,...",
+                   help="the ticket refs it handles, e.g. ACME-* (default: from the ticket system)")
+    p.add_argument("--host", default="", help="with --ticket jira: the Jira site, e.g. acme.atlassian.net")
+    p.add_argument("--yes", "-y", action="store_true", help="ask nothing: take the defaults")
+    p.add_argument("--force", action="store_true", help="replace an earlier pack in that folder; its .git stays")
+    p.add_argument("--enable", action="store_true", help="add the pack to packs.local.toml")
+    p.add_argument("--dry-run", action="store_true", help="print the files it would write, write nothing")
     repair_help = ("also relink broken links to where an item used to be: after moving the checkout, "
                    "or a package upgrade to a new Python")
     only_help = ("only these harnesses (repeat it, or separate names with commas); the others "
@@ -621,6 +656,8 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--dry-run", action="store_true", help="only print the move")
     add("tokens", "estimate the context cost of every skill, agent and command")
     add("plugin", "write the plugin manifests (.claude-plugin/, plugin.json)", hidden=True)
+    p = add("capabilities", "print the capability matrix from harnesses.toml", hidden=True)
+    p.add_argument("--write", action="store_true", help=f"rewrite its table in {capabilities.PAGE}")
     p = add("release", "fold changelog.d/ into CHANGELOG.md, bump VERSION, rewrite the manifests",
             hidden=True)
     group = p.add_mutually_exclusive_group()
@@ -665,6 +702,12 @@ def _dispatch(argv: list[str]) -> int:
     if cmd == "import":
         return cmd_import(args.paths, to=args.to, name=args.name, prefix=args.prefix, fmt=args.fmt,
                           force=args.force, dry_run=args.dry_run, enable_pack=args.enable)
+    if cmd == "new":
+        named = [n for names in args.harness for n in names] if args.harness else None
+        return cmd_new_pack(args.name, to=args.to, prefix=args.prefix, pack_id=args.pack_id,
+                            description=args.description, harnesses=named, ticket=args.ticket,
+                            refs=args.refs, host=args.host, yes=args.yes, force=args.force, dry_run=args.dry_run,
+                            enable_pack=args.enable)
     if cmd == "validate":
         if args.fetch_defaults and not args.pack:
             parser.print_usage(sys.stderr)
@@ -674,6 +717,8 @@ def _dispatch(argv: list[str]) -> int:
                             local_tripwires=args.local_tripwires)
     if cmd == "plugin":
         return cmd_plugin()
+    if cmd == "capabilities":
+        return capabilities.cmd_capabilities(args.write)
     if cmd == "release":
         return cmd_release_notes(args.notes) if args.notes else cmd_release(dry_run=args.dry_run)
     if cmd == "doctor":

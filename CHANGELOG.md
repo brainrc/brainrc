@@ -12,6 +12,85 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.8.28 (2026-11-18)
+
+- `brainrc new pack <name>` starts a pack that validates on its first run: `pack.toml` pinned to
+  this core's minor series, a README, an `AGENTS.md` for whoever edits it (with `CLAUDE.md` and
+  `GEMINI.md` pointing at it for those tools), a first rule, a facts skill, a tripwire, pack tests,
+  a CI workflow and a pre-commit config pinned to this core's tag, and a `.gitignore`. In a terminal
+  it asks for the name, prefix, harnesses and ticket system; a ticket system becomes an
+  `[extensions.gatework.ticket]` table. It is written by the same writer as `brainrc import`, and
+  the tutorial's first three pack steps are now this one command (#150).
+- `brainrc import` and `brainrc new pack` check every naming rule (reserved, vendor and look-alike
+  names too) before they write a pack, not only in the `validate` that follows.
+- The pack docs are split by what you came for: the tutorial, how-to guides (use, import, validate
+  in CI, and start an employer, team, personal or stack pack, or one from a Claude Code plugin),
+  the reference in `docs/packs.md`, whose key tables are generated from the JSON Schemas, and an
+  explanation of why packs exist and what you trust when you turn one on. Each page states its
+  type, and a test keeps the tables, the types and the nav in step (#152).
+- `examples/pack-template` is `new pack`'s output for a pack called `mypack`, with steps for
+  renaming it: the contents for a GitHub template repository. `scripts/pack_template.py` keeps it
+  in step with `new pack`, and CI validates it with the validate-pack action (#151).
+- `brainrc import` and `brainrc new pack` write into a folder that holds only `.git`, such as a
+  fresh clone, and `--force` keeps the folder's `.git`. A naming error names the value it refuses.
+
+## 0.8.27 (2026-11-18)
+
+- The default pack is now Gatework v0.8.0, which no longer installs the old spec-agent names
+  (`spec-agent`, `kubernetes`, `analyst` and the rest). The next `apply` removes their links; use
+  the `brainrc-` names. A pack that still names an old one in `[extensions.gatework]` gets a warning
+  until Gatework 0.9.0.
+
+## 0.8.26 (2026-11-18)
+
+- `status` (and `apply`) now list rendered files that are out of date, such as `instructions.md`
+  after you edit a rule: `UPDATE` when it differs from what `apply` would write, `CREATE` when
+  it's missing, and `PRUNE` for an `extensions.md` or OpenCode agent copy that `apply` deletes.
+  Before, `status` said "Everything in sync." until `apply`, and only `doctor` noticed an edited
+  rule. `status` and `doctor` now use the same check.
+
+## 0.8.25 (2026-11-17)
+
+- Docs rewritten to be easier to follow and to match brainrc as it is now. The README and install page lead with the one-line install; new pages cover getting started, configuration, every command (checked against the CLI by a test), plugins, MCP servers and upgrading. The site nav is regrouped into Get started, Guides, Gatework and Reference.
+- spec-agent is now called Gatework throughout the docs. `docs/gatework.md` replaces `docs/spec-agent.md`, which stays as a pointer, and the old names are listed once in `docs/upgrade.md`.
+
+## 0.8.24 (2026-11-17)
+
+- CI: the Windows `validate` jobs get 15 minutes instead of 10. Their tests take about 8 minutes,
+  so a slow runner was hitting the limit and cancelling the job; other platforms keep 10.
+
+## 0.8.23 (2026-11-17)
+
+- Docs site publishing is safer and more exact (#197): the build runs with no write token and a
+  separate job pushes `gh-pages`, every build tool is pinned with hashes in
+  `.github/docs-requirements.txt`, each release publishes the tag it made, `latest` moves only for
+  the newest tag, and links that leave `docs/` point at that tag on GitHub (not inside code).
+
+## 0.8.22 (2026-11-17)
+
+- `scripts/hook_latency.py` measures the median and p95 wall time core's hooks add to each tool
+  call (Claude Code and Cursor) and to session start, and the `hook-latency` workflow runs it on
+  Linux and macOS. `docs/hook-latency.md` records the numbers against the 50 ms p95 bar: under on
+  Linux, over on macOS runners, so the outcome is to port only the guard evaluator to Go (#299).
+
+## 0.8.21 (2026-11-17)
+
+- The README opens with one sentence on what brainrc is and names Gatework as the home of
+  spec-agent, and the new `docs/concepts.md` explains harness, item, pack, profile, lockfile and
+  scope in plain words (#296).
+
+## 0.8.20 (2026-11-17)
+
+- New `docs/capabilities.md`: one row per tool with where its skills, rules, agents, commands,
+  guard hooks and MCP servers land, and what a repo gets. The table is generated from
+  `harnesses.toml` (`brainrc capabilities --write`), and `tests/test_capabilities.py` fails when
+  the two disagree (#298).
+
+## 0.8.19 (2026-11-17)
+
+- `docs/roadmap.md` groups open epics by release gate (A, B, C) to match the GitHub milestones,
+  names E26 to E33, and `test_roadmap.py` checks the gate order and those epics (#300).
+
 ## 0.8.18 (2026-11-16)
 
 - A docs site built from `docs/` with MkDocs Material (`mkdocs.yml`), with search, a JSON Schemas

@@ -1,11 +1,32 @@
-# Project manifest and lockfile
+# Team setup: brainrc.toml and brainrc.lock
 
-A team commits two files to its repo: `brainrc.toml`, which says which packs the repo's agents
-use, and `brainrc.lock`, which records exactly what those packs were when `apply` last ran. Every
-machine and CI job then produces the same agent files from the same lock.
+Give a repo's AI agents the same skills and rules on every machine and in CI. You commit two
+files: `brainrc.toml` says which packs the repo uses, and `brainrc.lock` records exactly what they
+were. `apply` writes the agent files into the repo itself (`.agents/skills/`, `AGENTS.md`, ...),
+so every tool that opens the repo finds them, whether or not brainrc is installed there.
 
-This page is the contract for both files. It is language-neutral: another implementation that
-reads and writes them as described here is compatible. The JSON Schemas
+## Set it up
+
+```bash
+cd my-repo
+printf 'version = 1\n' > brainrc.toml     # Gatework only; add packs below
+brainrc apply                              # writes .agents/skills/, .claude/skills/ and brainrc.lock
+git add brainrc.toml brainrc.lock .agents .claude
+git commit -m "Add brainrc"
+```
+
+A teammate, or CI, then runs:
+
+```bash
+brainrc install --frozen    # exactly what the lock records, or fail
+brainrc check               # exit 1 if anything drifted from the lock
+```
+
+To change what the repo uses, edit `brainrc.toml` and run `apply`, which relocks. To take newer
+pack versions, run `brainrc update`. Commit the result either way.
+
+The rest of this page is the full contract for both files. It is language-neutral: another
+implementation that reads and writes them as described here is compatible. The JSON Schemas
 [`schemas/brainrc.toml.schema.json`](schemas/brainrc.toml.schema.json) and
 [`schemas/brainrc.lock.schema.json`](schemas/brainrc.lock.schema.json) describe each file after
 it is parsed as TOML; `brainrc` checks both files against them on every read. Conformance
@@ -13,8 +34,8 @@ fixtures are in `tests/fixtures/lockfile/`.
 
 ## Scopes
 
-- **User scope** is what `brainrc` has always done: packs from `packs.toml` and
-  `packs.local.toml`, linked into each installed harness's home. Its lock is
+- **User scope** is your machine: brainrc's own content, the default pack and the packs in
+  `packs.local.toml`, linked into each installed tool's home folder. Its lock is
   `$BRAINRC_HOME/brainrc.lock` (default `~/.config/brainrc/brainrc.lock`).
 - **Project scope** is a repo with `brainrc.toml` at its root. Its agent files are written into
   the repo, and its lock is `brainrc.lock` next to `brainrc.toml`. `brainrc` finds the project
@@ -106,7 +127,7 @@ doesn't fail (`apply` puts it back).
 ```yaml
 - uses: actions/checkout@v4
 - name: Agent files match brainrc.lock
-  run: pipx run --spec git+https://github.com/brainrc/brainrc brainrc check
+  run: pipx run brainrc check
 ```
 
 `brainrc install --frozen` after it also fetches each git pack at its locked commit and checks it.

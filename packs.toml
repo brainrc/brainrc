@@ -2,7 +2,7 @@
 #
 # A pack has the same layout as this repo (skills/, agents/, commands/, rules/, overrides/)
 # plus a pack.toml. brainrc links its content next to the core's, renders its rules into the
-# same instructions file, merges its hook fragments, and renders its spec-agent extensions.
+# same instructions file, merges its hook fragments, and renders its Gatework extensions.
 #
 # Keys per pack:
 #   path     pack repo root; ~ and $ENV_VARS expand, relative paths are relative to this file
@@ -22,5 +22,5 @@
 
 [gatework]
 git = "https://github.com/brainrc/gatework.git"
-ref = "v0.7.2"
+ref = "v0.8.0"
 description = "spec-driven work from a ticket to a reviewed PR"

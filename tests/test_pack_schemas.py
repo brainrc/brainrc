@@ -154,7 +154,7 @@ class PackTomlValidateTest(TempRepoCase):
         code, out = self.validate()
         self.assertEqual(code, 1, out)
         self.assertIn("ERROR homelab:pack.toml: max_always_tokens: must be a number", out)
-        self.assertIn("`id` must be `<owner>/<pack>`", out)
+        self.assertIn("must be `<owner>/<pack>`", out)
         self.assertNotIn("id: must be a string", out)  # one error per mistake
 
     def test_a_decimal_budget_is_still_a_budget(self):

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the commands of docs/tutorial.md (steps 1-5) in a temporary HOME and checkout copy.
+"""Run the commands of docs/tutorial.md (steps 1-4) in a temporary HOME and checkout copy.
 
 Usage: python3 scripts/check_tutorial.py [--doc PATH | --readme [PATH]] [--find-links DIR]
 With --readme, runs the bash block under "## Quickstart" of the README the same way, from the temp
@@ -21,12 +21,13 @@ import tempfile
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-STEPS = (1, 2, 3, 4, 5)
+STEPS = (1, 2, 3, 4)
 # Documented output each step must print, besides exiting 0.
 EXPECTED = {
     1: [r"(?m)^OK:"],
-    4: [r"(?m)^OK:", re.escape("(packs: gatework, myteam)")],
-    5: [re.escape("Everything in sync.")],
+    2: [r"(?m)^OK:", re.escape("(packs: gatework, myteam)")],
+    3: [r"(?m)^OK:", re.escape("(packs: gatework, myteam)")],
+    4: [re.escape("Everything in sync.")],
 }
 # Stable lines only (the sample transcript in the README drifts): see brainrc/cli.py `status`.
 EXPECTED_README = {1: [re.escape("Dry run. Run `apply` to write."), re.escape("Everything in sync.")]}

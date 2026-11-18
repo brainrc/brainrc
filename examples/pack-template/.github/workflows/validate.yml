@@ -1,0 +1,16 @@
+# Checks this pack against the brainrc core it pins, and the default packs (Gatework) that core
+# pins. Move the pin when you test against a newer core, and update requires_core in pack.toml.
+name: validate
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: brainrc/brainrc/.github/actions/validate-pack@v0.8.27

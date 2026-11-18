@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tiny CLI used to exercise the spec-agent workflow."""
+"""Tiny CLI used to exercise the Gatework workflow."""
 import argparse
 import sys
 

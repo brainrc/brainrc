@@ -1,7 +1,7 @@
 """Starter profiles for `brainrc init` (#297), and the counts init shows before it writes.
 
 A starter profile is a first answer to "what should this machine install": an install profile
-(`minimal`, `recommended`, `full`; docs/install.md) plus the `exclude` patterns that fit the work.
+(`minimal`, `recommended`, `full`; docs/configuration.md) plus the `exclude` patterns that fit the work.
 
 - minimal: the rules only.
 - app: skills, agents, commands and hooks, without the infrastructure domain skills.
@@ -18,7 +18,7 @@ from .config import PROFILES, TABLE_HEADER, ConfigError
 from .sources import Source, excluded, frontmatter, markdown_files, render_instructions, skills
 from .tokens import estimate_tokens
 
-# Gatework's infrastructure domain skills (docs/spec-agent.md § Domain skills).
+# Gatework's infrastructure domain skills (docs/gatework.md § Domain skills).
 INFRA_SKILLS = ("brainrc-terraform", "brainrc-aws", "brainrc-kubernetes", "brainrc-gitops")
 APP_EXCLUDE = tuple(f"gatework:skills/{s}" for s in INFRA_SKILLS)
 STARTERS: dict[str, tuple[str, tuple[str, ...]]] = {

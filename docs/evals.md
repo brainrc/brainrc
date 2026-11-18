@@ -1,10 +1,10 @@
 # Evals
 
-`validate` checks that files are well formed. Evals check behaviour: whether a spec-agent run
+`validate` checks that files are well formed. Evals check behaviour: whether a Gatework run
 ended correctly, and whether skill descriptions make a model pick the right skills. Both live in
 `scripts/evals.py` (stdlib only) and are opt-in, because a real eval needs a model run first.
 
-## Grade a spec-agent run
+## Grade a Gatework run
 
 Run a sandbox ticket ([examples/sandbox](../examples/sandbox/README.md)) to the end, leave the
 run's branch checked out, then from the core checkout:

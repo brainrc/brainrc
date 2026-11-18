@@ -21,9 +21,30 @@ from .config import (
     rendered_instructions,
     tilde,
 )
-from .sources import Source, installed_items, sources
+from .sources import Source, installed_items, render_instructions, sources
 from .opencode import agents_format
 
+
+def stale_renders(srcs: list[Source], extensions: str | None, agents: dict[Path, str]) -> list[tuple[Path, bool]]:
+    """The files apply renders (the instructions file the rules go into, extensions.md, OpenCode's
+    agent copies) that are missing or differ from what apply would write now, as (path, exists).
+    A rule edited since the last apply shows up here, since its link never changes.
+    extensions: render_extensions(srcs), None when no enabled pack renders it."""
+    targets = [(rendered_instructions(), lambda: render_instructions(srcs))]
+    if extensions is not None:
+        targets.append((config.home_extensions_file(), lambda: extensions))
+    targets += [(path, lambda text=text: text) for path, text in agents.items()]
+    return [(path, exists) for path, render in targets
+            if not (exists := path.is_file()) or path.read_text() != render()]
+
+
+def obsolete_renders(extensions: str | None, agents: dict[Path, str]) -> list[Path]:
+    """Rendered files apply deletes: extensions.md once no enabled pack renders it, and OpenCode
+    agent copies whose agent is gone."""
+    gone = [config.home_extensions_file()] if extensions is None and config.home_extensions_file().is_file() else []
+    if rendered_agents_dir().is_dir():
+        gone += sorted(p for p in rendered_agents_dir().glob("*.md") if p not in agents)
+    return gone
 
 @dataclass
 class Link:

@@ -12,6 +12,14 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.8.26 (2026-11-18)
+
+- `status` (and `apply`) now list rendered files that are out of date, such as `instructions.md`
+  after you edit a rule: `UPDATE` when it differs from what `apply` would write, `CREATE` when
+  it's missing, and `PRUNE` for an `extensions.md` or OpenCode agent copy that `apply` deletes.
+  Before, `status` said "Everything in sync." until `apply`, and only `doctor` noticed an edited
+  rule. `status` and `doctor` now use the same check.
+
 ## 0.8.25 (2026-11-17)
 
 - Docs rewritten to be easier to follow and to match brainrc as it is now. The README and install page lead with the one-line install; new pages cover getting started, configuration, every command (checked against the CLI by a test), plugins, MCP servers and upgrading. The site nav is regrouped into Get started, Guides, Gatework and Reference.

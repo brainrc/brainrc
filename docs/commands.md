@@ -9,7 +9,7 @@ A test checks this page against the command's own help, so it lists every comman
 there is.
 
 **Set up**: [init](#brainrc-init) · [import](#brainrc-import) · [new pack](#brainrc-new-pack) ·
-[new skill](#brainrc-new-skill) ·
+[new skill](#brainrc-new-skill) · [new agent](#brainrc-new-agent) ·
 **Install**: [status](#brainrc-status) · [apply](#brainrc-apply) · [update](#brainrc-update) · [install](#brainrc-install) · [uninstall](#brainrc-uninstall) ·
 **Check**: [check](#brainrc-check) · [audit](#brainrc-audit) · [doctor](#brainrc-doctor) · [validate](#brainrc-validate) · [tokens](#brainrc-tokens) ·
 **Other**: [pin-mcp](#brainrc-pin-mcp) · [migrate](#brainrc-migrate)
@@ -98,6 +98,22 @@ brainrc new skill protobuf --domain '*.proto,buf.yaml'
 | `--domain GLOB,...` | the files it is for: a domain skill with Validate (offline), Conventions, Review checklist and Never without approval sections, and a `[[extensions.gatework.domains]]` row in `pack.toml` |
 | `--yes`, `-y` | ask nothing: take the defaults |
 | `--force` | replace a skill of that name |
+| `--dry-run` | print the files it would write, write nothing |
+
+## brainrc new agent
+
+Write an agent in the pack you are in: `agents/<prefix><name>.md` with its `name`, `description`,
+read-only `tools` and `model`, and a Handoff section with the block it ends with.
+
+| Option | Does |
+|---|---|
+| `NAME` | the agent's name; the pack's prefix is added when it's missing |
+| `--pack DIR` | the pack to write it in (default: the nearest folder from here up with a `pack.toml`) |
+| `--description TEXT` | when to delegate to it (asked for in a terminal) |
+| `--tools TOOL,...` | its tools (default `Read, Grep, Glob`); add `Edit`, `Write` or `Bash` only when it needs them |
+| `--model MODEL` | `haiku`, `sonnet`, `opus`, `inherit` or a full ID (default `inherit`) |
+| `--yes`, `-y` | ask nothing: take the defaults |
+| `--force` | replace an agent of that name |
 | `--dry-run` | print the files it would write, write nothing |
 
 ## brainrc status

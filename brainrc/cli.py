@@ -545,7 +545,7 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--force", action="store_true", help="replace the folder if it already has files")
     p.add_argument("--enable", action="store_true", help="add the pack to packs.local.toml")
     p.add_argument("--dry-run", action="store_true", help="print the files it would write, write nothing")
-    p = add("new", "start a new pack, or a skill in one", "Write a new pack, "
+    p = add("new", "start a new pack, or a skill or agent in one", "Write a new pack, "
             "or a new item in the pack you are in, from brainrc's templates. Run `new <kind> --help` "
             "for its options.")
     kinds = p.add_subparsers(dest="kind", metavar="<kind>", title="kinds", required=True)
@@ -579,6 +579,10 @@ def _parser() -> argparse.ArgumentParser:
                   "--domain GLOB,... makes it a domain skill, with Validate (offline), Conventions, Review "
                   "checklist and Never without approval sections, and adds a [[extensions.gatework.domains]] "
                   "row for those files to pack.toml."),
+        "agent": ("write agents/<prefix><name>.md with least-privilege tools and a handoff section",
+                  "Write an agent in this pack: agents/<prefix><name>.md with its name, description, tools "
+                  f"(default: {newitem.AGENT_TOOLS}, read only) and model (default {newitem.AGENT_MODEL}), "
+                  "and the handoff block it ends with."),
     }
     for kind, (short, long) in item_help.items():
         p = kinds.add_parser(kind, help=short, description=long + " Run inside the pack, or name it with "
@@ -591,6 +595,9 @@ def _parser() -> argparse.ArgumentParser:
         if kind == "skill":
             p.add_argument("--domain", type=import_globs, metavar="GLOB,...",
                            help="the files it is for, e.g. '*.proto,buf.yaml': a domain skill with a Domains row")
+        if kind == "agent":
+            p.add_argument("--tools", help=f"its tools, comma-separated (default: {newitem.AGENT_TOOLS})")
+            p.add_argument("--model", help=f"haiku, sonnet, opus, inherit or a full ID (default: {newitem.AGENT_MODEL})")
         p.add_argument("--yes", "-y", action="store_true", help="ask nothing: take the defaults")
         if kind != "rule":  # a rule is numbered after the last one, so it never replaces one
             p.add_argument("--force", action="store_true", help=f"replace a {kind} of that name")
@@ -727,7 +734,8 @@ def _dispatch(argv: list[str]) -> int:
     if cmd == "new" and args.kind != "pack":
         return newitem.cmd_new_item(args.kind, args.name, pack=args.pack,
                                     description=getattr(args, "description", ""),
-                                    domain=getattr(args, "domain", None), yes=args.yes,
+                                    domain=getattr(args, "domain", None), tools=getattr(args, "tools", None),
+                                    model=getattr(args, "model", None), yes=args.yes,
                                     force=getattr(args, "force", False), dry_run=args.dry_run)
     if cmd == "new":
         named = [n for names in args.harness for n in names] if args.harness else None

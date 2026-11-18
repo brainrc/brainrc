@@ -85,6 +85,30 @@ class NewSkillTest(NewItemCase):
         self.assertEqual(frontmatter(self.pack / "skills/acme-deploy/SKILL.md")["description"], "Deploy acme services.")
 
 
+class NewAgentTest(NewItemCase):
+    """#160"""
+
+    def test_an_agent_gets_least_privilege_tools_and_the_handoff_format(self):
+        self.ok("agent", "reviewer", "--description", "Reviews acme diffs. Use for a second look at a change.")
+        agent = self.pack / "agents/acme-reviewer.md"
+        meta = frontmatter(agent)
+        self.assertEqual((meta["name"], meta["tools"], meta["model"]), ("acme-reviewer", "Read, Grep, Glob", "inherit"))
+        text = agent.read_text()
+        self.assertIn("## Handoff", text)
+        for part in ("## acme-reviewer · <task> ·", "**Did:**", "**Evidence:**", "**Changed files:**",
+                     "**Open issues:**", "**Next:**"):
+            self.assertIn(part, text)
+
+    def test_tools_and_model_are_checked_before_writing(self):
+        self.ok("agent", "fixer", "--description", "Fixes lint.", "--tools", "Read,Edit,Bash", "--model", "sonnet")
+        self.assertEqual(frontmatter(self.pack / "agents/acme-fixer.md")["tools"], "Read, Edit, Bash")
+        for args in (["--tools", "Read,Teleport"], ["--model", "gpt"]):
+            with self.subTest(args):
+                code, out = self.item("agent", "other", "--description", "x", *args)
+                self.assertEqual(code, 1, out)
+                self.assertFalse((self.pack / "agents/acme-other.md").exists())
+
+
 class FindPackTest(NewItemCase):
     def test_it_finds_the_pack_from_a_folder_inside_it(self):
         os.chdir(self.pack / "skills")
@@ -105,3 +129,12 @@ class FindPackTest(NewItemCase):
         self.assertIn("would write skills/acme-protobuf/SKILL.md", out)
         self.assertIn("would change pack.toml", out)
         self.assertEqual(sorted(p.relative_to(self.pack) for p in self.pack.rglob("*")), before)
+
+    def test_a_link_in_the_way_is_not_written_through(self):
+        outside = self.tmp / "outside"
+        outside.mkdir()
+        (self.pack / "agents").symlink_to(outside, target_is_directory=True)
+        code, out = self.item("agent", "x", "--description", "x")
+        self.assertEqual(code, 1)
+        self.assertIn("is a link", out)
+        self.assertEqual(list(outside.iterdir()), [])

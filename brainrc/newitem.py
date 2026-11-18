@@ -1,4 +1,4 @@
-"""`brainrc new skill NAME` (E8, #159): an item that validates, inside a pack.
+"""`brainrc new skill|agent NAME` (E8, #159, #160): an item that validates, inside a pack.
 
 Run in a pack (or name one with --pack): the prefix is applied, the frontmatter filled in and the
 body taken from brainrc/_templates/items; brainrc.scaffold renders and writes it, as it does for
@@ -13,13 +13,15 @@ import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from .config import ConfigError, expand, tilde, write_text_atomic
+from .config import KNOWN_MODELS, KNOWN_TOOLS, MODEL_ID, ConfigError, expand, tilde, write_text_atomic
 from .naming import NAME
-from .scaffold import Skill, _toml_string, add_files, skill_text
+from .scaffold import Agent, Skill, _toml_string, add_files, agent_text, skill_text
 from .sources import Source, load_pack
 
 TEMPLATES = Path(__file__).resolve().parent / "_templates" / "items"
-KINDS = ("skill",)
+KINDS = ("skill", "agent")
+AGENT_TOOLS = "Read, Grep, Glob"  # least privilege: it reads; add Edit, Write or Bash when it must
+AGENT_MODEL = "inherit"
 NAME_MAX = 64  # a skill's name (validate), and so any item's
 
 
@@ -29,6 +31,8 @@ class Item:
     name: str                # as given: with or without the pack's prefix
     description: str = ""
     domain: list[str] = field(default_factory=list)  # skill: the globs that make it a domain skill
+    tools: str = AGENT_TOOLS
+    model: str = AGENT_MODEL
 
 
 def find_pack(where: str | None) -> Source:
@@ -89,6 +93,16 @@ def render(src: Source, item: Item) -> tuple[dict[str, str], str]:
         if item.domain:
             files["pack.toml"] = domains_row((src.root / "pack.toml").read_text(encoding="utf-8"), item.domain, name)
         return files, rel
+    if item.kind == "agent":
+        tools = [t.strip() for t in item.tools.split(",") if t.strip()]
+        unknown = [t for t in tools if t not in KNOWN_TOOLS and not t.startswith("mcp__")]
+        if unknown:
+            raise ConfigError(f"--tools: unknown tool {', '.join(unknown)} (known: {', '.join(sorted(KNOWN_TOOLS))})")
+        if item.model not in KNOWN_MODELS and not MODEL_ID.match(item.model):
+            raise ConfigError(f"--model: unknown model `{item.model}` ({' | '.join(sorted(KNOWN_MODELS))}, or a full ID)")
+        rel = f"agents/{name}.md"
+        return {rel: agent_text(name, Agent(slug, item.description, _fill("agent.md", values),
+                                            tools=", ".join(tools), model=item.model))}, rel
 
 
 def _ask(question: str, default: str = "") -> str:
@@ -118,13 +132,17 @@ def default_description(item: Item) -> str:
 
 
 def cmd_new_item(kind: str, name: str | None = None, pack: str | None = None, description: str = "",
-                 domain: list[str] | None = None, yes: bool = False,
+                 domain: list[str] | None = None, tools: str | None = None, model: str | None = None,
+                 yes: bool = False,
                  force: bool = False, dry_run: bool = False) -> int:
     try:
         src = find_pack(pack)
-        item = Item(kind, name or "", description, domain or [])
+        item = Item(kind, name or "", description, domain or [], tools if tools is not None else AGENT_TOOLS,
+                    model or AGENT_MODEL)
         if kind != "skill" and domain:
             raise ConfigError("--domain is for a skill")
+        if kind != "agent" and (tools is not None or model):
+            raise ConfigError("--tools and --model are for an agent")
         if not yes and sys.stdin.isatty():
             item = ask(item, src)
         elif not item.name:

@@ -5,3 +5,6 @@ bump: patch
   with the prefix and frontmatter filled in, and checks the pack. `--domain GLOB,...` writes a
   domain skill with its four sections and adds a Domains row for those files to `pack.toml`,
   keeping the rest of the file as written. The tutorial's domain skill step now uses it (#159).
+- `brainrc new agent <name>` writes an agent with read-only tools (`Read, Grep, Glob`),
+  `model: inherit` and a Handoff section in Gatework's handoff format. `--tools` and `--model` are
+  checked before anything is written (#160).

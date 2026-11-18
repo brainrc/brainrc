@@ -169,6 +169,7 @@ the prefix applied and its frontmatter filled in, then checks the pack as `valid
 |---|---|
 | `new skill <name>` | `skills/<prefix><name>/SKILL.md` with `name` and `description` |
 | `new skill <name> --domain GLOB,...` | a domain skill: Validate (offline), Conventions, Review checklist and Never without approval, and a [Domains row](#extensions) for those files in `pack.toml` |
+| `new agent <name>` | `agents/<prefix><name>.md` with read-only `tools` (`Read, Grep, Glob`), `model = inherit`, and the handoff block it ends with |
 
 The bodies come from `brainrc/_templates/items`: headings with one line each that says what goes
 there. Replace them before you publish the pack.

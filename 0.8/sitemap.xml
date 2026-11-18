@@ -108,4 +108,40 @@
          <loc>https://brainrc.github.io/brainrc/0.8/upgrade/</loc>
          <lastmod>2026-11-18</lastmod>
     </url>
+    <url>
+         <loc>https://brainrc.github.io/brainrc/0.8/packs/employer-pack/</loc>
+         <lastmod>2026-11-18</lastmod>
+    </url>
+    <url>
+         <loc>https://brainrc.github.io/brainrc/0.8/packs/from-a-plugin/</loc>
+         <lastmod>2026-11-18</lastmod>
+    </url>
+    <url>
+         <loc>https://brainrc.github.io/brainrc/0.8/packs/import/</loc>
+         <lastmod>2026-11-18</lastmod>
+    </url>
+    <url>
+         <loc>https://brainrc.github.io/brainrc/0.8/packs/personal-pack/</loc>
+         <lastmod>2026-11-18</lastmod>
+    </url>
+    <url>
+         <loc>https://brainrc.github.io/brainrc/0.8/packs/stack-pack/</loc>
+         <lastmod>2026-11-18</lastmod>
+    </url>
+    <url>
+         <loc>https://brainrc.github.io/brainrc/0.8/packs/team-pack/</loc>
+         <lastmod>2026-11-18</lastmod>
+    </url>
+    <url>
+         <loc>https://brainrc.github.io/brainrc/0.8/packs/use-a-pack/</loc>
+         <lastmod>2026-11-18</lastmod>
+    </url>
+    <url>
+         <loc>https://brainrc.github.io/brainrc/0.8/packs/validate-in-ci/</loc>
+         <lastmod>2026-11-18</lastmod>
+    </url>
+    <url>
+         <loc>https://brainrc.github.io/brainrc/0.8/packs/why-packs/</loc>
+         <lastmod>2026-11-18</lastmod>
+    </url>
 </urlset>

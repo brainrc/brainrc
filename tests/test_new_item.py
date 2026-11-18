@@ -55,13 +55,13 @@ class NewSkillTest(NewItemCase):
         self.assertFalse((self.pack / "skills/acme-acme-deploy").exists())
 
     def test_a_domain_skill_has_the_four_sections_and_a_domains_row(self):
-        before = (self.pack / "pack.toml").read_text()
+        before = (self.pack / "pack.toml").read_text(encoding="utf-8")
         self.ok("skill", "protobuf", "--domain", "*.proto,buf.yaml,src/*.{ts,tsx}")
-        text = (self.pack / "skills/acme-protobuf/SKILL.md").read_text()
+        text = (self.pack / "skills/acme-protobuf/SKILL.md").read_text(encoding="utf-8")
         heads = ["## Validate (offline)", "## Conventions", "## Review checklist", "## Never without approval"]
         self.assertEqual([text.index(h) for h in heads], sorted(text.index(h) for h in heads))
         self.assertIn("`src/*.{ts,tsx}`", frontmatter(self.pack / "skills/acme-protobuf/SKILL.md")["description"])
-        after = (self.pack / "pack.toml").read_text()
+        after = (self.pack / "pack.toml").read_text(encoding="utf-8")
         self.assertTrue(after.startswith(before.rstrip("\n")))  # comments and keys kept as written
         rows = tomllib.loads(after)["extensions"]["gatework"]["domains"]
         self.assertEqual(rows, [{"files": "`*.proto`, `buf.yaml`, `src/*.{ts,tsx}`", "skills": ["acme-protobuf"]}])
@@ -69,11 +69,11 @@ class NewSkillTest(NewItemCase):
     def test_the_domains_row_is_added_once(self):
         self.ok("skill", "protobuf", "--domain", "*.proto")
         self.ok("skill", "protobuf", "--domain", "*.proto", "--force")
-        self.assertEqual(len(tomllib.loads((self.pack / "pack.toml").read_text())["extensions"]["gatework"]["domains"]), 1)
+        self.assertEqual(len(tomllib.loads((self.pack / "pack.toml").read_text(encoding="utf-8"))["extensions"]["gatework"]["domains"]), 1)
 
     def test_a_pack_toml_that_cant_take_a_row_is_an_error_not_a_crash(self):
         path = self.pack / "pack.toml"
-        good = path.read_text()
+        good = path.read_text(encoding="utf-8")
         for text, says in ((good + '\n[extensions.gatework]\ndomains = [{files = "`*.go`", skills = ["acme-go"]}]\n',
                             "write them as [[extensions.gatework.domains]] tables"),
                            (good + "\nbroken = \n", "pack.toml:")):
@@ -85,7 +85,7 @@ class NewSkillTest(NewItemCase):
                     self.assertIn("ERROR", out)
                     self.assertIn(says, out)
                 self.assertFalse((self.pack / "skills/acme-protobuf").exists())
-                self.assertEqual(path.read_text(), text)
+                self.assertEqual(path.read_text(encoding="utf-8"), text)
 
     def test_a_plain_skill_needs_a_description_when_nothing_can_ask(self):
         code, out = self.item("skill", "deploy")
@@ -109,7 +109,7 @@ class NewAgentTest(NewItemCase):
         agent = self.pack / "agents/acme-reviewer.md"
         meta = frontmatter(agent)
         self.assertEqual((meta["name"], meta["tools"], meta["model"]), ("acme-reviewer", "Read, Grep, Glob", "inherit"))
-        text = agent.read_text()
+        text = agent.read_text(encoding="utf-8")
         self.assertIn("## Handoff", text)
         for part in ("## acme-reviewer · <task> ·", "**Did:**", "**Evidence:**", "**Changed files:**",
                      "**Open issues:**", "**Next:**"):
@@ -163,7 +163,7 @@ class NewRuleTest(NewItemCase):
 
     def test_over_budget_says_so(self):
         path = self.pack / "pack.toml"
-        path.write_text(path.read_text().replace("max_always_tokens = 800", "max_always_tokens = 40"))
+        path.write_text(path.read_text(encoding="utf-8").replace("max_always_tokens = 800", "max_always_tokens = 40"))
         code, out = self.item("rule", "testing")
         self.assertEqual(code, 1)  # validate fails on the budget
         self.assertIn("Over budget", out)
@@ -177,7 +177,7 @@ class NewCommandTest(NewItemCase):
         self.assertNotIn("NOTE", out)
         command = self.pack / "commands/acme-release.md"
         self.assertEqual(frontmatter(command), {"description": "Cut an acme release"})
-        self.assertIn("$ARGUMENTS", command.read_text())
+        self.assertIn("$ARGUMENTS", command.read_text(encoding="utf-8"))
 
     def test_codex_gets_a_note_and_the_skill_form_on_request(self):
         with mock.patch.object(newitem, "codex_targeted", return_value=True):
@@ -187,7 +187,7 @@ class NewCommandTest(NewItemCase):
         meta = frontmatter(self.pack / "skills/acme-ship/SKILL.md")
         self.assertEqual((meta["name"], meta["disable-model-invocation"], meta["argument-hint"]),
                          ("acme-ship", "true", "<version>"))
-        self.assertIn("$ARGUMENTS", (self.pack / "skills/acme-ship/SKILL.md").read_text())
+        self.assertIn("$ARGUMENTS", (self.pack / "skills/acme-ship/SKILL.md").read_text(encoding="utf-8"))
 
     def test_only_an_installed_codex_counts(self):
         def harnesses(include_missing=False, **_):

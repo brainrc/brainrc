@@ -53,14 +53,14 @@ def name_errors(name: str, prefix: str, pack_id: object = None, where: str = "pa
     stem = prefix[:-1] if prefix.endswith("-") else prefix
     errors = []
     if not NAME.fullmatch(name):
-        errors.append(f"{where}: `name` must be ASCII lowercase letters, digits and hyphens")
+        errors.append(f"{where}: `name` `{name}` must be ASCII lowercase letters, digits and hyphens")
     if not prefix.endswith("-") or not NAME.fullmatch(stem):
-        errors.append(f"{where}: `prefix` must be ASCII lowercase letters, digits and hyphens, ending with '-'")
+        errors.append(f"{where}: `prefix` `{prefix}` must be ASCII lowercase letters, digits and hyphens, ending with '-'")
     elif not PREFIX_MIN <= len(stem) <= PREFIX_MAX:
         errors.append(f"{where}: `prefix` `{prefix}` must be {PREFIX_MIN} to {PREFIX_MAX} characters "
                       "before its '-'")
     if pack_id is not None and not (isinstance(pack_id, str) and PACK_ID.fullmatch(pack_id)):
-        errors.append(f"{where}: `id` must be `<owner>/<pack>` in ASCII lowercase letters, digits and hyphens")
+        errors.append(f"{where}: `id` `{pack_id}` must be `<owner>/<pack>` in ASCII lowercase letters, digits and hyphens")
         pack_id = None
     owner = pack_id.split("/")[0] if pack_id else ""
     if owner and not prefix.startswith(f"{owner}-"):

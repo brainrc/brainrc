@@ -12,8 +12,10 @@ From the repository's root:
 brainrc new pack team --to tools/agent-pack
 ```
 
-It prints the `brainrc.toml` table that loads it. A pack your team keeps in its own repository
-works the same way with `git` and `ref` in place of `path`.
+It prints the `brainrc.toml` table that loads it. Delete the pack's
+`.github/workflows/validate.yml` and `.pre-commit-config.yaml`: they only run at a repository's
+root, and step 4 checks the pack from this repository's CI. A pack your team keeps in its own
+repository works the same way with `git` and `ref` in place of `path`.
 
 ## 2. List it in `brainrc.toml`
 

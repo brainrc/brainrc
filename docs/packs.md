@@ -151,7 +151,7 @@ brainrc validate --pack acme
 In a terminal it asks for the name, prefix, the tools you'll edit the pack with, and a ticket
 system (`github`, `jira` or `local`), which becomes an `[extensions.gatework.ticket]` table. It
 checks the [naming rules](#naming) before it writes anything, never writes into a folder with files
-in it (`--force` replaces an earlier pack), and `--enable` adds the pack to `packs.local.toml`.
+in it but `.git` (`--force` replaces an earlier pack and keeps its `.git`), and `--enable` adds the pack to `packs.local.toml`.
 
 [examples/pack-template](../examples/pack-template/README.md) holds the same files for a pack
 called `mypack`, with steps for renaming it: the contents of a GitHub template repository, for

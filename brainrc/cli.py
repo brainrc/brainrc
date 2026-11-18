@@ -567,7 +567,7 @@ def _parser() -> argparse.ArgumentParser:
                    help="the ticket refs it handles, e.g. ACME-* (default: from the ticket system)")
     p.add_argument("--host", default="", help="with --ticket jira: the Jira site, e.g. acme.atlassian.net")
     p.add_argument("--yes", "-y", action="store_true", help="ask nothing: take the defaults")
-    p.add_argument("--force", action="store_true", help="replace an earlier pack in that folder")
+    p.add_argument("--force", action="store_true", help="replace an earlier pack in that folder; its .git stays")
     p.add_argument("--enable", action="store_true", help="add the pack to packs.local.toml")
     p.add_argument("--dry-run", action="store_true", help="print the files it would write, write nothing")
     repair_help = ("also relink broken links to where an item used to be: after moving the checkout, "

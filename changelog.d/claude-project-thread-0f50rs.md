@@ -18,3 +18,5 @@ bump: patch
 - `examples/pack-template` is `new pack`'s output for a pack called `mypack`, with steps for
   renaming it: the contents for a GitHub template repository. `scripts/pack_template.py` keeps it
   in step with `new pack`, and CI validates it with the validate-pack action (#151).
+- `brainrc import` and `brainrc new pack` write into a folder that holds only `.git`, such as a
+  fresh clone, and `--force` keeps the folder's `.git`. A naming error names the value it refuses.

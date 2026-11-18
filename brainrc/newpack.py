@@ -13,6 +13,7 @@ from pathlib import Path
 
 from . import config
 from .config import ConfigError, expand, load_harnesses, tilde
+from .naming import name_errors
 from .scaffold import PackSpec, Rule, Skill, check_dest, check_name, render_pack, write_pack
 
 TEMPLATES = Path(__file__).resolve().parent / "_templates" / "pack"
@@ -23,6 +24,7 @@ PLACEHOLDER = re.compile(r"\{\{([a-z_]+)\}\}")
 TICKETS = {"none": "", "github": "brainrc-ticket-github", "jira": "brainrc-ticket-jira",
            "local": "brainrc-ticket-local"}
 MAX_ALWAYS_TOKENS = 800
+ROOT_ONLY = (".github/workflows/validate.yml", ".pre-commit-config.yaml")  # work only at a repo's root
 NOTES = {
     "prefix": "every skill, agent, command and MCP server starts with this",
     "requires_core": "the brainrc versions this pack works with",
@@ -112,6 +114,10 @@ def _split(value: str) -> list[str]:
 
 def ask(a: Answers, given: set[str], known: list[str]) -> Answers:
     """Ask for each answer the command line didn't give; re-ask the ones that break a rule."""
+    if a.pack_id:  # never asked, so a bad one stops here rather than in a loop that can't fix it
+        errors = name_errors("pack", default_prefix("pack", a.pack_id), a.pack_id, "--id")
+        if errors:
+            raise ConfigError("; ".join(errors))
     typed = False  # a prefix that isn't the default follows the name when the name is asked again
     while True:
         if "name" not in given:
@@ -124,7 +130,7 @@ def ask(a: Answers, given: set[str], known: list[str]) -> Answers:
             check_name(a.name, a.prefix, a.pack_id)
             break
         except ConfigError as e:
-            if {"name", "prefix"} <= given:
+            if "name" in given:  # asking only for the prefix again can't fix the name
                 raise
             print(f"  {e}")
     while "harnesses" not in given:
@@ -165,6 +171,10 @@ def cmd_new_pack(name: str | None = None, to: str | None = None, prefix: str = "
             a = ask(a, given, known)
         elif not a.name:
             raise ConfigError(f"name the pack: `{config.command('new pack <name>')}`")
+        if a.ticket == "none" and (refs or host):
+            raise ConfigError("--refs and --host are for a ticket system: add --ticket github, jira or local")
+        if host and a.ticket != "jira":
+            raise ConfigError(f"--host is for --ticket jira, not {a.ticket}")
         spec = spec_for(a)
         files = render_pack(spec)
         dest = expand(to) if to else Path(a.name)
@@ -188,6 +198,11 @@ def cmd_new_pack(name: str | None = None, to: str | None = None, prefix: str = "
         print(f"ERROR {tilde(Path(e.filename)) + ': ' if e.filename else ''}{e.strerror or e}")
         return 1
     print(f"Wrote {tilde(dest)}: {summary(spec, files)}.")
+    root = next((p for p in dest.parents if (p / ".git").exists()), None)
+    if root and not (dest / ".git").exists():
+        print(f"NOTE {tilde(dest)} is inside the repository {tilde(root)}, where its "
+              f"{' and '.join(f'`{f}`' for f in ROOT_ONLY)} don't run: delete them and check the pack "
+              "in that repository's CI (docs/packs/team-pack.md).")
     from .validate import cmd_validate
     code = cmd_validate(pack=str(dest))
     if code:

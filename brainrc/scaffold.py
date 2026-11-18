@@ -68,6 +68,10 @@ def check_name(name: str, prefix: str, pack_id: str = "") -> None:
     """The naming rules (docs/packs.md#naming) a pack's own name, prefix and ID must meet before
     anything is written."""
     errors = name_errors(name, prefix, pack_id or None, "pack")
+    from .sources import default_packs  # late: sources reads config at call time
+    taken = ["core", *default_packs()]
+    if name in taken:
+        errors.append(f"pack: `name` `{name}` is taken by brainrc ({', '.join(taken)})")
     if errors:
         raise ConfigError("; ".join(e.removeprefix("pack: ") for e in errors))
 
@@ -149,7 +153,7 @@ def check_dest(dest: Path, files: dict[str, str], force: bool = False, sources: 
     """Raise ConfigError if write_pack would refuse dest: so a caller can check before it asks."""
     if dest.is_symlink() or (dest.exists() and not dest.is_dir()):
         raise ConfigError(f"{tilde(dest)} is a link or a file, not a folder")
-    full = dest.is_dir() and any(dest.iterdir())
+    full = dest.is_dir() and any(p.name != ".git" for p in dest.iterdir())  # a fresh clone is empty
     if full and not force:
         raise ConfigError(f"{tilde(dest)} already has files; pick another folder, or pass --force "
                           "to replace the pack in it")
@@ -166,17 +170,21 @@ def check_dest(dest: Path, files: dict[str, str], force: bool = False, sources: 
 
 def write_pack(dest: Path, files: dict[str, str], force: bool = False, sources: list[Path] = ()) -> list[Path]:
     """Write files under dest: into a temporary folder beside it, then moved into place. dest must
-    not exist, or be empty. With force it may also be an earlier pack (it has a pack.toml), which
-    is replaced, but never a folder that holds one of the sources or is a link."""
+    not exist, or be empty but for `.git`. With force it may also be an earlier pack (it has a
+    pack.toml), which is replaced, but never a folder that holds one of the sources or is a link.
+    dest's `.git` is kept: it moves into the new folder, so the history stays."""
     check_dest(dest, files, force, sources)
     dest.parent.mkdir(parents=True, exist_ok=True)
     tmp = Path(tempfile.mkdtemp(prefix=f".{dest.name}-", dir=dest.parent))
+    git = dest / ".git"
     old = None
     try:
         for rel, text in files.items():
             path = tmp / rel
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(text, encoding="utf-8")
+        if git.exists() and not git.is_symlink():
+            os.replace(git, tmp / ".git")
         if dest.exists():  # moved aside first, so a failure leaves the earlier pack whole
             old = Path(tempfile.mkdtemp(prefix=f".{dest.name}-old-", dir=dest.parent))
             os.replace(dest, old / dest.name)
@@ -184,6 +192,8 @@ def write_pack(dest: Path, files: dict[str, str], force: bool = False, sources: 
     except BaseException:
         if old and not dest.exists():
             os.replace(old / dest.name, dest)
+        if (tmp / ".git").exists() and dest.is_dir() and not git.exists():
+            os.replace(tmp / ".git", git)
         config.rmtree(tmp, ignore_errors=True)
         raise
     finally:

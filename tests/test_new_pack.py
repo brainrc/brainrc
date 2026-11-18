@@ -150,6 +150,52 @@ class NewPackTest(NewPackCase):
         self.assertEqual(self.new("acme", "--to", "other", "--force", "--description", "Second.")[0], 0)
         self.assertIn("Second.", (self.tmp / "other/README.md").read_text())
 
+    def test_a_fresh_clone_is_empty_and_force_keeps_its_history(self):
+        git = self.tmp / "acme/.git"
+        git.mkdir(parents=True)
+        (git / "HEAD").write_text("ref: refs/heads/main\n")
+        code, out = self.new("acme")
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("NOTE", out)  # its own repository: the CI workflow runs there
+        self.assertEqual((git / "HEAD").read_text(), "ref: refs/heads/main\n")
+        self.assertTrue((self.tmp / "acme/pack.toml").is_file())
+        code, out = self.new("acme", "--force", "--description", "Second.")
+        self.assertEqual(code, 0, out)
+        self.assertEqual((git / "HEAD").read_text(), "ref: refs/heads/main\n")
+        self.assertIn("Second.", (self.tmp / "acme/README.md").read_text())
+
+    def test_inside_another_repository_it_says_the_ci_files_dont_run(self):
+        (self.tmp / ".git").mkdir()
+        code, out = self.new("team", "--to", "tools/agent-pack")
+        self.assertEqual(code, 0, out)
+        self.assertIn("is inside the repository", out)
+        self.assertIn("`.github/workflows/validate.yml` and `.pre-commit-config.yaml` don't run", out)
+
+    def test_core_and_default_pack_names_are_taken(self):
+        for name in ("core", "gatework"):
+            with self.subTest(name=name):
+                code, out = self.new(name)
+                self.assertEqual(code, 1, out)
+                self.assertIn(f"`name` `{name}` is taken by brainrc", out)
+        self.assertEqual(list(self.tmp.iterdir()), [])
+
+    def test_ticket_options_need_a_ticket_system(self):
+        for args, why in ((("--refs", "ACME-*"), "add --ticket"), (("--host", "acme.atlassian.net"), "add --ticket"),
+                          (("--ticket", "github", "--host", "x.atlassian.net"), "--host is for --ticket jira")):
+            with self.subTest(args=args):
+                code, out = self.new("acme", *args)
+                self.assertEqual(code, 1, out)
+                self.assertIn(why, out)
+        self.assertEqual(list(self.tmp.iterdir()), [])
+
+    def test_its_secret_test_skips_virtualenvs_and_caches(self):
+        self.assertEqual(self.new("acme")[0], 0)
+        for folder in (".venv/lib", "node_modules/x", ".cache"):
+            (self.tmp / "acme" / folder).mkdir(parents=True)
+            (self.tmp / "acme" / folder / "conf.py").write_text("token = " + "'abcdefghijklmnop'\n")
+        code, out = self.validate("acme")
+        self.assertEqual(code, 0, out)
+
     def test_dry_run_writes_nothing(self):
         code, out = self.new("acme", "--dry-run", "--enable")
         self.assertEqual(code, 0, out)
@@ -184,7 +230,7 @@ class AskTest(NewPackCase):
     def test_asks_for_what_is_not_given_and_re_asks_a_bad_name(self):
         code, out = self.answer("Bad Name", "", "acme", "", "claude,gemini", "jira", "", "acme.atlassian.net", "")
         self.assertEqual(code, 0, out)
-        self.assertIn("`name` must be ASCII lowercase", out)
+        self.assertIn("`name` `Bad Name` must be ASCII lowercase", out)
         meta = tomllib.loads((self.tmp / "acme/pack.toml").read_text())
         self.assertEqual(meta["extensions"]["gatework"]["ticket"]["refs"], ["ACME-*"])
         self.assertTrue((self.tmp / "acme/GEMINI.md").is_file())
@@ -195,6 +241,14 @@ class AskTest(NewPackCase):
         self.assertEqual(tomllib.loads((self.tmp / "acme/pack.toml").read_text())["prefix"], "ops-")
         code, out = self.answer(args=("other", "--yes"))
         self.assertEqual(code, 0, out)
+
+    def test_a_bad_name_or_id_from_the_command_line_stops_rather_than_asking_forever(self):
+        for args, why in ((("Acme",), "`name` `Acme`"), (("--id", "Bad/Id"), "`id` `Bad/Id`")):
+            with self.subTest(args=args):
+                code, out = self.answer("acme", "acme-", args=args)  # more input would fail the test
+                self.assertEqual(code, 1, out)
+                self.assertIn(why, out)
+        self.assertEqual(list(self.tmp.iterdir()), [])
 
 
 class ProjectPackTest(FrozenCase):

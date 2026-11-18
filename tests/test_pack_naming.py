@@ -64,7 +64,7 @@ class OwnerPrefixTest(NamingCase):
     def test_a_malformed_id_is_refused(self):
         for bad in ("jdoe", "jdoe/k8s/x", "JDoe/k8s", 7):
             with self.subTest(pack_id=bad):
-                self.assert_refused("`id` must be `<owner>/<pack>`", name="k8s", prefix="jdoe-", pack_id=bad)
+                self.assert_refused("must be `<owner>/<pack>`", name="k8s", prefix="jdoe-", pack_id=bad)
 
 
 class VendorTest(NamingCase):
@@ -115,10 +115,10 @@ class CharsetTest(NamingCase):
     """Rule 5: ASCII lowercase letters, digits and hyphens only."""
 
     def test_non_ascii_and_uppercase_names_are_refused(self):
-        self.assert_refused("`name` must be ASCII", name="acmé", prefix="acme-")
-        self.assert_refused("`prefix` must be ASCII", name="acme", prefix="acmé-")
-        self.assert_refused("`prefix` must be ASCII", name="acme", prefix="Acme-")
-        self.assert_refused("`prefix` must be ASCII", name="acme", prefix="acme_")
+        self.assert_refused("`name` `acmé` must be ASCII", name="acmé", prefix="acme-")
+        self.assert_refused("`prefix` `acmé-` must be ASCII", name="acme", prefix="acmé-")
+        self.assert_refused("`prefix` `Acme-` must be ASCII", name="acme", prefix="Acme-")
+        self.assert_refused("`prefix` `acme_` must be ASCII", name="acme", prefix="acme_")
 
     def test_near_miss_passes(self):
         self.assert_passes(name="acme2", prefix="acme2-")

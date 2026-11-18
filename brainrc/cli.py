@@ -34,7 +34,10 @@ from .uninstall import cmd_uninstall, finish_purge
 from .opencode import rendered_agents
 from .packs import adopt_record, describe, fetch_pack, git_packs, pinned, to_fetch
 from . import update as pin_update
-from .plan import hooks_copy_current, invalid_fragments, link_target, old_root, plan, stale_hooks_copy
+from .plan import (
+    hooks_copy_current, invalid_fragments, link_target, obsolete_renders, old_root, plan, stale_hooks_copy,
+    stale_renders,
+)
 from .mcp import check_servers, mcp_change, mcp_plan, record_owned, write_mcp
 from .settings import FileChanged, read_current, settings_change, write_settings
 from .plugin import cmd_plugin
@@ -251,21 +254,25 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True, moved: frozens
         mcp_pins.prune(claude_mcp[0].servers)
         mcp_pins.report_unpinned(claude_mcp[0].servers)
 
+    # Rendered files, not links: an edited rule changes the instructions file and no link.
+    renders = stale_renders(srcs, extensions, agents)
+    for path, exists in renders:
+        print(f"{'UPDATE' if exists else 'CREATE':9} {'':9} {tilde(path)}"
+              + ("  (a rule or pack changed, or the file was edited, since the last apply)" if exists else ""))
+    obsolete = obsolete_renders(extensions, agents)
+    for path in obsolete:
+        print(f"{'PRUNE':9} {'':9} {tilde(path)}")
     if apply:
         rendered = rendered_instructions()
         rendered.parent.mkdir(parents=True, exist_ok=True)
         rendered.write_text(render_instructions(srcs))
         if extensions is not None:
             home_extensions_file().write_text(extensions)
-        elif home_extensions_file().is_file():  # no enabled pack reads it any more
-            home_extensions_file().unlink()
         for path, text in agents.items():
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(text)
-        if rendered_agents_dir().is_dir():
-            for old in rendered_agents_dir().glob("*.md"):
-                if old not in agents:
-                    old.unlink()
+        for old in obsolete:  # extensions.md no enabled pack reads, copies of removed agents
+            old.unlink()
         if not config.installed() and legacy_extensions().is_file():  # left behind by the move to packs/
             legacy_extensions().unlink()
             for d in legacy_extensions().parents[:3]:  # references/, spec-agent/, skills/, if now empty
@@ -278,7 +285,7 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True, moved: frozens
 
     old, prune = _old_roots(srcs, roots) if repair else (None, None)
     links, stale, merges = plan(srcs, old_roots=prune)
-    conflicts, changed, changes, repairable = 0, 0, len(pending) + len(perms), 0
+    conflicts, changed, changes, repairable = 0, 0, len(pending) + len(perms) + len(renders) + len(obsolete), 0
     for link in links:
         state = link.state(roots, old)
         if state == "ok":

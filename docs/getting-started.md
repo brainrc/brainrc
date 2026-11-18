@@ -103,9 +103,9 @@ echo "- Answer in British English." > ~/.config/brainrc/rules/90-spelling.local.
 brainrc apply
 ```
 
-Rules are rendered into one file, so every change to a rule needs `apply`. `status` doesn't list
-an edited rule, but `doctor` does (`instructions.md is stale`). For more than a rule
-or two, or to share them, make a [pack](packs.md): a folder or git repo of your own rules and
+Rules are rendered into one file, so every change to a rule needs `apply`. Until then, `status`
+lists `~/.config/brainrc/instructions.md` as `UPDATE`. For more than a rule or two, or to share
+them, make a [pack](packs.md): a folder or git repo of your own rules and
 skills. [Your first pack](tutorial.md) builds one step by step.
 
 ## 6. Check the install

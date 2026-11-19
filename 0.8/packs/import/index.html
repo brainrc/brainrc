@@ -1642,7 +1642,7 @@
 
 <!-- divio: how-to -->
 <h1 id="import-the-instruction-files-you-have">Import the instruction files you have<a class="headerlink" href="#import-the-instruction-files-you-have" title="Permanent link">&para;</a></h1>
-<p>Move a <code>CLAUDE.md</code>, <code>AGENTS.md</code>, Cursor rules or Copilot instructions into a pack in one command.</p>
+<p>Move a <code>CLAUDE.md</code>, <code>AGENTS.md</code>, Cursor, Copilot or Windsurf rules, or a Claude Code plugin, into a pack in one command.</p>
 <p><code>brainrc import PATH ...</code> writes the instruction files you already have as a pack, so they move
 over in one command. A folder means the files in it that brainrc reads.</p>
 <table>
@@ -1664,6 +1664,14 @@ over in one command. A folder means the files in it that brainrc reads.</p>
 <tr>
 <td>Copilot: <code>.github/copilot-instructions.md</code>, <code>.github/instructions/**/*.instructions.md</code></td>
 <td>copilot-instructions.md becomes one rule per section; a path-specific file with <code>applyTo: "**"</code> becomes a rule, one scoped to other globs a skill with a Domains row, one with neither a skill loaded on request, as for Cursor; one for code review only (<code>excludeAgent: coding-agent</code>) is skipped</td>
+</tr>
+<tr>
+<td>Windsurf: <code>.windsurfrules</code>, <code>global_rules.md</code>, <code>.windsurf/rules/**/*.md</code></td>
+<td><code>.windsurfrules</code> and <code>global_rules.md</code> become one rule per section; a rule file with <code>trigger: always_on</code> becomes a rule, <code>trigger: glob</code> a skill with a Domains row for its <code>globs</code>, <code>model_decision</code> a skill with its <code>description</code>, and <code>manual</code> a skill loaded on request, as for Cursor</td>
+</tr>
+<tr>
+<td>A Claude Code plugin: a folder with <code>.claude-plugin/plugin.json</code></td>
+<td>its skills (every file in each), agents and commands, with the pack's prefix; <code>hooks/hooks.json</code> as <code>overrides/claude/settings.fragment.json</code>, with the scripts its hooks run in <code>overrides/claude/hooks/</code>; <code>.mcp.json</code> as <code>mcp/servers.toml</code>, with variable names in <code>env_from</code> and never a value (<a href="../from-a-plugin/">from a plugin</a>)</td>
 </tr>
 </tbody>
 </table>

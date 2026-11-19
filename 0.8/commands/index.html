@@ -1374,6 +1374,50 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#brainrc-new-skill" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        brainrc new skill
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#brainrc-new-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        brainrc new agent
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#brainrc-new-rule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        brainrc new rule
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#brainrc-new-command" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        brainrc new command
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#brainrc-status" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1875,6 +1919,50 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#brainrc-new-skill" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        brainrc new skill
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#brainrc-new-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        brainrc new agent
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#brainrc-new-rule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        brainrc new rule
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#brainrc-new-command" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        brainrc new command
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#brainrc-status" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2045,6 +2133,8 @@
 <p>A test checks this page against the command's own help, so it lists every command and option
 there is.</p>
 <p><strong>Set up</strong>: <a href="#brainrc-init">init</a> · <a href="#brainrc-import">import</a> · <a href="#brainrc-new-pack">new pack</a> ·
+<a href="#brainrc-new-skill">new skill</a> · <a href="#brainrc-new-agent">new agent</a> · <a href="#brainrc-new-rule">new rule</a> ·
+<a href="#brainrc-new-command">new command</a> ·
 <strong>Install</strong>: <a href="#brainrc-status">status</a> · <a href="#brainrc-apply">apply</a> · <a href="#brainrc-update">update</a> · <a href="#brainrc-install">install</a> · <a href="#brainrc-uninstall">uninstall</a> ·
 <strong>Check</strong>: <a href="#brainrc-check">check</a> · <a href="#brainrc-audit">audit</a> · <a href="#brainrc-doctor">doctor</a> · <a href="#brainrc-validate">validate</a> · <a href="#brainrc-tokens">tokens</a> ·
 <strong>Other</strong>: <a href="#brainrc-pin-mcp">pin-mcp</a> · <a href="#brainrc-migrate">migrate</a></p>
@@ -2082,7 +2172,7 @@ to install. It writes <code>harnesses.local.toml</code>, <code>packs.local.toml<
 </tr>
 <tr>
 <td><code>--import</code></td>
-<td>import this folder's CLAUDE.md, AGENTS.md, Cursor and Copilot files into the pack <code>imported</code> without asking</td>
+<td>import this folder's CLAUDE.md, AGENTS.md, Cursor, Copilot and Windsurf files and Claude Code plugin into the pack <code>imported</code> without asking</td>
 </tr>
 <tr>
 <td><code>--dry-run</code></td>
@@ -2091,8 +2181,9 @@ to install. It writes <code>harnesses.local.toml</code>, <code>packs.local.toml<
 </tbody>
 </table>
 <h2 id="brainrc-import">brainrc import<a class="headerlink" href="#brainrc-import" title="Permanent link">&para;</a></h2>
-<p>Turn instruction files you already have into a pack: one rule per section, in order
-(<a href="../packs/import/">packs</a>).</p>
+<p>Turn instruction files you already have, or a Claude Code plugin, into a pack: one rule per
+section, in order (<a href="../packs/import/">packs</a>). <code>--format</code> takes <code>instructions</code>, <code>cursor</code>,
+<code>copilot</code>, <code>windsurf</code> or <code>plugin</code>.</p>
 <div class="highlight"><pre><span></span><code>brainrc<span class="w"> </span>import<span class="w"> </span>~/.claude/CLAUDE.md<span class="w"> </span>--name<span class="w"> </span>mine<span class="w"> </span>--enable
 </code></pre></div>
 <table>
@@ -2117,7 +2208,7 @@ to install. It writes <code>harnesses.local.toml</code>, <code>packs.local.toml<
 </tr>
 <tr>
 <td><code>--prefix PREFIX</code></td>
-<td>the prefix for its skills (default <code>&lt;name&gt;-</code>)</td>
+<td>the prefix for its skills, agents, commands and MCP servers (default <code>&lt;name&gt;-</code>)</td>
 </tr>
 <tr>
 <td><code>--format FORMAT</code></td>
@@ -2201,6 +2292,179 @@ brainrc<span class="w"> </span>validate<span class="w"> </span>--pack<span class
 <tr>
 <td><code>--enable</code></td>
 <td>add the pack to <code>packs.local.toml</code></td>
+</tr>
+<tr>
+<td><code>--dry-run</code></td>
+<td>print the files it would write, write nothing</td>
+</tr>
+</tbody>
+</table>
+<h2 id="brainrc-new-skill">brainrc new skill<a class="headerlink" href="#brainrc-new-skill" title="Permanent link">&para;</a></h2>
+<p>Write a skill in the pack you are in (the nearest folder from here up with a <code>pack.toml</code>), or the
+one <code>--pack</code> names: <code>skills/&lt;prefix&gt;&lt;name&gt;/SKILL.md</code> with its <code>name</code> and <code>description</code>
+(<a href="../packs/#what-new-item-writes">packs</a>). Then it checks the pack as <code>validate --pack</code> does.</p>
+<div class="highlight"><pre><span></span><code>brainrc<span class="w"> </span>new<span class="w"> </span>skill<span class="w"> </span>deploy<span class="w"> </span>--description<span class="w"> </span><span class="s2">"Deploy acme services. Use when asked to ship one."</span>
+brainrc<span class="w"> </span>new<span class="w"> </span>skill<span class="w"> </span>protobuf<span class="w"> </span>--domain<span class="w"> </span><span class="s1">'*.proto,buf.yaml'</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NAME</code></td>
+<td>the skill's name; the pack's prefix is added when it's missing (asked for in a terminal)</td>
+</tr>
+<tr>
+<td><code>--pack DIR</code></td>
+<td>the pack to write it in (default: the nearest folder from here up with a <code>pack.toml</code>)</td>
+</tr>
+<tr>
+<td><code>--description TEXT</code></td>
+<td>what it does and when to use it (asked for in a terminal; a domain skill has one by default)</td>
+</tr>
+<tr>
+<td><code>--domain GLOB,...</code></td>
+<td>the files it is for: a domain skill with Validate (offline), Conventions, Review checklist and Never without approval sections, and a <code>[[extensions.gatework.domains]]</code> row in <code>pack.toml</code></td>
+</tr>
+<tr>
+<td><code>--yes</code>, <code>-y</code></td>
+<td>ask nothing: take the defaults</td>
+</tr>
+<tr>
+<td><code>--force</code></td>
+<td>replace a skill of that name</td>
+</tr>
+<tr>
+<td><code>--dry-run</code></td>
+<td>print the files it would write, write nothing</td>
+</tr>
+</tbody>
+</table>
+<h2 id="brainrc-new-agent">brainrc new agent<a class="headerlink" href="#brainrc-new-agent" title="Permanent link">&para;</a></h2>
+<p>Write an agent in the pack you are in: <code>agents/&lt;prefix&gt;&lt;name&gt;.md</code> with its <code>name</code>, <code>description</code>,
+read-only <code>tools</code> and <code>model</code>, and a Handoff section with the block it ends with.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NAME</code></td>
+<td>the agent's name; the pack's prefix is added when it's missing</td>
+</tr>
+<tr>
+<td><code>--pack DIR</code></td>
+<td>the pack to write it in (default: the nearest folder from here up with a <code>pack.toml</code>)</td>
+</tr>
+<tr>
+<td><code>--description TEXT</code></td>
+<td>when to delegate to it (asked for in a terminal)</td>
+</tr>
+<tr>
+<td><code>--tools TOOL,...</code></td>
+<td>its tools (default <code>Read, Grep, Glob</code>); add <code>Edit</code>, <code>Write</code> or <code>Bash</code> only when it needs them</td>
+</tr>
+<tr>
+<td><code>--model MODEL</code></td>
+<td><code>haiku</code>, <code>sonnet</code>, <code>opus</code>, <code>inherit</code> or a full ID (default <code>inherit</code>)</td>
+</tr>
+<tr>
+<td><code>--yes</code>, <code>-y</code></td>
+<td>ask nothing: take the defaults</td>
+</tr>
+<tr>
+<td><code>--force</code></td>
+<td>replace an agent of that name</td>
+</tr>
+<tr>
+<td><code>--dry-run</code></td>
+<td>print the files it would write, write nothing</td>
+</tr>
+</tbody>
+</table>
+<h2 id="brainrc-new-rule">brainrc new rule<a class="headerlink" href="#brainrc-new-rule" title="Permanent link">&para;</a></h2>
+<p>Write a rule in the pack you are in: <code>rules/NN-&lt;name&gt;.md</code>, numbered after the pack's last rule
+(rounded up to the next ten, so there is room for one between), with the frontmatter core's rules
+carry. Then it prints what the rule adds to every session and what the pack now loads against its
+<code>max_always_tokens</code> budget.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NAME</code></td>
+<td>the rule's name, after its number</td>
+</tr>
+<tr>
+<td><code>--pack DIR</code></td>
+<td>the pack to write it in (default: the nearest folder from here up with a <code>pack.toml</code>)</td>
+</tr>
+<tr>
+<td><code>--yes</code>, <code>-y</code></td>
+<td>ask nothing</td>
+</tr>
+<tr>
+<td><code>--dry-run</code></td>
+<td>print the file it would write, write nothing</td>
+</tr>
+</tbody>
+</table>
+<p>A rule of the same name is refused: it never replaces one.</p>
+<h2 id="brainrc-new-command">brainrc new command<a class="headerlink" href="#brainrc-new-command" title="Permanent link">&para;</a></h2>
+<p>Write a command in the pack you are in: <code>commands/&lt;prefix&gt;&lt;name&gt;.md</code> with its <code>description</code> and
+<code>$ARGUMENTS</code>. Codex skips commands that use <code>$ARGUMENTS</code>, so when brainrc manages Codex it offers
+the user-invoked skill form instead, <code>skills/&lt;prefix&gt;&lt;name&gt;/SKILL.md</code> with
+<code>disable-model-invocation: true</code> (<a href="../formats/#commands-commandsnamemd">formats</a>), which every tool runs.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NAME</code></td>
+<td>the command's name; the pack's prefix is added when it's missing</td>
+</tr>
+<tr>
+<td><code>--pack DIR</code></td>
+<td>the pack to write it in (default: the nearest folder from here up with a <code>pack.toml</code>)</td>
+</tr>
+<tr>
+<td><code>--description TEXT</code></td>
+<td>one line shown in the command picker (asked for in a terminal)</td>
+</tr>
+<tr>
+<td><code>--as-skill</code></td>
+<td>write the user-invoked skill form</td>
+</tr>
+<tr>
+<td><code>--as-command</code></td>
+<td>write <code>commands/&lt;prefix&gt;&lt;name&gt;.md</code> without asking</td>
+</tr>
+<tr>
+<td><code>--argument-hint TEXT</code></td>
+<td>what to type after the command, shown in the picker</td>
+</tr>
+<tr>
+<td><code>--yes</code>, <code>-y</code></td>
+<td>ask nothing: take the defaults</td>
+</tr>
+<tr>
+<td><code>--force</code></td>
+<td>replace a command of that name</td>
 </tr>
 <tr>
 <td><code>--dry-run</code></td>

@@ -744,10 +744,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-start-a-pack" class="md-nav__link">
+  <a href="#1-import-it" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Start a pack
+        1. Import it
       
     </span>
   </a>
@@ -755,10 +755,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-move-each-part" class="md-nav__link">
+  <a href="#2-check-what-it-couldnt-move" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Move each part
+        2. Check what it couldn't move
       
     </span>
   </a>
@@ -766,32 +766,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-rewrite-the-hook-commands" class="md-nav__link">
+  <a href="#3-validate-then-stop-installing-the-plugin" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Rewrite the hook commands
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-rewrite-the-mcp-servers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Rewrite the MCP servers
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-validate-then-stop-installing-the-plugin" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Validate, then stop installing the plugin
+        3. Validate, then stop installing the plugin
       
     </span>
   </a>
@@ -1721,10 +1699,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-start-a-pack" class="md-nav__link">
+  <a href="#1-import-it" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Start a pack
+        1. Import it
       
     </span>
   </a>
@@ -1732,10 +1710,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-move-each-part" class="md-nav__link">
+  <a href="#2-check-what-it-couldnt-move" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Move each part
+        2. Check what it couldn't move
       
     </span>
   </a>
@@ -1743,32 +1721,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-rewrite-the-hook-commands" class="md-nav__link">
+  <a href="#3-validate-then-stop-installing-the-plugin" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Rewrite the hook commands
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-rewrite-the-mcp-servers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Rewrite the MCP servers
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-validate-then-stop-installing-the-plugin" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Validate, then stop installing the plugin
+        3. Validate, then stop installing the plugin
       
     </span>
   </a>
@@ -1798,11 +1754,12 @@
 <!-- divio: how-to -->
 <h1 id="turn-a-claude-code-plugin-into-a-pack">Turn a Claude Code plugin into a pack<a class="headerlink" href="#turn-a-claude-code-plugin-into-a-pack" title="Permanent link">&para;</a></h1>
 <p>Move a Claude Code plugin of your own into a pack, so every tool brainrc manages gets its skills,
-agents and MCP servers, and its instructions can become rules.</p>
-<h2 id="1-start-a-pack">1. Start a pack<a class="headerlink" href="#1-start-a-pack" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code>brainrc<span class="w"> </span>new<span class="w"> </span>pack<span class="w"> </span>acme<span class="w"> </span>--to<span class="w"> </span>~/src/acme-ai-pack
+agents, commands and MCP servers, and Claude Code keeps its hooks.</p>
+<h2 id="1-import-it">1. Import it<a class="headerlink" href="#1-import-it" title="Permanent link">&para;</a></h2>
+<p>Name the plugin's folder, the one that holds <code>.claude-plugin/plugin.json</code>:</p>
+<div class="highlight"><pre><span></span><code>brainrc<span class="w"> </span>import<span class="w"> </span>~/src/shipit<span class="w"> </span>--name<span class="w"> </span>acme<span class="w"> </span>--to<span class="w"> </span>~/src/acme-ai-pack<span class="w"> </span>--dry-run<span class="w">   </span><span class="c1"># what it would write</span>
+brainrc<span class="w"> </span>import<span class="w"> </span>~/src/shipit<span class="w"> </span>--name<span class="w"> </span>acme<span class="w"> </span>--to<span class="w"> </span>~/src/acme-ai-pack
 </code></pre></div>
-<h2 id="2-move-each-part">2. Move each part<a class="headerlink" href="#2-move-each-part" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -1812,8 +1769,8 @@ agents and MCP servers, and its instructions can become rules.</p>
 </thead>
 <tbody>
 <tr>
-<td><code>skills/&lt;name&gt;/SKILL.md</code></td>
-<td><code>skills/acme-&lt;name&gt;/SKILL.md</code>, with <code>name:</code> changed to match</td>
+<td><code>skills/&lt;name&gt;/</code></td>
+<td><code>skills/acme-&lt;name&gt;/</code>, every file in it, with <code>name:</code> changed to match</td>
 </tr>
 <tr>
 <td><code>agents/&lt;name&gt;.md</code></td>
@@ -1824,36 +1781,41 @@ agents and MCP servers, and its instructions can become rules.</p>
 <td><code>commands/acme-&lt;name&gt;.md</code></td>
 </tr>
 <tr>
-<td><code>hooks/hooks.json</code> and its scripts</td>
+<td><code>hooks/hooks.json</code> and the scripts its hooks run</td>
 <td><code>overrides/claude/settings.fragment.json</code> and <code>overrides/claude/hooks/</code></td>
 </tr>
 <tr>
 <td><code>.mcp.json</code></td>
-<td><code>mcp/servers.toml</code></td>
-</tr>
-<tr>
-<td><code>.claude-plugin/plugin.json</code></td>
-<td><code>pack.toml</code> (name, description)</td>
+<td><code>mcp/servers.toml</code>, each server named <code>acme-&lt;name&gt;</code></td>
 </tr>
 </tbody>
 </table>
 <p>Every item name starts with the pack's prefix (<a href="../#naming">naming</a>). A plugin's skills
-were called <code>/plugin:name</code>; in the pack they are <code>/acme-name</code>, so update any text that names them.</p>
-<h2 id="3-rewrite-the-hook-commands">3. Rewrite the hook commands<a class="headerlink" href="#3-rewrite-the-hook-commands" title="Permanent link">&para;</a></h2>
-<p>In <code>settings.fragment.json</code>, keep the plugin's <code>hooks</code> object as it was, and replace
-<code>${CLAUDE_PLUGIN_ROOT}/hooks</code> with <code>{{hooks_dir}}</code>, which <code>apply</code> fills in
-(<a href="../#layout">layout</a>). Test each hook with <code>brainrc.testing</code> in the pack's <code>tests/</code>
-(<a href="../#pack-tests">pack tests</a>); <a href="https://github.com/brainrc/brainrc/blob/v0.8.28/examples/pack-homelab/README.md">examples/pack-homelab</a>
-has one.</p>
-<h2 id="4-rewrite-the-mcp-servers">4. Rewrite the MCP servers<a class="headerlink" href="#4-rewrite-the-mcp-servers" title="Permanent link">&para;</a></h2>
-<p>Each server in <code>.mcp.json</code> becomes a <code>[servers.&lt;name&gt;]</code> table. Name the variables a server needs
-in <code>env_from</code>, never their values (<a href="../../formats/#mcp-servers-mcpserverstoml">MCP servers</a>):</p>
-<div class="highlight"><pre><span></span><code><span class="k">[servers.acme-docs]</span>
-<span class="n">command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"npx"</span>
-<span class="n">args</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"-y"</span><span class="p">,</span><span class="w"> </span><span class="s2">"@acme/docs-mcp"</span><span class="p">]</span>
-<span class="n">env_from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"ACME_TOKEN"</span><span class="p">]</span>
-</code></pre></div>
-<h2 id="5-validate-then-stop-installing-the-plugin">5. Validate, then stop installing the plugin<a class="headerlink" href="#5-validate-then-stop-installing-the-plugin" title="Permanent link">&para;</a></h2>
+were called <code>/shipit:name</code>; <code>import</code> changes <code>shipit:name</code>, <code>[agent: name]</code> and "<code>name</code> skill" in
+the items' text to the new names. Each item keeps the rest of its frontmatter and a comment
+naming the file and lines it came from.</p>
+<h2 id="2-check-what-it-couldnt-move">2. Check what it couldn't move<a class="headerlink" href="#2-check-what-it-couldnt-move" title="Permanent link">&para;</a></h2>
+<p><code>import</code> prints a <code>WARN</code> line for each of these, and leaves them out:</p>
+<ul>
+<li><strong>A value in a server's <code>env</code>.</strong> brainrc writes variable names, never values. An <code>env</code> entry of
+  <code>"${TOKEN}"</code> becomes <code>env_from = ["TOKEN"]</code>; set any other in your environment and add its
+  name to <code>env_from</code> (<a href="../../formats/#mcp-servers-mcpserverstoml">MCP servers</a>).</li>
+<li><strong>A server that runs the plugin's own files</strong> (<code>${CLAUDE_PLUGIN_ROOT}</code> in its command): install
+  them somewhere, then add the server to <code>mcp/servers.toml</code> by hand.</li>
+<li><strong>A hook that runs none of the plugin's files</strong>, such as <code>npx prettier --write</code> or a prompt hook:
+  <code>apply</code> knows the pack's hooks by <code>{{hooks_dir}}</code> in their command, so put it in a script in
+  <code>overrides/claude/hooks/</code> and run that.</li>
+<li><strong>A link</strong> inside a skill: copy what it points at into the skill.</li>
+</ul>
+<p>In <code>settings.fragment.json</code>, <code>${CLAUDE_PLUGIN_ROOT}/hooks/x</code> became <code>{{hooks_dir}}/x</code>, which
+<code>apply</code> fills in, and the MCP tool names in hook matchers and agents' <code>tools</code> follow the servers' new
+names (<a href="../#layout">layout</a>). Test each hook with <code>brainrc.testing</code> in the
+pack's <code>tests/</code> (<a href="../#pack-tests">pack tests</a>);
+<a href="https://github.com/brainrc/brainrc/blob/v0.8.29/examples/pack-homelab/README.md">examples/pack-homelab</a> has one.</p>
+<h2 id="3-validate-then-stop-installing-the-plugin">3. Validate, then stop installing the plugin<a class="headerlink" href="#3-validate-then-stop-installing-the-plugin" title="Permanent link">&para;</a></h2>
+<p><code>import</code> checks the pack as <code>validate --pack</code> does. The pack it writes is only the plugin's items:
+for the rest of what a pack carries (a README, tripwires, tests, CI), start one with
+<code>brainrc new pack acme</code> and move the imported items into it.</p>
 <div class="highlight"><pre><span></span><code>brainrc<span class="w"> </span>validate<span class="w"> </span>--pack<span class="w"> </span>~/src/acme-ai-pack
 </code></pre></div>
 <p>Turn the pack on (<a href="../use-a-pack/">use a pack</a>), then uninstall the plugin from Claude Code, so

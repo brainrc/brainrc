@@ -1891,7 +1891,8 @@ Keep it a symlink: <code>validate</code> fails otherwise (<a href="../install/#p
 <h2 id="commands-commandsnamemd">Commands: <code>commands/&lt;name&gt;.md</code><a class="headerlink" href="#commands-commandsnamemd" title="Permanent link">&para;</a></h2>
 <p>For packs. Gatework ships its slash commands as user-invoked skills instead
 (<code>disable-model-invocation: true</code> and <code>argument-hint</code> in <code>SKILL.md</code>), because Codex skips commands
-that use <code>$ARGUMENTS</code>; a pack that targets Codex should do the same.</p>
+that use <code>$ARGUMENTS</code>; a pack that targets Codex should do the same (<code>brainrc new command &lt;name&gt;
+--as-skill</code> writes that form).</p>
 <div class="highlight"><pre><span></span><code>---
 <span class="gu">description: One line shown in the command picker</span>
 <span class="gu">---</span>

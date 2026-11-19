@@ -114,15 +114,37 @@ jobs:
           case "$BASE" in ""|0000000000000000000000000000000000000000) range="-1 $HEAD" ;; esac
           "$RUNNER_TEMP/gitleaks" detect --redact -v --exit-code=2 --log-opts="--no-merges --first-parent $range"
 
+  # Local tripwires (#344): each maintainer's forbidden names (an employer, a client) live in a
+  # gitignored tripwires.local.toml, so CI reads them from the TRIPWIRE_TERMS secret instead, one
+  # term per line. The log names a match's file, line and term number, never the term. Fork and
+  # Dependabot PRs get no secrets: they skip with a notice, and the push to main checks the merge.
+  tripwires:
+    name: local tripwires
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Check tracked files for local tripwire terms
+        env:
+          TRIPWIRE_TERMS: ${{ secrets.TRIPWIRE_TERMS }}
+          NO_SECRETS: ${{ github.event_name == 'pull_request' && (github.event.pull_request.head.repo.full_name != github.repository || github.actor == 'dependabot[bot]') }}
+        run: python3 scripts/ci_tripwires.py
+
   # Keeps the required check name `validate`. Windows cells carry continue-on-error, so they never gate it.
   validate-gate:
     name: validate
-    needs: [validate]
+    needs: [validate, tripwires]
     if: ${{ always() }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Fail unless every blocking cell passed
+      - name: Fail unless every blocking cell and the tripwire check passed
         env:
           RESULT: ${{ needs.validate.result }}
-        run: test "$RESULT" = success
+          TRIPWIRES: ${{ needs.tripwires.result }}
+        run: test "$RESULT" = success && test "$TRIPWIRES" = success

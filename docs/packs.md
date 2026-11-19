@@ -158,6 +158,24 @@ called `mypack`, with steps for renaming it: the contents of a GitHub template r
 anyone who would rather start from **Use this template** than install brainrc first.
 `scripts/pack_template.py` keeps it in step with `new pack`, and CI validates it.
 
+## What `new <item>` writes
+
+Inside a pack, `brainrc new <kind> <name>` writes one item that validates, with
+the prefix applied and its frontmatter filled in, then checks the pack as `validate --pack` does
+([options](commands.md#brainrc-new-skill)). It finds the pack from the folder you are in, or takes
+`--pack DIR`, and never replaces an item without `--force`.
+
+| Command | Writes |
+|---|---|
+| `new skill <name>` | `skills/<prefix><name>/SKILL.md` with `name` and `description` |
+| `new skill <name> --domain GLOB,...` | a domain skill: Validate (offline), Conventions, Review checklist and Never without approval, and a [Domains row](#extensions) for those files in `pack.toml` |
+| `new agent <name>` | `agents/<prefix><name>.md` with read-only `tools` (`Read, Grep, Glob`), `model = inherit`, and the handoff block it ends with |
+| `new rule <name>` | `rules/NN-<name>.md` after the last rule, with `trigger: always_on` and `alwaysApply: true`; it prints the pack's always-loaded tokens against `max_always_tokens` |
+| `new command <name>` | `commands/<prefix><name>.md` with `description` and `$ARGUMENTS`; `--as-skill` writes the user-invoked skill form Codex runs ([formats](formats.md#commands-commandsnamemd)) |
+
+The bodies come from `brainrc/_templates/items`: headings with one line each that says what goes
+there. Replace them before you publish the pack.
+
 ## Naming
 
 A clear name is the cheapest trust signal a pack has. Every pack follows these seven rules:

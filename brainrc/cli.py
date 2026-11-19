@@ -29,8 +29,10 @@ from .sources import (
     check_packs, collisions, core_version, duplicate_packs, render_instructions, sources,
 )
 from .importers import FORMATS as IMPORT_FORMATS, cmd_import
+from .importers.markdown import globs as import_globs
 from .init import cmd_init
 from .newpack import TICKETS, cmd_new_pack
+from . import newitem
 from .uninstall import cmd_uninstall, finish_purge
 from .opencode import rendered_agents
 from .packs import adopt_record, describe, fetch_pack, git_packs, pinned, to_fetch
@@ -525,26 +527,30 @@ def _parser() -> argparse.ArgumentParser:
                        "rules only; app is recommended without the infrastructure domain skills; infra "
                        "is full")
     p.add_argument("--import", dest="import_files", action="store_true",
-                   help="import the CLAUDE.md, AGENTS.md, Cursor and Copilot files in this folder into "
-                   "the pack `imported` without asking (init asks when it asks questions)")
+                   help="import the CLAUDE.md, AGENTS.md, Cursor, Copilot and Windsurf files and the Claude "
+                   "Code plugin in this folder into the pack `imported` without asking (init asks when it "
+                   "asks questions)")
     p.add_argument("--dry-run", action="store_true", help="print what init would do, write nothing")
     p = add("import", "turn CLAUDE.md, AGENTS.md and other tools' instruction files into a pack",
             "Read instruction files other tools load and write them as a pack: one rule per "
             "section, in order, each with a comment naming the file and lines it came from. A "
             "folder means the files in it brainrc can read. The pack goes to "
             "$BRAINRC_HOME/imported/<name> unless --to names a folder, and is checked as "
-            "`validate --pack` would. --enable adds it to packs.local.toml.")
+            "`validate --pack` would. A Claude Code plugin's skills, agents, commands, hooks and MCP "
+            "servers move over with the pack's prefix. --enable adds it to packs.local.toml.")
     p.add_argument("paths", nargs="+", metavar="PATH", help="files or folders to import, in order")
     p.add_argument("--to", metavar="DIR", help="where to write the pack (default: $BRAINRC_HOME/imported/<name>)")
     p.add_argument("--name", default="imported", help="the pack's name (default: imported)")
-    p.add_argument("--prefix", default="", help="the prefix for its skills (default: <name>-)")
+    p.add_argument("--prefix", default="",
+                   help="the prefix for its skills, agents, commands and MCP servers (default: <name>-)")
     p.add_argument("--format", dest="fmt", choices=sorted(IMPORT_FORMATS),
                    help="read every PATH as this format, whatever its name")
     p.add_argument("--force", action="store_true", help="replace the folder if it already has files")
     p.add_argument("--enable", action="store_true", help="add the pack to packs.local.toml")
     p.add_argument("--dry-run", action="store_true", help="print the files it would write, write nothing")
-    p = add("new", "start a new pack, or (later) an item in one", "Write a new pack from brainrc's "
-            "templates. Run `new pack --help` for its options.")
+    p = add("new", "start a new pack, or a skill, agent, rule or command in one", "Write a new pack, "
+            "or a new item in the pack you are in, from brainrc's templates. Run `new <kind> --help` "
+            "for its options.")
     kinds = p.add_subparsers(dest="kind", metavar="<kind>", title="kinds", required=True)
     p = kinds.add_parser("pack", help="write a new pack that validates on its first run",
                          description="Write a new pack: pack.toml, a README, an AGENTS.md for whoever edits it, "
@@ -570,6 +576,50 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--force", action="store_true", help="replace an earlier pack in that folder; its .git stays")
     p.add_argument("--enable", action="store_true", help="add the pack to packs.local.toml")
     p.add_argument("--dry-run", action="store_true", help="print the files it would write, write nothing")
+    item_help = {
+        "skill": ("write skills/<prefix><name>/SKILL.md; --domain makes it a domain skill with a Domains row",
+                  "Write a skill in this pack: skills/<prefix><name>/SKILL.md with its name and description. "
+                  "--domain GLOB,... makes it a domain skill, with Validate (offline), Conventions, Review "
+                  "checklist and Never without approval sections, and adds a [[extensions.gatework.domains]] "
+                  "row for those files to pack.toml."),
+        "agent": ("write agents/<prefix><name>.md with least-privilege tools and a handoff section",
+                  "Write an agent in this pack: agents/<prefix><name>.md with its name, description, tools "
+                  f"(default: {newitem.AGENT_TOOLS}, read only) and model (default {newitem.AGENT_MODEL}), "
+                  "and the handoff block it ends with."),
+        "rule": ("write rules/NN-<name>.md after the pack's last rule, and report its token cost",
+                 "Write a rule in this pack: rules/NN-<name>.md, numbered after its last rule, with the "
+                 "frontmatter core's rules carry. Then report what the pack loads in every session "
+                 "against its max_always_tokens budget."),
+        "command": ("write commands/<prefix><name>.md, or with --as-skill a user-invoked skill",
+                    "Write a command in this pack: commands/<prefix><name>.md with its description and "
+                    "$ARGUMENTS. Codex skips commands that use $ARGUMENTS, so when it manages Codex it "
+                    "offers the user-invoked skill form (--as-skill) instead."),
+    }
+    for kind, (short, long) in item_help.items():
+        p = kinds.add_parser(kind, help=short, description=long + " Run inside the pack, or name it with "
+                             "--pack; the item is checked as `validate --pack` does.")
+        p.add_argument("name", nargs="?", metavar="NAME", help=f"the {kind}'s name"
+                       + ("" if kind == "rule" else "; the pack's prefix is added when it's missing"))
+        p.add_argument("--pack", metavar="DIR", help="the pack (default: the nearest folder from here up with a pack.toml)")
+        if kind != "rule":
+            p.add_argument("--description", default="", help="what it does and when to use it")
+        if kind == "skill":
+            p.add_argument("--domain", type=import_globs, metavar="GLOB,...",
+                           help="the files it is for, e.g. '*.proto,buf.yaml': a domain skill with a Domains row")
+        if kind == "agent":
+            p.add_argument("--tools", help=f"its tools, comma-separated (default: {newitem.AGENT_TOOLS})")
+            p.add_argument("--model", help=f"haiku, sonnet, opus, inherit or a full ID (default: {newitem.AGENT_MODEL})")
+        if kind == "command":
+            form = p.add_mutually_exclusive_group()
+            form.add_argument("--as-skill", dest="as_skill", action="store_const", const=True,
+                              help="write a user-invoked skill (disable-model-invocation: true), which Codex runs too")
+            form.add_argument("--as-command", dest="as_skill", action="store_const", const=False,
+                              help="write commands/<prefix><name>.md without asking")
+            p.add_argument("--argument-hint", default="", help="what to type after the command, shown in the picker")
+        p.add_argument("--yes", "-y", action="store_true", help="ask nothing: take the defaults")
+        if kind != "rule":  # a rule is numbered after the last one, so it never replaces one
+            p.add_argument("--force", action="store_true", help=f"replace a {kind} of that name")
+        p.add_argument("--dry-run", action="store_true", help="print the files it would write, write nothing")
     repair_help = ("also relink broken links to where an item used to be: after moving the checkout, "
                    "or a package upgrade to a new Python")
     only_help = ("only these harnesses (repeat it, or separate names with commas); the others "
@@ -699,6 +749,13 @@ def _dispatch(argv: list[str]) -> int:
     if cmd == "import":
         return cmd_import(args.paths, to=args.to, name=args.name, prefix=args.prefix, fmt=args.fmt,
                           force=args.force, dry_run=args.dry_run, enable_pack=args.enable)
+    if cmd == "new" and args.kind != "pack":
+        return newitem.cmd_new_item(args.kind, args.name, pack=args.pack,
+                                    description=getattr(args, "description", ""),
+                                    domain=getattr(args, "domain", None), tools=getattr(args, "tools", None),
+                                    model=getattr(args, "model", None), as_skill=getattr(args, "as_skill", None),
+                                    argument_hint=getattr(args, "argument_hint", ""), yes=args.yes,
+                                    force=getattr(args, "force", False), dry_run=args.dry_run)
     if cmd == "new":
         named = [n for names in args.harness for n in names] if args.harness else None
         return cmd_new_pack(args.name, to=args.to, prefix=args.prefix, pack_id=args.pack_id,

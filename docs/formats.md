@@ -41,7 +41,8 @@ Keep it a symlink: `validate` fails otherwise ([platforms](install.md#platforms)
 
 For packs. Gatework ships its slash commands as user-invoked skills instead
 (`disable-model-invocation: true` and `argument-hint` in `SKILL.md`), because Codex skips commands
-that use `$ARGUMENTS`; a pack that targets Codex should do the same.
+that use `$ARGUMENTS`; a pack that targets Codex should do the same (`brainrc new command <name>
+--as-skill` writes that form).
 
 ```markdown
 ---

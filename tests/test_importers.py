@@ -1,4 +1,5 @@
 """`brainrc import` (E12, #118): instruction files from other tools become a pack that validates."""
+import json
 import os
 import re
 import sys
@@ -8,13 +9,13 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from test_brainrc import REPO, TempRepoCase, brainrc, quiet  # noqa: E402
+from test_brainrc import REPO, TempRepoCase, brainrc, install_harnesses, quiet  # noqa: E402
 
 from brainrc.importers import discover, plan, resolve, set_pack_path  # noqa: E402
 from brainrc.importers.markdown import globs, headings, split  # noqa: E402
 from brainrc.scaffold import PackSpec, Rule, Skill, render_pack, write_pack  # noqa: E402
 from brainrc.sources import Source, frontmatter, load_pack, render_instructions, sources  # noqa: E402
-from support import rmtree  # noqa: E402
+from support import home_env, restore_home, rmtree, saved_home  # noqa: E402
 
 FIXTURES = REPO / "tests/fixtures/import"
 COMMENT = re.compile(r"<!-- .*? -->\n*")
@@ -477,6 +478,211 @@ class CopilotImportTest(ImportCase):
         rules = sorted(p.name for p in (self.tmp / "team/rules").iterdir())
         self.assertEqual(rules[0], "01-team-conventions.md")  # CLAUDE.md's first lines and the AGENTS.md it inlines
         self.assertEqual(rules[-1], "13-everywhere.md")
+
+
+class WindsurfImportTest(ImportCase):
+    """#166: `.windsurfrules`, and `.windsurf/rules/**/*.md` by trigger."""
+
+    def import_fixture(self) -> Path:
+        code, out = self.run_import(str(FIXTURES / "windsurf"), "--to", "team", "--name", "team")
+        self.assertEqual(code, 0, out)
+        self.assertIn("OK:", out)
+        self.assertNotIn("ERROR", out)
+        return self.tmp / "team"
+
+    def test_windsurfrules_imports_into_a_pack_that_renders_the_same_text(self):
+        source = FIXTURES / "windsurf/.windsurfrules"
+        code, out = self.run_import(str(source), "--to", "team", "--name", "team")
+        self.assertEqual(code, 0, out)
+        self.assertIn("OK:", out)
+        pack = self.tmp / "team"
+        self.assertEqual(sorted(p.name for p in (pack / "rules").iterdir()),
+                         ["10-team-rules.md", "20-style.md", "30-testing.md"])
+        self.assertEqual(rendered_pack_text(pack).strip(), normalized(source.read_text()))
+        first = (pack / "rules/20-style.md").read_text().splitlines()[0]
+        self.assertEqual(first, f"<!-- imported by brainrc from {brainrc.config.tilde(source)}, lines 3-6 -->")
+
+    def test_rules_map_by_trigger(self):
+        pack = self.import_fixture()
+        self.assertEqual(sorted(p.name for p in (pack / "rules").iterdir()),
+                         ["10-general.md", "20-team-rules.md", "30-style.md", "40-testing.md"])
+        text = rendered_pack_text(pack)
+        self.assertNotIn("trigger:", text)  # Windsurf's frontmatter stays behind
+        self.assertNotIn("Validate every request body", text)  # a glob rule is a skill
+        skills = {p.name: frontmatter(p / "SKILL.md") for p in (pack / "skills").iterdir()}
+        self.assertEqual(sorted(skills), ["team-backend-api", "team-notes", "team-release"])
+        self.assertEqual(skills["team-backend-api"]["description"], "API handlers. Use when working on `api/**/*.py`, `*.proto`.")
+        self.assertEqual(skills["team-release"]["description"], "Release steps. Use when preparing a release.")
+        self.assertIn("manual rule", skills["team-notes"]["description"])
+        rows = tomllib.loads((pack / "pack.toml").read_text())["extensions"]["gatework"]["domains"]
+        self.assertEqual(rows, [{"files": "`api/**/*.py`, `*.proto`", "skills": ["team-backend-api"]}])
+
+    def test_a_manual_or_unknown_trigger_warns(self):
+        rules = self.tmp / "repo/.windsurf/rules"
+        rules.mkdir(parents=True)
+        (rules / "a.md").write_text("Always do a.\n")
+        (rules / "b.md").write_text("---\ntrigger: sometimes\n---\nDo b.\n")
+        p = plan(resolve([str(self.tmp / "repo")]), "team")
+        self.assertEqual([s.slug for s in p.spec.skills], ["a", "b"])
+        self.assertTrue(any("loads only when asked" in w for w in p.warnings))
+        self.assertTrue(any("unknown trigger `sometimes`" in w for w in p.warnings))
+
+    def test_discover_and_global_rules(self):
+        self.assertEqual([(f, p.name) for f, p in discover(FIXTURES / "windsurf")],
+                         [("windsurf", "rules"), ("windsurf", ".windsurfrules")])
+        global_rules = self.tmp / "global_rules.md"
+        global_rules.write_text("# Mine\n\n- Answer briefly.\n")
+        self.assertEqual(resolve([str(global_rules)]), [("windsurf", global_rules)])
+        self.assertEqual([r.slug for r in plan(resolve([str(global_rules)]), "team").spec.rules], ["mine"])
+
+
+class PluginImportTest(ImportCase):
+    """#167: a Claude Code plugin's skills, agents, commands, hooks and MCP servers."""
+
+    def import_fixture(self, *args: str) -> tuple[Path, str]:
+        code, out = self.run_import(str(FIXTURES / "plugin"), "--to", "team", "--name", "team", *args)
+        self.assertEqual(code, 0, out)
+        self.assertIn("OK:", out)
+        self.assertNotIn("ERROR", out)
+        return self.tmp / "team", out
+
+    def test_items_get_the_prefix_and_keep_their_frontmatter_and_files(self):
+        pack, _ = self.import_fixture()
+        skill = pack / "skills/team-deploy"
+        meta = frontmatter(skill / "SKILL.md")
+        self.assertEqual((meta["name"], meta["allowed-tools"]), ("team-deploy", "Bash, Read"))
+        self.assertEqual((skill / "references/runbook.md").read_text(),
+                         (FIXTURES / "plugin/skills/deploy/references/runbook.md").read_text())
+        if os.name != "nt":
+            self.assertTrue(os.access(skill / "scripts/check.sh", os.X_OK))
+        agent = frontmatter(pack / "agents/team-auditor.md")
+        self.assertEqual((agent["name"], agent["tools"], agent["model"], agent["color"]),
+                         ("team-auditor", "Read, Grep, Glob, mcp__team-tracker__search", "sonnet", "red"))
+        self.assertEqual(frontmatter(pack / "commands/team-notes.md"),
+                         {"description": "Write release notes", "argument-hint": "<version>", "model": "haiku"})
+
+    def test_names_in_the_text_follow_the_new_names(self):
+        pack, _ = self.import_fixture()
+        text = (pack / "skills/team-deploy/SKILL.md").read_text()
+        self.assertIn("[agent: team-auditor]", text)
+        self.assertIn("run /team-notes.", text)
+        self.assertNotIn("shipit:", text)
+        self.assertIn("`team-deploy` skill", (pack / "agents/team-auditor.md").read_text())
+
+    def test_hooks_move_into_overrides_claude(self):
+        pack, out = self.import_fixture()
+        fragment = json.loads((pack / "overrides/claude/settings.fragment.json").read_text())
+        commands = [h["command"] for groups in fragment["hooks"].values() for g in groups for h in g["hooks"]]
+        self.assertEqual(commands, ['python3 "{{hooks_dir}}/guard.py"', "{{hooks_dir}}/scripts/hello.sh",
+                                    "{{hooks_dir}}/lint"])
+        self.assertEqual(fragment["hooks"]["PostToolUse"][0]["matcher"], "mcp__team-tracker__.*")
+        hooks = pack / "overrides/claude/hooks"
+        self.assertEqual(sorted(p.relative_to(hooks).as_posix() for p in hooks.rglob("*") if p.is_file()),
+                         ["guard.py", "lint", "scripts/hello.sh"])
+        if os.name != "nt":
+            self.assertTrue(os.access(hooks / "guard.py", os.X_OK))
+            self.assertTrue(os.access(hooks / "lint", os.X_OK))  # no `#!`: executable because it was
+
+    def test_a_hook_that_runs_no_file_of_the_plugin_is_left_out(self):
+        """apply owns a hook by `{{hooks_dir}}`; another would be added on every apply, never removed."""
+        _, out = self.import_fixture()
+        self.assertIn("runs `npx prettier --write`, not a file of the plugin's; left out", out)
+        self.assertIn("runs a `prompt` hook, not a file of the plugin's; left out", out)
+
+    def plugin(self, files: dict[str, str | bytes]) -> Path:
+        root = self.tmp / "src"
+        for rel, data in {".claude-plugin/plugin.json": '{"name": "kit"}', **files}.items():
+            path = root / rel
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(data if isinstance(data, bytes) else data.encode())
+        return root
+
+    def test_files_are_copied_byte_for_byte(self):
+        crlf = b"line one\r\nline two\r\n"
+        root = self.plugin({"skills/x/SKILL.md": "---\nname: x\ndescription: X.\n---\n\nDo x.\n",
+                            "skills/x/notes.txt": crlf, "skills/x/blob.bin": b"\x00\xff\r\n"})
+        code, out = self.run_import(str(root), "--to", "kit", "--name", "kit")
+        self.assertEqual(code, 0, out)
+        self.assertEqual((self.tmp / "kit/skills/kit-x/notes.txt").read_bytes(), crlf)
+        self.assertEqual((self.tmp / "kit/skills/kit-x/blob.bin").read_bytes(), b"\x00\xff\r\n")
+
+    def test_same_names_are_numbered_and_references_follow_the_first(self):
+        agent = "---\nname: reviewer\ndescription: Reviews.\n---\n\nReview.\n"
+        root = self.plugin({
+            ".claude-plugin/plugin.json": '{"name": "kit", "agents": ["more/a.md", "more/b.md"]}',
+            "agents/reviewer.md": agent, "more/a.md": agent, "more/b.md": agent,
+            "skills/x/SKILL.md": "---\nname: x\ndescription: X.\n---\n\nAsk [agent: reviewer].\n",
+            ".mcp.json": '{"mcpServers": {"my_tracker": {"command": "a"}, "my-tracker": {"command": "b"}}}'})
+        code, out = self.run_import(str(root), "--to", "kit", "--name", "kit")
+        self.assertEqual(code, 0, out)
+        pack = self.tmp / "kit"
+        self.assertEqual(sorted(p.name for p in (pack / "agents").iterdir()),
+                         ["kit-reviewer-2.md", "kit-reviewer-3.md", "kit-reviewer.md"])
+        self.assertIn("[agent: kit-reviewer]", (pack / "skills/kit-x/SKILL.md").read_text())
+        servers = tomllib.loads((pack / "mcp/servers.toml").read_text())["servers"]
+        self.assertEqual(servers, {"kit-my-tracker": {"command": "a"}, "kit-my-tracker-2": {"command": "b"}})
+        self.assertIn("another server is also `my-tracker`", out)
+
+    def test_mcp_servers_keep_env_names_only(self):
+        pack, out = self.import_fixture()
+        servers = tomllib.loads((pack / "mcp/servers.toml").read_text())["servers"]
+        self.assertEqual(servers, {
+            "team-tracker": {"command": "npx", "args": ["-y", "@example/tracker-mcp"], "env_from": ["TRACKER_TOKEN"]},
+            "team-docs": {"url": "https://docs.example.com/mcp"}})
+        self.assertIn("env `LOG_LEVEL` is left out", out)
+        self.assertIn("server `local` runs the plugin's own files", out)
+        self.assertNotIn("debug", (pack / "mcp/servers.toml").read_text())
+
+    def test_it_applies_to_the_same_skills_agents_and_hooks(self):
+        home = Path(tempfile.mkdtemp()).resolve()
+        old = saved_home()
+        os.environ.update(home_env(home))
+        install_harnesses(home)
+        try:
+            code, out = self.run_import(str(FIXTURES / "plugin"), "--name", "team", "--enable")
+            self.assertEqual(code, 0, out)
+            code, out = quiet(brainrc.cmd_sync, True)
+            self.assertEqual(code, 0, out)
+            pack = self.settings_home / "imported/team"
+            claude = home / ".claude"
+            self.assertEqual(brainrc.link_target(claude / "skills/team-deploy"), pack / "skills/team-deploy")
+            self.assertEqual(brainrc.link_target(claude / "agents/team-auditor.md"), pack / "agents/team-auditor.md")
+            self.assertEqual(brainrc.link_target(claude / "commands/team-notes.md"), pack / "commands/team-notes.md")
+            self.assertEqual(brainrc.link_target(claude / "hooks/brainrc-team"), pack / "overrides/claude/hooks")
+            settings = json.loads((claude / "settings.json").read_text())
+            commands = [h["command"] for groups in settings["hooks"].values() for g in groups for h in g["hooks"]]
+            self.assertIn('python3 "$HOME/.claude/hooks/brainrc-team/guard.py"', commands)
+            self.assertIn("$HOME/.claude/hooks/brainrc-team/scripts/hello.sh", commands)
+            self.assertIn("team-tracker", json.loads((home / ".claude.json").read_text())["mcpServers"])
+        finally:
+            restore_home(old)
+            rmtree(home)
+
+    def test_discover_and_detect(self):
+        self.assertEqual([(f, p.name) for f, p in discover(FIXTURES / "plugin")], [("plugin", ".claude-plugin")])
+        self.assertEqual(resolve([str(FIXTURES / "plugin/.claude-plugin/plugin.json")]),
+                         [("plugin", FIXTURES / "plugin/.claude-plugin/plugin.json")])
+
+    def test_a_plugin_with_nothing_in_it_fails_without_writing(self):
+        (self.tmp / "empty/.claude-plugin").mkdir(parents=True)
+        (self.tmp / "empty/.claude-plugin/plugin.json").write_text('{"name": "empty"}')
+        code, out = self.run_import(str(self.tmp / "empty"), "--to", "team")
+        self.assertEqual(code, 1)
+        self.assertIn("no skills, agents, commands, hooks or MCP servers", out)
+        self.assertFalse((self.tmp / "team").exists())
+
+    def test_a_broken_manifest_or_link_warns(self):
+        root = self.tmp / "bad"
+        (root / ".claude-plugin").mkdir(parents=True)
+        (root / ".claude-plugin/plugin.json").write_text("{nope")
+        (root / "skills/x").mkdir(parents=True)
+        (root / "skills/x/SKILL.md").write_text("---\nname: x\ndescription: X.\n---\nDo x.\n")
+        (root / "skills/x/linked").symlink_to(self.tmp)
+        p = plan(resolve([str(root)]), "team")
+        self.assertEqual([s.slug for s in p.spec.skills], ["x"])
+        self.assertTrue(any("not valid JSON" in w for w in p.warnings), p.warnings)
+        self.assertTrue(any("a link; not imported" in w for w in p.warnings), p.warnings)
+        self.assertEqual(p.spec.skills[0].files, {})
 
 
 class SetPackPathTest(unittest.TestCase):

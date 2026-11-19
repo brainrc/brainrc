@@ -109,3 +109,8 @@ forward (no force-push). `validate` and the full suite passed before every push.
   `session_tokens` renders as `brainrc tokens` does; one prompt and one write loop. No change: a
   bad profile line was already refused by `check_config` before this PR.
 
+
+## 2026-11-18 · gh:166 and gh:167 · run with E8 (specs/campaign-117-item-scaffolders)
+Left for later in the first run, now built on branch `claude/project-thread-qe7dlt` with E8's
+item scaffolders, one commit each, in the same draft PR. #118 closes only when the maintainer
+says so, after every child has merged.

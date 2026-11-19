@@ -10,4 +10,5 @@ This repository is {{name}}, a brainrc pack. Its rules and skills load into othe
 - Facts (hosts, repositories, tools, teams) go in the `{{facts}}` skill, not in rules.
 - No secrets, tokens, personal emails or home folder paths: write `~` and environment variable names.
 - When a fact goes stale, add a tripwire for it in `tripwires.toml`.
+- `brainrc new skill|agent|rule|command <name>` adds an item with the prefix and frontmatter filled in.
 - After a change, run `brainrc validate --pack .`; it runs `tests/` too.

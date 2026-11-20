@@ -28,7 +28,7 @@ acme-ai-pack/
   commands/acme-*.md     linked into each tool's commands folder
   rules/NN-*.md          rendered after all core rules, as one labelled block (see Rules)
   overrides/claude/hooks/                 linked to <hooks_dir>-acme (e.g. ~/.claude/hooks/brainrc-acme)
-  overrides/claude/settings.fragment.json merged after the core fragment; {{hooks_dir}} = the pack's hooks dir
+  overrides/claude/settings.fragment.json merged after the core fragment; {{hooks_dir}} = the pack's hooks dir (see Permissions)
   overrides/opencode/plugin.js            linked beside core's guard plugin, as brainrc-guard-acme.js
   mcp/servers.toml       MCP servers, synced after core's (see formats.md#mcp-servers-mcpserverstoml)
   tripwires.toml         patterns that must not appear in the pack (checked by validate)
@@ -47,6 +47,13 @@ id = "acme/acme-ai-pack"  # optional: the <owner>/<pack> ID it's published under
 requires_core = ">=0.7, <0.9"   # core versions this pack works with (see Compatibility)
 max_always_tokens = 800   # optional budget for rules + descriptions (see Context cost)
 test = "tests"            # optional: tests validate --pack runs (see Pack tests)
+
+[scope]                   # optional: where the pack applies (see Scope)
+remotes = ["github.com/acme/*"]
+
+[[guard.deny]]            # optional: commands core's guard refuses here (see Guard rules)
+match = "acme-deploy prod"
+reason = "deploys to production"
 
 [extensions.gatework]      # what Gatework reads; see Extensions
 deliver_checks = [        # listed in the Deliver gate as done / not applicable / not run
@@ -92,6 +99,8 @@ Generated from [`pack.toml.schema.json`](schemas/pack.toml.schema.json) by
 | `max_always_tokens` | number | Budget for the tokens the pack loads into every session: rules plus descriptions ([context cost](#context-cost)). |
 | `validator` | string | A Python module in the pack that checks what only it understands ([validator plugins](#validator-plugins)). |
 | `test` | string | The pack's own unittest tests, a directory or a .py file in the pack; validate --pack runs them ([pack tests](#pack-tests)). |
+| `scope` | table | Where the pack applies: any glob matching means it does; none means everywhere ([scope](#scope)). |
+| `guard` | table | [[guard.deny]] and [[guard.ask]] rules core's guard hook enforces, with match or tool, reason and scope ([guard rules](#guard-rules)). |
 | `extensions` | table | Tables other packs read, one per namespace, e.g. [extensions.gatework]; the pack that owns a namespace checks it ([extensions](#extensions)). |
 <!-- end generated -->
 
@@ -222,6 +231,86 @@ The rendered instructions file has three parts, in this order:
 Pack rule numbers only order rules within the pack. Later rules refine earlier ones and must
 not contradict them: a pack rule that contradicts core is a bug in the pack. Write it as a
 narrower case ("in Acme repos, also ...") instead.
+
+## Scope
+
+`[scope]` says where a pack applies, so a work pack's deliver checks, guard rules and reviewers
+stay out of your personal repos, in place of free text such as "in acme repos":
+
+```toml
+[scope]
+remotes = ["github.com/acme/*", "git.acme.example.net/*"]   # a git remote of the repo you're in
+paths = ["~/src/acme"]          # the directory you're in, or one above it; ~ and $VARS expand
+kube_contexts = ["acme-*"]      # kubectl's current context ($KUBECONFIG or ~/.kube/config)
+aws_profiles = ["acme-*"]       # $AWS_PROFILE, "default" when it isn't set
+tickets = ["ACME-*"]            # a ticket ref in the branch name (acme-42-fix), or one passed in
+```
+
+Every value is a list of globs, and the pack applies when any one of them matches. A remote is
+matched as written and as `host/owner/repo`, so one glob covers its SSH and HTTPS URLs. A pack
+without `[scope]`, or with an empty one, applies everywhere, as before. The rules, skills and
+agents a pack installs are still installed everywhere: scope decides where its extensions and
+guard rules take effect.
+
+`brainrc scope` lists each enabled pack as `APPLIES` or `SKIPPED` in the directory you're in and
+says why, and `brainrc scope --extensions` prints the [extensions](#extensions) a run there
+should read: only the packs that apply. The `extensions.md` that `apply` renders holds every
+pack and ends with a Scope section saying where each scoped pack applies.
+
+## Guard rules
+
+A pack adds rules to core's Claude Code guard in `pack.toml`, without a hook of its own:
+
+```toml
+[[guard.deny]]                 # refused
+match = "acme-deploy prod"
+reason = "deploys to production, which only the release pipeline does"
+
+[[guard.ask]]                  # asked about first
+tool = "mcp__acme-jira__*transition*"
+reason = "moves an Acme ticket to another status"
+scope = { kube_contexts = ["acme-*"] }   # optional: in place of the pack's [scope]
+```
+
+Each rule sets `reason` and one of `match` or `tool`. `match` is a command: its program (by name,
+from any directory, after `VAR=value`, `sudo` or `env`) and then the other words in that order,
+with other words and flags allowed between them; each word may be a glob. `tool` is a glob for an
+MCP tool's full name. A rule takes effect only where the pack's [`[scope]`](#scope) matches the
+directory the command runs in, or the rule's own `scope` when it sets one.
+
+`apply` renders every enabled pack's rules, with their scopes, into
+`$BRAINRC_HOME/guard-rules.json`, and core's `guard_outward.py` checks them on every Bash and MCP
+call. Commands inside `sh -c`, `eval`, `$(…)` and backticks are unwrapped as for core's own rules.
+A pack's deny wins over any ask; a pack's ask is shown when core has nothing to ask. Without the
+file (no rules, or before the first `apply`), the guard behaves as before. `validate` checks each
+rule. Claude Code enforces them today; the other tools' guards follow
+([guardrails](guardrails.md#gaps-by-tool)).
+
+Test a rule with [`brainrc.testing`](#pack-tests) against core's hook, with `BRAINRC_HOME` set to
+a directory holding the rendered file, and a near miss beside the risky command.
+
+## Permissions
+
+A pack's `overrides/claude/settings.fragment.json` can list permission entries, so it ships a
+read-only allow list or hard denies without a hook:
+
+```json
+{
+  "permissions": {
+    "allow": ["Bash(acme-status:*)", "mcp__acme-jira__get_issue"],
+    "deny": ["Bash(acme-deploy prod:*)"]
+  }
+}
+```
+
+`apply` adds each `allow`, `deny` and `ask` entry to the settings file after yours, and records the
+ones it added in `$BRAINRC_HOME/settings-owned.json`. Disable the pack and the next `apply` removes
+exactly those: an entry you had before the pack, or one another enabled pack still lists, stays.
+`uninstall` takes them out too. Other keys under `permissions` (`defaultMode`, say) are set only
+when the file has none, and stay. `brainrc.lock` records every entry as one of the pack's tool
+grants, so `apply` lists a new one as `PERMS` and asks first ([why packs](packs/why-packs.md)).
+The `minimal` profile installs no settings fragment, so a pack's permissions and hooks need
+`recommended` or `full`.
 
 ## Extensions
 

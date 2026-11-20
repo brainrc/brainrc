@@ -12,7 +12,7 @@ there is.
 [new skill](#brainrc-new-skill) · [new agent](#brainrc-new-agent) · [new rule](#brainrc-new-rule) ·
 [new command](#brainrc-new-command) ·
 **Install**: [status](#brainrc-status) · [apply](#brainrc-apply) · [update](#brainrc-update) · [install](#brainrc-install) · [uninstall](#brainrc-uninstall) ·
-**Check**: [check](#brainrc-check) · [audit](#brainrc-audit) · [doctor](#brainrc-doctor) · [validate](#brainrc-validate) · [tokens](#brainrc-tokens) ·
+**Check**: [check](#brainrc-check) · [audit](#brainrc-audit) · [scope](#brainrc-scope) · [doctor](#brainrc-doctor) · [validate](#brainrc-validate) · [tokens](#brainrc-tokens) ·
 **Other**: [pin-mcp](#brainrc-pin-mcp) · [migrate](#brainrc-migrate)
 
 ## brainrc init
@@ -223,6 +223,19 @@ each MCP server's pinned tools. No network, writes nothing ([guardrails](guardra
 
 | Option | Does |
 |---|---|
+| `--json` | print it as JSON |
+
+## brainrc scope
+
+List each enabled pack as `APPLIES` or `SKIPPED` in the directory you're in, and why: the git
+remote, directory, kube context, AWS profile or ticket ref that matched its `[scope]`, or what it
+needs. A pack without `[scope]` applies everywhere. Writes nothing ([packs](packs.md#scope)).
+
+| Option | Does |
+|---|---|
+| `--cwd DIR` | check this directory instead of the current one |
+| `--ticket REF` | a ticket ref the run is for (repeat it); the branch name's refs count too |
+| `--extensions` | print `extensions.md` with only the packs that apply here |
 | `--json` | print it as JSON |
 
 ## brainrc doctor

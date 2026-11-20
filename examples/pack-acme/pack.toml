@@ -6,6 +6,12 @@ id = "acme/acme-ai-pack"          # optional: <owner>/<pack>; the prefix starts 
 requires_core = ">=0.6, <0.9"     # core versions this pack works with (docs/packs.md#compatibility)
 max_always_tokens = 400          # rules + descriptions loaded every session (docs/packs.md#context-cost)
 
+# Where the pack applies: its deliver checks, guard rules and reviewers stay out of other work.
+# Any glob matching is enough; without [scope] a pack applies everywhere (docs/packs.md#scope).
+[scope]
+remotes = ["github.com/acme/*", "git.acme.example.net/*"]
+tickets = ["ACME-*"]
+
 # Extensions for Gatework, the default pack, under its own table (docs/packs.md#extensions).
 [extensions.gatework]
 # Listed at the Deliver gate as done / not applicable / not run.

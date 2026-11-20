@@ -1,0 +1,200 @@
+"""A pack's [scope] (#140): where it applies, and what that leaves out of a run elsewhere."""
+import contextlib
+import io
+import json
+import os
+import shutil
+import tempfile
+import unittest
+from pathlib import Path
+
+from brainrc import scope
+from brainrc.plugins import render_extensions
+from brainrc.sources import Source, load_pack
+from brainrc.validate import pack_toml_findings
+
+from test_brainrc import REPO, TempRepoCase
+
+ACME = REPO / "examples/pack-acme"
+
+
+def fake_repo(root: Path, remote: str, branch: str = "main") -> Path:
+    """A directory git would call a repo with one remote, written by hand (no git needed)."""
+    (root / ".git").mkdir(parents=True)
+    (root / ".git/config").write_text(
+        '[core]\n\tbare = false\n[remote "origin"]\n\turl = %s\n\tfetch = +refs/heads/*:refs/remotes/origin/*\n'
+        '[branch "main"]\n\tremote = origin\n' % remote)
+    (root / ".git/HEAD").write_text(f"ref: refs/heads/{branch}\n")
+    return root
+
+
+class RemoteTest(unittest.TestCase):
+    def test_ssh_and_https_normalize_alike(self):
+        for url in ("git@github.com:acme/app.git", "https://github.com/acme/app", "https://me@github.com/acme/app.git",
+                    "ssh://git@github.com:22/acme/app.git", "HTTPS://GitHub.com/Acme/App/"):
+            with self.subTest(url=url):
+                self.assertEqual(scope.normalize_remote(url), "github.com/acme/app")
+
+    def test_a_local_path_stays_as_written(self):
+        self.assertEqual(scope.normalize_remote("/srv/git/app"), "/srv/git/app")
+
+
+class ContextTest(unittest.TestCase):
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp()).resolve()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp)
+
+    def test_remotes_from_a_subdirectory(self):
+        repo = fake_repo(self.tmp / "app", "git@github.com:acme/app.git")
+        (repo / "src/deep").mkdir(parents=True)
+        ctx = scope.Context(repo / "src/deep")
+        self.assertIn("github.com/acme/app", ctx.values("remotes"))
+        self.assertTrue(scope.applies({"remotes": ["github.com/acme/*"]}, ctx))
+        self.assertFalse(scope.applies({"remotes": ["github.com/other/*"]}, ctx))
+
+    def test_a_worktree_reads_the_shared_config(self):
+        main = fake_repo(self.tmp / "main", "https://github.com/acme/app.git")
+        wt_git = main / ".git/worktrees/wt"
+        wt_git.mkdir(parents=True)
+        (wt_git / "commondir").write_text("../..\n")
+        (wt_git / "HEAD").write_text("ref: refs/heads/acme-42-fix\n")
+        wt = self.tmp / "wt"
+        wt.mkdir()
+        (wt / ".git").write_text(f"gitdir: {wt_git}\n")
+        ctx = scope.Context(wt)
+        self.assertIn("github.com/acme/app", ctx.values("remotes"))
+        self.assertEqual(ctx.values("tickets"), ["ACME-42"])
+
+    def test_no_repo_matches_no_remote(self):
+        self.assertEqual(scope.Context(self.tmp).values("remotes"), [])
+        self.assertFalse(scope.applies({"remotes": ["*"]}, scope.Context(self.tmp)))
+
+    def test_paths_match_the_directory_or_one_above_it(self):
+        (self.tmp / "src/acme/app").mkdir(parents=True)
+        ctx = scope.Context(self.tmp / "src/acme/app")
+        self.assertTrue(scope.applies({"paths": [str(self.tmp / "src/acme")]}, ctx))
+        self.assertTrue(scope.applies({"paths": [str(self.tmp / "src/ac*")]}, ctx))
+        self.assertFalse(scope.applies({"paths": [str(self.tmp / "src/acme-other")]}, ctx))
+
+    def test_kube_context_and_aws_profile(self):
+        kube = self.tmp / "kubeconfig"
+        kube.write_text("apiVersion: v1\ncurrent-context: \"acme-prod\"  # the live one\nkind: Config\n")
+        env = {"KUBECONFIG": os.pathsep.join([str(self.tmp / "missing"), str(kube)]), "AWS_PROFILE": "acme-admin"}
+        ctx = scope.Context(self.tmp, env=env)
+        self.assertTrue(scope.applies({"kube_contexts": ["acme-*"]}, ctx))
+        self.assertTrue(scope.applies({"aws_profiles": ["acme-*"]}, ctx))
+        bare = scope.Context(self.tmp, env={"KUBECONFIG": str(self.tmp / "missing")})
+        self.assertFalse(scope.applies({"kube_contexts": ["*"]}, bare))
+        self.assertEqual(bare.values("aws_profiles"), ["default"])
+
+    def test_tickets_from_the_branch_and_from_the_caller(self):
+        repo = fake_repo(self.tmp / "app", "https://example.com/me/app", branch="feature/acme-7-login")
+        self.assertEqual(scope.Context(repo).values("tickets"), ["ACME-7"])
+        self.assertEqual(scope.Context(repo, ["ops-3"]).values("tickets"), ["OPS-3", "ACME-7"])
+        self.assertTrue(scope.applies({"tickets": ["acme-*"]}, scope.Context(repo)))
+
+    def test_any_key_is_enough_and_none_means_everywhere(self):
+        ctx = scope.Context(self.tmp, env={"AWS_PROFILE": "acme"})
+        self.assertTrue(scope.applies({"remotes": ["github.com/acme/*"], "aws_profiles": ["acme"]}, ctx))
+        self.assertTrue(scope.applies(None, ctx))
+        self.assertTrue(scope.applies({}, ctx))
+        self.assertTrue(scope.applies({"remotes": []}, ctx))
+
+    def test_a_key_is_read_only_when_asked_for(self):
+        ctx = scope.Context(self.tmp, env={"KUBECONFIG": str(self.tmp / "missing")})
+        scope.applies({"aws_profiles": ["x"]}, ctx)
+        self.assertEqual(set(ctx._cache), {"aws_profiles"})
+
+    def test_describe(self):
+        self.assertEqual(scope.describe(None), "everywhere")
+        self.assertEqual(scope.describe({"remotes": ["github.com/acme/*"], "tickets": ["ACME-*"]}),
+                         "git remote github.com/acme/*, or ticket ACME-*")
+
+
+class ValidateScopeTest(TempRepoCase):
+    def pack(self, toml: str) -> Source:
+        root = self.repo / "packs/acme"
+        root.mkdir(parents=True)
+        (root / "pack.toml").write_text('name = "acme"\nrequires_core = ">=0"\n' + toml)
+        return load_pack(root)
+
+    def test_a_good_scope_passes(self):
+        errors, warnings = pack_toml_findings(self.pack('[scope]\nremotes = ["github.com/acme/*"]\n'))
+        self.assertEqual((errors, warnings), ([], []))
+
+    def test_a_wrong_type_fails_and_a_typo_warns_with_the_known_key(self):
+        errors, warnings = pack_toml_findings(self.pack('[scope]\nremotes = "github.com/acme/*"\nkube_context = ["x"]\n'))
+        self.assertTrue(any("scope.remotes" in e for e in errors), errors)
+        self.assertTrue(any("scope.kube_context" in w and "kube_contexts" in w for w in warnings), warnings)
+
+    def test_an_empty_glob_fails(self):
+        errors, _ = pack_toml_findings(self.pack('[scope]\npaths = [" "]\n'))
+        self.assertTrue(any("empty glob" in e for e in errors), errors)
+
+
+class ScopedExtensionsTest(TempRepoCase):
+    """Done when: an acme pack's deliver checks don't show up in a personal-repo run."""
+
+    def setUp(self):
+        super().setUp()
+        shutil.copytree(ACME, self.repo / "packs/acme")
+        self.srcs = [Source("core", self.repo), load_pack(self.repo / "packs/gatework", "gatework"),
+                     load_pack(self.repo / "packs/acme", "acme")]
+        self.work = Path(tempfile.mkdtemp()).resolve()
+
+    def tearDown(self):
+        shutil.rmtree(self.work)
+        super().tearDown()
+
+    def test_a_personal_repo_run_leaves_out_acme(self):
+        personal = fake_repo(self.work / "dotfiles", "git@github.com:me/dotfiles.git")
+        text = render_extensions(self.srcs, scope.Context(personal))
+        self.assertNotIn("Deploy plan reviewed by the owning team", text)
+        self.assertNotIn("acme", text)
+
+    def test_an_acme_repo_run_keeps_it(self):
+        acme = fake_repo(self.work / "app", "git@github.com:acme/app.git")
+        text = render_extensions(self.srcs, scope.Context(acme))
+        self.assertIn("Deploy plan reviewed by the owning team", text)
+
+    def test_an_acme_ticket_brings_it_in_outside_an_acme_repo(self):
+        text = render_extensions(self.srcs, scope.Context(self.work, ["ACME-12"]))
+        self.assertIn("Deploy plan reviewed by the owning team", text)
+
+    def test_apply_renders_every_pack_and_says_where_acme_applies(self):
+        text = render_extensions(self.srcs)
+        self.assertIn("Deploy plan reviewed by the owning team", text)
+        self.assertIn("## Scope", text)
+        self.assertIn("- `acme`: git remote github.com/acme/*", text)
+
+    def test_no_scope_section_without_a_scoped_pack(self):
+        meta = dict(self.srcs[2].meta)
+        meta.pop("scope")
+        srcs = self.srcs[:2] + [Source("acme", self.srcs[2].root, "acme-", meta, "acme")]
+        self.assertNotIn("## Scope", render_extensions(srcs))
+
+    def test_the_scope_command(self):
+        (self.repo / "packs.local.toml").write_text('[acme]\npath = "packs/acme"\n')
+        personal = fake_repo(self.work / "dotfiles", "git@github.com:me/dotfiles.git")
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            code = scope.cmd_scope(str(personal))
+        self.assertEqual(code, 0)
+        self.assertIn("APPLIES  gatework  (no [scope])", buf.getvalue())
+        self.assertIn("SKIPPED  acme  (needs git remote github.com/acme/*", buf.getvalue())
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            scope.cmd_scope(str(personal), ["acme-9"], as_json=True)
+        rows = {r["pack"]: r for r in json.loads(buf.getvalue())["packs"]}
+        self.assertTrue(rows["acme"]["applies"])
+        self.assertEqual(rows["acme"]["why"], "ticket ACME-9 matches ACME-*")
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            scope.cmd_scope(str(personal), extensions=True)
+        self.assertNotIn("Deploy plan", buf.getvalue())
+
+
+if __name__ == "__main__":
+    unittest.main()

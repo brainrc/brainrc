@@ -13,6 +13,7 @@ from .naming import check_pack_names, unprefixed_ok
 from .packs import pinned_defaults
 from .plugins import extension_errors, extension_warnings, plugin_errors, validators
 from . import config, connectors, packtests, schema
+from . import scope as pack_scope
 from .config import (
     ConfigError,
     HOOKS_DIR_PLACEHOLDER,
@@ -223,13 +224,24 @@ def pack_toml_findings(src: Source) -> tuple[list[str], list[str]]:
     unknown: list[tuple[tuple, str]] = []
     errors = [f"{where}: {e}" for e in schema.errors(src.meta, known, unknown=unknown)
               if not e.startswith("id:")]  # check_pack_names reports any bad `id`, apply too
+    errors += pack_scope.check(src.meta.get("scope"), where)
     warnings = []
     for table, key in unknown:
-        hint = did_you_mean(key, known["properties"] if not table else {})
+        hint = did_you_mean(key, _known_keys(known, table))
         path_ = tuple(map(str, (*table, key)))
         warnings.append(f"{where}:{key_line(text, path_)}: unknown key `{'.'.join(path_)}`{hint}; "
                         "brainrc ignores it")
     return errors, warnings
+
+
+def _known_keys(known: dict, table: tuple) -> dict:
+    """The keys the schema knows in a top-level table of pack.toml (`scope`), for a typo's hint;
+    {} for anything deeper or freer, such as [extensions]."""
+    if not table:
+        return known["properties"]
+    spec = known["properties"].get(str(table[0]), {}) if len(table) == 1 else {}
+    ref = spec.get("$ref", "").removeprefix("#/$defs/")
+    return known.get("$defs", {}).get(ref, spec).get("properties", {})
 
 
 def _validate_pack(src: Source) -> list[str]:

@@ -48,6 +48,9 @@ requires_core = ">=0.7, <0.9"   # core versions this pack works with (see Compat
 max_always_tokens = 800   # optional budget for rules + descriptions (see Context cost)
 test = "tests"            # optional: tests validate --pack runs (see Pack tests)
 
+[scope]                   # optional: where the pack applies (see Scope)
+remotes = ["github.com/acme/*"]
+
 [extensions.gatework]      # what Gatework reads; see Extensions
 deliver_checks = [        # listed in the Deliver gate as done / not applicable / not run
   "Deploy plan reviewed by the owning team",
@@ -92,6 +95,7 @@ Generated from [`pack.toml.schema.json`](schemas/pack.toml.schema.json) by
 | `max_always_tokens` | number | Budget for the tokens the pack loads into every session: rules plus descriptions ([context cost](#context-cost)). |
 | `validator` | string | A Python module in the pack that checks what only it understands ([validator plugins](#validator-plugins)). |
 | `test` | string | The pack's own unittest tests, a directory or a .py file in the pack; validate --pack runs them ([pack tests](#pack-tests)). |
+| `scope` | table | Where the pack applies: any glob matching means it does; none means everywhere ([scope](#scope)). |
 | `extensions` | table | Tables other packs read, one per namespace, e.g. [extensions.gatework]; the pack that owns a namespace checks it ([extensions](#extensions)). |
 <!-- end generated -->
 
@@ -222,6 +226,31 @@ The rendered instructions file has three parts, in this order:
 Pack rule numbers only order rules within the pack. Later rules refine earlier ones and must
 not contradict them: a pack rule that contradicts core is a bug in the pack. Write it as a
 narrower case ("in Acme repos, also ...") instead.
+
+## Scope
+
+`[scope]` says where a pack applies, so a work pack's deliver checks, guard rules and reviewers
+stay out of your personal repos, in place of free text such as "in acme repos":
+
+```toml
+[scope]
+remotes = ["github.com/acme/*", "git.acme.example.net/*"]   # a git remote of the repo you're in
+paths = ["~/src/acme"]          # the directory you're in, or one above it; ~ and $VARS expand
+kube_contexts = ["acme-*"]      # kubectl's current context ($KUBECONFIG or ~/.kube/config)
+aws_profiles = ["acme-*"]       # $AWS_PROFILE, "default" when it isn't set
+tickets = ["ACME-*"]            # a ticket ref in the branch name (acme-42-fix), or one passed in
+```
+
+Every value is a list of globs, and the pack applies when any one of them matches. A remote is
+matched as written and as `host/owner/repo`, so one glob covers its SSH and HTTPS URLs. A pack
+without `[scope]`, or with an empty one, applies everywhere, as before. The rules, skills and
+agents a pack installs are still installed everywhere: scope decides where its extensions and
+guard rules take effect.
+
+`brainrc scope` lists each enabled pack as `APPLIES` or `SKIPPED` in the directory you're in and
+says why, and `brainrc scope --extensions` prints the [extensions](#extensions) a run there
+should read: only the packs that apply. The `extensions.md` that `apply` renders holds every
+pack and ends with a Scope section saying where each scoped pack applies.
 
 ## Extensions
 

@@ -45,6 +45,7 @@ from .mcp import check_servers, mcp_change, mcp_plan, record_owned, write_mcp
 from .settings import FileChanged, read_current, settings_change, write_settings
 from .plugin import cmd_plugin
 from .plugins import render_extensions
+from .scope import cmd_scope
 from .release import cmd_release, cmd_release_notes
 from .tokens import cmd_tokens
 from .validate import cmd_validate, pack_errors
@@ -691,6 +692,16 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--purge", action="store_true",
                    help="also delete the settings home ($BRAINRC_HOME): local config, rendered files and "
                    "fetched git packs")
+    p = add("scope", "show which packs apply in a directory, by their [scope] (writes nothing)",
+            "List each enabled pack with APPLIES or SKIPPED for the directory you're in (or --cwd), and "
+            "why: the git remote, directory, kube context, AWS profile or ticket ref that matched its "
+            "[scope], or what it needs. A pack without [scope] applies everywhere.")
+    p.add_argument("--cwd", metavar="DIR", help="check this directory instead of the current one")
+    p.add_argument("--ticket", action="append", metavar="REF",
+                   help="a ticket ref the run is for (repeat it); the branch name's refs count too")
+    p.add_argument("--extensions", action="store_true",
+                   help="print extensions.md with only the packs that apply here")
+    p.add_argument("--json", action="store_true", help="print it as JSON")
     p = add("validate", "check frontmatter, cross-references, packs and tripwires (CI runs it)")
     p.add_argument("--pack", metavar="DIR", help="check core plus this pack only")
     p.add_argument("--fetch-defaults", action="store_true",
@@ -782,6 +793,8 @@ def _dispatch(argv: list[str]) -> int:
         return cmd_check(args.scope)
     if cmd == "audit":
         return cmd_audit(args.json)
+    if cmd == "scope":
+        return cmd_scope(args.cwd, args.ticket, args.extensions, args.json)
     if cmd == "pin-mcp":
         return _locked(lambda: mcp_pins.cmd_pin_mcp(args.servers, args.yes))
     if cmd == "install":

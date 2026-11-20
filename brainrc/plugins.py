@@ -21,6 +21,7 @@ import importlib.util
 import sys
 from types import ModuleType
 
+from . import scope
 from .config import ConfigError, _layered
 from .sources import Source
 
@@ -134,10 +135,30 @@ def plugin_findings(plugins: list[tuple[Source, ModuleType]]) -> list[tuple[str,
     return [f for me, mod in plugins if hasattr(mod, "doctor") for f in _call(me, mod, "doctor", me)]
 
 
-def render_extensions(srcs: list[Source]) -> str | None:
-    """$BRAINRC_HOME/extensions.md from the first plugin that renders it, or None when none does."""
+def render_extensions(srcs: list[Source], here: scope.Context | None = None) -> str | None:
+    """$BRAINRC_HOME/extensions.md from the first plugin that renders it, or None when none does.
+
+    With `here`, only the packs whose [scope] applies there (`brainrc scope --extensions`): what a
+    run in that directory should see. Without it (apply), every enabled pack, then a section that
+    says where each scoped pack applies."""
     for me, mod in validators(srcs):
         if hasattr(mod, "render_extensions"):
             others = [s for s in srcs if not s.is_core and s is not me]
-            return _call(me, mod, "render_extensions", [(s.name, table(s, me, mod)) for s in others])
+            if here is not None:
+                others = [s for s in others if scope.applies(scope.of(s.meta), here)]
+            text = _call(me, mod, "render_extensions", [(s.name, table(s, me, mod)) for s in others])
+            return text if here is not None else text + scope_section(others)
     return None
+
+
+def scope_section(srcs: list[Source]) -> str:
+    """Where each scoped pack applies, for a reader of extensions.md that can't run `brainrc scope`."""
+    scoped = [s for s in srcs if not scope.unscoped(scope.of(s.meta))]
+    if not scoped:
+        return ""
+    lines = ["", "## Scope", "",
+             "These packs apply only where their [scope] matches; elsewhere, skip their extensions "
+             "above (their deliver checks, domains, intake context and ticket connector). "
+             "`brainrc scope --extensions` prints this file for the directory you're in.", ""]
+    lines += [f"- `{s.name}`: {scope.describe(scope.of(s.meta))}" for s in scoped]
+    return "\n".join(lines) + "\n"

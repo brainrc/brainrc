@@ -14,3 +14,8 @@ bump: patch
   checks them inside `sh -c`, `eval`, `$(…)` and backticks too; a pack's deny wins over any ask.
   The acme example denies `acme-deploy prod` only inside acme repos. The other tools' guards read
   the file in E11 (#141).
+- **[pack contract]** A pack owns the `permissions.allow`, `deny` and `ask` entries its settings
+  fragment adds, like its hooks: `apply` records them in `$BRAINRC_HOME/settings-owned.json`, and
+  disabling the pack removes exactly those, keeping an entry you had first or another pack still
+  lists; `uninstall` removes them too. Before, a fragment's `permissions` was written only into a
+  settings file that had none, and never removed (#142).

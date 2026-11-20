@@ -42,7 +42,8 @@ from .plan import (
     stale_renders,
 )
 from .mcp import check_servers, mcp_change, mcp_plan, record_owned, write_mcp
-from .settings import FileChanged, read_current, settings_change, write_settings
+from .settings import FileChanged, read_current, read_owned, settings_change, settings_owned, write_settings
+from .settings import record_owned as record_settings_owned
 from .plugin import cmd_plugin
 from .plugins import render_extensions
 from .scope import cmd_scope
@@ -324,7 +325,10 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True, moved: frozens
     for m in merges:
         before = read_current(m.dest)
         state, merged = settings_change(m)
+        owned = settings_owned(m) if state != "conflict" else None
         if state == "ok":
+            if apply and owned != read_owned(m.dest):
+                record_settings_owned(m.dest, owned)  # e.g. an entry the user took out by hand
             continue
         print(f"{state.upper():9} {m.harness:9} {tilde(m.dest)}"
               + ("  (invalid JSON, fix by hand)" if state == "conflict" else "  (hooks)"))
@@ -338,6 +342,8 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True, moved: frozens
             except FileChanged:
                 changed += 1
                 print(f"{'CHANGED':9} {m.harness:9} {tilde(m.dest)}  {CHANGED_HINT}")
+            else:
+                record_settings_owned(m.dest, owned)
     for s in mcp_plan(srcs):
         before = read_current(s.dest)
         state, text, clashing, owned = mcp_change(s)

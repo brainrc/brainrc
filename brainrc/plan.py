@@ -144,13 +144,22 @@ class SettingsMerge:
     def wanted(self) -> dict:
         hooks: dict[str, list] = {}
         wanted: dict = {}
+        perms: dict = {}
         for fragment, hooks_dir in self.fragments:
             rendered = render_fragment(fragment, hooks_dir)
             for event, groups in rendered.get("hooks", {}).items():
                 hooks.setdefault(event, []).extend(groups)
+            for key, value in (rendered.get("permissions") or {}).items() \
+                    if isinstance(rendered.get("permissions"), dict) else ():
+                if key in ("allow", "deny", "ask") and isinstance(value, list):  # every source's, in order
+                    perms[key] = list(dict.fromkeys([*perms.get(key, []), *value]))
+                else:
+                    perms.setdefault(key, value)
             for key, value in rendered.items():  # e.g. Cursor's "version"; the first source wins
-                if key != "hooks":
+                if key not in ("hooks", "permissions"):
                     wanted.setdefault(key, value)
+        if perms:
+            wanted["permissions"] = perms
         wanted["hooks"] = hooks
         return wanted
 

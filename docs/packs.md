@@ -28,7 +28,7 @@ acme-ai-pack/
   commands/acme-*.md     linked into each tool's commands folder
   rules/NN-*.md          rendered after all core rules, as one labelled block (see Rules)
   overrides/claude/hooks/                 linked to <hooks_dir>-acme (e.g. ~/.claude/hooks/brainrc-acme)
-  overrides/claude/settings.fragment.json merged after the core fragment; {{hooks_dir}} = the pack's hooks dir
+  overrides/claude/settings.fragment.json merged after the core fragment; {{hooks_dir}} = the pack's hooks dir (see Permissions)
   overrides/opencode/plugin.js            linked beside core's guard plugin, as brainrc-guard-acme.js
   mcp/servers.toml       MCP servers, synced after core's (see formats.md#mcp-servers-mcpserverstoml)
   tripwires.toml         patterns that must not appear in the pack (checked by validate)
@@ -288,6 +288,27 @@ rule. Claude Code enforces them today; the other tools' guards follow
 
 Test a rule with [`brainrc.testing`](#pack-tests) against core's hook, with `BRAINRC_HOME` set to
 a directory holding the rendered file, and a near miss beside the risky command.
+
+## Permissions
+
+A pack's `overrides/claude/settings.fragment.json` can list permission entries, so it ships a
+read-only allow list or hard denies without a hook:
+
+```json
+{
+  "permissions": {
+    "allow": ["Bash(acme-status:*)", "mcp__acme-jira__get_issue"],
+    "deny": ["Bash(acme-deploy prod:*)"]
+  }
+}
+```
+
+`apply` adds each `allow`, `deny` and `ask` entry to the settings file after yours, and records the
+ones it added in `$BRAINRC_HOME/settings-owned.json`. Disable the pack and the next `apply` removes
+exactly those: an entry you had before the pack, or one another enabled pack still lists, stays.
+`uninstall` takes them out too. Other keys under `permissions` (`defaultMode`, say) are set only
+when the file has none, and stay. `brainrc.lock` records every entry as one of the pack's tool
+grants, so `apply` lists a new one as `PERMS` and asks first ([why packs](packs/why-packs.md)).
 
 ## Extensions
 

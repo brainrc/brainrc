@@ -38,6 +38,7 @@ from .manifest import checked_manifest, manifest_file
 from .mcp import ADAPTERS, McpSync, _owned_file, _read_record, mcp_change, mcp_files, record_owned, write_mcp
 from .plan import SettingsMerge, _managed_target, link_target
 from .settings import FileChanged, read_current, settings_change, write_settings
+from .settings import record_owned as record_settings_owned
 from .sources import sources
 
 BACKUP = r"\.bak-brainrc-\d{8}T\d{6}Z"
@@ -56,7 +57,7 @@ class Step:
 # What brainrc keeps in the settings home. --purge deletes these and nothing else.
 SETTINGS_HOME_ENTRIES = re.compile(
     r".*\.local\.(toml|md)|rules|packs|instructions\.md|extensions\.md|harnesses\.json|"
-    r"\.harnesses\.json\.tmp|mcp-owned\.json|guard-rules\.json|apply\.lock|active-run|opencode|hooks|"
+    r"\.harnesses\.json\.tmp|mcp-owned\.json|guard-rules\.json|settings-owned\.json|apply\.lock|active-run|opencode|hooks|"
     r"\.?brainrc\.lock(\.tmp)?|project-packs|project-state")
 
 
@@ -136,10 +137,14 @@ def _settings_steps(name: str, h: dict, problems: list[str]) -> list[Step]:
         return []
     before = read_current(dest)
     if not merged or merged == _fragment_extras(name):
-        return [Step("DELETE", name, dest, lambda: _set_aside(dest), "only brainrc's hooks were in it", {dest})]
+        def delete() -> None:
+            _set_aside(dest)
+            record_settings_owned(dest, {})
+        return [Step("DELETE", name, dest, delete, "only brainrc's hooks were in it", {dest})]
 
     def unmerge() -> None:
         write_settings(dest, merged, before)
+        record_settings_owned(dest, {})
     return [Step("UNMERGE", name, dest, unmerge, "hooks")]
 
 

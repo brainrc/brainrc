@@ -29,6 +29,9 @@ Layered, so no single layer has to be perfect.
 - host reboot/poweroff. Proxmox `qm`/`pct` and `talosctl` are in the [homelab example pack](../examples/pack-homelab/README.md).
 - `rm -rf` in any flag spelling
 
+A pack adds its own deny and ask rules in `pack.toml`, under its `[scope]`, and this hook enforces
+them with the same unwrapping; a pack's deny wins over any ask ([guard rules](packs.md#guard-rules)).
+
 Commands inside `sh -c '…'`, `eval`, `$(…)`, and backticks are unwrapped and checked, and shell
 operators are split even without spaces (`ls;kubectl delete …`). Read-only and offline commands
 (plan, validate, template, lint, diff, get, describe) are not prompted; `--dry-run=none` counts
@@ -117,7 +120,8 @@ With this setup, a bypassed hook produces an access-denied error rather than a c
 
 OpenCode runs the same guards through a plugin (`overrides/opencode/plugin.js`), with one
 difference: a plugin can't prompt, so anything the guards would ask about is blocked, and the
-model is told to ask you to run it yourself. MCP tools aren't guarded there yet. A pack can ship its own
+model is told to ask you to run it yourself. MCP tools aren't guarded there yet, and a pack's
+[guard rules](packs.md#guard-rules) aren't read there yet (epic #116). A pack can ship its own
 OpenCode plugin as `overrides/opencode/plugin.js`; `apply` links it beside core's, and the lock
 records it with the pack's hooks ([packs](packs.md#layout)).
 
@@ -125,7 +129,7 @@ Cursor runs them through `overrides/cursor/hooks/guard.py` on `beforeShellExecut
 guards) and `beforeReadFile` (secrets), from `~/.cursor/hooks.json` (`brainrc`) or the plugin's
 `.cursor-plugin/hooks.json`. Cursor's `ask` was reported broken and reads accept only allow or
 deny, so ask becomes deny there too. File writes and MCP calls aren't guarded in Cursor: it has no
-reliable pre-write hook. Not yet run in a real Cursor.
+reliable pre-write hook. Packs' guard rules aren't read there yet. Not yet run in a real Cursor.
 
 Codex and Antigravity CLI get the rules and workflow layers only. Use their own
 permission/sandbox settings (e.g. Codex approval modes) alongside. Porting the hooks to tools

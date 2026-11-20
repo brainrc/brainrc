@@ -12,7 +12,7 @@ from .mcp import check_servers
 from .naming import check_pack_names, unprefixed_ok
 from .packs import pinned_defaults
 from .plugins import extension_errors, extension_warnings, plugin_errors, validators
-from . import config, connectors, packtests, schema
+from . import config, connectors, guard, packtests, schema
 from . import scope as pack_scope
 from .config import (
     ConfigError,
@@ -225,6 +225,7 @@ def pack_toml_findings(src: Source) -> tuple[list[str], list[str]]:
     errors = [f"{where}: {e}" for e in schema.errors(src.meta, known, unknown=unknown)
               if not e.startswith("id:")]  # check_pack_names reports any bad `id`, apply too
     errors += pack_scope.check(src.meta.get("scope"), where)
+    errors += guard.check(src.meta, where)
     warnings = []
     for table, key in unknown:
         hint = did_you_mean(key, _known_keys(known, table))

@@ -56,7 +56,7 @@ class Step:
 # What brainrc keeps in the settings home. --purge deletes these and nothing else.
 SETTINGS_HOME_ENTRIES = re.compile(
     r".*\.local\.(toml|md)|rules|packs|instructions\.md|extensions\.md|harnesses\.json|"
-    r"\.harnesses\.json\.tmp|mcp-owned\.json|apply\.lock|active-run|opencode|hooks|"
+    r"\.harnesses\.json\.tmp|mcp-owned\.json|guard-rules\.json|apply\.lock|active-run|opencode|hooks|"
     r"\.?brainrc\.lock(\.tmp)?|project-packs|project-state")
 
 

@@ -1,5 +1,6 @@
 """A pack's [scope] (#140): where it applies, and what that leaves out of a run elsewhere."""
 import contextlib
+import importlib.util
 import io
 import json
 import os
@@ -111,6 +112,59 @@ class ContextTest(unittest.TestCase):
         self.assertEqual(scope.describe(None), "everywhere")
         self.assertEqual(scope.describe({"remotes": ["github.com/acme/*"], "tickets": ["ACME-*"]}),
                          "git remote github.com/acme/*, or ticket ACME-*")
+
+
+def load_hook():
+    spec = importlib.util.spec_from_file_location("guard_outward_under_test", REPO / "overrides/claude/hooks/guard_outward.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+class HookParityTest(unittest.TestCase):
+    """The guard hook carries its own copy of the evaluator: both must decide alike."""
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp()).resolve()
+        self.hook = load_hook()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp)
+
+    def test_same_keys_patterns_and_remote_form(self):
+        self.assertEqual(self.hook.SCOPE_KEYS, scope.KEYS)
+        self.assertEqual(self.hook.TICKET.pattern, scope.TICKET.pattern)
+        for url in ("git@github.com:acme/app.git", "ssh://git@h:22/a/b", "/srv/x", "https://u@h/a/b/"):
+            self.assertEqual(self.hook.normalize_remote(url), scope.normalize_remote(url), url)
+
+    def test_same_decisions(self):
+        acme = fake_repo(self.tmp / "acme", "git@github.com:acme/app.git", branch="acme-5-fix")
+        (acme / "sub").mkdir()
+        personal = fake_repo(self.tmp / "mine", "https://github.com/me/x")
+        kube = self.tmp / "kube"
+        kube.write_text("current-context: acme-prod\n")
+        scopes = [None, {}, {"remotes": ["github.com/acme/*"]}, {"remotes": ["git@github.com:acme/*"]},
+                  {"paths": [str(self.tmp / "acme")]}, {"paths": [str(self.tmp / "ac*")]},
+                  {"kube_contexts": ["acme-*"]}, {"aws_profiles": ["acme"]}, {"aws_profiles": ["default"]},
+                  {"tickets": ["acme-*"]}, {"tickets": ["OPS-*"], "remotes": ["github.com/me/*"]}]
+        envs = [{"KUBECONFIG": str(kube), "AWS_PROFILE": "acme"}, {"KUBECONFIG": str(self.tmp / "none")}]
+        for env in envs:
+            old = {k: os.environ.get(k) for k in ("KUBECONFIG", "AWS_PROFILE", "AWS_DEFAULT_PROFILE")}
+            os.environ.pop("AWS_DEFAULT_PROFILE", None)
+            os.environ.pop("AWS_PROFILE", None)
+            os.environ.update(env)
+            try:
+                for cwd in (acme / "sub", personal, self.tmp):
+                    for sc in scopes:
+                        with self.subTest(env=env, cwd=cwd.name, scope=sc):
+                            self.assertEqual(self.hook.scope_applies(sc, cwd, {}),
+                                             scope.applies(sc, scope.Context(cwd, env=dict(os.environ))))
+            finally:
+                for k, v in old.items():
+                    if v is None:
+                        os.environ.pop(k, None)
+                    else:
+                        os.environ[k] = v
 
 
 class ValidateScopeTest(TempRepoCase):

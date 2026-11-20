@@ -48,6 +48,11 @@
       "type": "object",
       "$ref": "#/$defs/scope"
     },
+    "guard": {
+      "description": "[[guard.deny]] and [[guard.ask]] rules core's guard hook enforces, with match or tool, reason and scope (docs/packs.md#guard-rules).",
+      "type": "object",
+      "$ref": "#/$defs/guard"
+    },
     "extensions": {
       "description": "Tables other packs read, one per namespace, e.g. [extensions.gatework]; the pack that owns a namespace checks it (docs/packs.md#extensions).",
       "type": "object"
@@ -97,6 +102,55 @@
             "minLength": 1
           },
           "description": "Globs for a ticket ref in the branch name (ACME-*), or one passed to `brainrc scope --ticket`."
+        }
+      }
+    },
+    "guard_rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reason"
+      ],
+      "properties": {
+        "match": {
+          "description": "A command: its program, then these words in order, as a shell splits them; each word may be a glob.",
+          "type": "string",
+          "minLength": 1
+        },
+        "tool": {
+          "description": "An MCP tool name, as a glob: mcp__<server>__<tool>.",
+          "type": "string",
+          "pattern": "^mcp__"
+        },
+        "reason": {
+          "description": "What the command does, shown when the guard stops it.",
+          "type": "string",
+          "minLength": 1
+        },
+        "scope": {
+          "description": "Where this rule applies, in place of the pack's [scope].",
+          "type": "object",
+          "$ref": "#/$defs/scope"
+        }
+      }
+    },
+    "guard": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "deny": {
+          "description": "Commands and MCP tools the guard refuses.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/guard_rule"
+          }
+        },
+        "ask": {
+          "description": "Commands and MCP tools the guard asks about first.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/guard_rule"
+          }
         }
       }
     }

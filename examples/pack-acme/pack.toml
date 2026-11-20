@@ -12,6 +12,16 @@ max_always_tokens = 400          # rules + descriptions loaded every session (do
 remotes = ["github.com/acme/*", "git.acme.example.net/*"]
 tickets = ["ACME-*"]
 
+# Guard rules core's guard hook enforces under the pack's [scope], inside `bash -c` and `$(...)` too
+# (docs/packs.md#guard-rules). A deny refuses; an ask prompts first.
+[[guard.deny]]
+match = "acme-deploy prod"
+reason = "acme-deploy prod deploys to production, which only the release pipeline does"
+
+[[guard.ask]]
+tool = "mcp__acme-jira__*transition*"
+reason = "moves an Acme ticket to another status"
+
 # Extensions for Gatework, the default pack, under its own table (docs/packs.md#extensions).
 [extensions.gatework]
 # Listed at the Deliver gate as done / not applicable / not run.

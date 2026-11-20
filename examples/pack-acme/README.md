@@ -1,8 +1,8 @@
 # Example pack: acme
 
-A working pack to copy. It uses every pack feature except hooks: `requires_core`, a domain
-skill, an intake context skill, a ticket connector config, a Deliver check, a rule, a command,
-and a tripwire. Format reference: [docs/packs.md](https://github.com/brainrc/brainrc/blob/main/docs/packs.md).
+A working pack to copy. It uses every pack feature except hooks: `requires_core`, a `[scope]`
+(acme repos and ACME tickets), guard rules, a domain skill, an intake context skill, a ticket
+connector config, a Deliver check, a rule, a command, and a tripwire. Format reference: [docs/packs.md](https://github.com/brainrc/brainrc/blob/main/docs/packs.md).
 
 ## Start your own
 
@@ -41,6 +41,8 @@ and a tripwire. Format reference: [docs/packs.md](https://github.com/brainrc/bra
    Core's own CI checks this example with the same action. A pre-commit hook and the manual
    step are in [docs/packs.md](https://github.com/brainrc/brainrc/blob/main/docs/packs/validate-in-ci.md).
 
-Hooks are left out on purpose: an enabled pack's hooks run on every tool call. To add them,
+Hooks are left out on purpose: an enabled pack's hooks run on every tool call. Its guard rules
+(`[[guard.deny]]`, `[[guard.ask]]`) need none: core's guard enforces them, only inside acme repos
+or on an ACME ticket. To add hooks anyway,
 see `overrides/` in [docs/packs.md](https://github.com/brainrc/brainrc/blob/main/docs/packs.md#layout) and the
 [homelab example](https://github.com/brainrc/brainrc/blob/main/examples/pack-homelab/README.md).

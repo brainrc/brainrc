@@ -1,5 +1,6 @@
 """Tests for the Claude Code guard hooks (run as subprocesses, like the harness does)."""
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -219,6 +220,88 @@ FAKE_JWT = "eyJ" + "a" * 12 + ".eyJ" + "b" * 12 + "." + "c" * 12
 
 HOMELAB_HOOKS = HOOKS.parent.parent.parent / "examples" / "pack-homelab" / "overrides" / "claude" / "hooks"
 HOMELAB_RISKY = ["qm destroy 105", "pct stop 200", "talosctl -n 10.0.0.2 upgrade --image x"]
+
+
+ACME = HOOKS.parent.parent.parent / "examples" / "pack-acme"
+
+
+class PackGuardRulesTest(unittest.TestCase):
+    """#141: the acme example's [[guard.deny]] for `acme-deploy prod`, enforced by core's guard only
+    inside acme repos, also inside `bash -c`; and its [[guard.ask]] for an MCP tool."""
+
+    @classmethod
+    def setUpClass(cls):
+        from brainrc import guard
+        from brainrc.sources import load_pack
+        cls.tmp = Path(tempfile.mkdtemp()).resolve()
+        cls.home = cls.tmp / "brainrc-home"
+        cls.home.mkdir()
+        (cls.home / "guard-rules.json").write_text(guard.render([load_pack(ACME, "acme")]))
+        cls.acme_repo = cls._repo("app", "git@github.com:acme/app.git")
+        cls.personal_repo = cls._repo("dotfiles", "git@github.com:me/dotfiles.git")
+        cls.old_home = os.environ.get("BRAINRC_HOME")
+        os.environ["BRAINRC_HOME"] = str(cls.home)
+
+    @classmethod
+    def tearDownClass(cls):
+        if cls.old_home is None:
+            os.environ.pop("BRAINRC_HOME", None)
+        else:
+            os.environ["BRAINRC_HOME"] = cls.old_home
+        rmtree(cls.tmp)
+
+    @classmethod
+    def _repo(cls, name: str, remote: str) -> Path:
+        root = cls.tmp / name
+        (root / ".git").mkdir(parents=True)
+        (root / ".git/config").write_text(f'[remote "origin"]\n\turl = {remote}\n')
+        (root / ".git/HEAD").write_text("ref: refs/heads/main\n")
+        (root / "src").mkdir()
+        return root
+
+    def decide(self, command: str, cwd: Path) -> str | None:
+        return run_hook("guard_outward.py", {"tool_name": "Bash", "tool_input": {"command": command},
+                                             "cwd": str(cwd)})
+
+    def test_denies_inside_an_acme_repo_however_it_is_wrapped(self):
+        for command in ["acme-deploy prod", "acme-deploy --verbose prod --wait", "/opt/acme/bin/acme-deploy prod",
+                        "cd svc && acme-deploy prod", "bash -c 'acme-deploy prod'", "sh -lc \"echo hi; acme-deploy prod\"",
+                        "echo $(acme-deploy prod)", "sudo -E env REGION=eu acme-deploy prod",
+                        "bash -c \"bash -c 'acme-deploy prod'\""]:
+            with self.subTest(command=command):
+                self.assertEqual(self.decide(command, self.acme_repo / "src"), "deny")
+
+    def test_near_misses_pass(self):
+        for command, cwd in [("acme-deploy prod", self.personal_repo),        # outside acme repos
+                             ("bash -c 'acme-deploy prod'", self.personal_repo),
+                             ("acme-deploy prod", self.tmp),                   # not in a repo at all
+                             ("acme-deploy staging", self.acme_repo),          # not prod
+                             ("echo acme-deploy prod", self.acme_repo),        # prod isn't what runs
+                             ("acme-deploy-docs prod", self.acme_repo)]:       # another program
+            with self.subTest(command=command, cwd=cwd.name):
+                self.assertIsNone(self.decide(command, cwd))
+
+    def test_a_deny_wins_over_core_asking(self):
+        self.assertEqual(self.decide("git push && acme-deploy prod", self.acme_repo), "deny")
+        self.assertEqual(self.decide("git push && acme-deploy prod", self.personal_repo), "ask")
+
+    def test_an_mcp_tool_rule_asks_only_where_the_pack_applies(self):
+        payload = {"tool_name": "mcp__acme-jira__get_transitions", "tool_input": {}}
+        self.assertEqual(run_hook("guard_outward.py", {**payload, "cwd": str(self.acme_repo)}), "ask")
+        self.assertIsNone(run_hook("guard_outward.py", {**payload, "cwd": str(self.personal_repo)}))
+
+    def test_a_missing_or_broken_rules_file_changes_nothing(self):
+        os.environ["BRAINRC_HOME"] = str(self.tmp / "nowhere")
+        try:
+            self.assertIsNone(self.decide("acme-deploy prod", self.acme_repo))
+            self.assertEqual(self.decide("git push", self.acme_repo), "ask")
+            broken = self.tmp / "broken"
+            broken.mkdir(exist_ok=True)
+            (broken / "guard-rules.json").write_text("{not json")
+            os.environ["BRAINRC_HOME"] = str(broken)
+            self.assertIsNone(self.decide("acme-deploy prod", self.acme_repo))
+        finally:
+            os.environ["BRAINRC_HOME"] = str(self.home)
 
 
 class HomelabGuardTest(unittest.TestCase):

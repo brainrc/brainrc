@@ -10,7 +10,7 @@ import shlex
 import subprocess
 from pathlib import Path
 
-from . import config
+from . import config, guard
 from .config import (
     ConfigError,
     KINDS,
@@ -102,7 +102,7 @@ def _render_findings(srcs: list[Source]) -> list[Finding]:
     except ConfigError:  # a validator that won't load: doctor_findings reports it
         extensions = None
     found = []
-    for path, exists in stale_renders(srcs, extensions, rendered_agents(srcs)):
+    for path, exists in stale_renders(srcs, extensions, rendered_agents(srcs), guard.render(srcs)):
         rel = tilde(path) if not path.is_relative_to(config.REPO) else path.relative_to(config.REPO).as_posix()
         found.append(("FAIL", f"{rel} is stale (sources changed since the last apply)" if exists
                       else f"{rel} has not been rendered", command("apply")))

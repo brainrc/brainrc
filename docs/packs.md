@@ -51,6 +51,10 @@ test = "tests"            # optional: tests validate --pack runs (see Pack tests
 [scope]                   # optional: where the pack applies (see Scope)
 remotes = ["github.com/acme/*"]
 
+[[guard.deny]]            # optional: commands core's guard refuses here (see Guard rules)
+match = "acme-deploy prod"
+reason = "deploys to production"
+
 [extensions.gatework]      # what Gatework reads; see Extensions
 deliver_checks = [        # listed in the Deliver gate as done / not applicable / not run
   "Deploy plan reviewed by the owning team",
@@ -96,6 +100,7 @@ Generated from [`pack.toml.schema.json`](schemas/pack.toml.schema.json) by
 | `validator` | string | A Python module in the pack that checks what only it understands ([validator plugins](#validator-plugins)). |
 | `test` | string | The pack's own unittest tests, a directory or a .py file in the pack; validate --pack runs them ([pack tests](#pack-tests)). |
 | `scope` | table | Where the pack applies: any glob matching means it does; none means everywhere ([scope](#scope)). |
+| `guard` | table | [[guard.deny]] and [[guard.ask]] rules core's guard hook enforces, with match or tool, reason and scope ([guard rules](#guard-rules)). |
 | `extensions` | table | Tables other packs read, one per namespace, e.g. [extensions.gatework]; the pack that owns a namespace checks it ([extensions](#extensions)). |
 <!-- end generated -->
 
@@ -251,6 +256,38 @@ guard rules take effect.
 says why, and `brainrc scope --extensions` prints the [extensions](#extensions) a run there
 should read: only the packs that apply. The `extensions.md` that `apply` renders holds every
 pack and ends with a Scope section saying where each scoped pack applies.
+
+## Guard rules
+
+A pack adds rules to core's Claude Code guard in `pack.toml`, without a hook of its own:
+
+```toml
+[[guard.deny]]                 # refused
+match = "acme-deploy prod"
+reason = "deploys to production, which only the release pipeline does"
+
+[[guard.ask]]                  # asked about first
+tool = "mcp__acme-jira__*transition*"
+reason = "moves an Acme ticket to another status"
+scope = { kube_contexts = ["acme-*"] }   # optional: in place of the pack's [scope]
+```
+
+Each rule sets `reason` and one of `match` or `tool`. `match` is a command: its program (by name,
+from any directory, after `VAR=value`, `sudo` or `env`) and then the other words in that order,
+with other words and flags allowed between them; each word may be a glob. `tool` is a glob for an
+MCP tool's full name. A rule takes effect only where the pack's [`[scope]`](#scope) matches the
+directory the command runs in, or the rule's own `scope` when it sets one.
+
+`apply` renders every enabled pack's rules, with their scopes, into
+`$BRAINRC_HOME/guard-rules.json`, and core's `guard_outward.py` checks them on every Bash and MCP
+call. Commands inside `sh -c`, `eval`, `$(…)` and backticks are unwrapped as for core's own rules.
+A pack's deny wins over any ask; a pack's ask is shown when core has nothing to ask. Without the
+file (no rules, or before the first `apply`), the guard behaves as before. `validate` checks each
+rule. Claude Code enforces them today; the other tools' guards follow
+([guardrails](guardrails.md#gaps-by-tool)).
+
+Test a rule with [`brainrc.testing`](#pack-tests) against core's hook, with `BRAINRC_HOME` set to
+a directory holding the rendered file, and a near miss beside the risky command.
 
 ## Extensions
 

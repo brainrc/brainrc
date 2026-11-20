@@ -13,7 +13,7 @@ import shutil
 import sys
 from pathlib import Path
 
-from . import capabilities, config
+from . import capabilities, config, guard
 from .config import (
     ConfigError,
     check_config,
@@ -214,6 +214,7 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True, moved: frozens
     try:
         bad_packs = pack_errors(srcs)
         extensions = render_extensions(srcs)
+        guard_rules = guard.render(srcs)
     except ConfigError as e:  # a pack's validator that won't load or run
         print(f"ERROR {e}\n\nNothing written. Fix the pack's validator, or disable the pack.")
         return 1
@@ -259,11 +260,11 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True, moved: frozens
         mcp_pins.report_unpinned(claude_mcp[0].servers)
 
     # Rendered files, not links: an edited rule changes the instructions file and no link.
-    renders = stale_renders(srcs, extensions, agents)
+    renders = stale_renders(srcs, extensions, agents, guard_rules)
     for path, exists in renders:
         print(f"{'UPDATE' if exists else 'CREATE':9} {'':9} {tilde(path)}"
               + ("  (a rule or pack changed, or the file was edited, since the last apply)" if exists else ""))
-    obsolete = obsolete_renders(extensions, agents)
+    obsolete = obsolete_renders(extensions, agents, guard_rules)
     for path in obsolete:
         print(f"{'PRUNE':9} {'':9} {tilde(path)}")
     if apply:
@@ -272,10 +273,12 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True, moved: frozens
         rendered.write_text(render_instructions(srcs))
         if extensions is not None:
             home_extensions_file().write_text(extensions)
+        if guard_rules is not None:
+            guard.rules_file().write_text(guard_rules)
         for path, text in agents.items():
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(text)
-        for old in obsolete:  # extensions.md no enabled pack reads, copies of removed agents
+        for old in obsolete:  # extensions.md and guard rules no enabled pack needs, copies of removed agents
             old.unlink()
         if not config.installed() and legacy_extensions().is_file():  # left behind by the move to packs/
             legacy_extensions().unlink()

@@ -68,6 +68,12 @@ class ContextTest(unittest.TestCase):
         self.assertIn("github.com/acme/app", ctx.values("remotes"))
         self.assertEqual(ctx.values("tickets"), ["ACME-42"])
 
+    def test_git_reads_url_in_any_case(self):
+        repo = self.tmp / "app"
+        (repo / ".git").mkdir(parents=True)
+        (repo / ".git/config").write_text('[remote "origin"]\n\tURL = git@github.com:acme/app.git\n')
+        self.assertIn("github.com/acme/app", scope.Context(repo).values("remotes"))
+
     def test_no_repo_matches_no_remote(self):
         self.assertEqual(scope.Context(self.tmp).values("remotes"), [])
         self.assertFalse(scope.applies({"remotes": ["*"]}, scope.Context(self.tmp)))
@@ -133,7 +139,9 @@ class HookParityTest(unittest.TestCase):
 
     def test_same_keys_patterns_and_remote_form(self):
         self.assertEqual(self.hook.SCOPE_KEYS, scope.KEYS)
-        self.assertEqual(self.hook.TICKET.pattern, scope.TICKET.pattern)
+        for name in ("TICKET", "REMOTE_URL", "SECTION"):
+            self.assertEqual(getattr(self.hook, name).pattern, getattr(scope, name).pattern, name)
+            self.assertEqual(getattr(self.hook, name).flags, getattr(scope, name).flags, name)
         for url in ("git@github.com:acme/app.git", "ssh://git@h:22/a/b", "/srv/x", "https://u@h/a/b/"):
             self.assertEqual(self.hook.normalize_remote(url), scope.normalize_remote(url), url)
 
@@ -178,10 +186,16 @@ class ValidateScopeTest(TempRepoCase):
         errors, warnings = pack_toml_findings(self.pack('[scope]\nremotes = ["github.com/acme/*"]\n'))
         self.assertEqual((errors, warnings), ([], []))
 
-    def test_a_wrong_type_fails_and_a_typo_warns_with_the_known_key(self):
+    def test_a_wrong_type_or_a_typo_fails_naming_the_known_key(self):
         errors, warnings = pack_toml_findings(self.pack('[scope]\nremotes = "github.com/acme/*"\nkube_context = ["x"]\n'))
         self.assertTrue(any("scope.remotes" in e for e in errors), errors)
-        self.assertTrue(any("scope.kube_context" in w and "kube_contexts" in w for w in warnings), warnings)
+        # ignored, a misspelt key would leave a scope that applies everywhere
+        self.assertTrue(any("scope.kube_context" in e and "kube_contexts" in e for e in errors), errors)
+        self.assertEqual(warnings, [])
+
+    def test_a_typo_in_a_guard_rules_scope_fails_too(self):
+        errors, _ = pack_toml_findings(self.pack('[[guard.deny]]\nmatch = "x"\nreason = "r"\nscope = { remote = ["a/*"] }\n'))
+        self.assertTrue(any("guard.deny.0.scope.remote" in e and "remotes" in e for e in errors), errors)
 
     def test_an_empty_glob_fails(self):
         errors, _ = pack_toml_findings(self.pack('[scope]\npaths = [" "]\n'))

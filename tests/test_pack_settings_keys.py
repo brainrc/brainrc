@@ -39,6 +39,18 @@ class MergePermissionsTest(unittest.TestCase):
         self.assertEqual(merge_settings({"permissions": "odd"}, {})["permissions"], "odd")
 
 
+class WantedPermissionsTest(TempRepoCase):
+    def test_a_string_where_a_list_belongs_is_skipped_not_split(self):
+        from brainrc.plan import SettingsMerge
+        frags = []
+        for name, perms in (("a", {"allow": "Bash(x)"}), ("b", {"allow": ["Read"]})):
+            f = self.repo / f"{name}.json"
+            f.write_text(json.dumps({"permissions": perms}))
+            frags.append((f, None))
+        wanted = SettingsMerge("claude", self.repo / "settings.json", frags).wanted()
+        self.assertEqual(wanted["permissions"]["allow"], ["Read"])
+
+
 class DisablePackTest(TempRepoCase):
     """Done when: disabling a pack removes exactly the permissions it added."""
 

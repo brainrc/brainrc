@@ -26,6 +26,9 @@ from .sources import Source
 
 ACTIONS = ("deny", "ask")
 VERSION = 1
+# The commands the hook looks past to find the program (its WRAPPERS); tests/test_guard_rules.py
+# keeps the two in step.
+WRAPPERS = frozenset({"sudo", "doas", "env", "nice", "timeout", "time", "exec", "command", "nohup"})
 
 
 def rules_file() -> Path:
@@ -56,16 +59,31 @@ def check(meta: dict, where: str) -> list[str]:
             if len(has) != 1:
                 errors.append(f"{at}: set `match` (a command) or `tool` (an MCP tool), one of them")
                 continue
-            if isinstance(rule.get("match"), str):
-                try:
-                    if not words(rule["match"]):
-                        errors.append(f"{at}: `match` names no command")
-                except ValueError as e:
-                    errors.append(f"{at}: `match` can't be split like a shell command ({e})")
-            if isinstance(rule.get("tool"), str) and not rule["tool"].startswith("mcp__"):
-                errors.append(f"{at}: `tool` must start with mcp__ (e.g. mcp__acme-jira__*delete*)")
+            if "match" in rule:
+                errors += _match_errors(rule["match"], at)
+            if "tool" in rule and not (isinstance(rule["tool"], str) and rule["tool"].startswith("mcp__")):
+                errors.append(f"{at}: `tool` must be a string that starts with mcp__ (e.g. mcp__acme-jira__*delete*)")
             errors += pack_scope.check(rule.get("scope"), f"{at}")
     return errors
+
+
+def _match_errors(match, at: str) -> list[str]:
+    if not isinstance(match, str):
+        return [f"{at}: `match` must be a string, the command as you'd type it (e.g. \"acme-deploy prod\")"]
+    try:
+        found = words(match)
+    except ValueError as e:
+        return [f"{at}: `match` can't be split like a shell command ({e})"]
+    if not found:
+        return [f"{at}: `match` names no command"]
+    if "/" in found[0] or "\\" in found[0]:
+        name = found[0].replace("\\", "/").rsplit("/", 1)[-1]
+        return [f"{at}: `match` must name the program alone (`{name}`), not a path; it then matches the "
+                "program run from any directory"]
+    if found[0] in WRAPPERS:
+        return [f"{at}: `match` starts with `{found[0]}`; leave it out, since the guard looks past it to "
+                "the command it runs"]
+    return []
 
 
 def rules(srcs: list[Source]) -> list[dict]:

@@ -309,6 +309,8 @@ exactly those: an entry you had before the pack, or one another enabled pack sti
 `uninstall` takes them out too. Other keys under `permissions` (`defaultMode`, say) are set only
 when the file has none, and stay. `brainrc.lock` records every entry as one of the pack's tool
 grants, so `apply` lists a new one as `PERMS` and asks first ([why packs](packs/why-packs.md)).
+The `minimal` profile installs no settings fragment, so a pack's permissions and hooks need
+`recommended` or `full`.
 
 ## Extensions
 

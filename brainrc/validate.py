@@ -230,19 +230,27 @@ def pack_toml_findings(src: Source) -> tuple[list[str], list[str]]:
     for table, key in unknown:
         hint = did_you_mean(key, _known_keys(known, table))
         path_ = tuple(map(str, (*table, key)))
+        if "scope" in map(str, table):  # ignored, it would widen the scope to everywhere: fail
+            errors.append(f"{where}:{key_line(text, path_)}: unknown key `{'.'.join(path_)}`{hint}; "
+                          "a scope key brainrc doesn't know would make the pack apply everywhere")
+            continue
         warnings.append(f"{where}:{key_line(text, path_)}: unknown key `{'.'.join(path_)}`{hint}; "
                         "brainrc ignores it")
     return errors, warnings
 
 
 def _known_keys(known: dict, table: tuple) -> dict:
-    """The keys the schema knows in a top-level table of pack.toml (`scope`), for a typo's hint;
-    {} for anything deeper or freer, such as [extensions]."""
-    if not table:
+    """The keys the schema knows in the pack.toml table at `table` (`scope`, a guard rule), for a
+    typo's hint; {} for a freer table, such as [extensions]."""
+    defs = known.get("$defs", {})
+    path = tuple(map(str, table))
+    if not path:
         return known["properties"]
-    spec = known["properties"].get(str(table[0]), {}) if len(table) == 1 else {}
-    ref = spec.get("$ref", "").removeprefix("#/$defs/")
-    return known.get("$defs", {}).get(ref, spec).get("properties", {})
+    if path[-1] == "scope":
+        return defs.get("scope", {}).get("properties", {})
+    if path[0] == "guard":
+        return defs.get("guard" if len(path) == 1 else "guard_rule", {}).get("properties", {}) if len(path) in (1, 3) else {}
+    return {}
 
 
 def _validate_pack(src: Source) -> list[str]:

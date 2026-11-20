@@ -64,3 +64,15 @@ commits `main` doesn't have; its PR #85 was closed unmerged on 2026-11-11 withou
 brief says to stop here while it is live, so #143 to #145 wait for the maintainer to say whether
 that branch landed elsewhere or was dropped. They also need changes in brainrc/gatework (its
 SKILL.md, fallback roles, efficiency reference and Deliver gate).
+
+## review · code-review (high) on PR #387, all 8 findings fixed in one commit
+- gh:140: a misspelt `[scope]` key (`kube_context`) left a scope that applied everywhere; it is
+  now a validate error naming the known key. A `URL =` line in `.git/config` was missed, and the
+  hook's section regex differed from core's; both copies now agree, and the parity test checks it.
+- gh:141: wrapper options that take a value (`sudo -u deploy`, `timeout 60`, `nice -n 5`,
+  `env -C dir`, `env -S '...'`) hid the program from a deny rule; the hook now skips each
+  wrapper's own options. A non-string `match` crashed `apply`, and a path or wrapper as its first
+  word never matched; all three are validate errors.
+- gh:142: a string where a permissions list belongs was split into characters; it is skipped. The
+  minimal profile installs no settings fragment, so a pack's permissions don't land there; the
+  Permissions section says so.

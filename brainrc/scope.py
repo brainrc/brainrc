@@ -24,7 +24,7 @@ KEYS = ("remotes", "paths", "kube_contexts", "aws_profiles", "tickets")
 LABELS = {"remotes": "git remote", "paths": "directory", "kube_contexts": "kube context",
           "aws_profiles": "AWS profile", "tickets": "ticket"}
 TICKET = re.compile(r"(?<![A-Za-z0-9])([A-Za-z][A-Za-z0-9]*-\d+)(?![0-9])")
-REMOTE_URL = re.compile(r"^\s*url\s*=\s*(.+?)\s*$")
+REMOTE_URL = re.compile(r"^\s*url\s*=\s*(.+?)\s*$", re.I)  # git's variable names ignore case
 SECTION = re.compile(r"^\s*\[\s*([^\]\s\"]+)(?:\s+\"([^\"]*)\")?\s*\]")
 
 

@@ -284,7 +284,22 @@ def mcp_reason(tool_name: str) -> str | None:
 # import (it runs without brainrc installed); tests/test_scope.py checks the two agree.
 SCOPE_KEYS = ("remotes", "paths", "kube_contexts", "aws_profiles", "tickets")
 TICKET = re.compile(r"(?<![A-Za-z0-9])([A-Za-z][A-Za-z0-9]*-\d+)(?![0-9])")
-WRAPPERS = {"sudo", "doas", "env", "command", "exec", "nohup", "time", "nice", "timeout"}
+REMOTE_URL = re.compile(r"^\s*url\s*=\s*(.+?)\s*$", re.I)
+SECTION = re.compile(r"^\s*\[\s*([^\]\s\"]+)(?:\s+\"([^\"]*)\")?\s*\]")
+# Commands that run another one, with their options that take a value (short letters, long names);
+# timeout also takes a duration before the command.
+WRAPPERS: dict[str, tuple[str, set[str]]] = {
+    "sudo": ("ugChpUDRTrt", {"--user", "--group", "--chdir", "--host", "--prompt", "--other-user",
+                             "--role", "--type", "--close-from", "--command-timeout"}),
+    "doas": ("uC", set()),
+    "env": ("uCS", {"--unset", "--chdir", "--split-string"}),
+    "nice": ("n", {"--adjustment"}),
+    "timeout": ("sk", {"--signal", "--kill-after"}),
+    "time": ("fo", {"--format", "--output"}),
+    "exec": ("a", set()),
+    "command": ("", set()),
+    "nohup": ("", set()),
+}
 ASSIGNMENT = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
 
 
@@ -354,9 +369,9 @@ def _scope_values(key: str, cwd: Path) -> list[str]:
         config_dir = (Path(common) if os.path.isabs(common) else git_dir / common) if common else git_dir
         urls, in_remote = [], False
         for line in _read(config_dir / "config").splitlines():
-            if (sec := re.match(r"^\s*\[\s*([^\]\s\"]+)", line)):
+            if (sec := SECTION.match(line)):
                 in_remote = sec.group(1).lower() == "remote"
-            elif in_remote and (u := re.match(r"^\s*url\s*=\s*(.+?)\s*$", line)):
+            elif in_remote and (u := REMOTE_URL.match(line)):
                 urls.append(u.group(1).strip('"'))
         return [v for u in urls for v in dict.fromkeys((u, normalize_remote(u)))]
     if key == "paths":
@@ -402,29 +417,59 @@ def scope_applies(scope, cwd: Path, cache: dict) -> bool:
     return False
 
 
-def _program(seg: list[str]) -> int | None:
-    """Index of the program a simple command runs: after VAR=value prefixes and wrappers such as
-    sudo or env, with their flags."""
+def _command_run(seg: list[str]) -> list[str]:
+    """The command a simple command runs, from its program on: past VAR=value prefixes and
+    wrappers such as sudo, env or timeout, with their options and values (`sudo -u deploy x`,
+    `timeout 60 x`). `env -S 'x y'` runs the split string."""
     i = 0
     while i < len(seg):
         tok = seg[i]
-        if ASSIGNMENT.match(tok) or (tok.startswith("-") and i > 0 and _prog(seg[i - 1]) in WRAPPERS):
+        if ASSIGNMENT.match(tok):
             i += 1
-        elif _prog(tok) in WRAPPERS:
+            continue
+        wrapper = WRAPPERS.get(_prog(tok))
+        if wrapper is None:
+            return seg[i:]
+        letters, long_opts = wrapper
+        i += 1
+        while i < len(seg) and seg[i].startswith("-") and seg[i] != "-":
+            opt = seg[i]
             i += 1
-            while i < len(seg) and seg[i].startswith("-"):
-                i += 1
-        else:
-            return i
-    return None
+            if opt == "--":
+                break
+            if opt.startswith("--"):
+                name, inline = opt.split("=", 1)[0], "=" in opt
+                value = opt.split("=", 1)[1] if inline else (seg[i] if i < len(seg) else "")
+                if name in long_opts and not inline:
+                    i += 1
+                if name == "--split-string" and _prog(tok) == "env":
+                    return _split(value) + seg[i:]
+                continue
+            k = next((n for n, c in enumerate(opt[1:], 1) if c in letters), None)
+            if k is not None:  # e.g. -u deploy, -udeploy, -Eu deploy
+                value = opt[k + 1:] or (seg[i] if i < len(seg) else "")
+                if not opt[k + 1:]:
+                    i += 1
+                if opt[k] == "S" and _prog(tok) == "env":
+                    return _split(value) + seg[i:]
+        if _prog(tok) == "timeout" and i < len(seg):
+            i += 1  # the duration
+    return []
+
+
+def _split(text: str) -> list[str]:
+    try:
+        return shlex.split(text)
+    except ValueError:
+        return text.split()
 
 
 def rule_matches(words: list[str], seg: list[str]) -> bool:
     """The program is words[0] (by name, any directory), and the rest follow it in order, each a glob."""
-    start = _program(seg)
-    if start is None or not words or not fnmatch.fnmatchcase(_prog(seg[start]), words[0]):
+    run = _command_run(seg)
+    if not run or not words or not fnmatch.fnmatchcase(_prog(run[0]), _prog(words[0])):
         return False
-    rest = iter(seg[start + 1:])
+    rest = iter(run[1:])
     return all(any(fnmatch.fnmatchcase(tok, w) for tok in rest) for w in words[1:])
 
 

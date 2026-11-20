@@ -267,7 +267,11 @@ class PackGuardRulesTest(unittest.TestCase):
         for command in ["acme-deploy prod", "acme-deploy --verbose prod --wait", "/opt/acme/bin/acme-deploy prod",
                         "cd svc && acme-deploy prod", "bash -c 'acme-deploy prod'", "sh -lc \"echo hi; acme-deploy prod\"",
                         "echo $(acme-deploy prod)", "sudo -E env REGION=eu acme-deploy prod",
-                        "bash -c \"bash -c 'acme-deploy prod'\""]:
+                        "bash -c \"bash -c 'acme-deploy prod'\"", "sudo -u deploy acme-deploy prod",
+                        "sudo -Eu deploy acme-deploy prod", "sudo --user deploy acme-deploy prod",
+                        "timeout 60 acme-deploy prod", "timeout -s KILL 60 acme-deploy prod",
+                        "nice -n 5 acme-deploy prod", "env -C /tmp acme-deploy prod",
+                        "env -S 'acme-deploy prod'", "exec -a x acme-deploy prod", "command acme-deploy prod"]:
             with self.subTest(command=command):
                 self.assertEqual(self.decide(command, self.acme_repo / "src"), "deny")
 
@@ -277,7 +281,9 @@ class PackGuardRulesTest(unittest.TestCase):
                              ("acme-deploy prod", self.tmp),                   # not in a repo at all
                              ("acme-deploy staging", self.acme_repo),          # not prod
                              ("echo acme-deploy prod", self.acme_repo),        # prod isn't what runs
-                             ("acme-deploy-docs prod", self.acme_repo)]:       # another program
+                             ("acme-deploy-docs prod", self.acme_repo),        # another program
+                             ("sudo -u acme-deploy prod", self.acme_repo),     # the user's name, not the program
+                             ("timeout acme-deploy prod", self.acme_repo)]:    # prod is the program here
             with self.subTest(command=command, cwd=cwd.name):
                 self.assertIsNone(self.decide(command, cwd))
 

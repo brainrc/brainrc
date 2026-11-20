@@ -151,8 +151,9 @@ class SettingsMerge:
                 hooks.setdefault(event, []).extend(groups)
             for key, value in (rendered.get("permissions") or {}).items() \
                     if isinstance(rendered.get("permissions"), dict) else ():
-                if key in ("allow", "deny", "ask") and isinstance(value, list):  # every source's, in order
-                    perms[key] = list(dict.fromkeys([*perms.get(key, []), *value]))
+                if key in ("allow", "deny", "ask"):  # every source's entries, in order; only a list counts
+                    entries = [e for e in value if isinstance(e, str)] if isinstance(value, list) else []
+                    perms[key] = list(dict.fromkeys([*perms.get(key, []), *entries]))
                 else:
                     perms.setdefault(key, value)
             for key, value in rendered.items():  # e.g. Cursor's "version"; the first source wins

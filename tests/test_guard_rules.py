@@ -51,10 +51,32 @@ class GuardRulesTest(TempRepoCase):
         self.assertIn("guard.deny[0]: set `match` (a command) or `tool`", text)
         self.assertIn("guard.deny[1]: set `match`", text)
         self.assertIn("guard.ask[0]: `match` can't be split", text)
-        self.assertIn("guard.ask[1]: `tool` must start with mcp__", text)
+        self.assertIn("guard.ask[1]: `tool` must be a string that starts with mcp__", text)
         self.assertTrue(any("guard.ask[2]" in e and "reason" in e for e in errors), errors)
         self.assertTrue(any("guard.block" in w for w in warnings), warnings)
         self.assertEqual(guard.rules([src]), [])  # every one is malformed, so none is enforced
+
+    def test_a_match_that_is_not_a_string_fails_validate_and_never_crashes_a_render(self):
+        src = self.pack('[[guard.deny]]\nmatch = ["acme-deploy", "prod"]\nreason = "r"\n'
+                        '[[guard.deny]]\ntool = 3\nreason = "r"\n')
+        errors, _ = pack_toml_findings(src)
+        self.assertTrue(any("guard.deny[0]: `match` must be a string" in e for e in errors), errors)
+        self.assertTrue(any("guard.deny[1]: `tool` must be a string" in e for e in errors), errors)
+        self.assertIsNone(guard.render([src]))
+
+    def test_a_path_or_a_wrapper_as_the_program_fails_validate(self):
+        src = self.pack('[[guard.deny]]\nmatch = "./scripts/deploy.sh prod"\nreason = "r"\n'
+                        '[[guard.deny]]\nmatch = "sudo reboot"\nreason = "r"\n')
+        text = "\n".join(pack_toml_findings(src)[0])
+        self.assertIn("guard.deny[0]: `match` must name the program alone (`deploy.sh`)", text)
+        self.assertIn("guard.deny[1]: `match` starts with `sudo`", text)
+
+    def test_the_wrappers_are_the_hooks(self):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("go", REPO / "overrides/claude/hooks/guard_outward.py")
+        hook = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(hook)
+        self.assertEqual(set(hook.WRAPPERS), set(guard.WRAPPERS))
 
     def test_good_rules_pass_validate(self):
         errors, warnings = pack_toml_findings(load_pack(ACME, "acme"))

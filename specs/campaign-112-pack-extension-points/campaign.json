@@ -21,9 +21,15 @@
       "slug": "140-pack-scope",
       "status": "in_review",
       "branch": "claude/project-thread-je3086",
-      "pr": null,
+      "pr": 387,
       "base": "main",
-      "merged": false
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 3,
+        "fixed": 3,
+        "no_change": []
+      }
     },
     {
       "ref": "gh:141",
@@ -34,9 +40,15 @@
       "slug": "141-guard-rules",
       "status": "in_review",
       "branch": "claude/project-thread-je3086",
-      "pr": null,
+      "pr": 387,
       "base": "main",
-      "merged": false
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 3,
+        "fixed": 3,
+        "no_change": []
+      }
     },
     {
       "ref": "gh:142",
@@ -47,9 +59,15 @@
       "slug": "142-pack-settings-keys",
       "status": "in_review",
       "branch": "claude/project-thread-je3086",
-      "pr": null,
+      "pr": 387,
       "base": "main",
-      "merged": false
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 2,
+        "fixed": 2,
+        "no_change": []
+      }
     },
     {
       "ref": "gh:143",

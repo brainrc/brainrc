@@ -19,3 +19,7 @@ bump: patch
   disabling the pack removes exactly those, keeping an entry you had first or another pack still
   lists; `uninstall` removes them too. Before, a fragment's `permissions` was written only into a
   settings file that had none, and never removed (#142).
+- `extensions.md` lists, under Pack roles, every agent the other enabled packs install, with its
+  file, so the one-session fallback on Codex, Antigravity and Cursor can run a pack's reviewer as a
+  role. A pack's agent adds to Gatework's roles and never replaces one. The acme example gains
+  `acme-reviewer`. Gatework's dispatch of pack reviewers lands in brainrc/gatework (#143).

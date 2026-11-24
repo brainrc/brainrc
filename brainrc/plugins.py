@@ -23,7 +23,7 @@ from types import ModuleType
 
 from . import scope
 from .config import ConfigError, _layered
-from .sources import Source
+from .sources import Source, frontmatter, installed_items, item_name
 
 _LOADED: dict[tuple[str, int], ModuleType] = {}
 
@@ -147,8 +147,25 @@ def render_extensions(srcs: list[Source], here: scope.Context | None = None) -> 
             if here is not None:
                 others = [s for s in others if scope.applies(scope.of(s.meta), here)]
             text = _call(me, mod, "render_extensions", [(s.name, table(s, me, mod)) for s in others])
+            text += roles_section(others)
             return text if here is not None else text + scope_section(others)
     return None
+
+
+def roles_section(srcs: list[Source]) -> str:
+    """The agents other packs add (#143), each with the file that holds its instructions, so a
+    harness that installs no agents can still run one as a role in the one-session fallback."""
+    rows = []
+    for src in srcs:
+        for path in installed_items(src, "agents"):
+            desc = " ".join(frontmatter(path).get("description", "").split())
+            rows.append(f"- `{item_name(path)}` ({src.name}): {desc or 'no description'} File: `{path.resolve()}`")
+    if not rows:
+        return ""
+    return "\n".join(["", "## Pack roles", "",
+                      "Agents that packs add. Each adds to Gatework's own roles and never replaces one. "
+                      "Where the harness doesn't install agents, read the role's instructions from its "
+                      "file.", "", *rows]) + "\n"
 
 
 def scope_section(srcs: list[Source]) -> str:

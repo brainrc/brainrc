@@ -2,12 +2,12 @@
 
 A working pack to copy. It uses every pack feature except hooks: `requires_core`, a `[scope]`
 (acme repos and ACME tickets), guard rules, a domain skill, an intake context skill, a ticket
-connector config, a Deliver check, a rule, a command, and a tripwire. Format reference: [docs/packs.md](https://github.com/brainrc/brainrc/blob/main/docs/packs.md).
+connector config, a Deliver check, a reviewer agent, a rule, a command, and a tripwire. Format reference: [docs/packs.md](https://github.com/brainrc/brainrc/blob/main/docs/packs.md).
 
 ## Start your own
 
 1. Copy this directory into a new repo: `cp -R examples/pack-acme ~/src/<name>-ai-pack`.
-2. Rename `acme` everywhere: `name`, `prefix` and `id` in `pack.toml`, the skill and command
+2. Rename `acme` everywhere: `name`, `prefix` and `id` in `pack.toml`, the skill, agent and command
    names (directories, files, and frontmatter `name`), and the text. Pick names that follow the
    [naming rules](https://github.com/brainrc/brainrc/blob/main/docs/packs.md#naming); set `id` to your GitHub handle and the repo name,
    or drop it.

@@ -322,6 +322,11 @@ pack that owns the namespace checks it with its [validator plugin](#validator-pl
 at intake. With no other packs enabled, the file says so and Gatework runs as before; with
 Gatework disabled, there is no file.
 
+The file also lists, under **Pack roles**, every agent the other packs install, with the path of
+its file. A pack's agent adds to Gatework's roles and never replaces one, and a harness that
+installs no agents (Codex, Antigravity, Cursor) can still run it as a role in the one-session
+fallback by reading that file. The acme example's `acme-reviewer` is one.
+
 The old forms from before 0.7.0, the same keys directly under `[extensions]` or under
 `[extensions.spec-agent]`, still work with a warning: move them under `[extensions.gatework]`.
 

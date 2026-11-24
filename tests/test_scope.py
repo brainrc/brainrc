@@ -243,6 +243,24 @@ class ScopedExtensionsTest(TempRepoCase):
         srcs = self.srcs[:2] + [Source("acme", self.srcs[2].root, "acme-", meta, "acme")]
         self.assertNotIn("## Scope", render_extensions(srcs))
 
+    def test_pack_agents_are_listed_as_roles_with_their_files(self):
+        """#143: a harness with no agents dir can still run acme-reviewer from its file."""
+        acme = fake_repo(self.work / "app", "git@github.com:acme/app.git")
+        for text in (render_extensions(self.srcs), render_extensions(self.srcs, scope.Context(acme))):
+            self.assertIn("## Pack roles", text)
+            self.assertIn("never replaces one", text)
+            line = next(l for l in text.splitlines() if l.startswith("- `acme-reviewer` (acme): "))
+            self.assertIn(f"File: `{(self.repo / 'packs/acme/agents/acme-reviewer.md').resolve()}`", line)
+        self.assertNotIn("brainrc-code-reviewer", text.split("## Pack roles")[1])  # Gatework's own
+
+    def test_a_skipped_pack_brings_no_roles(self):
+        personal = fake_repo(self.work / "dotfiles", "git@github.com:me/dotfiles.git")
+        self.assertNotIn("## Pack roles", render_extensions(self.srcs, scope.Context(personal)))
+
+    def test_an_excluded_agent_is_not_listed(self):
+        (self.repo / "brainrc.local.toml").write_text('exclude = ["acme:agents/acme-reviewer.md"]\n')
+        self.assertNotIn("acme-reviewer", render_extensions(self.srcs))
+
     def test_the_scope_command(self):
         (self.repo / "packs.local.toml").write_text('[acme]\npath = "packs/acme"\n')
         personal = fake_repo(self.work / "dotfiles", "git@github.com:me/dotfiles.git")

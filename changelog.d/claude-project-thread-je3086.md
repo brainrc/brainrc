@@ -23,3 +23,6 @@ bump: patch
   file, so the one-session fallback on Codex, Antigravity and Cursor can run a pack's reviewer as a
   role. A pack's agent adds to Gatework's roles and never replaces one. The acme example gains
   `acme-reviewer`. Gatework's dispatch of pack reviewers lands in brainrc/gatework (#143).
+- `brainrc.local.toml` takes `[extensions.<namespace>]`: this machine's settings for the pack that
+  owns the namespace, checked by that pack on `apply` and `doctor` and listed in `extensions.md`
+  after every pack's, so a machine can set Gatework's run mode once Gatework reads it (#144).

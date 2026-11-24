@@ -327,6 +327,9 @@ its file. A pack's agent adds to Gatework's roles and never replaces one, and a 
 installs no agents (Codex, Antigravity, Cursor) can still run it as a role in the one-session
 fallback by reading that file. The acme example's `acme-reviewer` is one.
 
+A machine can add its own `[extensions.gatework]` in `brainrc.local.toml`
+([configuration](configuration.md#brainrclocaltoml)); `extensions.md` lists it after every pack's.
+
 The old forms from before 0.7.0, the same keys directly under `[extensions]` or under
 `[extensions.spec-agent]`, still work with a warning: move them under `[extensions.gatework]`.
 

@@ -45,7 +45,7 @@ from .mcp import check_servers, mcp_change, mcp_plan, record_owned, write_mcp
 from .settings import FileChanged, read_current, read_owned, settings_change, settings_owned, write_settings
 from .settings import record_owned as record_settings_owned
 from .plugin import cmd_plugin
-from .plugins import render_extensions
+from .plugins import machine_findings, render_extensions
 from .scope import cmd_scope
 from .release import cmd_release, cmd_release_notes
 from .tokens import cmd_tokens
@@ -214,10 +214,18 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True, moved: frozens
         return 1
     try:
         bad_packs = pack_errors(srcs)
+        machine_errors, machine_warnings = machine_findings(srcs)
         extensions = render_extensions(srcs)
         guard_rules = guard.render(srcs)
-    except ConfigError as e:  # a pack's validator that won't load or run
-        print(f"ERROR {e}\n\nNothing written. Fix the pack's validator, or disable the pack.")
+    except ConfigError as e:  # a pack's validator that won't load or run, or brainrc.local.toml
+        print(f"ERROR {e}\n\nNothing written. Fix the file named, or disable the pack.")
+        return 1
+    for w in machine_warnings:
+        print(f"WARN {w}")
+    if machine_errors:
+        for e in machine_errors:
+            print(f"ERROR {e}")
+        print("\nNothing written. Fix [extensions] in brainrc.local.toml, then re-run.")
         return 1
     if bad_packs:
         for _, errors in bad_packs:

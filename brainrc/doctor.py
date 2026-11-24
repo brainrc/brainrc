@@ -37,7 +37,7 @@ from .settings import _owned, settings_change
 from .manifest import checked_manifest
 from .mcp import check_servers, mcp_change, mcp_plan
 from .moved import left_behind
-from .plugins import plugin_findings, render_extensions, validators
+from .plugins import machine_findings, plugin_findings, render_extensions, validators
 from .validate import cmd_validate
 
 
@@ -257,6 +257,9 @@ def doctor_findings() -> list[Finding]:
     found += [("WARN", w, "fix the name, or delete it if it isn't needed") for w in warnings]
     try:
         found += plugin_findings(validators(srcs))
+        errors, warnings = machine_findings(srcs)
+        found += [("FAIL", e, "fix [extensions] in brainrc.local.toml") for e in errors]
+        found += [("WARN", w, "fix the namespace, or enable the pack that reads it") for w in warnings]
     except ConfigError as e:
         found.append(("FAIL", str(e), "fix the pack's validator, or disable the pack in packs.local.toml"))
     try:

@@ -18,12 +18,13 @@ from __future__ import annotations
 
 import hashlib
 import importlib.util
+import json
 import sys
 from types import ModuleType
 
 from . import scope
-from .config import ConfigError, _layered
-from .sources import Source, frontmatter, installed_items, item_name
+from .config import PROFILE_FILE, ConfigError, _layered, local_dir, machine_extensions, tilde
+from .sources import Source, frontmatter, installed_items, item_name, items, skills
 
 _LOADED: dict[tuple[str, int], ModuleType] = {}
 
@@ -147,9 +148,40 @@ def render_extensions(srcs: list[Source], here: scope.Context | None = None) -> 
             if here is not None:
                 others = [s for s in others if scope.applies(scope.of(s.meta), here)]
             text = _call(me, mod, "render_extensions", [(s.name, table(s, me, mod)) for s in others])
-            text += roles_section(others)
+            text += roles_section(others) + machine_section(namespace(me, mod))
             return text if here is not None else text + scope_section(others)
     return None
+
+
+def machine_section(ns: str) -> str:
+    """This machine's [extensions.<ns>] from brainrc.local.toml, after every pack's (#144)."""
+    own = machine_extensions().get(ns)
+    if not own:
+        return ""
+    return "\n".join(["", "## This machine", "",
+                      f"From brainrc.local.toml's [extensions.{ns}]: this machine's settings, which "
+                      "come after every pack's.", "", "```json", json.dumps(own, indent=2, sort_keys=True),
+                      "```"]) + "\n"
+
+
+def machine_findings(srcs: list[Source]) -> tuple[list[str], list[str]]:
+    """(errors, warnings) in brainrc.local.toml's [extensions]: each table is checked by the pack
+    that owns its namespace, as a pack's is; a table no enabled pack reads is a warning."""
+    ext = machine_extensions()
+    if not ext:
+        return [], []
+    where = tilde(local_dir() / PROFILE_FILE)
+    plugins = validators(srcs)
+    owners = {namespace(me, mod): (me, mod) for me, mod in plugins}
+    skill_names = {p.name for s in srcs for p in skills(s)}
+    agent_names = {f.stem for s in srcs for f in items(s, "agents")}
+    errors, warnings = [], []
+    for ns, t in ext.items():
+        if ns not in owners:
+            warnings.append(f"{where}: no enabled pack reads [extensions.{ns}]")
+        elif t and hasattr(owners[ns][1], "check_extensions"):
+            errors += _call(*owners[ns], "check_extensions", t, where, skill_names, agent_names)
+    return errors, warnings
 
 
 def roles_section(srcs: list[Source]) -> str:

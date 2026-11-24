@@ -76,8 +76,13 @@
         "gh:142"
       ],
       "slug": "143-pack-reviewers",
-      "status": "held",
-      "held_because": "branch 069-deliver-owner-quiz is still on the remote with commits main lacks; the brief stops before #143 until the maintainer decides"
+      "status": "in_review",
+      "branch": "claude/project-thread-je3086",
+      "pr": 387,
+      "base": "main",
+      "merged": false,
+      "core_part": "extensions.md lists every in-scope pack's installed agents under Pack roles with their files; acme example gains acme-reviewer",
+      "needs_gatework": "Gatework: a `reviewers` key (name, domains, veto) in its validator and render, dispatch of pack reviewers in subagent and inline modes, fallback.md reading Pack roles, and the sandbox eval with acme-reviewer"
     },
     {
       "ref": "gh:144",
@@ -86,8 +91,13 @@
         "gh:143"
       ],
       "slug": "144-gatework-mode-override",
-      "status": "held",
-      "held_because": "branch 069-deliver-owner-quiz is still on the remote with commits main lacks; the brief stops before #143 until the maintainer decides"
+      "status": "in_review",
+      "branch": "claude/project-thread-je3086",
+      "pr": 387,
+      "base": "main",
+      "merged": false,
+      "core_part": "brainrc.local.toml [extensions.<namespace>], checked by the owning pack and rendered last under This machine",
+      "needs_gatework": "Gatework: `mode` (auto, inline, subagent) and `forbid_writing_subagents` keys, read from a pack's table and from This machine, in references/efficiency.md"
     },
     {
       "ref": "gh:145",
@@ -96,8 +106,13 @@
         "gh:144"
       ],
       "slug": "145-unavailable-gates",
-      "status": "held",
-      "held_because": "branch 069-deliver-owner-quiz is still on the remote with commits main lacks; the brief stops before #143 until the maintainer decides"
+      "status": "blocked",
+      "branch": null,
+      "pr": null,
+      "base": "main",
+      "merged": false,
+      "needs_gatework": "Gatework: an `unavailable_gates` key, rendered as not run, unavailable at the Deliver gate, with a tripwire against reporting it as passed",
+      "blocked_because": "no core part: the key, its rendering and the Deliver gate all live in brainrc/gatework, which this session can't reach"
     }
   ]
 }

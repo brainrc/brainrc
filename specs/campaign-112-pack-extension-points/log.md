@@ -76,3 +76,26 @@ SKILL.md, fallback roles, efficiency reference and Deliver gate).
 - gh:142: a string where a permissions list belongs was split into characters; it is skipped. The
   minimal profile installs no settings fragment, so a pack's permissions don't land there; the
   Permissions section says so.
+
+## maintainer · 2026-11-24 · owner-quiz branch dropped, go on
+The maintainer answered: treat `069-deliver-owner-quiz` as dropped and go on with #143 to #145.
+brainrc/gatework still can't be reached from this session, so each child gets its core part only.
+
+## engine · gh:143 · core part
+- `extensions.md` gains Pack roles: every agent the other enabled packs install (in scope, not
+  excluded), with its file, so the one-session fallback can run a pack reviewer as a role. A
+  pack's agent adds to Gatework's roles and never replaces one. The acme example gains
+  `acme-reviewer`. Tests in `tests/test_scope.py`.
+- Left for brainrc/gatework: the `reviewers` key (name, domains, veto), dispatch in both modes,
+  `references/fallback.md` reading Pack roles, and the sandbox eval (the issue's Done when).
+
+## engine · gh:144 · core part
+- `brainrc.local.toml` takes `[extensions.<namespace>]`, checked by the owning pack's validator
+  (apply stops on an error; doctor fails), warned when no pack reads it, and rendered last in
+  `extensions.md` under This machine. Tests in `tests/test_machine_extensions.py`.
+- Left for brainrc/gatework: the `mode` and `forbid_writing_subagents` keys, from a pack or this
+  machine, and `references/efficiency.md`.
+
+## engine · gh:145 · blocked
+No core part: `unavailable_gates`, its "not run, unavailable" line and the tripwire all live in
+Gatework's validator and Deliver gate.

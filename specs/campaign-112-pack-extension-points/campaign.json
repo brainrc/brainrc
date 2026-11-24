@@ -82,7 +82,13 @@
       "base": "main",
       "merged": false,
       "core_part": "extensions.md lists every in-scope pack's installed agents under Pack roles with their files; acme example gains acme-reviewer",
-      "needs_gatework": "Gatework: a `reviewers` key (name, domains, veto) in its validator and render, dispatch of pack reviewers in subagent and inline modes, fallback.md reading Pack roles, and the sandbox eval with acme-reviewer"
+      "needs_gatework": "Gatework: a `reviewers` key (name, domains, veto) in its validator and render, dispatch of pack reviewers in subagent and inline modes, fallback.md reading Pack roles, and the sandbox eval with acme-reviewer",
+      "review": {
+        "by": "code-review (high)",
+        "findings": 3,
+        "fixed": 3,
+        "no_change": []
+      }
     },
     {
       "ref": "gh:144",
@@ -97,7 +103,13 @@
       "base": "main",
       "merged": false,
       "core_part": "brainrc.local.toml [extensions.<namespace>], checked by the owning pack and rendered last under This machine",
-      "needs_gatework": "Gatework: `mode` (auto, inline, subagent) and `forbid_writing_subagents` keys, read from a pack's table and from This machine, in references/efficiency.md"
+      "needs_gatework": "Gatework: `mode` (auto, inline, subagent) and `forbid_writing_subagents` keys, read from a pack's table and from This machine, in references/efficiency.md",
+      "review": {
+        "by": "code-review (high)",
+        "findings": 3,
+        "fixed": 3,
+        "no_change": []
+      }
     },
     {
       "ref": "gh:145",

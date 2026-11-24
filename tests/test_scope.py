@@ -253,6 +253,18 @@ class ScopedExtensionsTest(TempRepoCase):
             self.assertIn(f"File: `{(self.repo / 'packs/acme/agents/acme-reviewer.md').resolve()}`", line)
         self.assertNotIn("brainrc-code-reviewer", text.split("## Pack roles")[1])  # Gatework's own
 
+    def test_the_scope_section_says_to_skip_a_skipped_packs_roles(self):
+        self.assertIn("ticket connector and pack roles", render_extensions(self.srcs))
+
+    def test_a_render_that_returns_no_text_is_a_config_error(self):
+        from unittest import mock
+        from brainrc import plugins
+        mod = plugins.load(self.srcs[1])
+        with mock.patch.object(mod, "render_extensions", return_value=None):
+            with self.assertRaises(plugins.ConfigError) as e:
+                render_extensions(self.srcs, scope.Context(self.work))
+        self.assertIn("render_extensions returned NoneType", str(e.exception))
+
     def test_a_skipped_pack_brings_no_roles(self):
         personal = fake_repo(self.work / "dotfiles", "git@github.com:me/dotfiles.git")
         self.assertNotIn("## Pack roles", render_extensions(self.srcs, scope.Context(personal)))

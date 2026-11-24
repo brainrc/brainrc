@@ -1,7 +1,7 @@
 ---
 name: acme-reviewer
 description: "Reviews changes to Acme deploy manifests and charts against Acme's rollout rules. Use on any run that touches deploy/ or charts/acme-*."
-tools: Read, Grep, Glob
+tools: Read, Grep, Glob, Bash
 model: inherit
 ---
 
@@ -19,7 +19,8 @@ It adds Acme's rollout rules to their review; it never stands in for one of them
 
 ## Must not
 
-Change any file, deploy, or run a command that reaches a cluster.
+Change any file, deploy, or run a command that reaches a cluster or the network: Bash is
+for the offline checks only.
 
 ## Done when
 

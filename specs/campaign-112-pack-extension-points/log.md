@@ -99,3 +99,11 @@ brainrc/gatework still can't be reached from this session, so each child gets it
 ## engine · gh:145 · blocked
 No core part: `unavailable_gates`, its "not run, unavailable" line and the tripwire all live in
 Gatework's validator and Deliver gate.
+
+## review · code-review (high) on #143 and #144, all 6 findings fixed in one commit
+- gh:143: the Scope section now says to skip a skipped pack's roles too; the acme reviewer gets
+  Bash for the offline checks its Method runs (still no cluster or network); a validator whose
+  render_extensions returns no text is a ConfigError, not a traceback.
+- gh:144: a TOML date in a machine table renders as text instead of crashing; an older namespace
+  (`spec-agent`) is read with a move-it warning, as a pack's is, and `warn_extensions` runs; doctor
+  checks the machine tables on their own, with a fix that names brainrc.local.toml.

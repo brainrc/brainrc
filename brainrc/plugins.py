@@ -148,39 +148,63 @@ def render_extensions(srcs: list[Source], here: scope.Context | None = None) -> 
             if here is not None:
                 others = [s for s in others if scope.applies(scope.of(s.meta), here)]
             text = _call(me, mod, "render_extensions", [(s.name, table(s, me, mod)) for s in others])
-            text += roles_section(others) + machine_section(namespace(me, mod))
+            if not isinstance(text, str):
+                raise ConfigError(f"{me.name}:{me.meta.get('validator')}: render_extensions returned "
+                                  f"{type(text).__name__}, not the text of extensions.md")
+            text += roles_section(others) + machine_section(me, mod)
             return text if here is not None else text + scope_section(others)
     return None
 
 
-def machine_section(ns: str) -> str:
-    """This machine's [extensions.<ns>] from brainrc.local.toml, after every pack's (#144)."""
-    own = machine_extensions().get(ns)
+def machine_table(me: Source, mod: ModuleType) -> dict:
+    """This machine's table for the plugin (#144): brainrc.local.toml's older namespaces it still
+    reads, then its own, as table() reads a pack's."""
+    ext, found = machine_extensions(), {}
+    for ns in (*getattr(mod, "LEGACY_NAMESPACES", ()), namespace(me, mod)):
+        found.update(ext.get(ns, {}))
+    return found
+
+
+def machine_section(me: Source, mod: ModuleType) -> str:
+    """This machine's table from brainrc.local.toml, after every pack's."""
+    own = machine_table(me, mod)
     if not own:
         return ""
     return "\n".join(["", "## This machine", "",
-                      f"From brainrc.local.toml's [extensions.{ns}]: this machine's settings, which "
-                      "come after every pack's.", "", "```json", json.dumps(own, indent=2, sort_keys=True),
-                      "```"]) + "\n"
+                      f"From brainrc.local.toml's [extensions.{namespace(me, mod)}]: this machine's "
+                      "settings, which come after every pack's.", "",
+                      "```json", json.dumps(own, indent=2, sort_keys=True, default=str), "```"]) + "\n"
 
 
 def machine_findings(srcs: list[Source]) -> tuple[list[str], list[str]]:
     """(errors, warnings) in brainrc.local.toml's [extensions]: each table is checked by the pack
-    that owns its namespace, as a pack's is; a table no enabled pack reads is a warning."""
+    that owns its namespace, as a pack's is; an older namespace warns to move it, and a table no
+    enabled pack reads warns."""
     ext = machine_extensions()
     if not ext:
         return [], []
     where = tilde(local_dir() / PROFILE_FILE)
     plugins = validators(srcs)
     owners = {namespace(me, mod): (me, mod) for me, mod in plugins}
+    old_ns = {ns: (me, mod) for me, mod in plugins for ns in getattr(mod, "LEGACY_NAMESPACES", ())}
     skill_names = {p.name for s in srcs for p in skills(s)}
     agent_names = {f.stem for s in srcs for f in items(s, "agents")}
     errors, warnings = [], []
-    for ns, t in ext.items():
-        if ns not in owners:
+    for ns in ext:
+        if ns in owners:
+            continue
+        if found := old_ns.get(ns):
+            until = getattr(found[1], "REMOVED_IN", "a later release")
+            warnings.append(f"{where}: [extensions.{ns}] is deprecated; move it under "
+                            f"[extensions.{namespace(*found)}] (read until {until})")
+        else:
             warnings.append(f"{where}: no enabled pack reads [extensions.{ns}]")
-        elif t and hasattr(owners[ns][1], "check_extensions"):
-            errors += _call(*owners[ns], "check_extensions", t, where, skill_names, agent_names)
+    for me, mod in plugins:
+        if t := machine_table(me, mod):
+            if hasattr(mod, "check_extensions"):
+                errors += _call(me, mod, "check_extensions", t, where, skill_names, agent_names)
+            if hasattr(mod, "warn_extensions"):
+                warnings += _call(me, mod, "warn_extensions", t, where)
     return errors, warnings
 
 
@@ -207,7 +231,8 @@ def scope_section(srcs: list[Source]) -> str:
         return ""
     lines = ["", "## Scope", "",
              "These packs apply only where their [scope] matches; elsewhere, skip their extensions "
-             "above (their deliver checks, domains, intake context and ticket connector). "
+             "above (their deliver checks, domains, intake context, ticket connector and pack "
+             "roles). "
              "`brainrc scope --extensions` prints this file for the directory you're in.", ""]
     lines += [f"- `{s.name}`: {scope.describe(scope.of(s.meta))}" for s in scoped]
     return "\n".join(lines) + "\n"

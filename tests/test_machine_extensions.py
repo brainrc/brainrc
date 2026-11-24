@@ -57,6 +57,25 @@ class MachineExtensionsTest(TempRepoCase):
             machine_extensions()
         self.assertIn("brainrc.local.toml:3: `extensions.gatework` must be a table", str(e.exception))
 
+    def test_a_date_renders_as_text(self):
+        self.local('[extensions.gatework]\ndeliver_checks = [2026-01-01]\n')
+        self.assertIn('"2026-01-01"', render_extensions(self.srcs))
+
+    def test_an_older_namespace_is_read_with_a_warning(self):
+        self.local('[extensions.spec-agent]\ndeliver_checks = ["Load test signed off"]\n')
+        self.assertIn('"Load test signed off"', render_extensions(self.srcs))
+        errors, warnings = machine_findings(self.srcs)
+        self.assertEqual(errors, [])
+        self.assertEqual(warnings, [f"{tilde(self.repo / 'brainrc.local.toml')}: [extensions.spec-agent] is "
+                                    "deprecated; move it under [extensions.gatework] (read until 0.8.0)"])
+
+    def test_doctor_names_the_file_to_fix(self):
+        from brainrc.doctor import doctor_findings
+        self.local('[extensions]\ngatework = "inline"\n')
+        found = [f for f in doctor_findings() if "must be a table" in f[1]]
+        self.assertTrue(found, doctor_findings())
+        self.assertEqual(found[0][2], "fix [extensions] in the file named")
+
     def test_apply_stops_on_an_error_and_writes_nothing(self):
         self.local('[extensions.gatework]\nmodee = "inline"\n')
         buf = io.StringIO()

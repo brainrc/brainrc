@@ -1046,6 +1046,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Move packs to newer versions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gatework-09-stack-skills-moved-to-packs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gatework 0.9: stack skills moved to packs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1746,6 +1763,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Move packs to newer versions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gatework-09-stack-skills-moved-to-packs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gatework 0.9: stack skills moved to packs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1818,7 +1852,7 @@ brainrc<span class="w"> </span>apply<span class="w"> </span>--repair
 move the package to a new Python, and Homebrew keeps each version in its own folder).</p>
 <p>From a clone, <code>git pull</code> (or <code>git checkout v&lt;X.Y.Z&gt;</code> for a release), then
 <code>python3 scripts/brainrc.py apply</code>.</p>
-<p>What changed in each release is in the <a href="https://github.com/brainrc/brainrc/blob/v0.8.32/CHANGELOG.md">CHANGELOG</a>. Changes that affect packs are
+<p>What changed in each release is in the <a href="https://github.com/brainrc/brainrc/blob/v0.8.33/CHANGELOG.md">CHANGELOG</a>. Changes that affect packs are
 tagged <strong>[pack contract]</strong>.</p>
 <h2 id="move-packs-to-newer-versions">Move packs to newer versions<a class="headerlink" href="#move-packs-to-newer-versions" title="Permanent link">&para;</a></h2>
 <p><code>apply</code> keeps each git pack at the commit recorded in <code>brainrc.lock</code>, even when its tag or branch
@@ -1832,6 +1866,17 @@ official pack from <a href="https://github.com/brainrc/packs">brainrc/packs</a> 
 its <code>ref</code> to a newer tag of that repo and keep its <code>subdir</code>.</p>
 <p>A new brainrc release can also pin a newer Gatework in its own <code>packs.toml</code>; the next <code>apply</code>
 fetches it.</p>
+<h3 id="gatework-09-stack-skills-moved-to-packs">Gatework 0.9: stack skills moved to packs<a class="headerlink" href="#gatework-09-stack-skills-moved-to-packs" title="Permanent link">&para;</a></h3>
+<p>Gatework 0.9 no longer ships <code>brainrc-go-service</code>, <code>brainrc-db-migrations</code>, <code>brainrc-terraform</code>,
+<code>brainrc-aws</code>, <code>brainrc-kubernetes</code>, <code>brainrc-gitops</code> or <code>brainrc-containers</code>. They live, under the
+same names, in the official packs <code>brainrc/go</code>, <code>brainrc/terraform-aws</code> and <code>brainrc/kubernetes</code>.
+To keep the ones you use, add their packs to <code>packs.local.toml</code> and run <code>brainrc apply</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">[terraform-aws]</span>
+<span class="n">git</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"https://github.com/brainrc/packs.git"</span>
+<span class="n">ref</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"v0.1.0"</span>
+<span class="n">subdir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"terraform-aws"</span>
+</code></pre></div>
+<p>An <code>exclude</code> line for one of those skills under <code>gatework:</code> now matches nothing and can go.</p>
 <h2 id="from-ai-config">From ai-config<a class="headerlink" href="#from-ai-config" title="Permanent link">&para;</a></h2>
 <p>brainrc's old name, before 0.4.0, was <code>ai-config</code>, with an <code>aicfg</code> command and settings in
 the old <code>~/.config/ai-config</code>. If you used the old name:</p>

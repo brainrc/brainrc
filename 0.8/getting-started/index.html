@@ -1874,11 +1874,11 @@ writes anything:</p>
 </tr>
 <tr>
 <td><code>app</code></td>
-<td>rules, skills, agents, commands and guard hooks, without Gatework's Terraform, AWS, Kubernetes and GitOps skills</td>
+<td>rules, skills, agents, commands and guard hooks</td>
 </tr>
 <tr>
 <td><code>infra</code></td>
-<td>everything, MCP servers included</td>
+<td>everything, MCP servers included; add the <a href="../packs/#naming">terraform-aws and kubernetes packs</a> for infrastructure skills</td>
 </tr>
 </tbody>
 </table>
@@ -1891,7 +1891,7 @@ installs everything. <code>brainrc init --yes</code> takes those defaults withou
 <h2 id="2-preview">2. Preview<a class="headerlink" href="#2-preview" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>brainrc<span class="w"> </span>status
 </code></pre></div>
-<div class="highlight"><pre><span></span><code>FETCH     gatework  https://github.com/brainrc/gatework.git (v0.8.0)
+<div class="highlight"><pre><span></span><code>FETCH     gatework  https://github.com/brainrc/gatework.git (v0.9.0)
 CREATE    claude    ~/.claude/CLAUDE.md
 CREATE    claude    ~/.claude/hooks/brainrc
 CREATE    claude    ~/.claude/skills/brainrc-work

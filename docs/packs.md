@@ -238,6 +238,9 @@ are folders of [brainrc/packs](https://github.com/brainrc/packs), enabled with `
 | `brainrc/go` | Go, built from today's `brainrc-go-service` skill ([go](https://github.com/brainrc/packs/tree/main/go)) | [#315](https://github.com/brainrc/brainrc/issues/315) |
 | `brainrc/terraform-aws` | Terraform and AWS ([terraform-aws](https://github.com/brainrc/packs/tree/main/terraform-aws)) | [#316](https://github.com/brainrc/brainrc/issues/316) |
 | `brainrc/kubernetes` | Kubernetes, including GitOps and containers ([kubernetes](https://github.com/brainrc/packs/tree/main/kubernetes)) | [#317](https://github.com/brainrc/brainrc/issues/317) |
+| `brainrc/python` | Python: Ruff and pytest ([python](https://github.com/brainrc/packs/tree/main/python)) | [#183](https://github.com/brainrc/brainrc/issues/183) |
+| `brainrc/node-ts` | Node and TypeScript: tsc and ESLint ([node-ts](https://github.com/brainrc/packs/tree/main/node-ts)) | [#184](https://github.com/brainrc/brainrc/issues/184) |
+| `brainrc/rust` | Rust: rustfmt, Clippy and cargo test ([rust](https://github.com/brainrc/packs/tree/main/rust)) | [#185](https://github.com/brainrc/brainrc/issues/185) |
 | `brainrc/security-baseline` | the default guard policy, secret protection and a sandbox profile ([security-baseline](https://github.com/brainrc/packs/tree/main/security-baseline)) | [#323](https://github.com/brainrc/brainrc/issues/323) |
 
 `brainrc/go`, `brainrc/terraform-aws` and `brainrc/kubernetes` take over domain skills Gatework

@@ -727,6 +727,9 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--fetch-defaults", action="store_true",
                    help="with --pack: check it against core's default packs at the versions core pins, "
                    "fetched into clones of their own (never the ones apply links)")
+    p.add_argument("--local-tripwires", metavar="FILE",
+                   help="read local tripwire terms from FILE instead of tripwires.local.toml; it must "
+                   "exist and list a term (CI writes it from a secret)")
     add("doctor", "diagnose this machine's install (read-only); exits 1 on any problem, each "
         "with its fix")
     p = add("migrate", "move an old settings home (AICFG_HOME or ~/.config/ai-config) to "
@@ -798,7 +801,8 @@ def _dispatch(argv: list[str]) -> int:
             parser.print_usage(sys.stderr)
             print(f"{parser.prog}: error: --fetch-defaults needs --pack", file=sys.stderr)
             return 2
-        return cmd_validate(args.pack, fetch_defaults=args.fetch_defaults) if args.pack else cmd_validate()
+        return cmd_validate(args.pack, fetch_defaults=args.fetch_defaults,
+                            local_tripwires=args.local_tripwires)
     if cmd == "plugin":
         return cmd_plugin()
     if cmd == "capabilities":

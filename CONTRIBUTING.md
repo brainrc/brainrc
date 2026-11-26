@@ -24,6 +24,12 @@ one of the terms, in its name or text, ignoring case:
 terms = ["Initech", "initech.internal"]
 ```
 
+CI runs the same check on every pull request, with the terms from the `TRIPWIRE_TERMS` repository
+secret (one per line), so a change made in the cloud or on github.com can't skip it. Its log gives
+each match's file, line and term number (`local tripwire #2`, counted in the secret's order), never
+the term. Pull requests from forks can't read the secret, so for them it runs on the merge to `main`.
+While the secret isn't set, the check skips with a notice instead of failing.
+
 ## Making a change
 
 1. Branch from `main`.

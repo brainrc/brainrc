@@ -30,10 +30,28 @@ brainrc update gatework     # or just one
 ```
 
 `update` prints the commits and files that change, then applies and relocks. To move to another
-tag, change `ref` in `packs.local.toml` (or the repo's `brainrc.toml`) and run `apply`.
+tag, change `ref` in `packs.local.toml` (or the repo's `brainrc.toml`) and run `apply`. An
+official pack from [brainrc/packs](https://github.com/brainrc/packs) moves the same way: change
+its `ref` to a newer tag of that repo and keep its `subdir`.
 
 A new brainrc release can also pin a newer Gatework in its own `packs.toml`; the next `apply`
 fetches it.
+
+### Gatework 0.9: stack skills moved to packs
+
+Gatework 0.9 no longer ships `brainrc-go-service`, `brainrc-db-migrations`, `brainrc-terraform`,
+`brainrc-aws`, `brainrc-kubernetes`, `brainrc-gitops` or `brainrc-containers`. They live, under the
+same names, in the official packs `brainrc/go`, `brainrc/terraform-aws` and `brainrc/kubernetes`.
+To keep the ones you use, add their packs to `packs.local.toml` and run `brainrc apply`:
+
+```toml
+[terraform-aws]
+git = "https://github.com/brainrc/packs.git"
+ref = "v0.1.0"
+subdir = "terraform-aws"
+```
+
+An `exclude` line for one of those skills under `gatework:` now matches nothing and can go.
 
 ## From ai-config
 

@@ -14,6 +14,7 @@ OFFICIAL = "brainrc"
 OFFICIAL_PACK_IDS = frozenset({
     "brainrc/starter", "brainrc/review", "brainrc/go", "brainrc/terraform-aws",
     "brainrc/kubernetes", "brainrc/security-baseline", "brainrc/gatework",
+    "brainrc/python", "brainrc/node-ts", "brainrc/rust",
 })
 # Rule 3: names only a verified vendor's own packs may use.
 VENDOR_NAMES = frozenset({

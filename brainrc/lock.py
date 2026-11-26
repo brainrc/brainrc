@@ -9,13 +9,14 @@ from pathlib import Path
 from . import config, schema
 from .config import KINDS, ConfigError, _layered, tilde, toml_error
 from .packs import head
-from .sources import Source, core_version, installed_items, markdown_files, tree_files
+from .sources import Source, clone_root, core_version, installed_items, markdown_files, subdir, tree_files
 
 NAME = "brainrc.lock"
 HEADER = "# brainrc.lock: written by brainrc. Don't edit it by hand."
-VERSION = 2  # 2 adds [packs.<key>.permissions] (#289); brainrc reads 1 and 2 and writes 2
+VERSION = 3  # 2 adds [packs.<key>.permissions] (#289), 3 a pack's `subdir` (#121); brainrc reads 1 to 3
+PLAIN = 2  # the version written when no pack has a `subdir`, so older brainrc still reads those locks
 BARE_KEY = re.compile(r"[A-Za-z0-9_-]+")
-PACK_KEYS = ("git", "ref", "commit", "path")
+PACK_KEYS = ("git", "ref", "subdir", "commit", "path")
 ESCAPES = {'"': '\\"', "\\": "\\\\", "\b": "\\b", "\t": "\\t", "\n": "\\n", "\f": "\\f", "\r": "\\r"}
 
 
@@ -151,16 +152,18 @@ def pack_entry(cfg: dict, root: Path, files: dict[str, str], permissions: dict |
     what it can do (brainrc/permissions.py)."""
     perms = {"permissions": permissions} if permissions is not None else {}
     if "git" in cfg:
-        commit = head(root)
+        commit = head(clone_root(cfg, root))
         if commit is None:
             raise ConfigError(f"{tilde(root)}: can't read the commit checked out (git rev-parse HEAD)")
-        return {"git": clean_url(str(cfg["git"])), "ref": str(cfg.get("ref", "HEAD")), "commit": commit,
+        folder = {"subdir": subdir(cfg)} if subdir(cfg) else {}
+        return {"git": clean_url(str(cfg["git"])), "ref": str(cfg.get("ref", "HEAD")), **folder, "commit": commit,
                 "files": files, **perms}
     return {"path": shown_path(str(cfg["path"])), "files": files, **perms}
 
 
 def new_lock(scope: str, packs: dict[str, dict], **tables: dict) -> dict:
-    data = {"version": VERSION, "brainrc": ".".join(map(str, core_version())), "scope": scope, "packs": packs}
+    version = VERSION if any("subdir" in p for p in packs.values()) else PLAIN
+    data = {"version": version, "brainrc": ".".join(map(str, core_version())), "scope": scope, "packs": packs}
     data.update({k: v for k, v in tables.items() if v})
     return data
 

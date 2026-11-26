@@ -108,7 +108,7 @@ PATH_KEYS = ("home", "skills", "agents", "agents_format", "commands", "plugin", 
 LAYERED_KEYS = {
     "harnesses": {"enabled": bool, **dict.fromkeys(PATH_KEYS, str), "settings_format": str,
                   "project_skills": str, "project_instructions": str},  # repo paths, never expanded
-    "packs": {"enabled": bool, "path": str, "git": str, "ref": str, "run_validator": bool,
+    "packs": {"enabled": bool, "path": str, "git": str, "ref": str, "subdir": str, "run_validator": bool,
               "description": str},
 }
 
@@ -239,7 +239,7 @@ def _layered(name: str, warnings: list[str] | None = None) -> dict[str, dict]:
         for key, overrides in data.items():
             table = config.setdefault(key, {})
             if name == "packs" and PACK_ORIGIN_KEYS & overrides.keys():
-                for k in (*PACK_ORIGIN_KEYS, "ref"):  # a local `path` or `git` replaces a default pack's
+                for k in (*PACK_ORIGIN_KEYS, "ref", "subdir"):  # a local `path` or `git` replaces a default pack's
                     table.pop(k, None)
             table.update(overrides)
     return config

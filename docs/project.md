@@ -159,12 +159,13 @@ path = "tools/agent-pack"   # relative to the repo root
 | `packs.<key>.enabled` | boolean | Default `true`. `false` turns a default pack off. |
 | `packs.<key>.git` | string | A URL to fetch. Can't start with `-`. |
 | `packs.<key>.ref` | string | With `git`: tag, branch or commit. Default: the remote's default branch. |
+| `packs.<key>.subdir` | string | With `git`: the folder of the repo that is the pack, using `/`. No `..`, `.` or leading `/`. Default: the repo root. |
 | `packs.<key>.path` | string | A directory inside the repo, relative to the repo root, using `/`. No `..`, `~`, `$` or leading `/`. |
 | `packs.<key>.description` | string | A note for people; ignored. |
 
 - **Default packs** are the tables in core's `packs.toml` (Gatework). They are on in every
   project unless `brainrc.toml` sets `enabled = false`. A `ref` alone keeps the default pack's URL;
-  `git` or `path` replaces its origin.
+  `git` or `path` replaces its origin, `subdir` included.
 - Any other pack needs exactly one of `git` and `path`.
 - Unknown keys are errors, so a typo never silently changes what is installed.
 
@@ -203,12 +204,13 @@ path = "tools/agent-pack"
 
 | Key | Type | Meaning |
 |---|---|---|
-| `version` | integer | Format version, `2`. Version 2 adds `packs.<key>.permissions`; brainrc reads `1` and `2` and writes `2`. A reader refuses a newer version and names the brainrc that wrote it, so brainrc 0.7.7 and older say to upgrade instead of failing on `permissions`. |
+| `version` | integer | Format version, `2`, or `3` when a pack has a `subdir`. Version 2 adds `packs.<key>.permissions` and version 3 `packs.<key>.subdir`; brainrc reads `1` to `3`. A lock with no `subdir` stays at `2`, so older brainrc still reads it. A reader refuses a newer version and names the brainrc that wrote it, so brainrc 0.7.7 and older say to upgrade instead of failing on `permissions`. |
 | `brainrc` | string | The brainrc version that wrote it, `MAJOR.MINOR.PATCH`. |
 | `scope` | string | `user` or `project`. |
 | `packs.<key>` | table | Every enabled pack, and nothing for a disabled one. |
 | `packs.<key>.git` | string | The URL fetched, with any user name or password removed. |
 | `packs.<key>.ref` | string | The ref asked for (`HEAD` when the config names none). |
+| `packs.<key>.subdir` | string | The folder of the repo that is the pack, when the config names one. Its files are listed by their path in that folder. |
 | `packs.<key>.commit` | string | The commit that ref resolved to: 40 or 64 lowercase hex digits. Git packs only. |
 | `packs.<key>.path` | string | A path pack's directory as the config wrote it; under the home directory it is written with `~`. Path packs have no `commit`. |
 | `packs.<key>.files` | table | Every installed file of the pack (below): its path in the pack, using `/`, to its hash. |
@@ -229,7 +231,7 @@ directories are skipped.
 
 **Determinism.** The lock is UTF-8 with `\n` line endings and ends with one newline. The first
 line is the comment above. Then come `version`, `brainrc` and `scope`, in that order. Then one
-`[packs.<key>]` table per pack sorted by key, its keys in the order `git`, `ref`, `commit`, or
+`[packs.<key>]` table per pack sorted by key, its keys in the order `git`, `ref`, `subdir`, `commit`, or
 `path`, each followed by its `[packs.<key>.files]` table and its
 `[packs.<key>.permissions]` table (arrays written one string per line, sorted). Then `[outputs]` and `[blocks]`. Every
 table's entries are sorted by key (by Unicode code point). Keys that aren't bare keys

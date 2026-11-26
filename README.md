@@ -20,7 +20,7 @@ brainrc status              # check: prints "Everything in sync."
 
 ```text
 $ uvx brainrc status
-FETCH     gatework  https://github.com/brainrc/gatework.git (v0.8.0)
+FETCH     gatework  https://github.com/brainrc/gatework.git (v0.9.0)
 CREATE    claude    ~/.claude/CLAUDE.md
 MERGE     claude    ~/.claude/settings.json  (hooks)
 ...
@@ -62,6 +62,10 @@ and you approve three times: the spec, the plan, and the push.
 It works best in Claude Code, where each role gets a fresh context and the guard hooks are
 enforced. Elsewhere it is best effort ([details](docs/gatework.md#harness-support)). Don't want
 it? Turn it off and brainrc installs only its rules and guard hooks ([packs](docs/packs/use-a-pack.md#turn-the-default-pack-off-or-pin-it)).
+
+For your stacks, the official packs live as folders of [brainrc/packs](https://github.com/brainrc/packs):
+Python, Node and TypeScript, Rust, Go, Terraform and AWS, Kubernetes, review, a starter and a security baseline
+([list](docs/packs.md#naming), [enable one](docs/packs/use-a-pack.md)).
 
 ## Why not …
 

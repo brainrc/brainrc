@@ -16,7 +16,7 @@ from test_init import run  # noqa: E402
 
 from brainrc.init import project_sources  # noqa: E402
 from brainrc.sources import render_instructions, sources  # noqa: E402
-from brainrc.starter import APP_EXCLUDE, set_exclude, starter_text  # noqa: E402
+from brainrc.starter import OLD_APP_EXCLUDE, set_exclude, starter_text  # noqa: E402
 from support import home_env, restore_home, rmtree, saved_home  # noqa: E402
 
 FIXTURES = REPO / "tests/fixtures/import"
@@ -26,16 +26,19 @@ class StarterTextTest(unittest.TestCase):
     def test_each_starter_sets_its_profile_and_excludes(self):
         self.assertEqual(starter_text("", "minimal"), 'profile = "minimal"\n')
         self.assertEqual(starter_text("", "infra"), 'profile = "full"\n')
-        app = tomllib.loads(starter_text("", "app"))
-        self.assertEqual(app, {"profile": "recommended", "exclude": list(APP_EXCLUDE)})
+        self.assertEqual(starter_text("", "app"), 'profile = "recommended"\n')
 
     def test_switching_starters_keeps_the_users_own_patterns_and_lines(self):
         text = '# laptop\nprofile = "full"\nexclude = ["skills/mine"]\n'
         app = starter_text(text, "app")
-        self.assertTrue(app.startswith('# laptop\nprofile = "recommended"\n'))
-        self.assertEqual(tomllib.loads(app)["exclude"], ["skills/mine", *APP_EXCLUDE])
+        self.assertEqual(app, '# laptop\nprofile = "recommended"\nexclude = ["skills/mine"]\n')
         infra = starter_text(app, "infra")
         self.assertEqual(infra, '# laptop\nprofile = "full"\nexclude = ["skills/mine"]\n')
+
+    def test_a_starter_clears_the_old_app_starters_gatework_excludes(self):
+        # Gatework 0.9 dropped the infra skills the app starter used to exclude (#318).
+        text = 'profile = "recommended"\nexclude = ["skills/mine", ' + ", ".join(f'"{p}"' for p in OLD_APP_EXCLUDE) + "]\n"
+        self.assertEqual(starter_text(text, "app"), 'profile = "recommended"\nexclude = ["skills/mine"]\n')
 
     def test_set_exclude_replaces_a_multi_line_array_and_removes_an_empty_one(self):
         text = 'profile = "full"\nexclude = [\n  "a",  # one\n  "b",\n]\nother = 1\n'
@@ -113,16 +116,14 @@ class InitImportTest(TempRepoCase):
         self.assertIn("descriptions 0)", out)
         self.assertFalse((self.repo / "brainrc.local.toml").exists())
 
-    def test_the_app_starter_leaves_out_infra_skills_on_apply(self):
+    def test_the_app_starter_installs_the_recommended_profile_on_apply(self):
         code, out = run("--yes", "--starter", "app")
         self.assertEqual(code, 0, out)
         self.assertIn("starts with the app profile (recommended)", out)
-        self.assertEqual(brainrc.config.install_profile(), ("recommended", list(APP_EXCLUDE)))
+        self.assertEqual(brainrc.config.install_profile(), ("recommended", []))
         quiet(brainrc.cmd_sync, True)
         linked = sorted(p.name for p in (self.home / ".claude/skills").iterdir())
         self.assertIn("brainrc-work", linked)
-        self.assertNotIn("brainrc-aws", linked)
-        self.assertNotIn("brainrc-terraform", linked)
 
     def test_interactive_asks_import_and_starter_then_writes_on_yes(self):
         # manage claude; import yes; gatework yes; starter infra; write yes

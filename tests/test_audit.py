@@ -78,10 +78,11 @@ class PackAuditTest(PinCase):
         self.assertNotIn("permissions", data["sources"]["acme"])
 
     def test_a_secret_in_the_server_url_or_args_is_not_printed(self):
-        self.add_servers('[servers.acme-docs]\nurl = "https://user:s3cret@docs.acme.example/mcp?api_key=k3y"\n\n'
-                         '[servers.acme-cli]\ncommand = "acme"\nargs = ["serve", "--token", "t0ken", "--api-key=k3y2"]\n')
+        # Upper case and a hyphen: a temp folder's random name (in the printed paths) can't contain them.
+        self.add_servers('[servers.acme-docs]\nurl = "https://user:S3CRET-PW@docs.acme.example/mcp?api_key=K3Y-ONE"\n\n'
+                         '[servers.acme-cli]\ncommand = "acme"\nargs = ["serve", "--token", "T0KEN-ONE", "--api-key=K3Y-TWO"]\n')
         code, out = quiet(brainrc.main, ["brainrc", "audit", "--json"])
-        for secret in ("s3cret", "k3y", "t0ken"):
+        for secret in ("S3CRET", "K3Y", "T0KEN"):
             self.assertNotIn(secret, out)
         data = json.loads(out)
         self.assertEqual(self.entry(data, "claude", "mcp", "acme-docs")["server"], {"url": "https://docs.acme.example/mcp?…"})

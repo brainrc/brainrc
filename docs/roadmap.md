@@ -27,7 +27,7 @@ Gate A's standalone issues, with no epic, are in its
 - **E10** [Pack extension points](https://github.com/brainrc/brainrc/issues/112): a `[scope]` predicate, declarative guard rules, pack-owned settings keys and reviewers, mode overrides, and unavailable gates.
 - **E11** [Guard parity across harnesses](https://github.com/brainrc/brainrc/issues/116): the declarative guard rules evaluated in every tool, compiled to OS sandbox settings, and a security-baseline pack.
 - **E31** [Adapter SDK and more tools](https://github.com/brainrc/brainrc/issues/305): an adapter plugin interface, then Copilot, Gemini CLI, Windsurf, Kiro, Amp and Junie.
-- **E20** [Stack packs](https://github.com/brainrc/brainrc/issues/121): official packs (starter, review, Go, Terraform, Kubernetes, Python, Node/TypeScript, Rust), and domain skills moved out of core.
+- **E20** [Stack packs](https://github.com/brainrc/brainrc/issues/121): official packs (starter, review, Go, Terraform, Kubernetes, Python, Node/TypeScript, Rust) as folders of [brainrc/packs](https://github.com/brainrc/packs), and domain skills moved out of core.
 - **E16** [Native Windows](https://github.com/brainrc/brainrc/issues/120): copy mode instead of symlinks, native hook commands, and a Windows CI cell.
 - **E15** [Split and 1.0](https://github.com/brainrc/brainrc/issues/119): freeze the pack API, move `specs/` out of the way, and tag v1.0. Its README and concepts child (#296) is Gate A.
 - **E21** [Pack index and pack evals](https://github.com/brainrc/brainrc/issues/124): evals for packs, a searchable index, signing tiers, a publish scanner and badges. Its verified vendor packs child (#333) is Gate C.

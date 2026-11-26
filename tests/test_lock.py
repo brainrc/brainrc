@@ -166,8 +166,8 @@ class LockVersionTest(GitLockCase):
                 lock.loads(text)
 
     def test_a_newer_lock_is_refused_with_the_version_that_wrote_it(self):
-        text = '# brainrc.lock\nversion = 3\nbrainrc = "9.0.0"\nscope = "user"\n'
-        with self.assertRaisesRegex(ConfigError, r"lock version 3 is newer than this brainrc reads \(2\); "
+        text = '# brainrc.lock\nversion = 4\nbrainrc = "9.0.0"\nscope = "user"\n'
+        with self.assertRaisesRegex(ConfigError, r"lock version 4 is newer than this brainrc reads \(3\); "
                                     r"upgrade brainrc to the version that wrote it, 9\.0\.0, or later"):
             lock.loads(text)
 

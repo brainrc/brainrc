@@ -33,7 +33,7 @@ from .sources import (
 from .opencode import agents_format, rendered_agents
 from .packs import needs_fetch
 from .plan import FragmentError, Link, invalid_fragments, link_target, moved_item, plan, stale_renders
-from .settings import _owned, settings_change
+from .settings import _owned, as_claude, settings_change
 from .manifest import checked_manifest
 from .mcp import check_servers, mcp_change, mcp_plan
 from .moved import left_behind
@@ -270,6 +270,11 @@ def doctor_findings() -> list[Finding]:
             agents_format(h)
     except ConfigError as e:  # renders and links depend on it, so stop here
         return found + [("FAIL", str(e), "set agents_format to claude or opencode in harnesses.local.toml")]
+    try:
+        for h in load_harnesses().values():
+            config.settings_format(h)
+    except ConfigError as e:  # the settings merges depend on it
+        return found + [("FAIL", str(e), "set settings_format to claude or antigravity in harnesses.local.toml")]
     found += _render_findings(srcs)
     roots = [s.root for s in every_src]
     links, stale, merges = plan(srcs, every_src)
@@ -361,7 +366,8 @@ def _hook_findings(merges: list) -> list[Finding]:
         except json.JSONDecodeError:
             continue  # reported with the settings checks
         scripts: dict[Path, int] = {}
-        for groups in current.get("hooks", {}).values():
+        hooks = as_claude(current, m.fmt).get("hooks", {}) if isinstance(current, dict) else {}
+        for groups in hooks.values() if isinstance(hooks, dict) else ():
             for group in groups:
                 if not _owned(group, m.markers()):
                     continue

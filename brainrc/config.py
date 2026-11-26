@@ -106,11 +106,23 @@ PATH_KEYS = ("home", "skills", "agents", "agents_format", "commands", "plugin", 
 
 # Known keys of each table in <name>.toml / <name>.local.toml, and the type each must have.
 LAYERED_KEYS = {
-    "harnesses": {"enabled": bool, **dict.fromkeys(PATH_KEYS, str),
+    "harnesses": {"enabled": bool, **dict.fromkeys(PATH_KEYS, str), "settings_format": str,
                   "project_skills": str, "project_instructions": str},  # repo paths, never expanded
     "packs": {"enabled": bool, "path": str, "git": str, "ref": str, "run_validator": bool,
               "description": str},
 }
+
+
+# harnesses.toml `settings_format`: how a harness's settings file holds hooks. "claude" (also
+# Cursor's and Codex's) keeps them under "hooks"; "antigravity" under a named entry, brainrc's own.
+SETTINGS_FORMATS = ("claude", "antigravity")
+
+
+def settings_format(h: dict) -> str:
+    fmt = h.get("settings_format", "claude")
+    if fmt not in SETTINGS_FORMATS:
+        raise ConfigError(f"harnesses.toml: unknown settings_format `{fmt}` (use one of {', '.join(SETTINGS_FORMATS)})")
+    return fmt
 
 
 PACK_ORIGIN_KEYS = {"path", "git"}  # where a pack comes from: exactly one per pack

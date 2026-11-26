@@ -143,4 +143,12 @@ so ask becomes deny there too. A pack's guard rules apply under its `[scope]`, j
 payload's `cwd`. Codex runs a hook only after you trust it: open `/hooks` in Codex once after
 `brainrc apply`. Hosted tools such as web search don't reach the hook. Not yet run in a real Codex.
 
-Antigravity CLI gets the rules and workflow layers only. Use its own permission settings alongside.
+Antigravity runs them through `overrides/antigravity/hooks/guard.py` on `PreToolUse` for
+`run_command`, from `~/.gemini/config/hooks.json`, where brainrc's hooks sit under their own entry,
+`brainrc`. A guard's ask replies `force_ask`, which prompts even for a command you allowed before,
+and a deny replies `deny`. With no objection it replies `allow`, which Antigravity's docs define as
+handing the call on to the next hook or the default policy, so your own permission settings still
+decide; it is not `auto_approve`. In headless `agy -p`, which can't prompt, an ask ends as a deny. A
+pack's guard rules apply under its `[scope]`, judged from the command's `Cwd`, else the first
+workspace path. File tools and MCP tools aren't guarded there yet: the docs don't name their
+arguments or how MCP tools are called. Not yet run in a real Antigravity.

@@ -552,6 +552,62 @@ class CodexGuardRulesTest(SharedGuardRuleCases, unittest.TestCase):
         self.assertIsNone(codex_call(tool, {}, str(self.personal_repo))[0])
 
 
+ANTIGRAVITY_GUARD = HOOKS.parent.parent / "antigravity" / "hooks" / "guard.py"
+ANTIGRAVITY_DECISIONS = {"deny": "deny", "force_ask": "ask", "allow": None}
+
+
+def antigravity(payload) -> dict:
+    """Run Antigravity's guard adapter; it must always exit 0 with a JSON reply holding a decision."""
+    stdin = payload if isinstance(payload, str) else json.dumps(payload)
+    result = subprocess.run([sys.executable, str(ANTIGRAVITY_GUARD)], input=stdin, capture_output=True,
+                            text=True, timeout=30)
+    assert result.returncode == 0, result.stderr
+    reply = json.loads(result.stdout)
+    assert reply["decision"] in ANTIGRAVITY_DECISIONS, reply
+    return reply
+
+
+def run_command_call(command: str, cwd: str | None = "/tmp/project", workspace: str = "/tmp/project") -> dict:
+    args = {"CommandLine": command, "WaitMsBeforeAsync": 5000, **({"Cwd": cwd} if cwd else {})}
+    return antigravity({"toolCall": {"name": "run_command", "args": args}, "stepIdx": 3,
+                        "conversationId": "c", "workspacePaths": [workspace]})
+
+
+class AntigravityGuardTest(unittest.TestCase):
+    """#158: overrides/antigravity/hooks/guard.py ports core's guards to Antigravity's PreToolUse."""
+
+    def test_outward_command_is_force_asked_with_the_reason(self):
+        reply = run_command_call("git push origin main")
+        self.assertEqual(reply["decision"], "force_ask")
+        self.assertIn("git push publishes commits", reply["reason"])
+
+    def test_safe_command_hands_on_to_the_default_policy(self):
+        self.assertEqual(run_command_call("git status"), {"decision": "allow"})
+
+    def test_bash_naming_a_secret_file_is_asked_about(self):
+        self.assertEqual(run_command_call("cat .env")["decision"], "force_ask")
+
+    def test_bad_json_and_other_tools_hand_on(self):
+        self.assertEqual(antigravity("not json"), {"decision": "allow"})
+        self.assertEqual(antigravity("[1]"), {"decision": "allow"})
+        self.assertEqual(antigravity({"toolCall": {"name": "view_file", "args": {"AbsolutePath": "/p/.env"}}}),
+                         {"decision": "allow"})
+
+
+class AntigravityGuardRulesTest(SharedGuardRuleCases, unittest.TestCase):
+    """#158: packs' guard rules in Antigravity's PreToolUse, under their [scope] (from args.Cwd,
+    else the first workspace path)."""
+
+    def verdict(self, command: str, cwd: Path) -> str | None:
+        return ANTIGRAVITY_DECISIONS[run_command_call(command, str(cwd), str(cwd))["decision"]]
+
+    def test_the_workspace_path_stands_in_for_a_missing_cwd(self):
+        reply = run_command_call("acme-deploy prod", None, str(self.acme_repo))
+        self.assertEqual(reply["decision"], "deny")
+        self.assertIn("acme pack", reply["reason"])
+        self.assertEqual(run_command_call("acme-deploy prod", None, str(self.personal_repo)), {"decision": "allow"})
+
+
 REPO = HOOKS.parent.parent.parent
 sys.path.insert(0, str(REPO))
 import brainrc  # noqa: E402  (the package at the repo root)
@@ -637,6 +693,15 @@ class FailOpenTest(unittest.TestCase):
         self.remove_target(d)
         result = run_command(command, RISKY)
         self.assertEqual((result.returncode, result.stdout), (0, ""))
+
+    def test_antigravity_command_asks_when_present_and_hands_on_when_the_hooks_are_gone(self):
+        d = self.hooks_dir("antigravity")
+        (command,) = fragment_commands("antigravity", d)
+        risky = {"toolCall": {"name": "run_command", "args": {"CommandLine": "git push origin main"}}}
+        self.assertEqual(json.loads(run_command(command, risky).stdout)["decision"], "force_ask")
+        self.remove_target(d)
+        result = run_command(command, risky)
+        self.assertEqual((result.returncode, json.loads(result.stdout)), (0, {"decision": "allow"}))
 
     def test_apply_replaces_old_form_hook_groups(self):
         old_command = 'python3 "$HOME/.claude/hooks/ai-config/guard_outward.py"'

@@ -17,6 +17,8 @@
 #                as {{hooks_dir}}, so moving it keeps hook commands working
 #   settings     JSON file; hooks from overrides/<harness>/settings.fragment.json are
 #                merged in (entries owned by other tools are preserved; backup first)
+#   settings_format "claude" (default; Cursor's and Codex's files too) keeps hooks under "hooks";
+#                "antigravity" keeps them under a named entry, `brainrc`, as Antigravity's hooks.json does
 #   mcp          the harness's MCP config file; servers from mcp/servers.toml are merged in
 #                (claude, codex, opencode only; your own servers are never overwritten)
 #
@@ -66,7 +68,10 @@ mcp = "${XDG_CONFIG_HOME:-~/.config}/opencode/opencode.json"  # opencode.jsonc i
 enabled = true
 skills = "~/.gemini/config/skills"
 instructions = "~/.gemini/config/AGENTS.md"
-# agents: Antigravity's agent frontmatter is unverified; hooks: no safe "no objection" reply yet
+hooks_dir = "~/.gemini/config/hooks/brainrc"
+settings = "~/.gemini/config/hooks.json"
+settings_format = "antigravity"
+# agents: Antigravity's agent frontmatter is unverified
 
 # Retired: Antigravity replaced Gemini CLI. Kept disabled so `apply` removes the links it made
 # here; enable it in harnesses.local.toml if your account still runs Gemini CLI.

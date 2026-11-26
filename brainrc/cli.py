@@ -192,6 +192,8 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True, moved: frozens
         srcs = sources()
         roots = [s.root for s in sources(include_disabled=True)]
         agents = rendered_agents(srcs)
+        for h in config.load_harnesses(include_disabled=True).values():
+            config.settings_format(h)  # the settings merges below depend on it
     except ConfigError as e:
         print(f"ERROR {e}")
         return 1

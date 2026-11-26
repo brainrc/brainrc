@@ -727,7 +727,9 @@ class DoctorTest(TempRepoCase):
             self.assertEqual([f for f in brainrc.doctor_findings() if "hook" in f[1]], [])
         self.assertIn(("guard_outward.py", "{}", 5), calls)
         self.assertIn(("guard_secrets.py", "{}", 5), calls)
-        self.assertEqual([c for c in calls if c[0] == "guard.py"], [("guard.py", "{}", 5)])  # Cursor: once
+        # Cursor (5s), Codex and Antigravity (10s): each harness's adapter once
+        self.assertEqual(sorted(c for c in calls if c[0] == "guard.py"),
+                         [("guard.py", "{}", 5), ("guard.py", "{}", 10), ("guard.py", "{}", 10)])
 
     def test_points_to_troubleshooting_only_when_something_is_wrong(self):
         _, clean = quiet(brainrc.cmd_doctor)
@@ -1479,7 +1481,8 @@ class InstalledModeTest(TempRepoCase):
         quiet(brainrc.cmd_sync, True)
         self.assertFalse((self.home / ".cursor/hooks/brainrc").is_symlink())
         self.assertTrue(self.copy_root().is_dir())  # claude still links into it
-        local.write_text("[cursor]\nenabled = false\n[claude]\nenabled = false\n[codex]\nenabled = false\n")
+        local.write_text("[cursor]\nenabled = false\n[claude]\nenabled = false\n[codex]\nenabled = false\n"
+                         "[antigravity]\nenabled = false\n")
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertRegex(out, r"PRUNE +~?.*hooks/core")
@@ -1908,6 +1911,65 @@ class CodexHooksTest(TempRepoCase):
         data = json.loads(self.hooks_json.read_text())
         quiet(brainrc.cmd_sync, True)
         self.assertEqual(json.loads(self.hooks_json.read_text()), data)
+
+
+class AntigravityHooksTest(TempRepoCase):
+    """[antigravity] merges the guard hook into ~/.gemini/config/hooks.json under its own named
+    entry, `brainrc`, as Antigravity's format wants (#158)."""
+
+    def setUp(self):
+        super().setUp()
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
+        install_harnesses(self.home)
+        self.hooks_json = self.home / ".gemini/config/hooks.json"
+        self.mine = {"PreToolUse": [{"matcher": "run_command", "hooks": [{"command": "./mine.sh"}]}]}
+
+    def tearDown(self):
+        restore_home(self.old_home)
+        rmtree(self.home)
+        super().tearDown()
+
+    def test_apply_writes_its_own_entry_keeps_the_users_and_doctor_is_clean(self):
+        self.hooks_json.write_text(json.dumps({"safety-gate": self.mine}))
+        code, out = quiet(brainrc.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        data = json.loads(self.hooks_json.read_text())
+        self.assertEqual(set(data), {"safety-gate", "brainrc"})
+        self.assertEqual(data["safety-gate"], self.mine)
+        (group,) = data["brainrc"]["PreToolUse"]
+        self.assertEqual(group["matcher"], "run_command")
+        self.assertEqual(brainrc.link_target(self.home / ".gemini/config/hooks/brainrc"),
+                         self.repo / "overrides/antigravity/hooks")
+        risky = {"toolCall": {"name": "run_command", "args": {"CommandLine": "git push", "Cwd": str(self.home)}}}
+        run = subprocess.run(["sh", "-c", group["hooks"][0]["command"]], input=json.dumps(risky),
+                             capture_output=True, text=True)
+        self.assertEqual(json.loads(run.stdout)["decision"], "force_ask", run.stderr)
+        self.assertEqual(brainrc.doctor_findings(), [])
+        quiet(brainrc.cmd_sync, True)
+        self.assertEqual(json.loads(self.hooks_json.read_text()), data)
+
+    def test_disabling_antigravity_takes_only_brainrcs_entry_out(self):
+        self.hooks_json.write_text(json.dumps({"safety-gate": self.mine}))
+        quiet(brainrc.cmd_sync, True)
+        (self.repo / "harnesses.local.toml").write_text("[antigravity]\nenabled = false\n")
+        code, out = quiet(brainrc.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        self.assertEqual(json.loads(self.hooks_json.read_text()), {"safety-gate": self.mine})
+
+    def test_a_brainrc_entry_that_is_not_an_object_is_a_conflict(self):
+        self.hooks_json.write_text(json.dumps({"brainrc": ["x"]}))
+        code, out = quiet(brainrc.cmd_sync, True)
+        self.assertIn("hooks.json", out)
+        self.assertEqual(json.loads(self.hooks_json.read_text()), {"brainrc": ["x"]})
+
+    def test_an_unknown_settings_format_is_an_error(self):
+        (self.repo / "harnesses.local.toml").write_text('[antigravity]\nsettings_format = "nope"\n')
+        code, out = quiet(brainrc.cmd_sync, True)
+        self.assertNotEqual(code, 0, out)
+        self.assertIn("settings_format", out)
+        self.assertTrue(any("settings_format" in what for _, what, _ in brainrc.doctor_findings()))
 
 
 class CursorPluginTest(TempRepoCase):

@@ -31,6 +31,7 @@ from .config import (
     load_harnesses,
     rendered_agents_dir,
     rendered_instructions,
+    settings_format,
     settings_home,
     tilde,
 )
@@ -128,7 +129,11 @@ def _settings_steps(name: str, h: dict, problems: list[str]) -> list[Step]:
     markers = set()
     if "hooks_dir" in h:
         markers = {h["hooks_dir"], *former_hooks_dirs(h["hooks_dir"])}
-    m = SettingsMerge(name, dest, [], markers)
+    try:
+        fmt = settings_format(h)
+    except ConfigError:
+        fmt = "claude"  # a typo in harnesses.local.toml mustn't stop uninstall
+    m = SettingsMerge(name, dest, [], markers, fmt)
     state, merged = settings_change(m)
     if state == "conflict":
         problems.append(f"{tilde(dest)}: invalid JSON, so brainrc's hooks are still in it; fix it by hand, then re-run")

@@ -11,8 +11,8 @@ by core's Claude Code guard hook, so a pack gets its nested-shell unwrapping wit
     scope = { remotes = ["github.com/acme/*"] }   # optional: in place of the pack's [scope]
 
 `apply` renders every enabled pack's rules, each with its scope, into $BRAINRC_HOME/guard-rules.json,
-which overrides/claude/hooks/guard_outward.py reads on each Bash and MCP call. The other harnesses'
-guards read it in epic #116 (E11).
+which overrides/claude/hooks/guard_outward.py reads on each Bash and MCP call. Cursor's, OpenCode's,
+Codex's and Antigravity's guards run that hook too (E11, #116), each passing where the command runs.
 """
 from __future__ import annotations
 

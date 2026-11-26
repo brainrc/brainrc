@@ -140,6 +140,32 @@ def record_owned(dest: Path, owned: dict[str, list[str]]) -> None:
         owned_file().unlink()
 
 
+# Antigravity's hooks.json maps a name to each hook set ({"<name>": {"PreToolUse": [...]}}); brainrc's
+# groups go under this name, and a hook set the user named stays theirs.
+ANTIGRAVITY_ENTRY = "brainrc"
+
+
+def as_claude(current: dict, fmt: str) -> dict:
+    """A settings file in Claude Code's shape, hooks under "hooks", whatever its own format."""
+    if fmt != "antigravity":
+        return current
+    entry = current.get(ANTIGRAVITY_ENTRY)
+    return {"hooks": copy.deepcopy(entry)} if isinstance(entry, dict) else {}
+
+
+def from_claude(current: dict, merged: dict, fmt: str) -> dict:
+    """current with the hooks in merged (Claude Code's shape) put back in fmt's place."""
+    if fmt != "antigravity":
+        return merged
+    out = copy.deepcopy(current)
+    hooks = merged.get("hooks")
+    if hooks:
+        out[ANTIGRAVITY_ENTRY] = hooks
+    elif isinstance(current.get(ANTIGRAVITY_ENTRY), dict):
+        out.pop(ANTIGRAVITY_ENTRY)  # brainrc emptied its own entry
+    return out
+
+
 def settings_change(m: SettingsMerge) -> tuple[str, dict | None]:
     """Return (state, merged) where state is ok | merge | conflict."""
     try:
@@ -148,7 +174,10 @@ def settings_change(m: SettingsMerge) -> tuple[str, dict | None]:
         return "conflict", None
     if not isinstance(current, dict):
         return "conflict", None
-    merged = merge_settings(current, m.wanted(), m.markers(), read_owned(m.dest))
+    if m.fmt == "antigravity" and ANTIGRAVITY_ENTRY in current and not isinstance(current[ANTIGRAVITY_ENTRY], dict):
+        return "conflict", None
+    view = as_claude(current, m.fmt)
+    merged = from_claude(current, merge_settings(view, m.wanted(), m.markers(), read_owned(m.dest)), m.fmt)
     return ("ok" if merged == current else "merge"), merged
 
 

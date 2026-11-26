@@ -259,7 +259,7 @@ pack and ends with a Scope section saying where each scoped pack applies.
 
 ## Guard rules
 
-A pack adds rules to core's Claude Code guard in `pack.toml`, without a hook of its own:
+A pack adds rules to core's guard in `pack.toml`, without a hook of its own:
 
 ```toml
 [[guard.deny]]                 # refused
@@ -283,8 +283,9 @@ directory the command runs in, or the rule's own `scope` when it sets one.
 call. Commands inside `sh -c`, `eval`, `$(…)` and backticks are unwrapped as for core's own rules.
 A pack's deny wins over any ask; a pack's ask is shown when core has nothing to ask. Without the
 file (no rules, or before the first `apply`), the guard behaves as before. `validate` checks each
-rule. Claude Code enforces them today; the other tools' guards follow
-([guardrails](guardrails.md#gaps-by-tool)).
+rule. Claude Code, Cursor, OpenCode, Codex and Antigravity all enforce them through core's guard,
+judging the scope where each runs the command; where a tool can't ask, a pack's ask blocks the call
+and tells the model to ask you to run it ([guardrails](guardrails.md#gaps-by-tool)).
 
 Test a rule with [`brainrc.testing`](#pack-tests) against core's hook, with `BRAINRC_HOME` set to
 a directory holding the rendered file, and a near miss beside the risky command.

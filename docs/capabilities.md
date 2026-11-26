@@ -32,7 +32,7 @@ disagree. The table at the top is written by hand: when you change `harnesses.to
 | Claude Code | `~/.claude/skills` | `~/.claude/CLAUDE.md` | `~/.claude/agents` | `~/.claude/commands` | `~/.claude/settings.json`: PreToolUse, SessionStart | `~/.claude.json` | `.agents/skills/`, `AGENTS.md`, `.claude/skills/` (copy), `CLAUDE.md` (imports AGENTS.md) | `CLAUDE_CONFIG_DIR` |
 | Codex | `~/.codex/skills` | `~/.codex/AGENTS.md` | — | `~/.codex/prompts` | `~/.codex/hooks.json`: PreToolUse | `~/.codex/config.toml` | `.agents/skills/`, `AGENTS.md` | `CODEX_HOME` |
 | OpenCode | `~/.config/opencode/skills` | `~/.config/opencode/AGENTS.md` | `~/.config/opencode/agents` (rendered) | `~/.config/opencode/command` | plugin `~/.config/opencode/plugins/brainrc-guard.js` | `~/.config/opencode/opencode.json` | `.agents/skills/`, `AGENTS.md` | `XDG_CONFIG_HOME` |
-| Antigravity CLI | `~/.gemini/config/skills` | `~/.gemini/config/AGENTS.md` | — | — | — | — | `.agents/skills/`, `AGENTS.md` | — |
+| Antigravity CLI | `~/.gemini/config/skills` | `~/.gemini/config/AGENTS.md` | — | — | `~/.gemini/config/hooks.json`: PreToolUse | — | `.agents/skills/`, `AGENTS.md` | — |
 | Gemini CLI (off by default) | `~/.gemini/skills` | `~/.gemini/GEMINI.md` | — | — | — | — | `.agents/skills/`, `AGENTS.md` | — |
 | Cursor | `~/.cursor/skills` | — | — | — | `~/.cursor/hooks.json`: beforeReadFile, beforeShellExecution | — | `.agents/skills/`, `AGENTS.md` | — |
 <!-- END capability matrix -->

@@ -140,6 +140,7 @@ class SettingsMerge:
     dest: Path
     fragments: list[tuple[Path, str | None]]  # (fragment, hooks dir) per source, in order
     extra_markers: set[str] = field(default_factory=set)
+    fmt: str = "claude"  # harnesses.toml settings_format: where the file keeps its hooks
 
     def wanted(self) -> dict:
         hooks: dict[str, list] = {}
@@ -274,10 +275,10 @@ def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
                 fragments.append((fragment, hooks_dir))
         if "settings" in h and fragments:
             known = {pack_hooks_dir(h["hooks_dir"], s.name) for s in every_src if "hooks_dir" in h}
-            merges.append(SettingsMerge(name, expand(h["settings"]), fragments, known))
+            merges.append(SettingsMerge(name, expand(h["settings"]), fragments, known, config.settings_format(h)))
         elif "settings" in h and "hooks_dir" in h and not hooks_on:  # take brainrc's hooks back out
             known = {h["hooks_dir"]} | {pack_hooks_dir(h["hooks_dir"], s.name) for s in every_src}
-            merges.append(SettingsMerge(name, expand(h["settings"]), [], known))
+            merges.append(SettingsMerge(name, expand(h["settings"]), [], known, config.settings_format(h)))
     # A disabled harness keeps its settings file, so take brainrc's hooks back out of it:
     # merging no fragments removes only the groups brainrc owns.
     enabled = load_harnesses()
@@ -286,7 +287,7 @@ def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
             known = set()
             if "hooks_dir" in h:
                 known = {h["hooks_dir"]} | {pack_hooks_dir(h["hooks_dir"], s.name) for s in every_src}
-            merges.append(SettingsMerge(name, expand(h["settings"]), [], known))
+            merges.append(SettingsMerge(name, expand(h["settings"]), [], known, config.settings_format(h)))
 
     # Stale: links brainrc made earlier that it wouldn't make now (removed items, disabled packs,
     # disabled harnesses). Only symlinks pointing at a path brainrc links to are touched.

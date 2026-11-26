@@ -52,6 +52,10 @@
           "minLength": 1,
           "pattern": "^[^-]"
         },
+        "subdir": {
+          "description": "With git: the folder of the repo that is the pack, like `python` (#121).",
+          "$ref": "#/$defs/repoPath"
+        },
         "path": {
           "$ref": "#/$defs/repoPath"
         },
@@ -60,9 +64,19 @@
         }
       },
       "not": {
-        "required": [
-          "git",
-          "path"
+        "anyOf": [
+          {
+            "required": [
+              "git",
+              "path"
+            ]
+          },
+          {
+            "required": [
+              "subdir",
+              "path"
+            ]
+          }
         ]
       }
     },

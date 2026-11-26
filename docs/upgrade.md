@@ -30,7 +30,9 @@ brainrc update gatework     # or just one
 ```
 
 `update` prints the commits and files that change, then applies and relocks. To move to another
-tag, change `ref` in `packs.local.toml` (or the repo's `brainrc.toml`) and run `apply`.
+tag, change `ref` in `packs.local.toml` (or the repo's `brainrc.toml`) and run `apply`. An
+official pack from [brainrc/packs](https://github.com/brainrc/packs) moves the same way: change
+its `ref` to a newer tag of that repo and keep its `subdir`.
 
 A new brainrc release can also pin a newer Gatework in its own `packs.toml`; the next `apply`
 fetches it.

@@ -1,0 +1,240 @@
+{
+  "ref": "gh:121",
+  "shape": "ordered",
+  "batch_size": 6,
+  "playbook_version": 1,
+  "dependency_source": "none",
+  "started_at": "2026-11-26T18:00:00Z",
+  "delivery": "core (subdir packs, exclude-aware collisions, official IDs): one draft PR against main, one commit per child; the packs: brainrc/packs, one folder each, waiting on the maintainer's yes for the first push to its empty main",
+  "gates": {
+    "campaign": {
+      "presented_at": "2026-11-26T18:00:00Z",
+      "approved_at": "2026-11-26T18:00:00Z"
+    }
+  },
+  "skipped": [],
+  "members": [
+    {
+      "ref": "gh:121",
+      "order": 1,
+      "depends_on": [],
+      "slug": "121-pack-subdir",
+      "status": "in_review",
+      "branch": "claude/project-thread-6wase2",
+      "pr": 390,
+      "base": "main",
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 7,
+        "fixed": 5,
+        "no_change": [
+          "doctor says `not fetched yet` for a fetched clone missing its folder: doctor.py is in E31's draft #389, so it waits",
+          "the docs' brainrc/packs example and links work once that repo's first push and tag land"
+        ]
+      }
+    },
+    {
+      "ref": "gh:318",
+      "order": 2,
+      "depends_on": [
+        "gh:121"
+      ],
+      "slug": "318-domain-skills-out-of-core",
+      "status": "in_review",
+      "branch": "claude/project-thread-6wase2",
+      "pr": 390,
+      "base": "main",
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 1,
+        "fixed": 1,
+        "no_change": []
+      }
+    },
+    {
+      "ref": "gh:183",
+      "order": 3,
+      "depends_on": [
+        "gh:121"
+      ],
+      "slug": "183-python-pack",
+      "status": "blocked",
+      "repo": "brainrc/packs",
+      "branch": "main",
+      "pr": null,
+      "base": null,
+      "merged": false,
+      "review": {
+        "by": "",
+        "findings": 0,
+        "fixed": 0,
+        "no_change": []
+      }
+    },
+    {
+      "ref": "gh:184",
+      "order": 4,
+      "depends_on": [
+        "gh:121"
+      ],
+      "slug": "184-node-ts-pack",
+      "status": "blocked",
+      "repo": "brainrc/packs",
+      "branch": "main",
+      "pr": null,
+      "base": null,
+      "merged": false,
+      "review": {
+        "by": "",
+        "findings": 0,
+        "fixed": 0,
+        "no_change": []
+      }
+    },
+    {
+      "ref": "gh:185",
+      "order": 5,
+      "depends_on": [
+        "gh:121"
+      ],
+      "slug": "185-rust-pack",
+      "status": "blocked",
+      "repo": "brainrc/packs",
+      "branch": "main",
+      "pr": null,
+      "base": null,
+      "merged": false,
+      "review": {
+        "by": "",
+        "findings": 0,
+        "fixed": 0,
+        "no_change": []
+      }
+    },
+    {
+      "ref": "gh:313",
+      "order": 6,
+      "depends_on": [
+        "gh:121"
+      ],
+      "slug": "313-starter-pack",
+      "status": "blocked",
+      "repo": "brainrc/packs",
+      "branch": "main",
+      "pr": null,
+      "base": null,
+      "merged": false,
+      "review": {
+        "by": "",
+        "findings": 0,
+        "fixed": 0,
+        "no_change": []
+      }
+    },
+    {
+      "ref": "gh:314",
+      "order": 7,
+      "depends_on": [
+        "gh:121"
+      ],
+      "slug": "314-review-pack",
+      "status": "blocked",
+      "repo": "brainrc/packs",
+      "branch": "main",
+      "pr": null,
+      "base": null,
+      "merged": false,
+      "review": {
+        "by": "",
+        "findings": 0,
+        "fixed": 0,
+        "no_change": []
+      }
+    },
+    {
+      "ref": "gh:315",
+      "order": 8,
+      "depends_on": [
+        "gh:121",
+        "gh:318"
+      ],
+      "slug": "315-go-pack",
+      "status": "blocked",
+      "repo": "brainrc/packs",
+      "branch": "main",
+      "pr": null,
+      "base": null,
+      "merged": false,
+      "review": {
+        "by": "",
+        "findings": 0,
+        "fixed": 0,
+        "no_change": []
+      }
+    },
+    {
+      "ref": "gh:316",
+      "order": 9,
+      "depends_on": [
+        "gh:121",
+        "gh:318"
+      ],
+      "slug": "316-terraform-aws-pack",
+      "status": "blocked",
+      "repo": "brainrc/packs",
+      "branch": "main",
+      "pr": null,
+      "base": null,
+      "merged": false,
+      "review": {
+        "by": "",
+        "findings": 0,
+        "fixed": 0,
+        "no_change": []
+      }
+    },
+    {
+      "ref": "gh:317",
+      "order": 10,
+      "depends_on": [
+        "gh:121",
+        "gh:318"
+      ],
+      "slug": "317-kubernetes-pack",
+      "status": "blocked",
+      "repo": "brainrc/packs",
+      "branch": "main",
+      "pr": null,
+      "base": null,
+      "merged": false,
+      "review": {
+        "by": "",
+        "findings": 0,
+        "fixed": 0,
+        "no_change": []
+      }
+    },
+    {
+      "ref": "gh:323",
+      "order": 11,
+      "depends_on": [
+        "gh:121"
+      ],
+      "slug": "323-security-baseline-pack",
+      "status": "blocked",
+      "repo": "brainrc/packs",
+      "branch": "main",
+      "pr": null,
+      "base": null,
+      "merged": false,
+      "review": {
+        "by": "",
+        "findings": 0,
+        "fixed": 0,
+        "no_change": []
+      }
+    }
+  ]
+}

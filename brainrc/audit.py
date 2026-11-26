@@ -17,7 +17,9 @@ from .config import ConfigError, load_harnesses, tilde
 from .mcp import _owned, _registry, check_servers, mcp_plan
 from .packs import head
 from .plan import Link, plan, render_fragment
-from .sources import Source, core_version, item_name, local_rules, markdown_files, rule_text, sources, tree_files
+from .sources import (
+    Source, clone_root, core_version, item_name, local_rules, markdown_files, rule_text, sources, subdir, tree_files,
+)
 
 KIND = {"skills": "skill", "agents": "agent", "commands": "command"}
 ORDER = ("skill", "agent", "command", "rule", "hook", "mcp")
@@ -47,7 +49,8 @@ def _origins(srcs: list[Source], locked: dict) -> dict[str, dict]:
             continue
         cfg = layered.get(src.key, {})
         entry = {"git": lock.clean_url(str(cfg["git"])), "ref": str(cfg.get("ref", "HEAD")),
-                 "commit": head(src.root)} if "git" in cfg else {"path": lock.shown_path(str(cfg.get("path", src.root)))}
+                 **({"subdir": subdir(cfg)} if subdir(cfg) else {}), "commit": head(clone_root(cfg, src.root))} \
+            if "git" in cfg else {"path": lock.shown_path(str(cfg.get("path", src.root)))}
         perms = (locked.get("packs", {}).get(src.key) or {}).get("permissions")
         out[src.key] = entry | ({"permissions": perms} if perms is not None else {})
     return out

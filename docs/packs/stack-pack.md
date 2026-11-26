@@ -43,6 +43,7 @@ git = "https://github.com/jdoe/elixir-pack.git"
 ref = "v1.0.0"
 ```
 
-A domain skill everyone should get can go into Gatework itself instead: open a pull request on
-[brainrc/gatework](https://github.com/brainrc/gatework) with the skill in `skills/<stack>/` and a
-row in its Domains table.
+A domain skill everyone should get can go into an official pack instead: open a pull request on
+[brainrc/packs](https://github.com/brainrc/packs) that adds the skill to its stack's folder (or a
+new folder for a new stack) with an `[[extensions.gatework.domains]]` row in that folder's
+`pack.toml`.

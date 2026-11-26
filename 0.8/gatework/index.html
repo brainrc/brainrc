@@ -1997,7 +1997,7 @@ verifier ─► doc-writer ─► ⛔ DELIVER ─► push · PR · ticket update
 </code></pre></div>
 <p>At each ⛔ gate the run stops and shows you what it wants approved. Answer with
 <code>/brainrc-gatework-approve</code>, or ask for changes. To try it on a toy repo first, use the
-<a href="https://github.com/brainrc/brainrc/blob/v0.8.31/examples/sandbox/README.md">sandbox</a>.</p>
+<a href="https://github.com/brainrc/brainrc/blob/v0.8.32/examples/sandbox/README.md">sandbox</a>.</p>
 <h2 id="commands">Commands<a class="headerlink" href="#commands" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -2204,6 +2204,12 @@ conventions, a review checklist and what never to run without approval: <code>br
 Kustomize), <code>brainrc-gitops</code> (Argo CD, Flux), <code>brainrc-ci-pipelines</code> (GitHub Actions),
 <code>brainrc-containers</code>, <code>brainrc-db-migrations</code>, <code>brainrc-observability</code> and <code>brainrc-scripting</code>
 (Python, Bash). Your own pack can add more (<a href="../tutorial/">your first pack</a>).</p>
+<p><code>brainrc-go-service</code> and <code>brainrc-db-migrations</code>, <code>brainrc-terraform</code> and <code>brainrc-aws</code>, and
+<code>brainrc-kubernetes</code>, <code>brainrc-gitops</code> and <code>brainrc-containers</code> are moving to the official packs
+<code>brainrc/go</code>, <code>brainrc/terraform-aws</code> and <code>brainrc/kubernetes</code>, folders of
+<a href="https://github.com/brainrc/packs">brainrc/packs</a>. Until Gatework drops its copies, enable one
+beside Gatework by excluding Gatework's copies, as its README lists (<a href="../packs/#naming">naming</a>).
+Python, Node and TypeScript, and Rust have official packs of their own there too.</p>
 <h2 id="environments">Environments<a class="headerlink" href="#environments" title="Permanent link">&para;</a></h2>
 <p>Runs are offline by default: validators, renderers, unit tests, local containers and databases.
 At intake you can allow specific targets for <strong>read-only</strong> evidence, such as a Terraform root to
@@ -2266,8 +2272,9 @@ Gatework stops before review and suggests <code>/brainrc-gatework-resume</code> 
 <p>From your own pack, without touching Gatework, add <code>[extensions.gatework]</code> to <code>pack.toml</code>:
 domain skills for your stacks, context skills to run at intake, a ticket connector for your
 tracker, and checks for the delivery gate (<a href="../packs/#extensions">packs</a>).</p>
-<p>To change Gatework itself (a new role, a domain skill for everyone, a new connector), open a pull
-request on <a href="https://github.com/brainrc/gatework">brainrc/gatework</a>. The
+<p>To change Gatework itself (a new role, a new connector), open a pull request on
+<a href="https://github.com/brainrc/gatework">brainrc/gatework</a>. A domain skill for everyone goes in an
+official pack in <a href="https://github.com/brainrc/packs">brainrc/packs</a> instead. The
 <a href="https://github.com/brainrc/gatework/blob/main/skills/brainrc-gatework/references/connectors.md">connector contract</a>
 says what a ticket connector must do.</p>
 <h2 id="design-principles">Design principles<a class="headerlink" href="#design-principles" title="Permanent link">&para;</a></h2>

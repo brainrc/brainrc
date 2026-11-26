@@ -1818,7 +1818,7 @@ brainrc<span class="w"> </span>apply<span class="w"> </span>--repair
 move the package to a new Python, and Homebrew keeps each version in its own folder).</p>
 <p>From a clone, <code>git pull</code> (or <code>git checkout v&lt;X.Y.Z&gt;</code> for a release), then
 <code>python3 scripts/brainrc.py apply</code>.</p>
-<p>What changed in each release is in the <a href="https://github.com/brainrc/brainrc/blob/v0.8.31/CHANGELOG.md">CHANGELOG</a>. Changes that affect packs are
+<p>What changed in each release is in the <a href="https://github.com/brainrc/brainrc/blob/v0.8.32/CHANGELOG.md">CHANGELOG</a>. Changes that affect packs are
 tagged <strong>[pack contract]</strong>.</p>
 <h2 id="move-packs-to-newer-versions">Move packs to newer versions<a class="headerlink" href="#move-packs-to-newer-versions" title="Permanent link">&para;</a></h2>
 <p><code>apply</code> keeps each git pack at the commit recorded in <code>brainrc.lock</code>, even when its tag or branch
@@ -1827,7 +1827,9 @@ moves. To take what the pack's <code>ref</code> points at now:</p>
 brainrc<span class="w"> </span>update<span class="w"> </span>gatework<span class="w">     </span><span class="c1"># or just one</span>
 </code></pre></div>
 <p><code>update</code> prints the commits and files that change, then applies and relocks. To move to another
-tag, change <code>ref</code> in <code>packs.local.toml</code> (or the repo's <code>brainrc.toml</code>) and run <code>apply</code>.</p>
+tag, change <code>ref</code> in <code>packs.local.toml</code> (or the repo's <code>brainrc.toml</code>) and run <code>apply</code>. An
+official pack from <a href="https://github.com/brainrc/packs">brainrc/packs</a> moves the same way: change
+its <code>ref</code> to a newer tag of that repo and keep its <code>subdir</code>.</p>
 <p>A new brainrc release can also pin a newer Gatework in its own <code>packs.toml</code>; the next <code>apply</code>
 fetches it.</p>
 <h2 id="from-ai-config">From ai-config<a class="headerlink" href="#from-ai-config" title="Permanent link">&para;</a></h2>

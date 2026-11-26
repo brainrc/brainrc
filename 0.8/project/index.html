@@ -2069,6 +2069,11 @@ doesn't fail (<code>apply</code> puts it back).</p>
 <td>With <code>git</code>: tag, branch or commit. Default: the remote's default branch.</td>
 </tr>
 <tr>
+<td><code>packs.&lt;key&gt;.subdir</code></td>
+<td>string</td>
+<td>With <code>git</code>: the folder of the repo that is the pack, using <code>/</code>. No <code>..</code>, <code>.</code> or leading <code>/</code>. Default: the repo root.</td>
+</tr>
+<tr>
 <td><code>packs.&lt;key&gt;.path</code></td>
 <td>string</td>
 <td>A directory inside the repo, relative to the repo root, using <code>/</code>. No <code>..</code>, <code>~</code>, <code>$</code> or leading <code>/</code>.</td>
@@ -2083,7 +2088,7 @@ doesn't fail (<code>apply</code> puts it back).</p>
 <ul>
 <li><strong>Default packs</strong> are the tables in core's <code>packs.toml</code> (Gatework). They are on in every
   project unless <code>brainrc.toml</code> sets <code>enabled = false</code>. A <code>ref</code> alone keeps the default pack's URL;
-  <code>git</code> or <code>path</code> replaces its origin.</li>
+  <code>git</code> or <code>path</code> replaces its origin, <code>subdir</code> included.</li>
 <li>Any other pack needs exactly one of <code>git</code> and <code>path</code>.</li>
 <li>Unknown keys are errors, so a typo never silently changes what is installed.</li>
 </ul>
@@ -2128,7 +2133,7 @@ byte-identical.</p>
 <tr>
 <td><code>version</code></td>
 <td>integer</td>
-<td>Format version, <code>2</code>. Version 2 adds <code>packs.&lt;key&gt;.permissions</code>; brainrc reads <code>1</code> and <code>2</code> and writes <code>2</code>. A reader refuses a newer version and names the brainrc that wrote it, so brainrc 0.7.7 and older say to upgrade instead of failing on <code>permissions</code>.</td>
+<td>Format version, <code>2</code>, or <code>3</code> when a pack has a <code>subdir</code>. Version 2 adds <code>packs.&lt;key&gt;.permissions</code> and version 3 <code>packs.&lt;key&gt;.subdir</code>; brainrc reads <code>1</code> to <code>3</code>. A lock with no <code>subdir</code> stays at <code>2</code>, so older brainrc still reads it. A reader refuses a newer version and names the brainrc that wrote it, so brainrc 0.7.7 and older say to upgrade instead of failing on <code>permissions</code>.</td>
 </tr>
 <tr>
 <td><code>brainrc</code></td>
@@ -2154,6 +2159,11 @@ byte-identical.</p>
 <td><code>packs.&lt;key&gt;.ref</code></td>
 <td>string</td>
 <td>The ref asked for (<code>HEAD</code> when the config names none).</td>
+</tr>
+<tr>
+<td><code>packs.&lt;key&gt;.subdir</code></td>
+<td>string</td>
+<td>The folder of the repo that is the pack, when the config names one. Its files are listed by their path in that folder.</td>
 </tr>
 <tr>
 <td><code>packs.&lt;key&gt;.commit</code></td>
@@ -2198,7 +2208,7 @@ and <code>exclude</code> are applied, and, in user scope with hooks installed, e
 directories are skipped.</p>
 <p><strong>Determinism.</strong> The lock is UTF-8 with <code>\n</code> line endings and ends with one newline. The first
 line is the comment above. Then come <code>version</code>, <code>brainrc</code> and <code>scope</code>, in that order. Then one
-<code>[packs.&lt;key&gt;]</code> table per pack sorted by key, its keys in the order <code>git</code>, <code>ref</code>, <code>commit</code>, or
+<code>[packs.&lt;key&gt;]</code> table per pack sorted by key, its keys in the order <code>git</code>, <code>ref</code>, <code>subdir</code>, <code>commit</code>, or
 <code>path</code>, each followed by its <code>[packs.&lt;key&gt;.files]</code> table and its
 <code>[packs.&lt;key&gt;.permissions]</code> table (arrays written one string per line, sorted). Then <code>[outputs]</code> and <code>[blocks]</code>. Every
 table's entries are sorted by key (by Unicode code point). Keys that aren't bare keys

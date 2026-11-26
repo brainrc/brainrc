@@ -811,6 +811,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#packs-from-one-repo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Packs from one repo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#packtoml" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1909,6 +1920,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#packs-from-one-repo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Packs from one repo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#packtoml" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2161,8 +2183,8 @@ and installs the lot into every tool. This page is the reference: every file, ke
   <a href="employer-pack/">an employer</a>, <a href="team-pack/">a team</a>, <a href="personal-pack/">yourself</a>
   or <a href="stack-pack/">a stack</a>, or <a href="from-a-plugin/">from a Claude Code plugin</a>.</li>
 <li><strong>Understand</strong>: <a href="why-packs/">why packs, and what you trust when you enable one</a>.</li>
-<li><strong>Copy</strong>: <a href="https://github.com/brainrc/brainrc/blob/v0.8.31/examples/pack-acme/README.md">examples/pack-acme</a> (every feature but hooks) and
-  <a href="https://github.com/brainrc/brainrc/blob/v0.8.31/examples/pack-homelab/README.md">examples/pack-homelab</a> (a guard hook).</li>
+<li><strong>Copy</strong>: <a href="https://github.com/brainrc/brainrc/blob/v0.8.32/examples/pack-acme/README.md">examples/pack-acme</a> (every feature but hooks) and
+  <a href="https://github.com/brainrc/brainrc/blob/v0.8.32/examples/pack-homelab/README.md">examples/pack-homelab</a> (a guard hook).</li>
 </ul>
 <h2 id="layout">Layout<a class="headerlink" href="#layout" title="Permanent link">&para;</a></h2>
 <p>Every folder is optional.</p>
@@ -2181,8 +2203,23 @@ and installs the lot into every tool. This page is the reference: every file, ke
   tripwires.toml         patterns that must not appear in the pack (checked by validate)
 </code></pre></div>
 <p>Skills, agents, commands, and MCP servers must start with the pack's <code>prefix</code>, and no name may
-exist in two sources. <code>apply</code> refuses to write anything if one does. The full rules are in
-<a href="#naming">Naming</a>, and each file's format in <a href="../formats/">formats</a>.</p>
+exist in two sources unless <code>exclude</code> leaves one copy out; <code>apply</code> refuses to write anything
+while one does. The full rules are in <a href="#naming">Naming</a>, and each file's format in
+<a href="../formats/">formats</a>.</p>
+<h2 id="packs-from-one-repo">Packs from one repo<a class="headerlink" href="#packs-from-one-repo" title="Permanent link">&para;</a></h2>
+<p>A repo can hold several packs, one per folder, each with its own <code>pack.toml</code>. <code>subdir</code> next to
+<code>git</code> and <code>ref</code> names the folder that is the pack:</p>
+<div class="highlight"><pre><span></span><code><span class="k">[python]</span>
+<span class="n">git</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"https://github.com/brainrc/packs.git"</span>
+<span class="n">ref</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"v1.0.0"</span>
+<span class="n">subdir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"python"</span><span class="w">   </span><span class="c1"># a folder inside the repo, using /; no `.` or `..`</span>
+</code></pre></div>
+<p><code>apply</code> fetches the repo into <code>$BRAINRC_HOME/packs/&lt;key&gt;</code> and installs from that folder; the rest
+of the repo is never read. It fails, naming the folder, if the ref has no such folder or it's a
+link rather than a folder; the clone stays at the commit it had. The lock records <code>subdir</code> next to <code>git</code>, <code>ref</code> and <code>commit</code>, so
+<code>install --frozen</code> and <code>check</code> install and compare that folder at the locked commit
+(<a href="../project/#brainrclock">lock format</a>). Each pack keeps a clone of its own, so two packs from one
+repo can sit at different refs. <code>subdir</code> works the same in a repo's <code>brainrc.toml</code>.</p>
 <h2 id="packtoml">pack.toml<a class="headerlink" href="#packtoml" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"acme"</span>
 <span class="n">prefix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"acme-"</span><span class="w">          </span><span class="c1"># default: "&lt;name&gt;-"</span>
@@ -2304,7 +2341,7 @@ wrong ones from a first line naming the schema, which <code>brainrc import</code
 <div class="highlight"><pre><span></span><code><span class="c1">#:schema https://raw.githubusercontent.com/brainrc/brainrc/main/docs/schemas/pack.toml.schema.json</span>
 <span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"acme"</span>
 </code></pre></div>
-<p>In a checkout of this repo, <a href="https://github.com/brainrc/brainrc/blob/v0.8.31/.taplo.toml"><code>.taplo.toml</code></a> maps each file to its schema. Files
+<p>In a checkout of this repo, <a href="https://github.com/brainrc/brainrc/blob/v0.8.32/.taplo.toml"><code>.taplo.toml</code></a> maps each file to its schema. Files
 outside it (a pack's own repo, <code>~/.config/brainrc/harnesses.local.toml</code>) take the <code>#:schema</code> line.</p>
 <h2 id="mcpserverstoml">mcp/servers.toml<a class="headerlink" href="#mcpserverstoml" title="Permanent link">&para;</a></h2>
 <p>Each <code>[servers.&lt;name&gt;]</code> table is one MCP server, named with the pack's prefix
@@ -2402,7 +2439,7 @@ brainrc<span class="w"> </span>validate<span class="w"> </span>--pack<span class
 system (<code>github</code>, <code>jira</code> or <code>local</code>), which becomes an <code>[extensions.gatework.ticket]</code> table. It
 checks the <a href="#naming">naming rules</a> before it writes anything, never writes into a folder with files
 in it but <code>.git</code> (<code>--force</code> replaces an earlier pack and keeps its <code>.git</code>), and <code>--enable</code> adds the pack to <code>packs.local.toml</code>.</p>
-<p><a href="https://github.com/brainrc/brainrc/blob/v0.8.31/examples/pack-template/README.md">examples/pack-template</a> holds the same files for a pack
+<p><a href="https://github.com/brainrc/brainrc/blob/v0.8.32/examples/pack-template/README.md">examples/pack-template</a> holds the same files for a pack
 called <code>mypack</code>, with steps for renaming it: the contents of a GitHub template repository, for
 anyone who would rather start from <strong>Use this template</strong> than install brainrc first.
 <code>scripts/pack_template.py</code> keeps it in step with <code>new pack</code>, and CI validates it.</p>
@@ -2462,7 +2499,9 @@ there. Replace them before you publish the pack.</p>
 <p><code>validate</code> and <code>apply</code> refuse a pack that breaks one. The vendor names and the official IDs it
 checks are listed in <code>brainrc/naming.py</code>.</p>
 <p>A pack's ID is <code>&lt;owner&gt;/&lt;pack&gt;</code>, where the owner is the GitHub user or organization that
-publishes it. Official packs are owned by <code>brainrc</code>:</p>
+publishes it. Official packs are owned by <code>brainrc</code>. Gatework has a repo of its own; the others
+are folders of <a href="https://github.com/brainrc/packs">brainrc/packs</a>, enabled with <code>subdir</code>
+(<a href="#packs-from-one-repo">packs from one repo</a>):</p>
 <table>
 <thead>
 <tr>
@@ -2479,36 +2518,58 @@ publishes it. Official packs are owned by <code>brainrc</code>:</p>
 </tr>
 <tr>
 <td><code>brainrc/starter</code></td>
-<td>the small, measured base for the default profile</td>
+<td>the small, measured base for the default profile (<a href="https://github.com/brainrc/packs/tree/main/starter">starter</a>)</td>
 <td><a href="https://github.com/brainrc/brainrc/issues/313">#313</a></td>
 </tr>
 <tr>
 <td><code>brainrc/review</code></td>
-<td>review, PR description, commit message and unslop</td>
+<td>review, PR description, commit message and unslop (<a href="https://github.com/brainrc/packs/tree/main/review">review</a>)</td>
 <td><a href="https://github.com/brainrc/brainrc/issues/314">#314</a></td>
 </tr>
 <tr>
 <td><code>brainrc/go</code></td>
-<td>Go, built from today's <code>brainrc-go-service</code> skill</td>
+<td>Go, built from today's <code>brainrc-go-service</code> skill (<a href="https://github.com/brainrc/packs/tree/main/go">go</a>)</td>
 <td><a href="https://github.com/brainrc/brainrc/issues/315">#315</a></td>
 </tr>
 <tr>
 <td><code>brainrc/terraform-aws</code></td>
-<td>Terraform and AWS</td>
+<td>Terraform and AWS (<a href="https://github.com/brainrc/packs/tree/main/terraform-aws">terraform-aws</a>)</td>
 <td><a href="https://github.com/brainrc/brainrc/issues/316">#316</a></td>
 </tr>
 <tr>
 <td><code>brainrc/kubernetes</code></td>
-<td>Kubernetes, including GitOps</td>
+<td>Kubernetes, including GitOps and containers (<a href="https://github.com/brainrc/packs/tree/main/kubernetes">kubernetes</a>)</td>
 <td><a href="https://github.com/brainrc/brainrc/issues/317">#317</a></td>
 </tr>
 <tr>
+<td><code>brainrc/python</code></td>
+<td>Python: Ruff and pytest (<a href="https://github.com/brainrc/packs/tree/main/python">python</a>)</td>
+<td><a href="https://github.com/brainrc/brainrc/issues/183">#183</a></td>
+</tr>
+<tr>
+<td><code>brainrc/node-ts</code></td>
+<td>Node and TypeScript: tsc and ESLint (<a href="https://github.com/brainrc/packs/tree/main/node-ts">node-ts</a>)</td>
+<td><a href="https://github.com/brainrc/brainrc/issues/184">#184</a></td>
+</tr>
+<tr>
+<td><code>brainrc/rust</code></td>
+<td>Rust: rustfmt, Clippy and cargo test (<a href="https://github.com/brainrc/packs/tree/main/rust">rust</a>)</td>
+<td><a href="https://github.com/brainrc/brainrc/issues/185">#185</a></td>
+</tr>
+<tr>
 <td><code>brainrc/security-baseline</code></td>
-<td>the default guard policy, secret protection and a sandbox profile</td>
+<td>the default guard policy, secret protection and a sandbox profile (<a href="https://github.com/brainrc/packs/tree/main/security-baseline">security-baseline</a>)</td>
 <td><a href="https://github.com/brainrc/brainrc/issues/323">#323</a></td>
 </tr>
 </tbody>
 </table>
+<p><code>brainrc/go</code>, <code>brainrc/terraform-aws</code> and <code>brainrc/kubernetes</code> take over domain skills Gatework
+0.8 still ships, under the same names (#318). Until Gatework drops its copies, enable one beside
+Gatework by excluding Gatework's copy in <code>brainrc.local.toml</code>, for example
+<code>exclude = ["gatework:skills/brainrc-kubernetes"]</code>: an excluded item isn't installed, so it
+doesn't collide. Each pack's README lists the lines it needs. <code>brainrc/starter</code> and
+<code>brainrc/review</code> reuse Gatework's names too (<code>brainrc-project-commands</code>, and the review, PR
+description, commit message and unslop skills): they are for a setup with Gatework off.</p>
 <h2 id="rules">Rules<a class="headerlink" href="#rules" title="Permanent link">&para;</a></h2>
 <p>The rendered instructions file has three parts, in this order:</p>
 <ol>
@@ -2709,7 +2770,7 @@ test needs no scaffolding of its own. A string is a Bash command; a dict is the 
 <p><code>assert_allows</code> passes when the hook allows or has no opinion, and <code>assert_no_opinion</code> only when it
 stays out, so Claude Code's own permission check still decides; <code>assert_denies</code> counts exit code 2
 as a deny. Each lists every case that came out wrong, and a missing, failing or hung hook fails.
-<code>run_hook(hook, payload)</code> returns the decision itself. <a href="https://github.com/brainrc/brainrc/blob/v0.8.31/examples/pack-homelab/tests/test_guard.py">pack-homelab</a>
+<code>run_hook(hook, payload)</code> returns the decision itself. <a href="https://github.com/brainrc/brainrc/blob/v0.8.32/examples/pack-homelab/tests/test_guard.py">pack-homelab</a>
 has a full example.</p>
 <h2 id="tripwirestoml">tripwires.toml<a class="headerlink" href="#tripwirestoml" title="Permanent link">&para;</a></h2>
 <p>Stale facts that must not come back, checked by <code>validate</code>:</p>
@@ -2721,7 +2782,7 @@ has a full example.</p>
 <span class="n">paths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"*.md"</span><span class="p">]</span><span class="w">                              </span><span class="c1"># default; fnmatch against the path in the pack</span>
 </code></pre></div>
 <h2 id="compatibility">Compatibility<a class="headerlink" href="#compatibility" title="Permanent link">&para;</a></h2>
-<p>brainrc's version is in <code>VERSION</code>. <a href="https://github.com/brainrc/brainrc/blob/v0.8.31/CHANGELOG.md">CHANGELOG.md</a> tags changes that affect packs
+<p>brainrc's version is in <code>VERSION</code>. <a href="https://github.com/brainrc/brainrc/blob/v0.8.32/CHANGELOG.md">CHANGELOG.md</a> tags changes that affect packs
 with <strong>[pack contract]</strong>. Declare the versions your pack supports with <code>requires_core</code>:
 comma-separated clauses of <code>&gt;=</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&lt;</code>, <code>==</code>, <code>!=</code> and a version (missing parts
 are zero, and a bare version means <code>&gt;=</code>).</p>

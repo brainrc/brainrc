@@ -1757,6 +1757,13 @@ tag or branch moves. To move it:</p>
   then applies (<a href="../../project/#pinned-commits-and-update">pinned commits</a>).</li>
 <li>Changing <code>ref</code> or <code>git</code> fetches the new one on the next <code>apply</code> (<code>status</code> shows a <code>FETCH</code> line).</li>
 </ul>
+<p>A repo can hold several packs, one per folder, as <a href="https://github.com/brainrc/packs">brainrc/packs</a>
+does. Name the folder with <code>subdir</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">[python]</span>
+<span class="n">git</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"https://github.com/brainrc/packs.git"</span>
+<span class="n">ref</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"v1.0.0"</span>
+<span class="n">subdir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"python"</span>
+</code></pre></div>
 <p>Both refuse a clone with local changes, and stop any git call after 60 seconds. Pin a tag, and
 bump <code>ref</code> to upgrade. <code>doctor</code> reports a git pack that isn't fetched yet or doesn't match its
 <code>git</code> and <code>ref</code>.</p>

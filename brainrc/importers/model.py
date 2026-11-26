@@ -1,11 +1,12 @@
-"""What an importer returns: the rules, skills and Domains rows one source becomes."""
+"""What an importer returns: the rules, skills, agents, commands, MCP servers, hooks and Domains rows
+one source becomes."""
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
 
 from ..config import tilde
-from ..scaffold import Rule, Skill
+from ..scaffold import Agent, Command, Copied, Rule, Skill
 
 
 @dataclass
@@ -15,6 +16,16 @@ class Imported:
     domains: list[dict] = field(default_factory=list)  # {"files": "`glob`", "skills": [slug, ...]}
     warnings: list[str] = field(default_factory=list)
     read: set[Path] = field(default_factory=set)  # every file read, inlined ones too (resolved)
+    agents: list[Agent] = field(default_factory=list)
+    commands: list[Command] = field(default_factory=list)
+    servers: dict[str, dict] = field(default_factory=dict)  # mcp/servers.toml tables, by name after the prefix
+    hooks: dict[str, list] = field(default_factory=dict)  # Claude Code hook event -> its matcher groups
+    pack_files: dict[str, Copied] = field(default_factory=dict)  # other pack files (hook scripts), by path
+    server_names: dict[str, str] = field(default_factory=dict)  # a server's name in the source -> its slug
+    # The source's own names for its skills and agents, which plan rewrites to the pack's names in
+    # their text: `[agent: old]`, "`old` skill", and `namespace:old` (a plugin's `/plugin:skill`).
+    renames: dict[str, dict[str, str]] = field(default_factory=dict)  # "skills"|"agents" -> {old: slug}
+    namespace: str = ""
 
     def unique(self, slug: str) -> str:
         """slug, or slug-2, -3... when this source already has a rule or skill of that name."""

@@ -28,15 +28,35 @@ acme-ai-pack/
   commands/acme-*.md     linked into each tool's commands folder
   rules/NN-*.md          rendered after all core rules, as one labelled block (see Rules)
   overrides/claude/hooks/                 linked to <hooks_dir>-acme (e.g. ~/.claude/hooks/brainrc-acme)
-  overrides/claude/settings.fragment.json merged after the core fragment; {{hooks_dir}} = the pack's hooks dir
+  overrides/claude/settings.fragment.json merged after the core fragment; {{hooks_dir}} = the pack's hooks dir (see Permissions)
   overrides/opencode/plugin.js            linked beside core's guard plugin, as brainrc-guard-acme.js
   mcp/servers.toml       MCP servers, synced after core's (see formats.md#mcp-servers-mcpserverstoml)
   tripwires.toml         patterns that must not appear in the pack (checked by validate)
 ```
 
 Skills, agents, commands, and MCP servers must start with the pack's `prefix`, and no name may
-exist in two sources. `apply` refuses to write anything if one does. The full rules are in
-[Naming](#naming), and each file's format in [formats](formats.md).
+exist in two sources unless `exclude` leaves one copy out; `apply` refuses to write anything
+while one does. The full rules are in [Naming](#naming), and each file's format in
+[formats](formats.md).
+
+## Packs from one repo
+
+A repo can hold several packs, one per folder, each with its own `pack.toml`. `subdir` next to
+`git` and `ref` names the folder that is the pack:
+
+```toml
+[python]
+git = "https://github.com/brainrc/packs.git"
+ref = "v1.0.0"
+subdir = "python"   # a folder inside the repo, using /; no `.` or `..`
+```
+
+`apply` fetches the repo into `$BRAINRC_HOME/packs/<key>` and installs from that folder; the rest
+of the repo is never read. It fails, naming the folder, if the ref has no such folder or it's a
+link rather than a folder; the clone stays at the commit it had. The lock records `subdir` next to `git`, `ref` and `commit`, so
+`install --frozen` and `check` install and compare that folder at the locked commit
+([lock format](project.md#brainrclock)). Each pack keeps a clone of its own, so two packs from one
+repo can sit at different refs. `subdir` works the same in a repo's `brainrc.toml`.
 
 ## pack.toml
 
@@ -47,6 +67,13 @@ id = "acme/acme-ai-pack"  # optional: the <owner>/<pack> ID it's published under
 requires_core = ">=0.7, <0.9"   # core versions this pack works with (see Compatibility)
 max_always_tokens = 800   # optional budget for rules + descriptions (see Context cost)
 test = "tests"            # optional: tests validate --pack runs (see Pack tests)
+
+[scope]                   # optional: where the pack applies (see Scope)
+remotes = ["github.com/acme/*"]
+
+[[guard.deny]]            # optional: commands core's guard refuses here (see Guard rules)
+match = "acme-deploy prod"
+reason = "deploys to production"
 
 [extensions.gatework]      # what Gatework reads; see Extensions
 deliver_checks = [        # listed in the Deliver gate as done / not applicable / not run
@@ -92,6 +119,8 @@ Generated from [`pack.toml.schema.json`](schemas/pack.toml.schema.json) by
 | `max_always_tokens` | number | Budget for the tokens the pack loads into every session: rules plus descriptions ([context cost](#context-cost)). |
 | `validator` | string | A Python module in the pack that checks what only it understands ([validator plugins](#validator-plugins)). |
 | `test` | string | The pack's own unittest tests, a directory or a .py file in the pack; validate --pack runs them ([pack tests](#pack-tests)). |
+| `scope` | table | Where the pack applies: any glob matching means it does; none means everywhere ([scope](#scope)). |
+| `guard` | table | [[guard.deny]] and [[guard.ask]] rules core's guard hook enforces, with match or tool, reason and scope; deny rules may name a path or host for the OS sandbox instead ([guard rules](#guard-rules)). |
 | `extensions` | table | Tables other packs read, one per namespace, e.g. [extensions.gatework]; the pack that owns a namespace checks it ([extensions](#extensions)). |
 <!-- end generated -->
 
@@ -158,6 +187,24 @@ called `mypack`, with steps for renaming it: the contents of a GitHub template r
 anyone who would rather start from **Use this template** than install brainrc first.
 `scripts/pack_template.py` keeps it in step with `new pack`, and CI validates it.
 
+## What `new <item>` writes
+
+Inside a pack, `brainrc new <kind> <name>` writes one item that validates, with
+the prefix applied and its frontmatter filled in, then checks the pack as `validate --pack` does
+([options](commands.md#brainrc-new-skill)). It finds the pack from the folder you are in, or takes
+`--pack DIR`, and never replaces an item without `--force`.
+
+| Command | Writes |
+|---|---|
+| `new skill <name>` | `skills/<prefix><name>/SKILL.md` with `name` and `description` |
+| `new skill <name> --domain GLOB,...` | a domain skill: Validate (offline), Conventions, Review checklist and Never without approval, and a [Domains row](#extensions) for those files in `pack.toml` |
+| `new agent <name>` | `agents/<prefix><name>.md` with read-only `tools` (`Read, Grep, Glob`), `model = inherit`, and the handoff block it ends with |
+| `new rule <name>` | `rules/NN-<name>.md` after the last rule, with `trigger: always_on` and `alwaysApply: true`; it prints the pack's always-loaded tokens against `max_always_tokens` |
+| `new command <name>` | `commands/<prefix><name>.md` with `description` and `$ARGUMENTS`; `--as-skill` writes the user-invoked skill form Codex runs ([formats](formats.md#commands-commandsnamemd)) |
+
+The bodies come from `brainrc/_templates/items`: headings with one line each that says what goes
+there. Replace them before you publish the pack.
+
 ## Naming
 
 A clear name is the cheapest trust signal a pack has. Every pack follows these seven rules:
@@ -179,17 +226,30 @@ A clear name is the cheapest trust signal a pack has. Every pack follows these s
 checks are listed in `brainrc/naming.py`.
 
 A pack's ID is `<owner>/<pack>`, where the owner is the GitHub user or organization that
-publishes it. Official packs are owned by `brainrc`:
+publishes it. Official packs are owned by `brainrc`. Gatework has a repo of its own; the others
+are folders of [brainrc/packs](https://github.com/brainrc/packs), enabled with `subdir`
+([packs from one repo](#packs-from-one-repo)):
 
 | ID | What it holds | Issue |
 |---|---|---|
 | `brainrc/gatework` | the default pack: Gatework's engine, its roles, ticket connectors and domain skills ([brainrc/gatework](https://github.com/brainrc/gatework)) | [#172](https://github.com/brainrc/brainrc/issues/172) |
-| `brainrc/starter` | the small, measured base for the default profile | [#313](https://github.com/brainrc/brainrc/issues/313) |
-| `brainrc/review` | review, PR description, commit message and unslop | [#314](https://github.com/brainrc/brainrc/issues/314) |
-| `brainrc/go` | Go, built from today's `brainrc-go-service` skill | [#315](https://github.com/brainrc/brainrc/issues/315) |
-| `brainrc/terraform-aws` | Terraform and AWS | [#316](https://github.com/brainrc/brainrc/issues/316) |
-| `brainrc/kubernetes` | Kubernetes, including GitOps | [#317](https://github.com/brainrc/brainrc/issues/317) |
-| `brainrc/security-baseline` | the default guard policy, secret protection and a sandbox profile | [#323](https://github.com/brainrc/brainrc/issues/323) |
+| `brainrc/starter` | the small, measured base for the default profile ([starter](https://github.com/brainrc/packs/tree/main/starter)) | [#313](https://github.com/brainrc/brainrc/issues/313) |
+| `brainrc/review` | review, PR description, commit message and unslop ([review](https://github.com/brainrc/packs/tree/main/review)) | [#314](https://github.com/brainrc/brainrc/issues/314) |
+| `brainrc/go` | Go, built from today's `brainrc-go-service` skill ([go](https://github.com/brainrc/packs/tree/main/go)) | [#315](https://github.com/brainrc/brainrc/issues/315) |
+| `brainrc/terraform-aws` | Terraform and AWS ([terraform-aws](https://github.com/brainrc/packs/tree/main/terraform-aws)) | [#316](https://github.com/brainrc/brainrc/issues/316) |
+| `brainrc/kubernetes` | Kubernetes, including GitOps and containers ([kubernetes](https://github.com/brainrc/packs/tree/main/kubernetes)) | [#317](https://github.com/brainrc/brainrc/issues/317) |
+| `brainrc/python` | Python: Ruff and pytest ([python](https://github.com/brainrc/packs/tree/main/python)) | [#183](https://github.com/brainrc/brainrc/issues/183) |
+| `brainrc/node-ts` | Node and TypeScript: tsc and ESLint ([node-ts](https://github.com/brainrc/packs/tree/main/node-ts)) | [#184](https://github.com/brainrc/brainrc/issues/184) |
+| `brainrc/rust` | Rust: rustfmt, Clippy and cargo test ([rust](https://github.com/brainrc/packs/tree/main/rust)) | [#185](https://github.com/brainrc/brainrc/issues/185) |
+| `brainrc/security-baseline` | the default guard policy, secret protection and a sandbox profile ([security-baseline](https://github.com/brainrc/packs/tree/main/security-baseline)) | [#323](https://github.com/brainrc/brainrc/issues/323) |
+
+`brainrc/go`, `brainrc/terraform-aws` and `brainrc/kubernetes` take over domain skills Gatework
+0.8 still ships, under the same names (#318). Until Gatework drops its copies, enable one beside
+Gatework by excluding Gatework's copy in `brainrc.local.toml`, for example
+`exclude = ["gatework:skills/brainrc-kubernetes"]`: an excluded item isn't installed, so it
+doesn't collide. Each pack's README lists the lines it needs. `brainrc/starter` and
+`brainrc/review` reuse Gatework's names too (`brainrc-project-commands`, and the review, PR
+description, commit message and unslop skills): they are for a setup with Gatework off.
 
 ## Rules
 
@@ -205,6 +265,112 @@ Pack rule numbers only order rules within the pack. Later rules refine earlier o
 not contradict them: a pack rule that contradicts core is a bug in the pack. Write it as a
 narrower case ("in Acme repos, also ...") instead.
 
+## Scope
+
+`[scope]` says where a pack applies, so a work pack's deliver checks, guard rules and reviewers
+stay out of your personal repos, in place of free text such as "in acme repos":
+
+```toml
+[scope]
+remotes = ["github.com/acme/*", "git.acme.example.net/*"]   # a git remote of the repo you're in
+paths = ["~/src/acme"]          # the directory you're in, or one above it; ~ and $VARS expand
+kube_contexts = ["acme-*"]      # kubectl's current context ($KUBECONFIG or ~/.kube/config)
+aws_profiles = ["acme-*"]       # $AWS_PROFILE, "default" when it isn't set
+tickets = ["ACME-*"]            # a ticket ref in the branch name (acme-42-fix), or one passed in
+```
+
+Every value is a list of globs, and the pack applies when any one of them matches. A remote is
+matched as written and as `host/owner/repo`, so one glob covers its SSH and HTTPS URLs. A pack
+without `[scope]`, or with an empty one, applies everywhere, as before. The rules, skills and
+agents a pack installs are still installed everywhere: scope decides where its extensions and
+guard rules take effect.
+
+`brainrc scope` lists each enabled pack as `APPLIES` or `SKIPPED` in the directory you're in and
+says why, and `brainrc scope --extensions` prints the [extensions](#extensions) a run there
+should read: only the packs that apply. The `extensions.md` that `apply` renders holds every
+pack and ends with a Scope section saying where each scoped pack applies.
+
+## Guard rules
+
+A pack adds rules to core's guard in `pack.toml`, without a hook of its own:
+
+```toml
+[[guard.deny]]                 # refused
+match = "acme-deploy prod"
+reason = "deploys to production, which only the release pipeline does"
+
+[[guard.ask]]                  # asked about first
+tool = "mcp__acme-jira__*transition*"
+reason = "moves an Acme ticket to another status"
+scope = { kube_contexts = ["acme-*"] }   # optional: in place of the pack's [scope]
+```
+
+Each rule sets `reason` and one of `match` or `tool`. `match` is a command: its program (by name,
+from any directory, after `VAR=value`, `sudo` or `env`) and then the other words in that order,
+with other words and flags allowed between them; each word may be a glob. `tool` is a glob for an
+MCP tool's full name. A rule takes effect only where the pack's [`[scope]`](#scope) matches the
+directory the command runs in, or the rule's own `scope` when it sets one.
+
+`apply` renders every enabled pack's rules, with their scopes, into
+`$BRAINRC_HOME/guard-rules.json`, and core's `guard_outward.py` checks them on every Bash and MCP
+call. Commands inside `sh -c`, `eval`, `$(…)` and backticks are unwrapped as for core's own rules.
+A pack's deny wins over any ask; a pack's ask is shown when core has nothing to ask. Without the
+file (no rules, or before the first `apply`), the guard behaves as before. `validate` checks each
+rule. Claude Code, Cursor, OpenCode, Codex and Antigravity all enforce them through core's guard,
+judging the scope where each runs the command; where a tool can't ask, a pack's ask blocks the call
+and tells the model to ask you to run it ([guardrails](guardrails.md#gaps-by-tool)).
+
+A `[[guard.deny]]` rule can set `path` or `host` instead, to reach what the hooks can't see (a
+script that reads a file, a client that calls a host). `apply` compiles these into Claude Code's
+sandbox settings in `~/.claude/settings.json`, which the OS enforces on every Bash command and its
+child processes:
+
+```toml
+[[guard.deny]]
+path = "~/.acme/credentials"   # sandbox.filesystem.denyRead and denyWrite
+reason = "Acme's deploy keys"
+scope = {}                     # the sandbox applies everywhere, so say so in a scoped pack
+
+[[guard.deny]]
+host = "*.acme.example"        # sandbox.network.deniedDomains
+reason = "Acme's internal services"
+scope = {}
+```
+
+`path` starts with `~/` or `/`; `host` is a domain, optionally `*.` first. These rules can't ask
+and can't follow a `[scope]`, so `validate` refuses one under `[[guard.ask]]` or one that a scoped
+pack leaves scoped. The entries brainrc adds are recorded in `settings-owned.json`, as permission
+entries are: your own stay, and the pack's go when it's disabled or brainrc is uninstalled. They
+take effect only where Claude Code's sandbox is on (`sandbox.enabled`), and the sandbox covers
+Bash, not the Read tool or web fetches ([guardrails](guardrails.md#known-gaps)). Other tools have
+no sandbox brainrc can write, so there these rules do nothing.
+
+Test a rule with [`brainrc.testing`](#pack-tests) against core's hook, with `BRAINRC_HOME` set to
+a directory holding the rendered file, and a near miss beside the risky command.
+
+## Permissions
+
+A pack's `overrides/claude/settings.fragment.json` can list permission entries, so it ships a
+read-only allow list or hard denies without a hook:
+
+```json
+{
+  "permissions": {
+    "allow": ["Bash(acme-status:*)", "mcp__acme-jira__get_issue"],
+    "deny": ["Bash(acme-deploy prod:*)"]
+  }
+}
+```
+
+`apply` adds each `allow`, `deny` and `ask` entry to the settings file after yours, and records the
+ones it added in `$BRAINRC_HOME/settings-owned.json`. Disable the pack and the next `apply` removes
+exactly those: an entry you had before the pack, or one another enabled pack still lists, stays.
+`uninstall` takes them out too. Other keys under `permissions` (`defaultMode`, say) are set only
+when the file has none, and stay. `brainrc.lock` records every entry as one of the pack's tool
+grants, so `apply` lists a new one as `PERMS` and asks first ([why packs](packs/why-packs.md)).
+The `minimal` profile installs no settings fragment, so a pack's permissions and hooks need
+`recommended` or `full`.
+
 ## Extensions
 
 `[extensions.<namespace>]` is a table another pack reads; core passes it through untouched. The
@@ -214,6 +380,14 @@ pack that owns the namespace checks it with its [validator plugin](#validator-pl
 `$BRAINRC_HOME/extensions.md` (default `~/.config/brainrc/extensions.md`), which Gatework reads
 at intake. With no other packs enabled, the file says so and Gatework runs as before; with
 Gatework disabled, there is no file.
+
+The file also lists, under **Pack roles**, every agent the other packs install, with the path of
+its file. A pack's agent adds to Gatework's roles and never replaces one, and a harness that
+installs no agents (Codex, Antigravity, Cursor) can still run it as a role in the one-session
+fallback by reading that file. The acme example's `acme-reviewer` is one.
+
+A machine can add its own `[extensions.gatework]` in `brainrc.local.toml`
+([configuration](configuration.md#brainrclocaltoml)); `extensions.md` lists it after every pack's.
 
 The old forms from before 0.7.0, the same keys directly under `[extensions]` or under
 `[extensions.spec-agent]`, still work with a warning: move them under `[extensions.gatework]`.

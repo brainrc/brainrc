@@ -84,7 +84,7 @@ def errors(value, schema: dict, root: dict | None = None, path: tuple = (),
             elif isinstance(schema.get("additionalProperties"), dict):
                 found += errors(item, schema["additionalProperties"], root, path + (key,), unknown)
     if "not" in schema and not errors(value, schema["not"], root, path):
-        found.append(f"{where}: {_not_message(schema['not'])}")
+        found.append(f"{where}: {_not_message(value, schema['not'], root, path)}")
     if "anyOf" in schema:
         matched = _matches(value, schema["anyOf"], root, path, unknown)
         if not matched:
@@ -111,8 +111,10 @@ def _matches(value, forms: list[dict], root: dict, path: tuple, unknown: list | 
     return found
 
 
-def _not_message(schema: dict) -> str:
-    keys = schema.get("required")
+def _not_message(value, schema: dict, root: dict, path: tuple) -> str:
+    """Name the keys that can't go together; of an `anyOf`, the form the value matched."""
+    forms = [f for f in schema.get("anyOf", []) if not errors(value, f, root, path)]
+    keys = (forms[0] if forms else schema).get("required")
     if keys:
         return f"set only one of {', '.join(f'`{k}`' for k in keys)}"
     return "has a form that isn't allowed"

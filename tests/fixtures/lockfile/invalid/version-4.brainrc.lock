@@ -1,5 +1,5 @@
-# expect: version: must be one of 1, 2
+# expect: version: must be one of 1, 2, 3
 # brainrc.lock: written by brainrc. Don't edit it by hand.
-version = 3
+version = 4
 brainrc = "0.7.3"
 scope = "user"

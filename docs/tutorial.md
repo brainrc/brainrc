@@ -46,10 +46,12 @@ and a CI workflow ([what each file is for](packs.md#what-new-pack-writes)).
 A domain skill, one for a single stack, has four sections: how to validate offline,
 conventions, a review checklist, and what never to do without approval. The `description` is
 what makes an AI tool load it, and the `[[extensions.gatework.domains]]` row tells Gatework which
-files load it.
+files load it. `new skill --domain` writes both, with a line in each section saying what goes
+there; then fill the sections in.
 
 ```bash
-mkdir -p ~/src/myteam-ai-pack/skills/myteam-protobuf
+python3 scripts/brainrc.py new skill protobuf --pack ~/src/myteam-ai-pack --domain '*.proto,buf.yaml' \
+  --description "Protocol Buffers schemas for myteam services. Use when changing or reviewing protobuf files."
 cat > ~/src/myteam-ai-pack/skills/myteam-protobuf/SKILL.md <<'EOF'
 ---
 name: myteam-protobuf
@@ -74,12 +76,6 @@ buf breaking --against '.git#branch=main'
 
 ## Never without approval
 - Publishing generated code or pushing to a schema registry.
-EOF
-cat >> ~/src/myteam-ai-pack/pack.toml <<'EOF'
-
-[[extensions.gatework.domains]]
-files = "`*.proto`, `buf.yaml`"
-skills = ["myteam-protobuf"]
 EOF
 python3 scripts/brainrc.py validate --pack ~/src/myteam-ai-pack
 ```
@@ -138,6 +134,6 @@ on every push with the `validate-pack` action, against the brainrc version it pi
 - [Packs](packs.md) is the full pack reference.
 - To share the pack with a repo's agents instead of one machine, list it in the repo's
   `brainrc.toml` ([team setup](project.md)).
-- To add a domain skill to Gatework for everyone instead, open a pull request on
-  [brainrc/gatework](https://github.com/brainrc/gatework): the skill goes in `skills/<stack>/`
-  with a row in the Domains table of `skills/brainrc-gatework/SKILL.md`.
+- To share a domain skill with everyone instead, open a pull request on
+  [brainrc/packs](https://github.com/brainrc/packs): the skill goes in its stack's folder, with an
+  `[[extensions.gatework.domains]]` row in that folder's `pack.toml`.

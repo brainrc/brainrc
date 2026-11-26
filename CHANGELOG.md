@@ -12,6 +12,92 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.8.32 (2026-11-26)
+
+- A git pack can come from one folder of a repo: `subdir = "python"` next to `git` and `ref`, so one
+  repo (brainrc/packs) holds many packs. The lock records the folder (lock version 3 when one is
+  set), and `install --frozen` and `check` honour it (#121).
+- An item `exclude` leaves out no longer collides, so an official pack can take over a skill a
+  default pack still ships while that pack's copy is excluded (#318).
+- `brainrc/python`, `brainrc/node-ts` and `brainrc/rust` are official pack IDs, and the official
+  table in docs/packs.md links each pack's folder in brainrc/packs (#183, #184, #185).
+- Docs say where the official packs live (folders of brainrc/packs, enabled with `subdir`): the
+  README, Gatework's domain skills and how to share one, the tutorial and stack-pack guide, the
+  glossary, upgrading a pack, and the new `subdir` errors in troubleshooting.
+
+## 0.8.31 (2026-11-26)
+
+- Cursor, OpenCode, Codex and Antigravity enforce packs' `[[guard.deny]]` and `[[guard.ask]]` rules
+  under each pack's `[scope]`, judged where the command runs, by running core's Claude Code guards.
+  A pack's deny wins over any ask. Where a tool can't ask (Cursor's shell hook, OpenCode, Codex),
+  a pack's ask blocks the call and tells the model to ask you to run it (#155, #156).
+- Codex gets core's guards through its PreToolUse hooks in `$CODEX_HOME/hooks.json`, for shell
+  commands, `apply_patch` (checked for secrets as a write) and MCP calls. Codex asks you to trust
+  new hooks once in `/hooks`, and skips them silently until you do. A pack's MCP `tool` rule
+  matches Codex's names for the server's tools, which turn `-` into `_` (#157).
+- Antigravity gets core's guards on `run_command` through its hooks in
+  `~/.gemini/config/hooks.json`, under the name `brainrc`. A pack's ask is a prompt there.
+  `harnesses.toml` takes `settings_format = "antigravity"` for that file's shape (#158).
+- **[pack contract]** A `[[guard.deny]]` can set `path` or `host` in place of `match` or `tool`.
+  `apply` compiles them into Claude Code's sandbox settings (`sandbox.filesystem.denyRead` and
+  `denyWrite`, `sandbox.network.deniedDomains`), which the OS enforces on every Bash command, and
+  owns the entries it adds as it does permissions. These rules are deny-only and apply everywhere,
+  so a scoped pack gives each `scope = {}` (#322).
+- OpenCode's guard plugin now checks MCP tool calls too, which it used to let through: it finds
+  the server from the ones OpenCode reports as connected and runs the outward guard and packs'
+  `tool` rules on them (#156).
+
+## 0.8.30 (2026-11-26)
+
+- **[pack contract]** `[scope]` in `pack.toml` says where a pack applies: globs for a git remote,
+  the directory, the kube context, the AWS profile or a ticket ref, any one of which is enough.
+  `brainrc scope` lists which enabled packs apply where you are and why, and `brainrc scope
+  --extensions` prints the extensions a run there should read, so a work pack's deliver checks stay
+  out of a personal repo. `extensions.md` ends with where each scoped pack applies. A pack without
+  `[scope]` applies everywhere, as before (#140).
+- **[pack contract]** `[[guard.deny]]` and `[[guard.ask]]` in `pack.toml` add rules to core's
+  Claude Code guard without a hook of their own: `match` a command (its program, then words in
+  order, each a glob) or `tool` an MCP tool glob, with a `reason` and an optional `scope` in place
+  of the pack's. `apply` renders them into `$BRAINRC_HOME/guard-rules.json` and `guard_outward.py`
+  checks them inside `sh -c`, `eval`, `$(…)` and backticks too; a pack's deny wins over any ask.
+  The acme example denies `acme-deploy prod` only inside acme repos. The other tools' guards read
+  the file in E11 (#141).
+- **[pack contract]** A pack owns the `permissions.allow`, `deny` and `ask` entries its settings
+  fragment adds, like its hooks: `apply` records them in `$BRAINRC_HOME/settings-owned.json`, and
+  disabling the pack removes exactly those, keeping an entry you had first or another pack still
+  lists; `uninstall` removes them too. Before, a fragment's `permissions` was written only into a
+  settings file that had none, and never removed (#142).
+- `extensions.md` lists, under Pack roles, every agent the other enabled packs install, with its
+  file, so the one-session fallback on Codex, Antigravity and Cursor can run a pack's reviewer as a
+  role. A pack's agent adds to Gatework's roles and never replaces one. The acme example gains
+  `acme-reviewer`. Gatework's dispatch of pack reviewers lands in brainrc/gatework (#143).
+- `brainrc.local.toml` takes `[extensions.<namespace>]`: this machine's settings for the pack that
+  owns the namespace, checked by that pack on `apply` and `doctor` and listed in `extensions.md`
+  after every pack's, so a machine can set Gatework's run mode once Gatework reads it (#144).
+
+## 0.8.29 (2026-11-19)
+
+- `brainrc new skill <name>` writes a skill into the pack you are in (or the one `--pack` names),
+  with the prefix and frontmatter filled in, and checks the pack. `--domain GLOB,...` writes a
+  domain skill with its four sections and adds a Domains row for those files to `pack.toml`,
+  keeping the rest of the file as written. The tutorial's domain skill step now uses it (#159).
+- `brainrc new agent <name>` writes an agent with read-only tools (`Read, Grep, Glob`),
+  `model: inherit` and a Handoff section in Gatework's handoff format. `--tools` and `--model` are
+  checked before anything is written (#160).
+- `brainrc new rule <name>` writes `rules/NN-<name>.md` after the pack's last rule, with core's
+  rule frontmatter, and prints what it adds to every session against the pack's
+  `max_always_tokens` budget (#161).
+- `brainrc new command <name>` writes a command with `$ARGUMENTS`. When this machine manages
+  Codex, which skips such commands, it says so, and `--as-skill` (offered in a terminal) writes the
+  user-invoked skill form instead (#162).
+- `brainrc import` reads Windsurf rules: `.windsurfrules`, `global_rules.md` and
+  `.windsurf/rules/`. `always_on` rules become rules; `glob`, `model_decision` and `manual` rules
+  become skills, a glob rule with a Domains row (#166).
+- `brainrc import` turns a Claude Code plugin into a pack: its skills with every file in them,
+  agents and commands get the pack's prefix (and references to their old names are rewritten),
+  its hooks become a Claude settings fragment with their scripts, and `.mcp.json` becomes
+  `mcp/servers.toml` with variable names only. What it can't move is named in a warning (#167).
+
 ## 0.8.28 (2026-11-18)
 
 - `brainrc new pack <name>` starts a pack that validates on its first run: `pack.toml` pinned to

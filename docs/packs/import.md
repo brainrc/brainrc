@@ -1,7 +1,7 @@
 <!-- divio: how-to -->
 # Import the instruction files you have
 
-Move a `CLAUDE.md`, `AGENTS.md`, Cursor rules or Copilot instructions into a pack in one command.
+Move a `CLAUDE.md`, `AGENTS.md`, Cursor, Copilot or Windsurf rules, or a Claude Code plugin, into a pack in one command.
 
 `brainrc import PATH ...` writes the instruction files you already have as a pack, so they move
 over in one command. A folder means the files in it that brainrc reads.
@@ -11,6 +11,8 @@ over in one command. A folder means the files in it that brainrc reads.
 | `CLAUDE.md`, `AGENTS.md` | one rule per section, in order |
 | Cursor: `.cursor/rules/**/*.mdc`, `.cursorrules` | `alwaysApply: true` rules and `.cursorrules` become rules; a rule scoped by `globs` becomes a skill with a row in Gatework's Domains table for those globs; one with only a `description` becomes a skill with that description |
 | Copilot: `.github/copilot-instructions.md`, `.github/instructions/**/*.instructions.md` | copilot-instructions.md becomes one rule per section; a path-specific file with `applyTo: "**"` becomes a rule, one scoped to other globs a skill with a Domains row, one with neither a skill loaded on request, as for Cursor; one for code review only (`excludeAgent: coding-agent`) is skipped |
+| Windsurf: `.windsurfrules`, `global_rules.md`, `.windsurf/rules/**/*.md` | `.windsurfrules` and `global_rules.md` become one rule per section; a rule file with `trigger: always_on` becomes a rule, `trigger: glob` a skill with a Domains row for its `globs`, `model_decision` a skill with its `description`, and `manual` a skill loaded on request, as for Cursor |
+| A Claude Code plugin: a folder with `.claude-plugin/plugin.json` | its skills (every file in each), agents and commands, with the pack's prefix; `hooks/hooks.json` as `overrides/claude/settings.fragment.json`, with the scripts its hooks run in `overrides/claude/hooks/`; `.mcp.json` as `mcp/servers.toml`, with variable names in `env_from` and never a value ([from a plugin](from-a-plugin.md)) |
 
 Each file is split at the shallowest heading level it uses more than once (a lone `# Title`
 stays with the text under it), and each part becomes `rules/NN-<heading>.md` with a first-line

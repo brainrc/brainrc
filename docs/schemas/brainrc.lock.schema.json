@@ -15,7 +15,8 @@
       "type": "integer",
       "enum": [
         1,
-        2
+        2,
+        3
       ]
     },
     "brainrc": {
@@ -81,6 +82,10 @@
           "minLength": 1,
           "pattern": "^[^-]"
         },
+        "subdir": {
+          "description": "The folder of the repo that is the pack (#121); absent when the pack is the repo root.",
+          "$ref": "#/$defs/relPath"
+        },
         "commit": {
           "type": "string",
           "pattern": "^([0-9a-f]{40}|[0-9a-f]{64})$"
@@ -128,6 +133,11 @@
               {
                 "required": [
                   "commit"
+                ]
+              },
+              {
+                "required": [
+                  "subdir"
                 ]
               }
             ]

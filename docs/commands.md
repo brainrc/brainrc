@@ -9,8 +9,10 @@ A test checks this page against the command's own help, so it lists every comman
 there is.
 
 **Set up**: [init](#brainrc-init) · [import](#brainrc-import) · [new pack](#brainrc-new-pack) ·
+[new skill](#brainrc-new-skill) · [new agent](#brainrc-new-agent) · [new rule](#brainrc-new-rule) ·
+[new command](#brainrc-new-command) ·
 **Install**: [status](#brainrc-status) · [apply](#brainrc-apply) · [update](#brainrc-update) · [install](#brainrc-install) · [uninstall](#brainrc-uninstall) ·
-**Check**: [check](#brainrc-check) · [audit](#brainrc-audit) · [doctor](#brainrc-doctor) · [validate](#brainrc-validate) · [tokens](#brainrc-tokens) ·
+**Check**: [check](#brainrc-check) · [audit](#brainrc-audit) · [scope](#brainrc-scope) · [doctor](#brainrc-doctor) · [validate](#brainrc-validate) · [tokens](#brainrc-tokens) ·
 **Other**: [pin-mcp](#brainrc-pin-mcp) · [migrate](#brainrc-migrate)
 
 ## brainrc init
@@ -26,13 +28,14 @@ to install. It writes `harnesses.local.toml`, `packs.local.toml` and `brainrc.lo
 | `--no-adopt` | leave your instruction files where they are |
 | `--profile minimal\|recommended\|full` | set the profile ([configuration](configuration.md#brainrclocaltoml)) |
 | `--starter minimal\|app\|infra` | set a starter profile instead: rules only; no infrastructure skills; everything |
-| `--import` | import this folder's CLAUDE.md, AGENTS.md, Cursor and Copilot files into the pack `imported` without asking |
+| `--import` | import this folder's CLAUDE.md, AGENTS.md, Cursor, Copilot and Windsurf files and Claude Code plugin into the pack `imported` without asking |
 | `--dry-run` | print what `init` would do, write nothing |
 
 ## brainrc import
 
-Turn instruction files you already have into a pack: one rule per section, in order
-([packs](packs/import.md)).
+Turn instruction files you already have, or a Claude Code plugin, into a pack: one rule per
+section, in order ([packs](packs/import.md)). `--format` takes `instructions`, `cursor`,
+`copilot`, `windsurf` or `plugin`.
 
 ```bash
 brainrc import ~/.claude/CLAUDE.md --name mine --enable
@@ -43,7 +46,7 @@ brainrc import ~/.claude/CLAUDE.md --name mine --enable
 | `PATH ...` | files or folders to import, in order |
 | `--to DIR` | where to write the pack (default `$BRAINRC_HOME/imported/<name>`) |
 | `--name NAME` | the pack's name (default `imported`) |
-| `--prefix PREFIX` | the prefix for its skills (default `<name>-`) |
+| `--prefix PREFIX` | the prefix for its skills, agents, commands and MCP servers (default `<name>-`) |
 | `--format FORMAT` | read every PATH as this format, whatever its name |
 | `--force` | replace an earlier pack in that folder |
 | `--enable` | add the pack to `packs.local.toml` |
@@ -76,6 +79,78 @@ brainrc validate --pack acme
 | `--yes`, `-y` | ask nothing: take the defaults |
 | `--force` | replace an earlier pack in that folder; its `.git` stays |
 | `--enable` | add the pack to `packs.local.toml` |
+| `--dry-run` | print the files it would write, write nothing |
+
+## brainrc new skill
+
+Write a skill in the pack you are in (the nearest folder from here up with a `pack.toml`), or the
+one `--pack` names: `skills/<prefix><name>/SKILL.md` with its `name` and `description`
+([packs](packs.md#what-new-item-writes)). Then it checks the pack as `validate --pack` does.
+
+```bash
+brainrc new skill deploy --description "Deploy acme services. Use when asked to ship one."
+brainrc new skill protobuf --domain '*.proto,buf.yaml'
+```
+
+| Option | Does |
+|---|---|
+| `NAME` | the skill's name; the pack's prefix is added when it's missing (asked for in a terminal) |
+| `--pack DIR` | the pack to write it in (default: the nearest folder from here up with a `pack.toml`) |
+| `--description TEXT` | what it does and when to use it (asked for in a terminal; a domain skill has one by default) |
+| `--domain GLOB,...` | the files it is for: a domain skill with Validate (offline), Conventions, Review checklist and Never without approval sections, and a `[[extensions.gatework.domains]]` row in `pack.toml` |
+| `--yes`, `-y` | ask nothing: take the defaults |
+| `--force` | replace a skill of that name |
+| `--dry-run` | print the files it would write, write nothing |
+
+## brainrc new agent
+
+Write an agent in the pack you are in: `agents/<prefix><name>.md` with its `name`, `description`,
+read-only `tools` and `model`, and a Handoff section with the block it ends with.
+
+| Option | Does |
+|---|---|
+| `NAME` | the agent's name; the pack's prefix is added when it's missing |
+| `--pack DIR` | the pack to write it in (default: the nearest folder from here up with a `pack.toml`) |
+| `--description TEXT` | when to delegate to it (asked for in a terminal) |
+| `--tools TOOL,...` | its tools (default `Read, Grep, Glob`); add `Edit`, `Write` or `Bash` only when it needs them |
+| `--model MODEL` | `haiku`, `sonnet`, `opus`, `inherit` or a full ID (default `inherit`) |
+| `--yes`, `-y` | ask nothing: take the defaults |
+| `--force` | replace an agent of that name |
+| `--dry-run` | print the files it would write, write nothing |
+
+## brainrc new rule
+
+Write a rule in the pack you are in: `rules/NN-<name>.md`, numbered after the pack's last rule
+(rounded up to the next ten, so there is room for one between), with the frontmatter core's rules
+carry. Then it prints what the rule adds to every session and what the pack now loads against its
+`max_always_tokens` budget.
+
+| Option | Does |
+|---|---|
+| `NAME` | the rule's name, after its number |
+| `--pack DIR` | the pack to write it in (default: the nearest folder from here up with a `pack.toml`) |
+| `--yes`, `-y` | ask nothing |
+| `--dry-run` | print the file it would write, write nothing |
+
+A rule of the same name is refused: it never replaces one.
+
+## brainrc new command
+
+Write a command in the pack you are in: `commands/<prefix><name>.md` with its `description` and
+`$ARGUMENTS`. Codex skips commands that use `$ARGUMENTS`, so when brainrc manages Codex it offers
+the user-invoked skill form instead, `skills/<prefix><name>/SKILL.md` with
+`disable-model-invocation: true` ([formats](formats.md#commands-commandsnamemd)), which every tool runs.
+
+| Option | Does |
+|---|---|
+| `NAME` | the command's name; the pack's prefix is added when it's missing |
+| `--pack DIR` | the pack to write it in (default: the nearest folder from here up with a `pack.toml`) |
+| `--description TEXT` | one line shown in the command picker (asked for in a terminal) |
+| `--as-skill` | write the user-invoked skill form |
+| `--as-command` | write `commands/<prefix><name>.md` without asking |
+| `--argument-hint TEXT` | what to type after the command, shown in the picker |
+| `--yes`, `-y` | ask nothing: take the defaults |
+| `--force` | replace a command of that name |
 | `--dry-run` | print the files it would write, write nothing |
 
 ## brainrc status
@@ -148,6 +223,19 @@ each MCP server's pinned tools. No network, writes nothing ([guardrails](guardra
 
 | Option | Does |
 |---|---|
+| `--json` | print it as JSON |
+
+## brainrc scope
+
+List each enabled pack as `APPLIES` or `SKIPPED` in the directory you're in, and why: the git
+remote, directory, kube context, AWS profile or ticket ref that matched its `[scope]`, or what it
+needs. A pack without `[scope]` applies everywhere. Writes nothing ([packs](packs.md#scope)).
+
+| Option | Does |
+|---|---|
+| `--cwd DIR` | check this directory instead of the current one |
+| `--ticket REF` | a ticket ref the run is for (repeat it); the branch name's refs count too |
+| `--extensions` | print `extensions.md` with only the packs that apply here |
 | `--json` | print it as JSON |
 
 ## brainrc doctor

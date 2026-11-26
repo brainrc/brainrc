@@ -25,7 +25,7 @@ def force_include(repo: Path = REPO) -> dict[str, str]:
 
 
 def templates(repo: Path = REPO) -> list[str]:
-    """The files under brainrc/_templates that `brainrc new pack` reads, as wheel paths."""
+    """The files under brainrc/_templates that `brainrc new pack` and `new <item>` read, as wheel paths."""
     root = repo / "brainrc" / "_templates"
     return sorted(p.relative_to(repo).as_posix() for p in root.rglob("*")
                   if p.is_file() and "__pycache__" not in p.parts)

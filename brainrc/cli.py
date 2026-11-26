@@ -13,7 +13,7 @@ import shutil
 import sys
 from pathlib import Path
 
-from . import capabilities, config
+from . import capabilities, config, guard
 from .config import (
     ConfigError,
     check_config,
@@ -29,8 +29,10 @@ from .sources import (
     check_packs, collisions, core_version, duplicate_packs, render_instructions, sources,
 )
 from .importers import FORMATS as IMPORT_FORMATS, cmd_import
+from .importers.markdown import globs as import_globs
 from .init import cmd_init
 from .newpack import TICKETS, cmd_new_pack
+from . import newitem
 from .uninstall import cmd_uninstall, finish_purge
 from .opencode import rendered_agents
 from .packs import adopt_record, describe, fetch_pack, git_packs, pinned, to_fetch
@@ -40,9 +42,12 @@ from .plan import (
     stale_renders,
 )
 from .mcp import check_servers, mcp_change, mcp_plan, record_owned, write_mcp
-from .settings import FileChanged, read_current, settings_change, write_settings
+from .settings import FileChanged, conflict_reason, read_current, read_owned, settings_change, settings_owned
+from .settings import write_settings
+from .settings import record_owned as record_settings_owned
 from .plugin import cmd_plugin
-from .plugins import render_extensions
+from .plugins import machine_findings, render_extensions
+from .scope import cmd_scope
 from .release import cmd_release, cmd_release_notes
 from .tokens import cmd_tokens
 from .validate import cmd_validate, pack_errors
@@ -188,6 +193,8 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True, moved: frozens
         srcs = sources()
         roots = [s.root for s in sources(include_disabled=True)]
         agents = rendered_agents(srcs)
+        for h in config.load_harnesses(include_disabled=True).values():
+            config.settings_format(h)  # the settings merges below depend on it
     except ConfigError as e:
         print(f"ERROR {e}")
         return 1
@@ -210,9 +217,18 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True, moved: frozens
         return 1
     try:
         bad_packs = pack_errors(srcs)
+        machine_errors, machine_warnings = machine_findings(srcs)
         extensions = render_extensions(srcs)
-    except ConfigError as e:  # a pack's validator that won't load or run
-        print(f"ERROR {e}\n\nNothing written. Fix the pack's validator, or disable the pack.")
+        guard_rules = guard.render(srcs)
+    except ConfigError as e:  # a pack's validator that won't load or run, or brainrc.local.toml
+        print(f"ERROR {e}\n\nNothing written. Fix the file named, or disable the pack.")
+        return 1
+    for w in machine_warnings:
+        print(f"WARN {w}")
+    if machine_errors:
+        for e in machine_errors:
+            print(f"ERROR {e}")
+        print("\nNothing written. Fix [extensions] in brainrc.local.toml, then re-run.")
         return 1
     if bad_packs:
         for _, errors in bad_packs:
@@ -256,11 +272,11 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True, moved: frozens
         mcp_pins.report_unpinned(claude_mcp[0].servers)
 
     # Rendered files, not links: an edited rule changes the instructions file and no link.
-    renders = stale_renders(srcs, extensions, agents)
+    renders = stale_renders(srcs, extensions, agents, guard_rules)
     for path, exists in renders:
         print(f"{'UPDATE' if exists else 'CREATE':9} {'':9} {tilde(path)}"
               + ("  (a rule or pack changed, or the file was edited, since the last apply)" if exists else ""))
-    obsolete = obsolete_renders(extensions, agents)
+    obsolete = obsolete_renders(extensions, agents, guard_rules)
     for path in obsolete:
         print(f"{'PRUNE':9} {'':9} {tilde(path)}")
     if apply:
@@ -269,10 +285,12 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True, moved: frozens
         rendered.write_text(render_instructions(srcs))
         if extensions is not None:
             home_extensions_file().write_text(extensions)
+        if guard_rules is not None:
+            guard.rules_file().write_text(guard_rules)
         for path, text in agents.items():
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(text)
-        for old in obsolete:  # extensions.md no enabled pack reads, copies of removed agents
+        for old in obsolete:  # extensions.md and guard rules no enabled pack needs, copies of removed agents
             old.unlink()
         if not config.installed() and legacy_extensions().is_file():  # left behind by the move to packs/
             legacy_extensions().unlink()
@@ -318,10 +336,13 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True, moved: frozens
     for m in merges:
         before = read_current(m.dest)
         state, merged = settings_change(m)
+        owned = settings_owned(m) if state != "conflict" else None
         if state == "ok":
+            if apply and owned != read_owned(m.dest):
+                record_settings_owned(m.dest, owned)  # e.g. an entry the user took out by hand
             continue
         print(f"{state.upper():9} {m.harness:9} {tilde(m.dest)}"
-              + ("  (invalid JSON, fix by hand)" if state == "conflict" else "  (hooks)"))
+              + (f"  ({conflict_reason(m)}, fix by hand)" if state == "conflict" else "  (hooks)"))
         if state == "conflict":
             conflicts += 1
             continue
@@ -332,6 +353,8 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True, moved: frozens
             except FileChanged:
                 changed += 1
                 print(f"{'CHANGED':9} {m.harness:9} {tilde(m.dest)}  {CHANGED_HINT}")
+            else:
+                record_settings_owned(m.dest, owned)
     for s in mcp_plan(srcs):
         before = read_current(s.dest)
         state, text, clashing, owned = mcp_change(s)
@@ -525,26 +548,30 @@ def _parser() -> argparse.ArgumentParser:
                        "rules only; app is recommended without the infrastructure domain skills; infra "
                        "is full")
     p.add_argument("--import", dest="import_files", action="store_true",
-                   help="import the CLAUDE.md, AGENTS.md, Cursor and Copilot files in this folder into "
-                   "the pack `imported` without asking (init asks when it asks questions)")
+                   help="import the CLAUDE.md, AGENTS.md, Cursor, Copilot and Windsurf files and the Claude "
+                   "Code plugin in this folder into the pack `imported` without asking (init asks when it "
+                   "asks questions)")
     p.add_argument("--dry-run", action="store_true", help="print what init would do, write nothing")
     p = add("import", "turn CLAUDE.md, AGENTS.md and other tools' instruction files into a pack",
             "Read instruction files other tools load and write them as a pack: one rule per "
             "section, in order, each with a comment naming the file and lines it came from. A "
             "folder means the files in it brainrc can read. The pack goes to "
             "$BRAINRC_HOME/imported/<name> unless --to names a folder, and is checked as "
-            "`validate --pack` would. --enable adds it to packs.local.toml.")
+            "`validate --pack` would. A Claude Code plugin's skills, agents, commands, hooks and MCP "
+            "servers move over with the pack's prefix. --enable adds it to packs.local.toml.")
     p.add_argument("paths", nargs="+", metavar="PATH", help="files or folders to import, in order")
     p.add_argument("--to", metavar="DIR", help="where to write the pack (default: $BRAINRC_HOME/imported/<name>)")
     p.add_argument("--name", default="imported", help="the pack's name (default: imported)")
-    p.add_argument("--prefix", default="", help="the prefix for its skills (default: <name>-)")
+    p.add_argument("--prefix", default="",
+                   help="the prefix for its skills, agents, commands and MCP servers (default: <name>-)")
     p.add_argument("--format", dest="fmt", choices=sorted(IMPORT_FORMATS),
                    help="read every PATH as this format, whatever its name")
     p.add_argument("--force", action="store_true", help="replace the folder if it already has files")
     p.add_argument("--enable", action="store_true", help="add the pack to packs.local.toml")
     p.add_argument("--dry-run", action="store_true", help="print the files it would write, write nothing")
-    p = add("new", "start a new pack, or (later) an item in one", "Write a new pack from brainrc's "
-            "templates. Run `new pack --help` for its options.")
+    p = add("new", "start a new pack, or a skill, agent, rule or command in one", "Write a new pack, "
+            "or a new item in the pack you are in, from brainrc's templates. Run `new <kind> --help` "
+            "for its options.")
     kinds = p.add_subparsers(dest="kind", metavar="<kind>", title="kinds", required=True)
     p = kinds.add_parser("pack", help="write a new pack that validates on its first run",
                          description="Write a new pack: pack.toml, a README, an AGENTS.md for whoever edits it, "
@@ -570,6 +597,50 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--force", action="store_true", help="replace an earlier pack in that folder; its .git stays")
     p.add_argument("--enable", action="store_true", help="add the pack to packs.local.toml")
     p.add_argument("--dry-run", action="store_true", help="print the files it would write, write nothing")
+    item_help = {
+        "skill": ("write skills/<prefix><name>/SKILL.md; --domain makes it a domain skill with a Domains row",
+                  "Write a skill in this pack: skills/<prefix><name>/SKILL.md with its name and description. "
+                  "--domain GLOB,... makes it a domain skill, with Validate (offline), Conventions, Review "
+                  "checklist and Never without approval sections, and adds a [[extensions.gatework.domains]] "
+                  "row for those files to pack.toml."),
+        "agent": ("write agents/<prefix><name>.md with least-privilege tools and a handoff section",
+                  "Write an agent in this pack: agents/<prefix><name>.md with its name, description, tools "
+                  f"(default: {newitem.AGENT_TOOLS}, read only) and model (default {newitem.AGENT_MODEL}), "
+                  "and the handoff block it ends with."),
+        "rule": ("write rules/NN-<name>.md after the pack's last rule, and report its token cost",
+                 "Write a rule in this pack: rules/NN-<name>.md, numbered after its last rule, with the "
+                 "frontmatter core's rules carry. Then report what the pack loads in every session "
+                 "against its max_always_tokens budget."),
+        "command": ("write commands/<prefix><name>.md, or with --as-skill a user-invoked skill",
+                    "Write a command in this pack: commands/<prefix><name>.md with its description and "
+                    "$ARGUMENTS. Codex skips commands that use $ARGUMENTS, so when it manages Codex it "
+                    "offers the user-invoked skill form (--as-skill) instead."),
+    }
+    for kind, (short, long) in item_help.items():
+        p = kinds.add_parser(kind, help=short, description=long + " Run inside the pack, or name it with "
+                             "--pack; the item is checked as `validate --pack` does.")
+        p.add_argument("name", nargs="?", metavar="NAME", help=f"the {kind}'s name"
+                       + ("" if kind == "rule" else "; the pack's prefix is added when it's missing"))
+        p.add_argument("--pack", metavar="DIR", help="the pack (default: the nearest folder from here up with a pack.toml)")
+        if kind != "rule":
+            p.add_argument("--description", default="", help="what it does and when to use it")
+        if kind == "skill":
+            p.add_argument("--domain", type=import_globs, metavar="GLOB,...",
+                           help="the files it is for, e.g. '*.proto,buf.yaml': a domain skill with a Domains row")
+        if kind == "agent":
+            p.add_argument("--tools", help=f"its tools, comma-separated (default: {newitem.AGENT_TOOLS})")
+            p.add_argument("--model", help=f"haiku, sonnet, opus, inherit or a full ID (default: {newitem.AGENT_MODEL})")
+        if kind == "command":
+            form = p.add_mutually_exclusive_group()
+            form.add_argument("--as-skill", dest="as_skill", action="store_const", const=True,
+                              help="write a user-invoked skill (disable-model-invocation: true), which Codex runs too")
+            form.add_argument("--as-command", dest="as_skill", action="store_const", const=False,
+                              help="write commands/<prefix><name>.md without asking")
+            p.add_argument("--argument-hint", default="", help="what to type after the command, shown in the picker")
+        p.add_argument("--yes", "-y", action="store_true", help="ask nothing: take the defaults")
+        if kind != "rule":  # a rule is numbered after the last one, so it never replaces one
+            p.add_argument("--force", action="store_true", help=f"replace a {kind} of that name")
+        p.add_argument("--dry-run", action="store_true", help="print the files it would write, write nothing")
     repair_help = ("also relink broken links to where an item used to be: after moving the checkout, "
                    "or a package upgrade to a new Python")
     only_help = ("only these harnesses (repeat it, or separate names with commas); the others "
@@ -641,6 +712,16 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--purge", action="store_true",
                    help="also delete the settings home ($BRAINRC_HOME): local config, rendered files and "
                    "fetched git packs")
+    p = add("scope", "show which packs apply in a directory, by their [scope] (writes nothing)",
+            "List each enabled pack with APPLIES or SKIPPED for the directory you're in (or --cwd), and "
+            "why: the git remote, directory, kube context, AWS profile or ticket ref that matched its "
+            "[scope], or what it needs. A pack without [scope] applies everywhere.")
+    p.add_argument("--cwd", metavar="DIR", help="check this directory instead of the current one")
+    p.add_argument("--ticket", action="append", metavar="REF",
+                   help="a ticket ref the run is for (repeat it); the branch name's refs count too")
+    p.add_argument("--extensions", action="store_true",
+                   help="print extensions.md with only the packs that apply here")
+    p.add_argument("--json", action="store_true", help="print it as JSON")
     p = add("validate", "check frontmatter, cross-references, packs and tripwires (CI runs it)")
     p.add_argument("--pack", metavar="DIR", help="check core plus this pack only")
     p.add_argument("--fetch-defaults", action="store_true",
@@ -702,6 +783,13 @@ def _dispatch(argv: list[str]) -> int:
     if cmd == "import":
         return cmd_import(args.paths, to=args.to, name=args.name, prefix=args.prefix, fmt=args.fmt,
                           force=args.force, dry_run=args.dry_run, enable_pack=args.enable)
+    if cmd == "new" and args.kind != "pack":
+        return newitem.cmd_new_item(args.kind, args.name, pack=args.pack,
+                                    description=getattr(args, "description", ""),
+                                    domain=getattr(args, "domain", None), tools=getattr(args, "tools", None),
+                                    model=getattr(args, "model", None), as_skill=getattr(args, "as_skill", None),
+                                    argument_hint=getattr(args, "argument_hint", ""), yes=args.yes,
+                                    force=getattr(args, "force", False), dry_run=args.dry_run)
     if cmd == "new":
         named = [n for names in args.harness for n in names] if args.harness else None
         return cmd_new_pack(args.name, to=args.to, prefix=args.prefix, pack_id=args.pack_id,
@@ -729,6 +817,8 @@ def _dispatch(argv: list[str]) -> int:
         return cmd_check(args.scope)
     if cmd == "audit":
         return cmd_audit(args.json)
+    if cmd == "scope":
+        return cmd_scope(args.cwd, args.ticket, args.extensions, args.json)
     if cmd == "pin-mcp":
         return _locked(lambda: mcp_pins.cmd_pin_mcp(args.servers, args.yes))
     if cmd == "install":

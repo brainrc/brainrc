@@ -1,5 +1,6 @@
 """Tests for the Claude Code guard hooks (run as subprocesses, like the harness does)."""
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -7,6 +8,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from guard_cases import SharedGuardRuleCases, from_message
 from support import rmtree, symlink
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -221,6 +223,23 @@ HOMELAB_HOOKS = HOOKS.parent.parent.parent / "examples" / "pack-homelab" / "over
 HOMELAB_RISKY = ["qm destroy 105", "pct stop 200", "talosctl -n 10.0.0.2 upgrade --image x"]
 
 
+class PackGuardRulesTest(SharedGuardRuleCases, unittest.TestCase):
+    """#141: the acme example's [[guard.deny]] for `acme-deploy prod`, enforced by core's guard only
+    inside acme repos, also inside `bash -c`; and its [[guard.ask]] for an MCP tool. The shared cases
+    (tests/guard_cases.py) run through every harness's guard too."""
+
+    def verdict(self, command: str, cwd: Path) -> str | None:
+        return run_hook("guard_outward.py", {"tool_name": "Bash", "tool_input": {"command": command},
+                                             "cwd": str(cwd)})
+
+    def test_an_mcp_tool_rule_asks_only_where_the_pack_applies(self):
+        payload = {"tool_name": "mcp__acme-jira__get_transitions", "tool_input": {}}
+        self.assertEqual(run_hook("guard_outward.py", {**payload, "cwd": str(self.acme_repo)}), "ask")
+        self.assertIsNone(run_hook("guard_outward.py", {**payload, "cwd": str(self.personal_repo)}))
+        other = {"tool_name": "mcp__acme_jira_x__get_transitions", "tool_input": {}, "cwd": str(self.acme_repo)}
+        self.assertIsNone(run_hook("guard_outward.py", other))  # another server: - and _ alike, nothing more
+
+
 class HomelabGuardTest(unittest.TestCase):
     """The Proxmox and Talos rules live in examples/pack-homelab, not in core. The pack's own tests
     check each rule (examples/pack-homelab/tests, which tests/test_pack_tests.py runs)."""
@@ -317,9 +336,13 @@ if __name__ == "__main__":
 
 PLUGIN = HOOKS.parent.parent / "opencode" / "plugin.js"
 DRIVER = """
-const [url, call] = process.argv.slice(-2);
+const [url, call, directory, servers] = process.argv.slice(-4);
 const plugin = Object.values(await import(url))[0];
-const hooks = await plugin({});
+// A stand-in for OpenCode's SDK client: mcp.status() answers { data: { <server>: status } }.
+const names = JSON.parse(servers);
+const client = names.length ? { mcp: { status: async () => ({ data: Object.fromEntries(
+  names.map((n) => [n, { status: "connected" }])) }) } } : undefined;
+const hooks = await plugin({ ...(directory ? { directory } : {}), ...(client ? { client } : {}) });
 const [tool, args] = JSON.parse(call);
 try {
   await hooks["tool.execute.before"]({ tool, sessionID: "s", callID: "c" }, { args });
@@ -330,15 +353,22 @@ try {
 """
 
 
+def opencode(tool: str, args: dict, directory: str = "", servers: tuple = ()) -> str:
+    """Run the plugin's tool.execute.before on one call, in a session opened in directory, with
+    these MCP servers connected."""
+    result = subprocess.run(["node", "--input-type=module", "-e", DRIVER, "--", PLUGIN.as_uri(),
+                             json.dumps([tool, args]), directory, json.dumps(list(servers))],
+                            capture_output=True, text=True, timeout=30)
+    assert result.returncode == 0, result.stderr
+    return result.stdout.strip()
+
+
 @unittest.skipUnless(shutil.which("node"), "node is not installed")
 class OpenCodePluginTest(unittest.TestCase):
     """overrides/opencode/plugin.js runs the same guards for OpenCode's tool calls."""
 
-    def call(self, tool: str, args: dict) -> str:
-        result = subprocess.run(["node", "--input-type=module", "-e", DRIVER, "--", PLUGIN.as_uri(),
-                                 json.dumps([tool, args])], capture_output=True, text=True, timeout=30)
-        self.assertEqual(result.returncode, 0, result.stderr)
-        return result.stdout.strip()
+    def call(self, tool: str, args: dict, directory: str = "") -> str:
+        return opencode(tool, args, directory)
 
     def test_outward_command_is_blocked_with_the_reason(self):
         out = self.call("bash", {"command": "git push origin main"})
@@ -361,6 +391,45 @@ class OpenCodePluginTest(unittest.TestCase):
 
     def test_unmapped_tools_pass(self):
         self.assertEqual(self.call("github_create_issue", {"title": "x"}), "OK")
+
+    def test_an_mcp_write_tool_is_blocked(self):
+        # OpenCode names it <server>_<tool> (seen in a real run); the guard reads mcp__github__create_issue.
+        out = opencode("github_create_issue", {"title": "x"}, servers=("github",))
+        self.assertTrue(out.startswith("BLOCKED"), out)
+        self.assertIn("MCP tool create_issue writes to github", out)
+        self.assertEqual(opencode("github_get_issue", {"number": 1}, servers=("github",)), "OK")
+
+    def test_a_server_name_with_an_underscore_is_matched_longest_first(self):
+        out = opencode("acme_jira_transition_issue", {}, servers=("acme", "acme_jira"))
+        self.assertIn("MCP tool transition_issue writes to acme_jira", out)
+        # A name OpenCode turned into _ (a dot here) still finds its server.
+        self.assertIn("writes to acme.jira", opencode("acme_jira_transition_issue", {}, servers=("acme.jira",)))
+
+    def test_a_tool_of_no_connected_server_passes(self):
+        self.assertEqual(opencode("github_create_issue", {"title": "x"}, servers=("gitlab",)), "OK")
+
+
+@unittest.skipUnless(shutil.which("node"), "node is not installed")
+class OpenCodeGuardRulesTest(SharedGuardRuleCases, unittest.TestCase):
+    """#156: packs' guard rules in OpenCode's tool.execute.before, under their [scope] (from the
+    bash tool's workdir, else the session's directory)."""
+
+    def verdict(self, command: str, cwd: Path) -> str | None:
+        out = opencode("bash", {"command": command}, str(cwd))
+        return None if out == "OK" else from_message(out.removeprefix("BLOCKED "))
+
+    def test_the_bash_workdir_wins_over_the_session_directory(self):
+        out = opencode("bash", {"command": "acme-deploy prod", "workdir": "src"}, str(self.acme_repo))
+        self.assertEqual(out, "BLOCKED brainrc guard (acme pack): " + "acme-deploy prod deploys to production, "
+                         "which only the release pipeline does. The acme pack doesn't allow this.")
+        self.assertEqual(opencode("bash", {"command": "acme-deploy prod", "workdir": str(self.personal_repo)},
+                                  str(self.acme_repo)), "OK")
+
+    def test_an_mcp_tool_rule_applies_where_the_pack_does(self):
+        out = opencode("acme-jira_get_transitions", {"key": "ACME-1"}, str(self.acme_repo), ("acme-jira",))
+        self.assertEqual(from_message(out.removeprefix("BLOCKED ")), "ask")
+        self.assertIn("(acme pack)", out)
+        self.assertEqual(opencode("acme-jira_get_transitions", {}, str(self.personal_repo), ("acme-jira",)), "OK")
 
 
 CURSOR_GUARD = HOOKS.parent.parent / "cursor" / "hooks" / "guard.py"
@@ -419,6 +488,165 @@ class CursorGuardTest(unittest.TestCase):
             self.assertEqual(reply["permission"], "deny")
         finally:
             rmtree(link_dir)
+
+
+class CursorGuardRulesTest(SharedGuardRuleCases, unittest.TestCase):
+    """#155: packs' guard rules in Cursor's beforeShellExecution, under their [scope] (from the
+    event's cwd, else the first workspace root)."""
+
+    def verdict(self, command: str, cwd: Path) -> str | None:
+        # Every field Cursor sends with this event (its documented common fields included).
+        reply = cursor({"conversation_id": "c", "generation_id": "g", "model": "m", "cursor_version": "2.0.0",
+                        "hook_event_name": "beforeShellExecution", "command": command, "cwd": str(cwd),
+                        "workspace_roots": [str(cwd)], "user_email": None})
+        return None if reply["permission"] == "allow" else from_message(reply["agent_message"])
+
+    def test_the_workspace_root_stands_in_for_a_missing_cwd(self):
+        reply = cursor({"hook_event_name": "beforeShellExecution", "command": "acme-deploy prod",
+                        "workspace_roots": [str(self.acme_repo)]})
+        self.assertEqual(reply["permission"], "deny")
+        self.assertIn("acme pack", reply["user_message"])
+        self.assertNotIn("run it themselves", reply["user_message"])
+
+
+CODEX_GUARD = HOOKS.parent.parent / "codex" / "hooks" / "guard.py"
+
+
+def codex(payload) -> tuple[str | None, str]:
+    """Run Codex's guard adapter: (permissionDecision or None, reason). It must exit 0."""
+    stdin = payload if isinstance(payload, str) else json.dumps(payload)
+    result = subprocess.run([sys.executable, str(CODEX_GUARD)], input=stdin, capture_output=True,
+                            text=True, timeout=30)
+    assert result.returncode == 0, result.stderr
+    if not result.stdout.strip():
+        return None, ""
+    out = json.loads(result.stdout)["hookSpecificOutput"]
+    assert out["hookEventName"] == "PreToolUse", out
+    return out["permissionDecision"], out["permissionDecisionReason"]
+
+
+def codex_call(tool: str, tool_input: dict, cwd: str = "/tmp/project") -> tuple[str | None, str]:
+    return codex({"hook_event_name": "PreToolUse", "tool_name": tool, "tool_input": tool_input, "cwd": cwd,
+                  "session_id": "s", "turn_id": "t", "tool_use_id": "u"})
+
+
+PATCH_ENV = "*** Begin Patch\n*** Add File: app/.env\n+TOKEN=x\n*** End Patch\n"
+
+
+class CodexGuardTest(unittest.TestCase):
+    """#157: overrides/codex/hooks/guard.py ports core's guards to Codex's PreToolUse."""
+
+    def test_outward_command_is_denied_since_codex_cannot_ask(self):
+        decision, reason = codex_call("Bash", {"command": "git push origin main"})
+        self.assertEqual(decision, "deny")
+        self.assertIn("git push publishes commits", reason)
+        self.assertIn("ask the user to run it themselves", reason)
+
+    def test_safe_command_has_no_opinion(self):
+        self.assertEqual(codex_call("Bash", {"command": "git status"}), (None, ""))
+
+    def test_bash_naming_a_secret_file_is_denied(self):
+        self.assertEqual(codex_call("Bash", {"command": "cat .env"})[0], "deny")
+
+    def test_an_mcp_write_is_denied_and_a_read_passes(self):
+        self.assertEqual(codex_call("mcp__github__create_pull_request", {"title": "x"})[0], "deny")
+        self.assertIsNone(codex_call("mcp__github__get_pull_request", {"number": 1})[0])
+
+    def test_a_patch_that_writes_a_secret_is_denied(self):
+        self.assertEqual(codex_call("apply_patch", {"command": PATCH_ENV})[0], "deny")
+        key = "-----BEGIN OPENSSH " + "PRIVATE KEY-----"
+        patch = f"*** Begin Patch\n*** Update File: notes.txt\n@@\n-a\n+{key}\n*** End Patch\n"
+        self.assertEqual(codex_call("apply_patch", {"command": patch})[0], "deny")
+        moved = "*** Begin Patch\n*** Update File: a.txt\n*** Move to: .env\n@@\n-a\n+b\n*** End Patch\n"
+        self.assertEqual(codex_call("apply_patch", {"command": moved})[0], "deny")
+
+    def test_a_command_sent_as_an_argv_list_is_still_checked(self):
+        self.assertEqual(codex_call("Bash", {"command": ["git", "push", "origin", "main"]})[0], "deny")
+        self.assertIsNone(codex_call("Bash", {"command": ["git", "status"]})[0])
+        self.assertEqual(codex_call("apply_patch", {"command": ["apply_patch", PATCH_ENV]})[0], "deny")
+
+    def test_an_ordinary_patch_passes(self):
+        patch = "*** Begin Patch\n*** Update File: src/app.py\n@@\n-a = 1\n+a = 2\n*** End Patch\n"
+        self.assertIsNone(codex_call("apply_patch", {"command": patch})[0])
+        self.assertIsNone(codex_call("apply_patch", {"command": "*** Begin Patch\n*** Delete File: .env\n"})[0])
+
+    def test_bad_json_and_other_tools_have_no_opinion(self):
+        self.assertEqual(codex("not json"), (None, ""))
+        self.assertEqual(codex("[1]"), (None, ""))
+        self.assertEqual(codex_call("update_plan", {"plan": []}), (None, ""))
+
+
+class CodexGuardRulesTest(SharedGuardRuleCases, unittest.TestCase):
+    """#157: packs' guard rules in Codex's PreToolUse, under their [scope] (from the payload's cwd)."""
+
+    def verdict(self, command: str, cwd: Path) -> str | None:
+        decision, reason = codex_call("Bash", {"command": command}, str(cwd))
+        return None if decision is None else from_message(reason)
+
+    def test_an_mcp_tool_rule_applies_where_the_pack_does(self):
+        tool = "mcp__acme_jira__get_transitions"  # Codex turns the server's - into _ (seen in a real run)
+        decision, reason = codex_call(tool, {}, str(self.acme_repo))
+        self.assertEqual((decision, from_message(reason)), ("deny", "ask"))
+        self.assertIn("(acme pack)", reason)
+        self.assertIsNone(codex_call(tool, {}, str(self.personal_repo))[0])
+
+
+ANTIGRAVITY_GUARD = HOOKS.parent.parent / "antigravity" / "hooks" / "guard.py"
+ANTIGRAVITY_DECISIONS = {"deny": "deny", "force_ask": "ask", "allow": None}
+
+
+def antigravity(payload) -> dict:
+    """Run Antigravity's guard adapter; it must always exit 0 with a JSON reply holding a decision."""
+    stdin = payload if isinstance(payload, str) else json.dumps(payload)
+    result = subprocess.run([sys.executable, str(ANTIGRAVITY_GUARD)], input=stdin, capture_output=True,
+                            text=True, timeout=30)
+    assert result.returncode == 0, result.stderr
+    reply = json.loads(result.stdout)
+    assert reply["decision"] in ANTIGRAVITY_DECISIONS, reply
+    return reply
+
+
+def run_command_call(command: str, cwd: str | None = "/tmp/project", workspace: str = "/tmp/project") -> dict:
+    args = {"CommandLine": command, "WaitMsBeforeAsync": 5000, **({"Cwd": cwd} if cwd else {})}
+    # Every field the docs list for PreToolUse, as in their run_command example.
+    return antigravity({"toolCall": {"name": "run_command", "args": args}, "stepIdx": 3,
+                        "conversationId": "c", "workspacePaths": [workspace], "transcriptPath": "/t.jsonl",
+                        "artifactDirectoryPath": "/a", "modelName": "m", "lastUserInput": "go"})
+
+
+class AntigravityGuardTest(unittest.TestCase):
+    """#158: overrides/antigravity/hooks/guard.py ports core's guards to Antigravity's PreToolUse."""
+
+    def test_outward_command_is_force_asked_with_the_reason(self):
+        reply = run_command_call("git push origin main")
+        self.assertEqual(reply["decision"], "force_ask")
+        self.assertIn("git push publishes commits", reply["reason"])
+
+    def test_safe_command_hands_on_to_the_default_policy(self):
+        self.assertEqual(run_command_call("git status"), {"decision": "allow"})
+
+    def test_bash_naming_a_secret_file_is_asked_about(self):
+        self.assertEqual(run_command_call("cat .env")["decision"], "force_ask")
+
+    def test_bad_json_and_other_tools_hand_on(self):
+        self.assertEqual(antigravity("not json"), {"decision": "allow"})
+        self.assertEqual(antigravity("[1]"), {"decision": "allow"})
+        self.assertEqual(antigravity({"toolCall": {"name": "view_file", "args": {"AbsolutePath": "/p/.env"}}}),
+                         {"decision": "allow"})
+
+
+class AntigravityGuardRulesTest(SharedGuardRuleCases, unittest.TestCase):
+    """#158: packs' guard rules in Antigravity's PreToolUse, under their [scope] (from args.Cwd,
+    else the first workspace path)."""
+
+    def verdict(self, command: str, cwd: Path) -> str | None:
+        return ANTIGRAVITY_DECISIONS[run_command_call(command, str(cwd), str(cwd))["decision"]]
+
+    def test_the_workspace_path_stands_in_for_a_missing_cwd(self):
+        reply = run_command_call("acme-deploy prod", None, str(self.acme_repo))
+        self.assertEqual(reply["decision"], "deny")
+        self.assertIn("acme pack", reply["reason"])
+        self.assertEqual(run_command_call("acme-deploy prod", None, str(self.personal_repo)), {"decision": "allow"})
 
 
 REPO = HOOKS.parent.parent.parent
@@ -497,6 +725,24 @@ class FailOpenTest(unittest.TestCase):
             result = run_command(command, CURSOR_RISKY)
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual(json.loads(result.stdout), {"permission": "allow"})
+
+    def test_codex_command_denies_when_present_and_passes_when_the_hooks_are_gone(self):
+        d = self.hooks_dir("codex")
+        (command,) = fragment_commands("codex", d)
+        result = run_command(command, RISKY)
+        self.assertEqual(json.loads(result.stdout)["hookSpecificOutput"]["permissionDecision"], "deny")
+        self.remove_target(d)
+        result = run_command(command, RISKY)
+        self.assertEqual((result.returncode, result.stdout), (0, ""))
+
+    def test_antigravity_command_asks_when_present_and_hands_on_when_the_hooks_are_gone(self):
+        d = self.hooks_dir("antigravity")
+        (command,) = fragment_commands("antigravity", d)
+        risky = {"toolCall": {"name": "run_command", "args": {"CommandLine": "git push origin main"}}}
+        self.assertEqual(json.loads(run_command(command, risky).stdout)["decision"], "force_ask")
+        self.remove_target(d)
+        result = run_command(command, risky)
+        self.assertEqual((result.returncode, json.loads(result.stdout)), (0, {"decision": "allow"}))
 
     def test_apply_replaces_old_form_hook_groups(self):
         old_command = 'python3 "$HOME/.claude/hooks/ai-config/guard_outward.py"'

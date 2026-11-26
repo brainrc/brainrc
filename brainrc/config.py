@@ -106,11 +106,23 @@ PATH_KEYS = ("home", "skills", "agents", "agents_format", "commands", "plugin", 
 
 # Known keys of each table in <name>.toml / <name>.local.toml, and the type each must have.
 LAYERED_KEYS = {
-    "harnesses": {"enabled": bool, **dict.fromkeys(PATH_KEYS, str),
+    "harnesses": {"enabled": bool, **dict.fromkeys(PATH_KEYS, str), "settings_format": str,
                   "project_skills": str, "project_instructions": str},  # repo paths, never expanded
-    "packs": {"enabled": bool, "path": str, "git": str, "ref": str, "run_validator": bool,
+    "packs": {"enabled": bool, "path": str, "git": str, "ref": str, "subdir": str, "run_validator": bool,
               "description": str},
 }
+
+
+# harnesses.toml `settings_format`: how a harness's settings file holds hooks. "claude" (also
+# Cursor's and Codex's) keeps them under "hooks"; "antigravity" under a named entry, brainrc's own.
+SETTINGS_FORMATS = ("claude", "antigravity")
+
+
+def settings_format(h: dict) -> str:
+    fmt = h.get("settings_format", "claude")
+    if fmt not in SETTINGS_FORMATS:
+        raise ConfigError(f"harnesses.toml: unknown settings_format `{fmt}` (use one of {', '.join(SETTINGS_FORMATS)})")
+    return fmt
 
 
 PACK_ORIGIN_KEYS = {"path", "git"}  # where a pack comes from: exactly one per pack
@@ -238,7 +250,7 @@ def _layered(name: str, warnings: list[str] | None = None) -> dict[str, dict]:
         for key, overrides in data.items():
             table = config.setdefault(key, {})
             if name == "packs" and PACK_ORIGIN_KEYS & overrides.keys():
-                for k in (*PACK_ORIGIN_KEYS, "ref"):  # a local `path` or `git` replaces a default pack's
+                for k in (*PACK_ORIGIN_KEYS, "ref", "subdir"):  # a local `path` or `git` replaces a default pack's
                     table.pop(k, None)
             table.update(overrides)
     return config
@@ -274,8 +286,24 @@ def install_profile(warnings: list[str] | None = None) -> tuple[str, list[str]]:
                           "paths or patterns, e.g. [\"skills/brainrc-aws\"]")
     if warnings is not None:
         warnings += [f"{tilde(path)}:{line_of(text, k)}: unknown key `{k}`"
-                     for k in data if k not in ("profile", "exclude")]
+                     for k in data if k not in ("profile", "exclude", "extensions")]
     return profile, exclude
+
+
+def machine_extensions() -> dict[str, dict]:
+    """brainrc.local.toml's [extensions.<namespace>] tables (#144): this machine's settings for a
+    pack that owns the namespace, such as Gatework's mode, rendered after every pack's."""
+    path = local_dir() / PROFILE_FILE
+    data = _read_toml(path)
+    ext = data.get("extensions", {})
+    if not isinstance(ext, dict):
+        raise ConfigError(f"{tilde(path)}:{line_of(path.read_text(), 'extensions')}: `extensions` must be "
+                          "a table of tables, e.g. [extensions.gatework]")
+    for ns, table in ext.items():
+        if not isinstance(table, dict):
+            raise ConfigError(f"{tilde(path)}:{line_of(path.read_text(), 'extensions', ns)}: "
+                              f"`extensions.{ns}` must be a table, e.g. [extensions.{ns}]")
+    return ext
 
 
 def installs(part: str) -> bool:

@@ -10,7 +10,7 @@ import shlex
 import subprocess
 from pathlib import Path
 
-from . import config
+from . import config, guard
 from .config import (
     ConfigError,
     KINDS,
@@ -33,11 +33,11 @@ from .sources import (
 from .opencode import agents_format, rendered_agents
 from .packs import needs_fetch
 from .plan import FragmentError, Link, invalid_fragments, link_target, moved_item, plan, stale_renders
-from .settings import _owned, settings_change
+from .settings import _owned, as_claude, conflict_reason, settings_change
 from .manifest import checked_manifest
 from .mcp import check_servers, mcp_change, mcp_plan
 from .moved import left_behind
-from .plugins import plugin_findings, render_extensions, validators
+from .plugins import machine_findings, plugin_findings, render_extensions, validators
 from .validate import cmd_validate
 
 
@@ -102,7 +102,7 @@ def _render_findings(srcs: list[Source]) -> list[Finding]:
     except ConfigError:  # a validator that won't load: doctor_findings reports it
         extensions = None
     found = []
-    for path, exists in stale_renders(srcs, extensions, rendered_agents(srcs)):
+    for path, exists in stale_renders(srcs, extensions, rendered_agents(srcs), guard.render(srcs)):
         rel = tilde(path) if not path.is_relative_to(config.REPO) else path.relative_to(config.REPO).as_posix()
         found.append(("FAIL", f"{rel} is stale (sources changed since the last apply)" if exists
                       else f"{rel} has not been rendered", command("apply")))
@@ -260,10 +260,21 @@ def doctor_findings() -> list[Finding]:
     except ConfigError as e:
         found.append(("FAIL", str(e), "fix the pack's validator, or disable the pack in packs.local.toml"))
     try:
+        errors, warnings = machine_findings(srcs)
+        found += [("FAIL", e, "fix [extensions] in brainrc.local.toml") for e in errors]
+        found += [("WARN", w, "move or rename the table, or enable the pack that reads it") for w in warnings]
+    except ConfigError as e:
+        found.append(("FAIL", str(e), "fix [extensions] in the file named"))
+    try:
         for h in load_harnesses().values():
             agents_format(h)
     except ConfigError as e:  # renders and links depend on it, so stop here
         return found + [("FAIL", str(e), "set agents_format to claude or opencode in harnesses.local.toml")]
+    try:
+        for h in load_harnesses(include_disabled=True).values():  # plan merges disabled ones too
+            config.settings_format(h)
+    except ConfigError as e:  # the settings merges depend on it
+        return found + [("FAIL", str(e), "set settings_format to claude or antigravity in harnesses.local.toml")]
     found += _render_findings(srcs)
     roots = [s.root for s in every_src]
     links, stale, merges = plan(srcs, every_src)
@@ -302,7 +313,7 @@ def doctor_findings() -> list[Finding]:
         elif state == "merge":
             found.append(("FAIL", f"{m.harness}: {tilde(m.dest)} is missing brainrc's hooks", command("apply")))
         elif state == "conflict":
-            found.append(("FAIL", f"{m.harness}: {tilde(m.dest)} is invalid JSON",
+            found.append(("FAIL", f"{m.harness}: {tilde(m.dest)}: {conflict_reason(m)}",
                           f"fix it by hand, then {command('apply')}"))
     found += _hook_findings(merges)
     found += _mcp_findings(srcs)
@@ -355,7 +366,8 @@ def _hook_findings(merges: list) -> list[Finding]:
         except json.JSONDecodeError:
             continue  # reported with the settings checks
         scripts: dict[Path, int] = {}
-        for groups in current.get("hooks", {}).values():
+        hooks = as_claude(current, m.fmt).get("hooks", {}) if isinstance(current, dict) else {}
+        for groups in hooks.values() if isinstance(hooks, dict) else ():
             for group in groups:
                 if not _owned(group, m.markers()):
                     continue

@@ -1,0 +1,116 @@
+{
+  "ref": "gh:117",
+  "shape": "playbook",
+  "batch_size": 3,
+  "playbook_version": 1,
+  "dependency_source": "brief",
+  "started_at": "2026-11-18T09:40:00Z",
+  "delivery": "sequential",
+  "auto": true,
+  "gates": {
+    "campaign": {
+      "presented_at": "2026-11-18T09:40:00Z",
+      "approved_at": "2026-11-18T09:40:00Z"
+    },
+    "deliver": {
+      "presented_at": "2026-11-18T14:40:00Z",
+      "approved_at": "2026-11-18T14:40:00Z"
+    }
+  },
+  "members": [
+    {
+      "ref": "gh:159",
+      "order": 1,
+      "params": {
+        "kind": "skill",
+        "writes": "skills/<prefix><name>/SKILL.md",
+        "extra": "--domain: four sections + a Domains row"
+      },
+      "depends_on": [],
+      "status": "in_review",
+      "slug": "159-new-skill",
+      "branch": "claude/project-thread-qe7dlt",
+      "pr": 386,
+      "base": "main",
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 10,
+        "fixed": 10,
+        "on": "the whole PR"
+      }
+    },
+    {
+      "ref": "gh:160",
+      "order": 2,
+      "params": {
+        "kind": "agent",
+        "writes": "agents/<prefix><name>.md",
+        "extra": "least-privilege tools, model inherit, handoff block"
+      },
+      "depends_on": [
+        "gh:159"
+      ],
+      "status": "in_review",
+      "slug": "160-new-agent",
+      "branch": "claude/project-thread-qe7dlt",
+      "pr": 386,
+      "base": "main",
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 10,
+        "fixed": 10,
+        "on": "the whole PR"
+      }
+    },
+    {
+      "ref": "gh:161",
+      "order": 3,
+      "params": {
+        "kind": "rule",
+        "writes": "rules/NN-<name>.md",
+        "extra": "next NN, core frontmatter, token budget report"
+      },
+      "depends_on": [
+        "gh:159"
+      ],
+      "status": "in_review",
+      "slug": "161-new-rule",
+      "branch": "claude/project-thread-qe7dlt",
+      "pr": 386,
+      "base": "main",
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 10,
+        "fixed": 10,
+        "on": "the whole PR"
+      }
+    },
+    {
+      "ref": "gh:162",
+      "order": 4,
+      "params": {
+        "kind": "command",
+        "writes": "commands/<prefix><name>.md",
+        "extra": "$ARGUMENTS; --as-skill for Codex"
+      },
+      "depends_on": [
+        "gh:159"
+      ],
+      "status": "in_review",
+      "slug": "162-new-command",
+      "branch": "claude/project-thread-qe7dlt",
+      "pr": 386,
+      "base": "main",
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 10,
+        "fixed": 10,
+        "on": "the whole PR"
+      }
+    }
+  ]
+}

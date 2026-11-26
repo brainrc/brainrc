@@ -727,7 +727,9 @@ class DoctorTest(TempRepoCase):
             self.assertEqual([f for f in brainrc.doctor_findings() if "hook" in f[1]], [])
         self.assertIn(("guard_outward.py", "{}", 5), calls)
         self.assertIn(("guard_secrets.py", "{}", 5), calls)
-        self.assertEqual([c for c in calls if c[0] == "guard.py"], [("guard.py", "{}", 5)])  # Cursor: once
+        # Cursor (5s), Codex and Antigravity (10s): each harness's adapter once
+        self.assertEqual(sorted(c for c in calls if c[0] == "guard.py"),
+                         [("guard.py", "{}", 5), ("guard.py", "{}", 10), ("guard.py", "{}", 10)])
 
     def test_points_to_troubleshooting_only_when_something_is_wrong(self):
         _, clean = quiet(brainrc.cmd_doctor)
@@ -1429,7 +1431,7 @@ class InstalledModeTest(TempRepoCase):
     def test_installed_hooks_link_into_a_copy_in_settings_home(self):
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
-        for harness in ("claude", "cursor"):
+        for harness in ("claude", "cursor", "codex"):
             copy = self.copy_root() / harness / "hooks"
             self.assertEqual(brainrc.link_target(self.home / f".{harness}/hooks/brainrc"), copy)
             self.assertEqual(sorted(p.name for p in copy.iterdir()),
@@ -1479,7 +1481,8 @@ class InstalledModeTest(TempRepoCase):
         quiet(brainrc.cmd_sync, True)
         self.assertFalse((self.home / ".cursor/hooks/brainrc").is_symlink())
         self.assertTrue(self.copy_root().is_dir())  # claude still links into it
-        local.write_text("[cursor]\nenabled = false\n[claude]\nenabled = false\n")
+        local.write_text("[cursor]\nenabled = false\n[claude]\nenabled = false\n[codex]\nenabled = false\n"
+                         "[antigravity]\nenabled = false\n")
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertRegex(out, r"PRUNE +~?.*hooks/core")
@@ -1872,6 +1875,113 @@ class CursorHooksTest(TempRepoCase):
         self.assertEqual(brainrc.doctor_findings(), [])
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(json.loads(self.hooks_json.read_text()), data)
+
+
+class CodexHooksTest(TempRepoCase):
+    """[codex] merges the guard hook into $CODEX_HOME/hooks.json, in Claude Code's shape (#157)."""
+
+    def setUp(self):
+        super().setUp()
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
+        install_harnesses(self.home)
+        self.hooks_json = self.home / ".codex/hooks.json"
+
+    def tearDown(self):
+        restore_home(self.old_home)
+        rmtree(self.home)
+        super().tearDown()
+
+    def test_apply_writes_hooks_json_whose_command_denies_and_keeps_a_users_hook(self):
+        own = {"matcher": "^Bash$", "hooks": [{"type": "command", "command": "python3 /opt/mine.py"}]}
+        self.hooks_json.write_text(json.dumps({"hooks": {"PreToolUse": [own]}}))
+        code, out = quiet(brainrc.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        groups = json.loads(self.hooks_json.read_text())["hooks"]["PreToolUse"]
+        self.assertEqual(groups[0], own)
+        self.assertEqual(groups[1]["matcher"], "^(Bash|apply_patch|mcp__.*)$")
+        self.assertEqual(brainrc.link_target(self.home / ".codex/hooks/brainrc"), self.repo / "overrides/codex/hooks")
+        risky = {"hook_event_name": "PreToolUse", "tool_name": "Bash",
+                 "tool_input": {"command": "git push origin main"}, "cwd": str(self.home)}
+        run = subprocess.run(["sh", "-c", groups[1]["hooks"][0]["command"]], input=json.dumps(risky),
+                             capture_output=True, text=True)
+        self.assertEqual(json.loads(run.stdout)["hookSpecificOutput"]["permissionDecision"], "deny", run.stderr)
+        self.assertEqual(brainrc.doctor_findings(), [])
+        data = json.loads(self.hooks_json.read_text())
+        quiet(brainrc.cmd_sync, True)
+        self.assertEqual(json.loads(self.hooks_json.read_text()), data)
+
+
+class AntigravityHooksTest(TempRepoCase):
+    """[antigravity] merges the guard hook into ~/.gemini/config/hooks.json under its own named
+    entry, `brainrc`, as Antigravity's format wants (#158)."""
+
+    def setUp(self):
+        super().setUp()
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
+        install_harnesses(self.home)
+        self.hooks_json = self.home / ".gemini/config/hooks.json"
+        self.mine = {"PreToolUse": [{"matcher": "run_command", "hooks": [{"command": "./mine.sh"}]}]}
+
+    def tearDown(self):
+        restore_home(self.old_home)
+        rmtree(self.home)
+        super().tearDown()
+
+    def test_apply_writes_its_own_entry_keeps_the_users_and_doctor_is_clean(self):
+        self.hooks_json.write_text(json.dumps({"safety-gate": self.mine}))
+        code, out = quiet(brainrc.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        data = json.loads(self.hooks_json.read_text())
+        self.assertEqual(set(data), {"safety-gate", "brainrc"})
+        self.assertEqual(data["safety-gate"], self.mine)
+        (group,) = data["brainrc"]["PreToolUse"]
+        self.assertEqual(group["matcher"], "run_command")
+        self.assertEqual(brainrc.link_target(self.home / ".gemini/config/hooks/brainrc"),
+                         self.repo / "overrides/antigravity/hooks")
+        risky = {"toolCall": {"name": "run_command", "args": {"CommandLine": "git push", "Cwd": str(self.home)}}}
+        run = subprocess.run(["sh", "-c", group["hooks"][0]["command"]], input=json.dumps(risky),
+                             capture_output=True, text=True)
+        self.assertEqual(json.loads(run.stdout)["decision"], "force_ask", run.stderr)
+        self.assertEqual(brainrc.doctor_findings(), [])
+        quiet(brainrc.cmd_sync, True)
+        self.assertEqual(json.loads(self.hooks_json.read_text()), data)
+
+    def test_disabling_antigravity_takes_only_brainrcs_entry_out(self):
+        self.hooks_json.write_text(json.dumps({"safety-gate": self.mine}))
+        quiet(brainrc.cmd_sync, True)
+        (self.repo / "harnesses.local.toml").write_text("[antigravity]\nenabled = false\n")
+        code, out = quiet(brainrc.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        self.assertEqual(json.loads(self.hooks_json.read_text()), {"safety-gate": self.mine})
+
+    def test_a_brainrc_entry_that_is_not_an_object_is_a_conflict(self):
+        self.hooks_json.write_text(json.dumps({"brainrc": ["x"]}))
+        code, out = quiet(brainrc.cmd_sync, True)
+        self.assertIn("hooks.json", out)
+        self.assertIn("`brainrc` entry isn't an object", out)  # not "invalid JSON": it parses
+        self.assertEqual(json.loads(self.hooks_json.read_text()), {"brainrc": ["x"]})
+
+    def test_an_unknown_settings_format_is_an_error(self):
+        (self.repo / "harnesses.local.toml").write_text('[antigravity]\nsettings_format = "nope"\n')
+        code, out = quiet(brainrc.cmd_sync, True)
+        self.assertNotEqual(code, 0, out)
+        self.assertIn("settings_format", out)
+        self.assertTrue(any("settings_format" in what for _, what, _ in brainrc.doctor_findings()))
+
+    def test_an_unknown_settings_format_on_a_disabled_harness_is_a_finding_not_a_crash(self):
+        (self.repo / "harnesses.local.toml").write_text('[antigravity]\nenabled = false\nsettings_format = "nope"\n')
+        self.assertTrue(any("settings_format" in what for _, what, _ in brainrc.doctor_findings()))
+
+    def test_uninstall_says_when_a_bad_settings_format_leaves_the_hooks(self):
+        self.assertEqual(quiet(brainrc.cmd_sync, True)[0], 0)
+        problems: list[str] = []
+        h = {"settings": str(self.hooks_json), "settings_format": "nope"}
+        self.assertEqual(brainrc.uninstall._settings_steps("antigravity", h, problems), [])
+        self.assertTrue(any("settings_format" in p for p in problems), problems)  # left, and said so
 
 
 class CursorPluginTest(TempRepoCase):

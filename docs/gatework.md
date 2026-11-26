@@ -156,6 +156,13 @@ Kustomize), `brainrc-gitops` (Argo CD, Flux), `brainrc-ci-pipelines` (GitHub Act
 `brainrc-containers`, `brainrc-db-migrations`, `brainrc-observability` and `brainrc-scripting`
 (Python, Bash). Your own pack can add more ([your first pack](tutorial.md)).
 
+`brainrc-go-service` and `brainrc-db-migrations`, `brainrc-terraform` and `brainrc-aws`, and
+`brainrc-kubernetes`, `brainrc-gitops` and `brainrc-containers` are moving to the official packs
+`brainrc/go`, `brainrc/terraform-aws` and `brainrc/kubernetes`, folders of
+[brainrc/packs](https://github.com/brainrc/packs). Until Gatework drops its copies, enable one
+beside Gatework by excluding Gatework's copies, as its README lists ([naming](packs.md#naming)).
+Python, Node and TypeScript, and Rust have official packs of their own there too.
+
 ## Environments
 
 Runs are offline by default: validators, renderers, unit tests, local containers and databases.
@@ -185,8 +192,9 @@ From your own pack, without touching Gatework, add `[extensions.gatework]` to `p
 domain skills for your stacks, context skills to run at intake, a ticket connector for your
 tracker, and checks for the delivery gate ([packs](packs.md#extensions)).
 
-To change Gatework itself (a new role, a domain skill for everyone, a new connector), open a pull
-request on [brainrc/gatework](https://github.com/brainrc/gatework). The
+To change Gatework itself (a new role, a new connector), open a pull request on
+[brainrc/gatework](https://github.com/brainrc/gatework). A domain skill for everyone goes in an
+official pack in [brainrc/packs](https://github.com/brainrc/packs) instead. The
 [connector contract](https://github.com/brainrc/gatework/blob/main/skills/brainrc-gatework/references/connectors.md)
 says what a ticket connector must do.
 

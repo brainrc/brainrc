@@ -1,4 +1,12 @@
-"""Merging brainrc's hooks into a harness settings file."""
+"""Merging brainrc's hooks, and the packs' permission entries, into a harness settings file.
+
+Hook groups are brainrc's by where their command lives (OWNED_HOOK). Permission entries
+(`permissions.allow`, `deny` and `ask` in a settings fragment, #142) and sandbox entries (packs'
+path and host guard rules, #322) are plain strings a user could have written too, so the ones
+brainrc added are recorded per file in
+$BRAINRC_HOME/settings-owned.json: a later apply removes exactly those it no longer wants, and an
+entry the user had first is never brainrc's to remove.
+"""
 from __future__ import annotations
 
 import copy
@@ -9,8 +17,14 @@ import stat
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .config import BACKUPS_KEPT, OWNED_HOOK
+from .config import BACKUPS_KEPT, OWNED_HOOK, settings_home
 from .plan import SettingsMerge
+
+PERMISSION_LISTS = ("allow", "deny", "ask")
+# The OS sandbox's lists packs' path and host guard rules compile to (#322), owned like permission
+# entries, under the kind `sandbox.<section>.<key>`.
+SANDBOX_LISTS = (("filesystem", "denyRead"), ("filesystem", "denyWrite"), ("network", "deniedDomains"))
+SANDBOX_KINDS = tuple(f"sandbox.{section}.{key}" for section, key in SANDBOX_LISTS)
 
 
 def _owned(group: dict, markers: set[str] = frozenset()) -> bool:
@@ -22,16 +36,21 @@ def _owned(group: dict, markers: set[str] = frozenset()) -> bool:
     return False
 
 
-def merge_settings(current: dict, fragment: dict, markers: set[str] = frozenset()) -> dict:
+def merge_settings(current: dict, fragment: dict, markers: set[str] = frozenset(),
+                   owned: dict[str, list[str]] | None = None) -> dict:
     """Return current with brainrc's hook groups replaced by the fragment's.
 
-    Hook groups owned by other tools/plugins are kept in place and order. The fragment's other
-    keys (Cursor's `version`) are only set when missing; the rest stays under user control.
+    Hook groups owned by other tools/plugins are kept in place and order. The fragment's
+    permission entries are added, and those in `owned` (added by an earlier apply) that it no
+    longer lists are removed. Its other keys (Cursor's `version`) are only set when missing; the
+    rest stays under user control.
     """
     merged = copy.deepcopy(current)
     for key, value in fragment.items():
-        if key != "hooks":
+        if key not in ("hooks", "permissions", "sandbox"):
             merged.setdefault(key, copy.deepcopy(value))
+    _merge_permissions(merged, current, fragment.get("permissions"), owned or {})
+    _merge_sandbox(merged, current, fragment.get("sandbox"), owned or {})
     hooks = merged.setdefault("hooks", {})
     wanted = fragment.get("hooks", {})
     for event in [*hooks, *(e for e in wanted if e not in hooks)]:  # existing first, then fragment order
@@ -46,14 +65,216 @@ def merge_settings(current: dict, fragment: dict, markers: set[str] = frozenset(
     return merged
 
 
+def _entries(perms, kind: str) -> list[str]:
+    value = perms.get(kind) if isinstance(perms, dict) else None
+    return [e for e in value if isinstance(e, str)] if isinstance(value, list) else []
+
+
+def _merge_permissions(merged: dict, current: dict, wanted, owned: dict[str, list[str]]) -> None:
+    """Add the wanted permission entries, drop the owned ones no longer wanted, keep the user's."""
+    wanted = wanted if isinstance(wanted, dict) else {}
+    perms = merged.get("permissions")
+    if perms is not None and not isinstance(perms, dict):
+        return  # not an object: the user's to fix, so leave it as it is
+    perms = copy.deepcopy(perms or {})
+    for key, value in wanted.items():  # e.g. defaultMode: the user's own value wins, as before
+        if key not in PERMISSION_LISTS:
+            perms.setdefault(key, copy.deepcopy(value))
+    for kind in PERMISSION_LISTS:
+        have = perms.get(kind)
+        if have is not None and not isinstance(have, list):
+            continue  # not a list: the user's to fix, so leave it as it is
+        want = list(dict.fromkeys(_entries(wanted, kind)))
+        gone = set(owned.get(kind, [])) - set(want)
+        entries = [e for e in (have or []) if not (isinstance(e, str) and e in gone)]
+        entries += [e for e in want if e not in entries]
+        if entries or have == []:  # a user's own empty list stays
+            perms[kind] = entries
+        else:
+            perms.pop(kind, None)  # brainrc emptied it, or never had one to add
+    if perms or current.get("permissions") == {}:
+        merged["permissions"] = perms
+    else:
+        merged.pop("permissions", None)
+
+
+def _merge_list(container: dict, key: str, want: list[str], gone: set[str]) -> None:
+    """container[key]: drop the gone entries, add the wanted ones, keep the user's; a user's own
+    empty list stays, and one brainrc emptied goes. A value that isn't a list is left as it is."""
+    have = container.get(key)
+    if have is not None and not isinstance(have, list):
+        return  # the user's to fix
+    entries = [e for e in (have or []) if not (isinstance(e, str) and e in gone)]
+    entries += [e for e in want if e not in entries]
+    if entries or have == []:
+        container[key] = entries
+    else:
+        container.pop(key, None)
+
+
+def _sandbox_entries(box, kind: str) -> list[str]:
+    _, section, key = kind.split(".")
+    part = box.get(section) if isinstance(box, dict) else None
+    return _entries(part, key)
+
+
+def _merge_sandbox(merged: dict, current: dict, wanted, owned: dict[str, list[str]]) -> None:
+    """Add the wanted sandbox entries, drop the owned ones no longer wanted, keep the user's; a
+    fragment's other sandbox keys (enabled) are only set when missing."""
+    wanted = wanted if isinstance(wanted, dict) else {}
+    box = merged.get("sandbox")
+    if box is not None and not isinstance(box, dict):
+        return  # not an object: the user's to fix
+    box = copy.deepcopy(box or {})
+    for key, value in wanted.items():
+        if key not in {section for section, _ in SANDBOX_LISTS}:
+            box.setdefault(key, copy.deepcopy(value))
+    had = current.get("sandbox") if isinstance(current.get("sandbox"), dict) else {}
+    for section in dict.fromkeys(section for section, _ in SANDBOX_LISTS):
+        part = box.get(section)
+        if part is not None and not isinstance(part, dict):
+            continue
+        part = dict(part or {})
+        extra = wanted.get(section) if isinstance(wanted.get(section), dict) else {}
+        for key, value in extra.items():  # e.g. network.allowLocalBinding from a fragment
+            if not isinstance(value, list):
+                part.setdefault(key, copy.deepcopy(value))
+        for sec, key in SANDBOX_LISTS:
+            if sec == section:
+                kind = f"sandbox.{sec}.{key}"
+                want = list(dict.fromkeys(_sandbox_entries(wanted, kind)))
+                _merge_list(part, key, want, set(owned.get(kind, [])) - set(want))
+        if part or had.get(section) == {}:
+            box[section] = part
+        else:
+            box.pop(section, None)
+    if box or current.get("sandbox") == {}:
+        merged["sandbox"] = box
+    else:
+        merged.pop("sandbox", None)
+
+
+def owned_permissions(current: dict, fragment: dict, owned: dict[str, list[str]] | None) -> dict[str, list[str]]:
+    """The permission and sandbox entries brainrc owns after merging fragment into current: each
+    wanted entry it owned before or that current didn't have (an entry the user had first stays
+    theirs)."""
+    owned = owned or {}
+    perms = current.get("permissions")
+    result = {}
+    for kind in PERMISSION_LISTS:
+        had = set(_entries(perms, kind))
+        mine = [e for e in dict.fromkeys(_entries(fragment.get("permissions"), kind))
+                if e in owned.get(kind, []) or e not in had]
+        if mine:
+            result[kind] = mine
+    for kind in SANDBOX_KINDS:
+        had = set(_sandbox_entries(current.get("sandbox"), kind))
+        mine = [e for e in dict.fromkeys(_sandbox_entries(fragment.get("sandbox"), kind))
+                if e in owned.get(kind, []) or e not in had]
+        if mine:
+            result[kind] = mine
+    return result
+
+
+def owned_file() -> Path:
+    return settings_home() / "settings-owned.json"
+
+
+def read_owned(dest: Path) -> dict[str, list[str]]:
+    """The permission entries an earlier apply added to dest, by kind ({} when none)."""
+    try:
+        data = json.loads(owned_file().read_text())
+    except (OSError, ValueError):
+        return {}
+    entry = data.get(str(dest)) if isinstance(data, dict) else None
+    perms = entry.get("permissions") if isinstance(entry, dict) else None
+    found = {k: _entries(perms, k) for k in PERMISSION_LISTS if _entries(perms, k)}
+    box = entry.get("sandbox") if isinstance(entry, dict) else None
+    for kind in SANDBOX_KINDS:  # recorded as {"filesystem.denyRead": [...]}
+        if entries := _entries(box, kind.split(".", 1)[1]):
+            found[kind] = entries
+    return found
+
+
+def record_owned(dest: Path, owned: dict[str, list[str]]) -> None:
+    """Write dest's entry in settings-owned.json, dropping it (and the file, once empty) when none."""
+    try:
+        data = json.loads(owned_file().read_text())
+    except (OSError, ValueError):
+        data = {}
+    data = data if isinstance(data, dict) else {}
+    if owned:
+        perms = {k: v for k, v in owned.items() if k in PERMISSION_LISTS}
+        box = {k.split(".", 1)[1]: v for k, v in owned.items() if k in SANDBOX_KINDS}
+        data[str(dest)] = {**({"permissions": perms} if perms else {}), **({"sandbox": box} if box else {})}
+    else:
+        data.pop(str(dest), None)
+    if data:
+        owned_file().parent.mkdir(parents=True, exist_ok=True)
+        owned_file().write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
+    elif owned_file().is_file():
+        owned_file().unlink()
+
+
+# Antigravity's hooks.json maps a name to each hook set ({"<name>": {"PreToolUse": [...]}}); brainrc's
+# groups go under this name, and a hook set the user named stays theirs.
+ANTIGRAVITY_ENTRY = "brainrc"
+
+
+def as_claude(current: dict, fmt: str) -> dict:
+    """A settings file in Claude Code's shape, hooks under "hooks", whatever its own format."""
+    if fmt != "antigravity":
+        return current
+    entry = current.get(ANTIGRAVITY_ENTRY)
+    return {"hooks": copy.deepcopy(entry)} if isinstance(entry, dict) else {}
+
+
+def from_claude(current: dict, merged: dict, fmt: str) -> dict:
+    """current with the hooks in merged (Claude Code's shape) put back in fmt's place."""
+    if fmt != "antigravity":
+        return merged
+    out = copy.deepcopy(current)
+    hooks = merged.get("hooks")
+    if hooks:
+        out[ANTIGRAVITY_ENTRY] = hooks
+    elif isinstance(current.get(ANTIGRAVITY_ENTRY), dict):
+        out.pop(ANTIGRAVITY_ENTRY)  # brainrc emptied its own entry
+    return out
+
+
 def settings_change(m: SettingsMerge) -> tuple[str, dict | None]:
     """Return (state, merged) where state is ok | merge | conflict."""
     try:
         current = json.loads(m.dest.read_text()) if m.dest.exists() else {}
     except json.JSONDecodeError:
         return "conflict", None
-    merged = merge_settings(current, m.wanted(), m.markers())
+    if not isinstance(current, dict):
+        return "conflict", None
+    if m.fmt == "antigravity" and ANTIGRAVITY_ENTRY in current and not isinstance(current[ANTIGRAVITY_ENTRY], dict):
+        return "conflict", None
+    view = as_claude(current, m.fmt)
+    merged = from_claude(current, merge_settings(view, m.wanted(), m.markers(), read_owned(m.dest)), m.fmt)
     return ("ok" if merged == current else "merge"), merged
+
+
+def conflict_reason(m: SettingsMerge) -> str:
+    """Why settings_change returned conflict, for the message: bad JSON or a wrong-shaped entry."""
+    try:
+        current = json.loads(m.dest.read_text())
+    except (OSError, ValueError):
+        return "invalid JSON"
+    if not isinstance(current, dict):
+        return "not a JSON object"
+    return f"its `{ANTIGRAVITY_ENTRY}` entry isn't an object"
+
+
+def settings_owned(m: SettingsMerge) -> dict[str, list[str]]:
+    """What settings-owned.json should record for m.dest after apply merges it."""
+    try:
+        current = json.loads(m.dest.read_text()) if m.dest.exists() else {}
+    except (OSError, ValueError):
+        return read_owned(m.dest)
+    return owned_permissions(current if isinstance(current, dict) else {}, m.wanted(), read_owned(m.dest))
 
 
 class FileChanged(Exception):

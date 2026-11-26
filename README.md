@@ -63,6 +63,10 @@ It works best in Claude Code, where each role gets a fresh context and the guard
 enforced. Elsewhere it is best effort ([details](docs/gatework.md#harness-support)). Don't want
 it? Turn it off and brainrc installs only its rules and guard hooks ([packs](docs/packs/use-a-pack.md#turn-the-default-pack-off-or-pin-it)).
 
+For your stacks, the official packs live as folders of [brainrc/packs](https://github.com/brainrc/packs):
+Python, Node and TypeScript, Rust, Go, Terraform and AWS, Kubernetes, review, a starter and a security baseline
+([list](docs/packs.md#naming), [enable one](docs/packs/use-a-pack.md)).
+
 ## Why not …
 
 | | Its own docs say | brainrc |

@@ -1,9 +1,11 @@
-"""Write a pack's layout: pack.toml, rules/NN-*.md, skills/<prefix>*/SKILL.md.
+"""Write a pack's layout: pack.toml, rules/NN-*.md, skills/<prefix>*/SKILL.md, agents, commands,
+MCP servers and any other file.
 
-One small writer for everything that creates a pack: the importers (`brainrc import`, #163),
-`brainrc init`'s import offer and `brainrc new pack` (#150, brainrc/newpack.py). `render_pack`
-returns the files as text, so a caller can show what it would write (file count, tokens) before
-`write_pack` touches the disk.
+One small writer for everything that creates a pack or an item in one: the importers
+(`brainrc import`, #163), `brainrc init`'s import offer, `brainrc new pack` (#150,
+brainrc/newpack.py) and `brainrc new skill|agent|rule|command` (E8, brainrc/newitem.py).
+`render_pack` returns the files, so a caller can show what it would write (file count, tokens)
+before `write_pack` touches the disk; `add_files` writes new items into a pack that exists.
 """
 from __future__ import annotations
 
@@ -31,6 +33,35 @@ class Skill:
     description: str
     text: str        # SKILL.md's body
     provenance: str = ""
+    extra: list[str] = field(default_factory=list)  # other frontmatter lines, as written
+    files: dict[str, str | Copied] = field(default_factory=dict)  # its other files, by path in its folder
+
+
+@dataclass(frozen=True)
+class Copied:
+    """A file copied as it was: its bytes, and whether it was executable where it came from."""
+    data: bytes
+    executable: bool = False
+
+
+@dataclass
+class Agent:
+    slug: str        # the agent's name after the pack prefix
+    description: str
+    text: str        # the system prompt
+    provenance: str = ""
+    tools: str = ""  # `Read, Grep, Glob`; empty inherits every tool
+    model: str = ""
+    extra: list[str] = field(default_factory=list)
+
+
+@dataclass
+class Command:
+    slug: str        # the command's name after the pack prefix
+    description: str
+    text: str        # the prompt; $ARGUMENTS is what follows the command
+    provenance: str = ""
+    extra: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -41,12 +72,15 @@ class PackSpec:
     requires_core: str = ""   # default: this core's minor series
     rules: list[Rule] = field(default_factory=list)
     skills: list[Skill] = field(default_factory=list)
+    agents: list[Agent] = field(default_factory=list)
+    commands: list[Command] = field(default_factory=list)
+    servers: dict[str, dict] = field(default_factory=dict)  # mcp/servers.toml, by name after the prefix
     domains: list[dict] = field(default_factory=list)  # [[extensions.gatework.domains]] rows
     id: str = ""              # <owner>/<pack>, when it is published under one
     max_always_tokens: int = 0
     test: str = ""            # the pack's own tests, which validate --pack runs
     ticket: dict = field(default_factory=dict)  # [extensions.gatework.ticket]: strings and lists of strings
-    files: dict[str, str] = field(default_factory=dict)  # any other file, path -> text, written last
+    files: dict[str, str | Copied] = field(default_factory=dict)  # any other file, path -> content, written last
     notes: dict[str, str] = field(default_factory=dict)  # pack.toml key -> a comment at the end of its line
 
     def __post_init__(self) -> None:
@@ -95,18 +129,75 @@ def rule_files(rules: list[Rule]) -> list[tuple[str, str]]:
     later), else by 1, with as many digits as the count needs so filename order is rule order."""
     step = 10 if len(rules) <= 9 else 1
     width = max(2, len(str(len(rules) * step)))
-    return [(f"rules/{(i + 1) * step:0{width}d}-{r.slug}.md", f"{_comment(r.provenance)}{r.text.strip()}\n")
-            for i, r in enumerate(rules)]
+    return [(f"rules/{(i + 1) * step:0{width}d}-{r.slug}.md", render_rule(r)) for i, r in enumerate(rules)]
 
 
 def _frontmatter_value(value: str) -> str:
     return _toml_string(" ".join(value.split()))  # a JSON-style double-quoted scalar is valid YAML too
 
 
-def render_pack(spec: PackSpec) -> dict[str, str]:
+def _frontmatter(fields: list[tuple[str, str]], extra: list[str] = ()) -> str:
+    lines = [f"{k}: {v}" for k, v in fields if v] + [line.rstrip() for line in extra]
+    return "---\n" + "\n".join(lines) + "\n---\n\n"
+
+
+def skill_text(name: str, s: Skill) -> str:
+    """SKILL.md for the skill `name` (prefix included)."""
+    fields = [("name", name), ("description", _frontmatter_value(s.description))]
+    return f"{_frontmatter(fields, s.extra)}{_comment(s.provenance)}{s.text.strip()}\n"
+
+
+def agent_text(name: str, a: Agent) -> str:
+    """agents/<name>.md in Claude Code's subagent format (docs/formats.md#agents-agentsnamemd)."""
+    fields = [("name", name), ("description", _frontmatter_value(a.description)), ("tools", a.tools),
+              ("model", a.model)]
+    return f"{_frontmatter(fields, a.extra)}{_comment(a.provenance)}{a.text.strip()}\n"
+
+
+def command_text(c: Command) -> str:
+    """commands/<name>.md: a description and a prompt (docs/formats.md#commands-commandsnamemd)."""
+    return f"{_frontmatter([('description', _frontmatter_value(c.description))], c.extra)}" \
+           f"{_comment(c.provenance)}{c.text.strip()}\n"
+
+
+def render_rule(r: Rule, frontmatter: bool = False) -> str:
+    """A rule file's text. frontmatter: core's `trigger: always_on` and `alwaysApply: true`, which
+    Antigravity and Cursor need and brainrc strips when it renders the instructions file."""
+    head = "---\ntrigger: always_on\nalwaysApply: true\n---\n\n" if frontmatter else ""
+    return f"{head}{_comment(r.provenance)}{r.text.strip()}\n"
+
+
+def servers_text(servers: dict[str, dict]) -> str:
+    """mcp/servers.toml for these servers (docs/formats.md#mcp-servers-mcpserverstoml)."""
+    def value(v) -> str:
+        return "[" + ", ".join(map(_toml_string, v)) + "]" if isinstance(v, list) else _toml_string(v)
+    tables = []
+    for name, table in servers.items():
+        key = name if re.fullmatch(r"[A-Za-z0-9_-]+", name) else _toml_string(name)
+        tables.append("\n".join([f"[servers.{key}]", *(f"{k} = {value(v)}" for k, v in table.items())]))
+    return "\n\n".join(tables) + "\n"
+
+
+def _unique(prefix: str, slug: str, seen: set[str]) -> str:
+    """prefix + slug, numbered -2, -3... when an item of that kind already has the name: two
+    sources with the same name keep both."""
+    name, n = f"{prefix}{slug}", 2
+    while name in seen:
+        name, n = f"{prefix}{slug}-{n}", n + 1
+    seen.add(name)
+    return name
+
+
+def domains_row(files: str, skills: list[str]) -> str:
+    """One [[extensions.gatework.domains]] row: the files (`glob`, ...) and the skills they load."""
+    return (f"[[extensions.gatework.domains]]\nfiles = {_toml_string(files)}\n"
+            f"skills = [{', '.join(map(_toml_string, skills))}]\n")
+
+
+def render_pack(spec: PackSpec) -> dict[str, str | Copied]:
     """The pack's files, path -> text, in the order they are written."""
     check_name(spec.name, spec.prefix, spec.id)
-    files: dict[str, str] = {}
+    files: dict[str, str | Copied] = {}
 
     def key(name: str, value: str) -> str:
         note = spec.notes.get(name)
@@ -123,9 +214,7 @@ def render_pack(spec: PackSpec) -> dict[str, str]:
     if spec.test:
         lines.append(key("test", _toml_string(spec.test)))
     for row in spec.domains:
-        lines += ["", "[[extensions.gatework.domains]]",
-                  f"files = {_toml_string(row['files'])}",
-                  "skills = [" + ", ".join(_toml_string(s) for s in row["skills"]) + "]"]
+        lines += ["", *domains_row(row["files"], row["skills"]).splitlines()]
     if spec.ticket:
         lines += ["", "[extensions.gatework.ticket]"]
         lines += [f"{k} = " + ("[" + ", ".join(map(_toml_string, v)) + "]" if isinstance(v, list) else _toml_string(v))
@@ -134,14 +223,20 @@ def render_pack(spec: PackSpec) -> dict[str, str]:
     files.update(rule_files(spec.rules))
     seen: set[str] = set()
     for s in spec.skills:
-        name = f"{spec.prefix}{s.slug}"
-        n = 2
-        while name in seen:  # two sources with the same name: keep both
-            name, n = f"{spec.prefix}{s.slug}-{n}", n + 1
-        seen.add(name)
-        files[f"skills/{name}/SKILL.md"] = (
-            f"---\nname: {name}\ndescription: {_frontmatter_value(s.description)}\n---\n\n"
-            f"{_comment(s.provenance)}{s.text.strip()}\n")
+        name = _unique(spec.prefix, s.slug, seen)
+        files[f"skills/{name}/SKILL.md"] = skill_text(name, s)
+        for rel, data in s.files.items():
+            files[f"skills/{name}/{rel}"] = data
+    seen = set()
+    for a in spec.agents:
+        name = _unique(spec.prefix, a.slug, seen)
+        files[f"agents/{name}.md"] = agent_text(name, a)
+    seen = set()
+    for c in spec.commands:
+        files[f"commands/{_unique(spec.prefix, c.slug, seen)}.md"] = command_text(c)
+    if spec.servers:
+        seen = set()
+        files["mcp/servers.toml"] = servers_text({_unique(spec.prefix, n, seen): t for n, t in spec.servers.items()})
     for rel, text in spec.files.items():
         if rel in files:
             raise ConfigError(f"{rel} is written twice")
@@ -149,7 +244,7 @@ def render_pack(spec: PackSpec) -> dict[str, str]:
     return files
 
 
-def check_dest(dest: Path, files: dict[str, str], force: bool = False, sources: list[Path] = ()) -> None:
+def check_dest(dest: Path, files: dict[str, str | Copied], force: bool = False, sources: list[Path] = ()) -> None:
     """Raise ConfigError if write_pack would refuse dest: so a caller can check before it asks."""
     if dest.is_symlink() or (dest.exists() and not dest.is_dir()):
         raise ConfigError(f"{tilde(dest)} is a link or a file, not a folder")
@@ -162,13 +257,28 @@ def check_dest(dest: Path, files: dict[str, str], force: bool = False, sources: 
     held = [s for s in sources if s.resolve().is_relative_to(dest.resolve())]
     if full and held:
         raise ConfigError(f"{tilde(dest)} holds {tilde(held[0])}, which is being imported; pick another folder")
+    _check_paths(dest, files)
+
+
+def _check_paths(dest: Path, files: dict) -> None:
     for rel in files:
         posix, win = PurePosixPath(rel), PureWindowsPath(rel)
         if posix.is_absolute() or win.is_absolute() or win.drive or win.root or ".." in win.parts:
             raise ConfigError(f"refusing to write {rel} outside {tilde(dest)}")
 
 
-def write_pack(dest: Path, files: dict[str, str], force: bool = False, sources: list[Path] = ()) -> list[Path]:
+def _write(path: Path, data: str | Copied) -> None:
+    """One file: text as UTF-8 with \n line ends, a copied file byte for byte. A copied file keeps
+    its executable bit; text that starts with `#!` is a script, so it is made executable."""
+    if isinstance(data, Copied):
+        path.write_bytes(data.data)
+    else:
+        path.write_text(data, encoding="utf-8", newline="\n")
+    if data.executable if isinstance(data, Copied) else data.startswith("#!"):
+        path.chmod(path.stat().st_mode | 0o111)
+
+
+def write_pack(dest: Path, files: dict[str, str | Copied], force: bool = False, sources: list[Path] = ()) -> list[Path]:
     """Write files under dest: into a temporary folder beside it, then moved into place. dest must
     not exist, or be empty but for `.git`. With force it may also be an earlier pack (it has a
     pack.toml), which is replaced, but never a folder that holds one of the sources or is a link.
@@ -179,10 +289,10 @@ def write_pack(dest: Path, files: dict[str, str], force: bool = False, sources: 
     git = dest / ".git"
     old = None
     try:
-        for rel, text in files.items():
+        for rel, data in files.items():
             path = tmp / rel
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(text, encoding="utf-8")
+            _write(path, data)
         if git.exists() and not git.is_symlink():
             os.replace(git, tmp / ".git")
         if dest.exists():  # moved aside first, so a failure leaves the earlier pack whole
@@ -200,3 +310,27 @@ def write_pack(dest: Path, files: dict[str, str], force: bool = False, sources: 
         if old:
             config.rmtree(old, ignore_errors=True)
     return [dest / rel for rel in files]
+
+
+def add_files(root: Path, files: dict[str, str], force: bool = False) -> list[Path]:
+    """Write new items into the pack at root (`brainrc new skill` and the like): each file through
+    a temporary file beside it. Refuses, before writing any, a file that exists unless force (then
+    it is replaced), a path outside root, and a path through a link."""
+    _check_paths(root, files)
+    for rel in files:
+        path = root / rel
+        for parent in [path, *path.parents]:
+            if parent == root:
+                break
+            if parent.is_symlink():
+                raise ConfigError(f"{tilde(parent)} is a link; refusing to write {rel} through it")
+        if path.exists() and not force:
+            raise ConfigError(f"{tilde(path)} already exists; pick another name, or pass --force to replace it")
+        if path.exists() and not path.is_file():
+            raise ConfigError(f"{tilde(path)} is not a file")
+    written = []
+    for rel, text in files.items():
+        path = root / rel
+        config.write_text_atomic(path, text)
+        written.append(path)
+    return written

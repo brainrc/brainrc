@@ -56,6 +56,7 @@ class SchemaFilesTest(unittest.TestCase):
         harness = schema.load("harnesses.toml")["$defs"]["harness"]
         self.assertEqual(set(harness["properties"]), set(config.LAYERED_KEYS["harnesses"]))
         self.assertEqual(harness["properties"]["agents_format"]["enum"], list(opencode.AGENT_FORMATS))
+        self.assertEqual(harness["properties"]["settings_format"]["enum"], list(config.SETTINGS_FORMATS))
         for key, kind in config.LAYERED_KEYS["harnesses"].items():
             want = "boolean" if kind is bool else "string"
             self.assertEqual(harness["properties"][key]["type"], want, key)

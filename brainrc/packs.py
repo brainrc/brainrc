@@ -79,8 +79,10 @@ def needs_fetch(cfg: dict, root: Path) -> str | None:
     for key in ("git", "ref"):
         if was.get(key) != want[key]:
             return f"fetched {key} `{was.get(key)}`, packs.toml says `{want[key]}`"
-    if not root.is_dir():
-        return f"no folder `{subdir(cfg)}` in its clone"
+    try:
+        check_subdir("", cfg, clone)
+    except ConfigError as e:
+        return str(e).split(": ", 1)[1]  # a folder that's missing or links out: refetching says which
     return None
 
 
@@ -129,6 +131,7 @@ def fetch_pack(key: str, cfg: dict, root: Path, commit: str | None = None, depth
             raise ConfigError(f"pack {key}: {root} has local changes; commit or discard them, then re-run")
         if not (commit and has_commit(root, commit)):
             _git("fetch", "-q", "--depth", str(depth), url, want, cwd=root)
+        _has_folder(key, cfg, root, commit or "FETCH_HEAD")  # before checkout: a failure leaves it as it was
         _git("checkout", "-q", "--detach", commit or "FETCH_HEAD", cwd=root)
         _check_head(key, root, commit)
         check_subdir(key, cfg, root)
@@ -140,6 +143,7 @@ def fetch_pack(key: str, cfg: dict, root: Path, commit: str | None = None, depth
     try:
         _git("init", "-q", cwd=tmp)
         _git("fetch", "-q", "--depth", str(depth), url, want, cwd=tmp)
+        _has_folder(key, cfg, tmp, "FETCH_HEAD")
         _git("checkout", "-q", "--detach", "FETCH_HEAD", cwd=tmp)
         _check_head(key, tmp, commit)
         check_subdir(key, cfg, tmp)
@@ -148,6 +152,21 @@ def fetch_pack(key: str, cfg: dict, root: Path, commit: str | None = None, depth
         config.rmtree(tmp, ignore_errors=True)
         raise
     tmp.rename(root)
+
+
+def _has_folder(key: str, cfg: dict, clone: Path, rev: str) -> None:
+    """The pack's `subdir` is a folder (a tree, not a link) at rev, read without checking it out."""
+    sub = subdir(cfg)
+    if not sub:
+        return
+    try:
+        kind = _git("cat-file", "-t", f"{rev}:{sub}", cwd=clone).strip()
+    except ConfigError:
+        kind = ""
+    if not kind:
+        raise ConfigError(f"pack {key}: no folder `{sub}` in {cfg['git']} at {cfg.get('ref', 'its default branch')}")
+    if kind != "tree":
+        raise ConfigError(f"pack {key}: `{sub}` in {cfg['git']} is a link or a file, not a folder")
 
 
 def has_commit(root: Path, commit: str) -> bool:
@@ -190,12 +209,13 @@ UPDATE_DEPTH = 50  # commits of history `update` fetches, to list what moved
 
 
 def commits_between(root: Path, old: str, new: str) -> list[str] | None:
-    """`<short sha> <subject>` for each commit from old (excluded) to new, newest first, or None
-    when old isn't an ancestor of new in the history fetched (a rewritten ref, or a longer gap)."""
+    """`<short sha> <subject>` for each commit from old (excluded) to new that touches the pack
+    (root: its folder, with a `subdir`), newest first, or None when old isn't an ancestor of new
+    in the history fetched (a rewritten ref, or a longer gap)."""
     try:
         if old != new:
             _git("merge-base", "--is-ancestor", old, new, cwd=root)
-        out = _git("log", "--format=%h %s", f"{old}..{new}", cwd=root)
+        out = _git("log", "--format=%h %s", f"{old}..{new}", "--", ".", cwd=root)
     except (ConfigError, OSError):
         return None
     return [printable(line) for line in out.splitlines() if line]

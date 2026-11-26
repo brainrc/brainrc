@@ -60,3 +60,23 @@ to brainrc/packs and any Gatework change stay with the maintainer.
   with containers and gitops). security-baseline: guard denies for credential files, sandbox on.
 - No trigger-eval harness runs yet (E30), so each pack ships its cases and says the delta is
   unmeasured.
+
+## engine · gh:121, gh:318 · Review
+`code-review (high)` on #390: 7 findings, 5 fixed.
+- Fixed: a `subdir` changed to a link on a clone already on disk is refused (`needs_fetch` runs
+  the folder check, and the fetch checks the folder is a tree before checkout); a missing folder
+  at a new ref leaves the clone at its old commit, so installed links still resolve; `subdir`
+  beside `path` in packs.toml is refused, not ignored; `validate --pack` ignores this machine's
+  `exclude`, so a collision every other user hits isn't hidden (#318); `update` lists only the
+  commits that touch the pack's folder.
+- Not changed: `doctor` says "not fetched yet" for a fetched clone that lacks the folder;
+  `doctor.py` is in E31's draft #389, so that waits. The docs' brainrc/packs example and links
+  work once that repo's first push and tag land.
+
+## engine · packs · Built, waiting
+The nine packs are built as one commit each on top of a scaffold commit, kept locally (a bundle is
+in the project's shared files). Each passes `validate --pack`; python, node-ts, rust and
+security-baseline also pass beside Gatework 0.8.0, and the other five beside it with the
+README's `exclude` lines. A local copy installed python, rust, kubernetes and security-baseline
+from folders on one clean home; a second home with only the lock got identical files after the
+tag moved. The scaffold's push to brainrc/packs `main` waits for the maintainer.

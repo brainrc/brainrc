@@ -190,7 +190,8 @@ def in_clone(cfg: dict, clone: Path) -> Path:
 
 
 def check_subdir(key: str, cfg: dict, clone: Path) -> None:
-    """After a fetch: the pack's `subdir` is a folder of the clone, not a link out of it."""
+    """The pack's `subdir` is a folder of the clone, not a link out of it: after a fetch, and before
+    a clone already on disk is used."""
     sub = subdir(cfg)
     if not sub:
         return
@@ -204,8 +205,9 @@ def check_subdir(key: str, cfg: dict, clone: Path) -> None:
 def _pack_root(cfg: dict, key: str) -> Path:
     if ("path" in cfg) == ("git" in cfg):
         raise ConfigError(f"packs.toml [{key}]: set `path` or `git` (one of them)")
+    sub = subdir(cfg, "packs.toml", key)  # refuses `subdir` beside `path`
     if "git" in cfg:  # fetched by brainrc (brainrc/packs.py), the pack in its `subdir` when set
-        return config.settings_home() / "packs" / key / subdir(cfg, "packs.toml", key)
+        return config.settings_home() / "packs" / key / sub
     root = expand(str(cfg["path"]))
     return root if root.is_absolute() else config.local_dir() / root  # beside packs.local.toml
 

@@ -408,7 +408,9 @@ def cmd_validate(pack: str | None = None, key: str = "", fetch_defaults: bool = 
     agent_names = {f.stem for s in srcs for f in markdown_files("agents", s)}
     skill_dirs = {p.name: p for s in srcs for p in skills(s)}
     skill_names = set(skill_dirs)
-    errors = duplicate_packs(srcs) + collisions(srcs)
+    # `validate --pack` judges the pack as everyone gets it, so this machine's `exclude` doesn't hide
+    # a collision; doctor checking an enabled pack (key set) and plain validate use it, as apply does.
+    errors = duplicate_packs(srcs) + collisions(srcs, [] if pack and not key else None)
     for src in srcs:
         try:
             errors += _validate_source(src, agent_names, skill_names, plugins)

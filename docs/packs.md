@@ -52,8 +52,8 @@ subdir = "python"   # a folder inside the repo, using /; no `.` or `..`
 ```
 
 `apply` fetches the repo into `$BRAINRC_HOME/packs/<key>` and installs from that folder; the rest
-of the repo is never read. It fails, naming the folder, if the ref has no such folder or the folder
-is a link out of the repo. The lock records `subdir` next to `git`, `ref` and `commit`, so
+of the repo is never read. It fails, naming the folder, if the ref has no such folder or it's a
+link rather than a folder; the clone stays at the commit it had. The lock records `subdir` next to `git`, `ref` and `commit`, so
 `install --frozen` and `check` install and compare that folder at the locked commit
 ([lock format](project.md#brainrclock)). Each pack keeps a clone of its own, so two packs from one
 repo can sit at different refs. `subdir` works the same in a repo's `brainrc.toml`.

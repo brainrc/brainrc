@@ -21,14 +21,17 @@
       "slug": "121-pack-subdir",
       "status": "in_review",
       "branch": "claude/project-thread-6wase2",
-      "pr": null,
+      "pr": 390,
       "base": "main",
       "merged": false,
       "review": {
-        "by": "",
-        "findings": 0,
-        "fixed": 0,
-        "no_change": []
+        "by": "code-review (high)",
+        "findings": 7,
+        "fixed": 5,
+        "no_change": [
+          "doctor says `not fetched yet` for a fetched clone missing its folder: doctor.py is in E31's draft #389, so it waits",
+          "the docs' brainrc/packs example and links work once that repo's first push and tag land"
+        ]
       }
     },
     {
@@ -40,13 +43,13 @@
       "slug": "318-domain-skills-out-of-core",
       "status": "in_review",
       "branch": "claude/project-thread-6wase2",
-      "pr": null,
+      "pr": 390,
       "base": "main",
       "merged": false,
       "review": {
-        "by": "",
-        "findings": 0,
-        "fixed": 0,
+        "by": "code-review (high)",
+        "findings": 1,
+        "fixed": 1,
         "no_change": []
       }
     },

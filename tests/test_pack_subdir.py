@@ -11,6 +11,8 @@ from test_frozen import FrozenCase, tree  # noqa: E402
 from test_lock import rev  # noqa: E402
 
 from brainrc import lock, schema  # noqa: E402
+from brainrc.packs import commits_between  # noqa: E402
+from brainrc.validate import cmd_validate  # noqa: E402
 from brainrc.sources import clone_root, in_clone, subdir  # noqa: E402
 from brainrc.config import ConfigError  # noqa: E402
 import brainrc  # noqa: E402
@@ -107,7 +109,7 @@ class SubdirApplyTest(SubdirCase):
         self.assertIn("no folder `pyhton`", out)
         self.assertFalse((self.settings_home / "packs/python").exists())  # the new clone isn't kept
 
-    def test_a_folder_that_links_out_of_the_repo_is_refused(self):
+    def test_a_folder_that_is_a_link_is_refused(self):
         work = self.tmp / "packs-work"
         os.symlink("../..", work / "escape")
         git("add", "escape", cwd=work)
@@ -115,7 +117,40 @@ class SubdirApplyTest(SubdirCase):
         git("tag", "v3", cwd=work)
         git("push", "-q", str(self.packs_bare), "v3", cwd=work)
         (self.repo / "packs.local.toml").write_text(f'[x]\ngit = "{self.packs_url}"\nref = "v3"\nsubdir = "escape"\n')
-        self.assertIn("links outside the repo", self.apply(1))
+        self.assertIn("`escape` in " + self.packs_url + " is a link or a file, not a folder", self.apply(1))
+
+    def test_a_folder_changed_to_a_link_out_is_refused(self):
+        work = self.tmp / "packs-work"
+        os.symlink("../..", work / "escape")
+        git("add", "escape", cwd=work)
+        git("commit", "-qm", "link", cwd=work)
+        git("tag", "v3", cwd=work)
+        git("push", "-q", str(self.packs_bare), "v3", cwd=work)
+        conf = f'[x]\ngit = "{self.packs_url}"\nref = "v3"\nsubdir = "%s"\n'
+        (self.repo / "packs.local.toml").write_text(conf % "python")
+        self.apply()
+        (self.repo / "packs.local.toml").write_text(conf % "escape")  # same clone, a new folder
+        self.assertIn("is a link or a file, not a folder", self.apply(1))
+
+    def test_a_ref_without_the_folder_leaves_the_clone_where_it_was(self):
+        work = self.tmp / "packs-work"
+        git("mv", "python", "py", cwd=work)
+        git("commit", "-qm", "rename", cwd=work)
+        git("tag", "v4", cwd=work)
+        git("push", "-q", str(self.packs_bare), "v4", cwd=work)
+        self.use(python="python")
+        self.apply()
+        clone = self.settings_home / "packs/python"
+        before = rev(clone, "HEAD")
+        (self.repo / "packs.local.toml").write_text(
+            f'[python]\ngit = "{self.packs_url}"\nref = "v4"\nsubdir = "python"\n')
+        self.assertIn("no folder `python`", self.apply(1))
+        self.assertEqual(rev(clone, "HEAD"), before)  # still v1: its installed links still resolve
+        self.assertTrue((self.home / ".claude/skills/python-validate/SKILL.md").is_file())
+
+    def test_subdir_with_path_is_refused_in_packs_toml(self):
+        (self.repo / "packs.local.toml").write_text(f'[team]\npath = "{self.tmp}"\nsubdir = "python"\n')
+        self.assertIn("packs.toml [team]: `subdir` goes with `git`", self.apply(1))
 
     def test_changing_the_folder_reuses_the_clone_and_relocks(self):
         self.use(python="python")
@@ -124,6 +159,13 @@ class SubdirApplyTest(SubdirCase):
         out = self.apply()
         self.assertNotIn("FETCH", out)  # same URL and ref: no new fetch
         self.assertEqual(lock.read(self.user_lock)["packs"]["python"]["subdir"], "rust")
+
+    def test_update_lists_only_the_commits_that_touch_the_folder(self):
+        clone = self.tmp / "full"
+        git("clone", "-q", str(self.packs_bare), str(clone))
+        v1, v2 = rev(clone, "v1"), rev(clone, "v2")
+        self.assertEqual([c.split(" ", 1)[1] for c in commits_between(clone / "python", v1, v2)], ["v2"])
+        self.assertEqual(commits_between(clone / "rust", v1, v2), [])
 
     def test_status_shows_the_folder_it_would_fetch(self):
         self.use(python="python")
@@ -157,6 +199,14 @@ class TakeOverTest(SubdirCase):
 
     def test_both_copies_collide(self):
         self.assertIn("skill `brainrc-kubernetes` is defined in both gatework and kubernetes", self.apply(1))
+
+    def test_validate_pack_reports_the_collision_this_machine_excludes(self):
+        # A pack is checked as everyone gets it: one machine's exclude doesn't hide the clash.
+        (self.repo / "brainrc.local.toml").write_text('exclude = ["gatework:skills/brainrc-kubernetes"]\n')
+        self.apply()  # fetches Gatework for validate to check against
+        got, out = quiet(cmd_validate, str(self.tmp / "packs-work/kubernetes"))
+        self.assertEqual(got, 1, out)
+        self.assertIn("skill `brainrc-kubernetes` is defined in both gatework and kubernetes", out)
 
     def test_excluding_gateworks_copy_installs_the_packs(self):
         (self.repo / "brainrc.local.toml").write_text('exclude = ["gatework:skills/brainrc-kubernetes"]\n')

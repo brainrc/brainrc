@@ -321,12 +321,18 @@ def duplicate_packs(srcs: list[Source]) -> list[str]:
     return errors
 
 
-def collisions(srcs: list[Source]) -> list[str]:
+def collisions(srcs: list[Source], exclude: list[str] | None = None) -> list[str]:
+    """An item name two sources define. An item `exclude` leaves out (brainrc.local.toml's, unless
+    given) is never installed, so it can't collide: excluding a default pack's copy is how a pack
+    that takes over one of its items is enabled beside it (#318)."""
+    exclude = config.install_profile()[1] if exclude is None else exclude
     errors = []
     for kind in KINDS:
         seen: dict[str, str] = {}
         for src in srcs:
             for p in items(src, kind):
+                if excluded(src, p, exclude):
+                    continue
                 name = item_name(p)
                 if name in seen:
                     errors.append(f"{kind[:-1]} `{name}` is defined in both {seen[name]} and {src.name}")

@@ -136,6 +136,38 @@ class SubdirApplyTest(SubdirCase):
         self.apply()  # the local `git` replaces the default's origin, its `subdir` included
 
 
+class TakeOverTest(SubdirCase):
+    """#318: an official pack takes over a skill Gatework still ships; excluding Gatework's copy is
+    what lets the two be enabled together until Gatework drops it."""
+
+    def setUp(self):
+        super().setUp()
+        work = self.tmp / "packs-work"
+        root = work / "kubernetes"
+        root.mkdir()
+        (root / "pack.toml").write_text('name = "kubernetes"\nprefix = "brainrc-"\nid = "brainrc/kubernetes"\n'
+                                        'requires_core = ">=0.1"\n')
+        skill(root, "brainrc-kubernetes", "From the kubernetes pack.")
+        git("add", "-A", cwd=work)
+        git("commit", "-qm", "kubernetes", cwd=work)
+        git("tag", "k1", cwd=work)
+        git("push", "-q", str(self.packs_bare), "k1", cwd=work)
+        (self.repo / "packs.local.toml").write_text(
+            f'[kubernetes]\ngit = "{self.packs_url}"\nref = "k1"\nsubdir = "kubernetes"\n')
+
+    def test_both_copies_collide(self):
+        self.assertIn("skill `brainrc-kubernetes` is defined in both gatework and kubernetes", self.apply(1))
+
+    def test_excluding_gateworks_copy_installs_the_packs(self):
+        (self.repo / "brainrc.local.toml").write_text('exclude = ["gatework:skills/brainrc-kubernetes"]\n')
+        self.apply()
+        self.assertIn("From the kubernetes pack.",
+                      (self.home / ".claude/skills/brainrc-kubernetes/SKILL.md").read_text())
+        files = lock.read(self.user_lock)["packs"]
+        self.assertNotIn("skills/brainrc-kubernetes/SKILL.md", files["gatework"]["files"])
+        self.assertIn("skills/brainrc-kubernetes/SKILL.md", files["kubernetes"]["files"])
+
+
 class SubdirFrozenTest(SubdirCase):
     def test_two_machines_get_identical_files_from_one_lock(self):
         self.use(python="python", rust="rust")

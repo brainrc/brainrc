@@ -369,7 +369,7 @@ def sync(root: Path, apply: bool, moved: frozenset[str] = frozenset(), yes: bool
             if not p.root.is_dir():
                 raise ConfigError(f"pack {p.key}: no directory at {tilde(p.root)}")
         srcs = [load_pack(p.root, p.key) for p in packs]
-        problems = duplicate_packs(srcs) + collisions(srcs)
+        problems = duplicate_packs(srcs) + collisions(srcs, project.exclude)
         incompatible, warnings = check_packs(srcs)
     except ConfigError as e:
         problems, incompatible, warnings = [str(e)], [], []

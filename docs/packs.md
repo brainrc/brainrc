@@ -35,8 +35,9 @@ acme-ai-pack/
 ```
 
 Skills, agents, commands, and MCP servers must start with the pack's `prefix`, and no name may
-exist in two sources. `apply` refuses to write anything if one does. The full rules are in
-[Naming](#naming), and each file's format in [formats](formats.md).
+exist in two sources unless `exclude` leaves one copy out; `apply` refuses to write anything
+while one does. The full rules are in [Naming](#naming), and each file's format in
+[formats](formats.md).
 
 ## Packs from one repo
 
@@ -238,6 +239,14 @@ are folders of [brainrc/packs](https://github.com/brainrc/packs), enabled with `
 | `brainrc/terraform-aws` | Terraform and AWS ([terraform-aws](https://github.com/brainrc/packs/tree/main/terraform-aws)) | [#316](https://github.com/brainrc/brainrc/issues/316) |
 | `brainrc/kubernetes` | Kubernetes, including GitOps and containers ([kubernetes](https://github.com/brainrc/packs/tree/main/kubernetes)) | [#317](https://github.com/brainrc/brainrc/issues/317) |
 | `brainrc/security-baseline` | the default guard policy, secret protection and a sandbox profile ([security-baseline](https://github.com/brainrc/packs/tree/main/security-baseline)) | [#323](https://github.com/brainrc/brainrc/issues/323) |
+
+`brainrc/go`, `brainrc/terraform-aws` and `brainrc/kubernetes` take over domain skills Gatework
+0.8 still ships, under the same names (#318). Until Gatework drops its copies, enable one beside
+Gatework by excluding Gatework's copy in `brainrc.local.toml`, for example
+`exclude = ["gatework:skills/brainrc-kubernetes"]`: an excluded item isn't installed, so it
+doesn't collide. Each pack's README lists the lines it needs. `brainrc/starter` and
+`brainrc/review` reuse Gatework's names too (`brainrc-project-commands`, and the review, PR
+description, commit message and unslop skills): they are for a setup with Gatework off.
 
 ## Rules
 

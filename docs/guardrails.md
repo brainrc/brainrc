@@ -128,8 +128,10 @@ records it with the pack's hooks ([packs](packs.md#layout)).
 Cursor runs them through `overrides/cursor/hooks/guard.py` on `beforeShellExecution` (both
 guards) and `beforeReadFile` (secrets), from `~/.cursor/hooks.json` (`brainrc`) or the plugin's
 `.cursor-plugin/hooks.json`. Cursor's `ask` was reported broken and reads accept only allow or
-deny, so ask becomes deny there too. File writes and MCP calls aren't guarded in Cursor: it has no
-reliable pre-write hook. Packs' guard rules aren't read there yet. Not yet run in a real Cursor.
+deny, so ask becomes deny there too. A pack's [guard rules](packs.md#guard-rules) apply under its
+`[scope]`, judged from the event's `cwd` (else the first workspace root), and a pack's deny reads as
+a refusal, not as a call to ask you. File writes and MCP calls aren't guarded in Cursor: it has no
+reliable pre-write hook. Not yet run in a real Cursor.
 
 Codex and Antigravity CLI get the rules and workflow layers only. Use their own
 permission/sandbox settings (e.g. Codex approval modes) alongside. Porting the hooks to tools

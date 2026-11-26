@@ -72,11 +72,9 @@ with the maintainer.
   `tests/test_pack_settings_keys.py`.
 
 ## engine · gaps left open
-- OpenCode's plugin doesn't see MCP calls in a way the guard can check, so packs' `tool` rules
-  don't apply there. Antigravity's hook covers `run_command` only: its file tools' argument names
-  and MCP tool naming aren't documented.
-- None of the four evaluators has run in a real Cursor, OpenCode, Codex or Antigravity session;
-  the tests drive each hook with the payloads the tools' docs describe.
+- Antigravity's hook covers `run_command` only: its file tools' argument names and MCP tool naming
+  aren't documented. (OpenCode's MCP gap, listed here first, closed in the real-run pass below.)
+- Cursor and Antigravity haven't run for real (see the real-run pass below).
 - The sandbox covers Bash and its child processes, not Claude Code's Read tool or web fetches, and
   takes effect only with `sandbox.enabled` on. Other tools have no sandbox settings brainrc writes.
 - Nothing here needs brainrc/gatework.
@@ -95,3 +93,24 @@ with the maintainer.
 - Not changed: an empty sandbox list the user had before brainrc added to it goes with brainrc's
   entries, as #142's permission lists do; keeping it needs settings-owned.json to record what was
   there first, for permissions and sandbox alike.
+
+## verify · real harness runs, asked for after PR #388
+- Codex CLI 0.172 and OpenCode 1.19.6, installed from npm on a scratch machine, ran real sessions
+  against a local mock model that called the tools, with the acme pack applied to a scratch home
+  and two repos (an acme remote, a personal one).
+- Codex, for real: shell (plain, `bash -c`, `sudo -E env`, `&&`), `apply_patch` (gpt-5.5's
+  freeform tool) and code mode (`exec` calling `tools.exec_command`) gave the expected deny or run
+  in each repo. Untrusted hooks are skipped silently in `codex exec`; trusting them in the TUI's
+  review screen fixed that.
+- Bug, fixed: Codex names an MCP server's tools with `-` turned into `_` (`mcp__acme_jira__…`), so
+  the pack's `mcp__acme-jira__*` rule never matched. Rules now match either spelling.
+- Bug, fixed: Codex appends ". Command: …" to a deny reason, which doubled our full stop.
+- OpenCode, for real: bash (with `workdir`), read and secrets gave the expected results. Bug,
+  fixed: MCP tools (`acme-jira_get_transitions`) ran unguarded. The plugin now asks OpenCode's
+  client which servers are connected, matches the longest name, and sends
+  `mcp__<server>__<tool>` to the guard; the real run then blocked the pack's ask and core's
+  write-verb ask, and let reads through.
+- Cursor and Antigravity have no CLI that runs here without a sign-in, so a script read the hooks
+  files `apply` wrote, sent each hook a full payload shaped like the documented input, and ran the
+  command only when the reply allowed it. Every case matched the design. Antigravity's
+  `view_file` of `.env` isn't checked, the known gap above.

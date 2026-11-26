@@ -482,6 +482,14 @@ def _all_segments(command: str, depth: int = 0):
             yield from _all_segments(inner, depth + 1)
 
 
+def tool_matches(tool_name: str, glob: str) -> bool:
+    """An MCP tool rule's glob against a tool's full name. Codex names a server's tools with `-`
+    turned into `_` (mcp__acme_jira__…), so a rule written as Claude Code names them
+    (mcp__acme-jira__…) must match either way."""
+    return fnmatch.fnmatchcase(tool_name, glob) or fnmatch.fnmatchcase(
+        tool_name.replace("-", "_"), glob.replace("-", "_"))
+
+
 def pack_rule(tool_name: str, command: str, rules: list[dict], cwd) -> dict:
     """{"deny": (pack, reason), "ask": (pack, reason)} for the first rule of each kind that matches
     this call where it runs; {} when none does."""
@@ -490,7 +498,7 @@ def pack_rule(tool_name: str, command: str, rules: list[dict], cwd) -> dict:
         hits = [r for r in rules if isinstance(r.get("match"), list) and r["match"]
                 and any(rule_matches([str(w) for w in r["match"]], seg) for seg in segments)]
     else:
-        hits = [r for r in rules if isinstance(r.get("tool"), str) and fnmatch.fnmatchcase(tool_name, r["tool"])]
+        hits = [r for r in rules if isinstance(r.get("tool"), str) and tool_matches(tool_name, r["tool"])]
     found, cache = {}, {}
     where = Path(os.path.abspath(str(cwd))) if cwd else Path.cwd()
     for rule in hits:

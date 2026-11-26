@@ -75,7 +75,7 @@ def main() -> int:
         json.dump({"hookSpecificOutput": {
             "hookEventName": "PreToolUse",
             "permissionDecision": "deny",
-            "permissionDecisionReason": guard_bridge.blocked(*found, "Codex"),
+            "permissionDecisionReason": guard_bridge.blocked(*found, "Codex").rstrip("."),  # Codex adds ". Command: …"
         }}, sys.stdout)
     return 0
 

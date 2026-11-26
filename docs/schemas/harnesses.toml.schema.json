@@ -43,11 +43,12 @@
           ]
         },
         "settings_format": {
-          "description": "How the settings file holds hooks: \"claude\" (also Cursor's and Codex's) under \"hooks\"; \"antigravity\" under a named entry, \"brainrc\".",
+          "description": "How the settings file holds hooks: \"claude\" (also Cursor's and Codex's) under \"hooks\"; \"antigravity\" under a named entry, \"brainrc\"; \"kiro\" as a list of hook entries.",
           "type": "string",
           "enum": [
             "claude",
-            "antigravity"
+            "antigravity",
+            "kiro"
           ]
         },
         "commands": {

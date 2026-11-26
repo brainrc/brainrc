@@ -157,6 +157,81 @@ LINK {HOME}/.codex/skills/brainrc-ticket-github -> {REPO}/packs/gatework/skills/
 LINK {HOME}/.codex/skills/brainrc-ticket-jira -> {REPO}/packs/gatework/skills/brainrc-ticket-jira
 LINK {HOME}/.codex/skills/brainrc-work -> {REPO}/packs/gatework/skills/brainrc-work
 LINK {HOME}/.codex/skills/spec-agent -> {REPO}/packs/gatework/skills/spec-agent
+LINK {HOME}/.config/amp/AGENTS.md -> {BRAINRC_HOME}/instructions.md
+FILE {HOME}/.config/amp/settings.json
+{
+  "amp.mcpServers": {
+    "acme-docs": {
+      "command": "acme-docs-mcp",
+      "args": [
+        "--stdio"
+      ],
+      "env": {
+        "ACME_DOCS_TOKEN": "${ACME_DOCS_TOKEN}"
+      }
+    },
+    "acme-search": {
+      "url": "https://search.acme.example/mcp"
+    }
+  }
+}
+LINK {HOME}/.config/amp/skills/acme-context -> {PACK}/skills/acme-context
+LINK {HOME}/.config/amp/skills/acme-deploy -> {PACK}/skills/acme-deploy
+LINK {HOME}/.config/amp/skills/brainrc-aws -> {REPO}/packs/gatework/skills/brainrc-aws
+LINK {HOME}/.config/amp/skills/brainrc-gatework -> {REPO}/packs/gatework/skills/brainrc-gatework
+LINK {HOME}/.config/amp/skills/brainrc-kubernetes -> {REPO}/packs/gatework/skills/brainrc-kubernetes
+LINK {HOME}/.config/amp/skills/brainrc-terraform -> {REPO}/packs/gatework/skills/brainrc-terraform
+LINK {HOME}/.config/amp/skills/brainrc-ticket-github -> {REPO}/packs/gatework/skills/brainrc-ticket-github
+LINK {HOME}/.config/amp/skills/brainrc-ticket-jira -> {REPO}/packs/gatework/skills/brainrc-ticket-jira
+LINK {HOME}/.config/amp/skills/brainrc-work -> {REPO}/packs/gatework/skills/brainrc-work
+LINK {HOME}/.config/amp/skills/spec-agent -> {REPO}/packs/gatework/skills/spec-agent
+LINK {HOME}/.config/devin/AGENTS.md -> {BRAINRC_HOME}/instructions.md
+FILE {HOME}/.config/devin/config.json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "^(exec|read|write|edit|apply_patch|mcp__.*)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"$HOME/.config/devin/hooks/brainrc/guard.py\"; [ ! -f \"$f\" ] || python3 \"$f\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
+LINK {HOME}/.config/devin/hooks/brainrc -> {REPO}/overrides/devin/hooks
+FILE {HOME}/.config/devin/mcp_config.json
+{
+  "mcpServers": {
+    "acme-docs": {
+      "command": "acme-docs-mcp",
+      "args": [
+        "--stdio"
+      ],
+      "env": {
+        "ACME_DOCS_TOKEN": "${env:ACME_DOCS_TOKEN}"
+      }
+    },
+    "acme-search": {
+      "url": "https://search.acme.example/mcp",
+      "transport": "http"
+    }
+  }
+}
+LINK {HOME}/.config/devin/skills/acme-context -> {PACK}/skills/acme-context
+LINK {HOME}/.config/devin/skills/acme-deploy -> {PACK}/skills/acme-deploy
+LINK {HOME}/.config/devin/skills/brainrc-aws -> {REPO}/packs/gatework/skills/brainrc-aws
+LINK {HOME}/.config/devin/skills/brainrc-gatework -> {REPO}/packs/gatework/skills/brainrc-gatework
+LINK {HOME}/.config/devin/skills/brainrc-kubernetes -> {REPO}/packs/gatework/skills/brainrc-kubernetes
+LINK {HOME}/.config/devin/skills/brainrc-terraform -> {REPO}/packs/gatework/skills/brainrc-terraform
+LINK {HOME}/.config/devin/skills/brainrc-ticket-github -> {REPO}/packs/gatework/skills/brainrc-ticket-github
+LINK {HOME}/.config/devin/skills/brainrc-ticket-jira -> {REPO}/packs/gatework/skills/brainrc-ticket-jira
+LINK {HOME}/.config/devin/skills/brainrc-work -> {REPO}/packs/gatework/skills/brainrc-work
+LINK {HOME}/.config/devin/skills/spec-agent -> {REPO}/packs/gatework/skills/spec-agent
 LINK {HOME}/.config/opencode/AGENTS.md -> {BRAINRC_HOME}/instructions.md
 LINK {HOME}/.config/opencode/agents/acme-reviewer.md -> {BRAINRC_HOME}/opencode/agents/acme-reviewer.md
 LINK {HOME}/.config/opencode/agents/analyst.md -> {BRAINRC_HOME}/opencode/agents/analyst.md
@@ -200,6 +275,56 @@ LINK {HOME}/.config/opencode/skills/brainrc-ticket-github -> {REPO}/packs/gatewo
 LINK {HOME}/.config/opencode/skills/brainrc-ticket-jira -> {REPO}/packs/gatework/skills/brainrc-ticket-jira
 LINK {HOME}/.config/opencode/skills/brainrc-work -> {REPO}/packs/gatework/skills/brainrc-work
 LINK {HOME}/.config/opencode/skills/spec-agent -> {REPO}/packs/gatework/skills/spec-agent
+LINK {HOME}/.copilot/copilot-instructions.md -> {BRAINRC_HOME}/instructions.md
+LINK {HOME}/.copilot/hooks/brainrc -> {REPO}/overrides/copilot/hooks
+FILE {HOME}/.copilot/hooks/brainrc.json
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "type": "command",
+        "command": "f=\"$HOME/.copilot/hooks/brainrc/guard.py\"; [ ! -f \"$f\" ] || python3 \"$f\"",
+        "timeoutSec": 10
+      }
+    ]
+  }
+}
+FILE {HOME}/.copilot/mcp-config.json
+{
+  "mcpServers": {
+    "acme-docs": {
+      "type": "stdio",
+      "command": "acme-docs-mcp",
+      "args": [
+        "--stdio"
+      ],
+      "env": {
+        "ACME_DOCS_TOKEN": "${ACME_DOCS_TOKEN}"
+      },
+      "tools": [
+        "*"
+      ]
+    },
+    "acme-search": {
+      "type": "http",
+      "url": "https://search.acme.example/mcp",
+      "tools": [
+        "*"
+      ]
+    }
+  }
+}
+LINK {HOME}/.copilot/skills/acme-context -> {PACK}/skills/acme-context
+LINK {HOME}/.copilot/skills/acme-deploy -> {PACK}/skills/acme-deploy
+LINK {HOME}/.copilot/skills/brainrc-aws -> {REPO}/packs/gatework/skills/brainrc-aws
+LINK {HOME}/.copilot/skills/brainrc-gatework -> {REPO}/packs/gatework/skills/brainrc-gatework
+LINK {HOME}/.copilot/skills/brainrc-kubernetes -> {REPO}/packs/gatework/skills/brainrc-kubernetes
+LINK {HOME}/.copilot/skills/brainrc-terraform -> {REPO}/packs/gatework/skills/brainrc-terraform
+LINK {HOME}/.copilot/skills/brainrc-ticket-github -> {REPO}/packs/gatework/skills/brainrc-ticket-github
+LINK {HOME}/.copilot/skills/brainrc-ticket-jira -> {REPO}/packs/gatework/skills/brainrc-ticket-jira
+LINK {HOME}/.copilot/skills/brainrc-work -> {REPO}/packs/gatework/skills/brainrc-work
+LINK {HOME}/.copilot/skills/spec-agent -> {REPO}/packs/gatework/skills/spec-agent
 LINK {HOME}/.cursor/hooks/brainrc -> {REPO}/overrides/cursor/hooks
 LINK {HOME}/.cursor/hooks/brainrc-acme -> {PACK}/overrides/cursor/hooks
 FILE {HOME}/.cursor/hooks.json
@@ -260,6 +385,102 @@ LINK {HOME}/.gemini/config/skills/brainrc-ticket-github -> {REPO}/packs/gatework
 LINK {HOME}/.gemini/config/skills/brainrc-ticket-jira -> {REPO}/packs/gatework/skills/brainrc-ticket-jira
 LINK {HOME}/.gemini/config/skills/brainrc-work -> {REPO}/packs/gatework/skills/brainrc-work
 LINK {HOME}/.gemini/config/skills/spec-agent -> {REPO}/packs/gatework/skills/spec-agent
+LINK {HOME}/.junie/AGENTS.md -> {BRAINRC_HOME}/instructions.md
+LINK {HOME}/.junie/agents/acme-reviewer.md -> {PACK}/agents/acme-reviewer.md
+LINK {HOME}/.junie/agents/analyst.md -> {REPO}/packs/gatework/agents/analyst.md
+LINK {HOME}/.junie/agents/brainrc-analyst.md -> {REPO}/packs/gatework/agents/brainrc-analyst.md
+LINK {HOME}/.junie/agents/brainrc-code-reviewer.md -> {REPO}/packs/gatework/agents/brainrc-code-reviewer.md
+LINK {HOME}/.junie/agents/brainrc-infra-reviewer.md -> {REPO}/packs/gatework/agents/brainrc-infra-reviewer.md
+LINK {HOME}/.junie/agents/brainrc-verifier.md -> {REPO}/packs/gatework/agents/brainrc-verifier.md
+LINK {HOME}/.junie/agents/code-reviewer.md -> {REPO}/packs/gatework/agents/code-reviewer.md
+LINK {HOME}/.junie/agents/verifier.md -> {REPO}/packs/gatework/agents/verifier.md
+FILE {HOME}/.junie/config.json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "^(Bash|Read|Write|Edit|Grep|mcp__.*)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"$HOME/.junie/hooks/brainrc/guard.py\"; [ ! -f \"$f\" ] || python3 \"$f\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
+LINK {HOME}/.junie/hooks/brainrc -> {REPO}/overrides/junie/hooks
+FILE {HOME}/.junie/mcp/mcp.json
+{
+  "mcpServers": {
+    "acme-docs": {
+      "command": "acme-docs-mcp",
+      "args": [
+        "--stdio"
+      ]
+    },
+    "acme-search": {
+      "url": "https://search.acme.example/mcp"
+    }
+  }
+}
+LINK {HOME}/.junie/skills/acme-context -> {PACK}/skills/acme-context
+LINK {HOME}/.junie/skills/acme-deploy -> {PACK}/skills/acme-deploy
+LINK {HOME}/.junie/skills/brainrc-aws -> {REPO}/packs/gatework/skills/brainrc-aws
+LINK {HOME}/.junie/skills/brainrc-gatework -> {REPO}/packs/gatework/skills/brainrc-gatework
+LINK {HOME}/.junie/skills/brainrc-kubernetes -> {REPO}/packs/gatework/skills/brainrc-kubernetes
+LINK {HOME}/.junie/skills/brainrc-terraform -> {REPO}/packs/gatework/skills/brainrc-terraform
+LINK {HOME}/.junie/skills/brainrc-ticket-github -> {REPO}/packs/gatework/skills/brainrc-ticket-github
+LINK {HOME}/.junie/skills/brainrc-ticket-jira -> {REPO}/packs/gatework/skills/brainrc-ticket-jira
+LINK {HOME}/.junie/skills/brainrc-work -> {REPO}/packs/gatework/skills/brainrc-work
+LINK {HOME}/.junie/skills/spec-agent -> {REPO}/packs/gatework/skills/spec-agent
+LINK {HOME}/.kiro/hooks/brainrc -> {REPO}/overrides/kiro/hooks
+FILE {HOME}/.kiro/hooks/brainrc.json
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "brainrc-guard",
+      "trigger": "PreToolUse",
+      "matcher": "*",
+      "action": {
+        "type": "command",
+        "command": "f=\"$HOME/.kiro/hooks/brainrc/guard.py\"; [ ! -f \"$f\" ] || python3 \"$f\""
+      },
+      "timeout": 10
+    }
+  ]
+}
+FILE {HOME}/.kiro/settings/mcp.json
+{
+  "mcpServers": {
+    "acme-docs": {
+      "command": "acme-docs-mcp",
+      "args": [
+        "--stdio"
+      ],
+      "env": {
+        "ACME_DOCS_TOKEN": "${ACME_DOCS_TOKEN}"
+      }
+    },
+    "acme-search": {
+      "url": "https://search.acme.example/mcp"
+    }
+  }
+}
+LINK {HOME}/.kiro/skills/acme-context -> {PACK}/skills/acme-context
+LINK {HOME}/.kiro/skills/acme-deploy -> {PACK}/skills/acme-deploy
+LINK {HOME}/.kiro/skills/brainrc-aws -> {REPO}/packs/gatework/skills/brainrc-aws
+LINK {HOME}/.kiro/skills/brainrc-gatework -> {REPO}/packs/gatework/skills/brainrc-gatework
+LINK {HOME}/.kiro/skills/brainrc-kubernetes -> {REPO}/packs/gatework/skills/brainrc-kubernetes
+LINK {HOME}/.kiro/skills/brainrc-terraform -> {REPO}/packs/gatework/skills/brainrc-terraform
+LINK {HOME}/.kiro/skills/brainrc-ticket-github -> {REPO}/packs/gatework/skills/brainrc-ticket-github
+LINK {HOME}/.kiro/skills/brainrc-ticket-jira -> {REPO}/packs/gatework/skills/brainrc-ticket-jira
+LINK {HOME}/.kiro/skills/brainrc-work -> {REPO}/packs/gatework/skills/brainrc-work
+LINK {HOME}/.kiro/skills/spec-agent -> {REPO}/packs/gatework/skills/spec-agent
+LINK {HOME}/.kiro/steering/AGENTS.md -> {BRAINRC_HOME}/instructions.md
 FILE {BRAINRC_HOME}/apply.lock
 FILE {BRAINRC_HOME}/brainrc.lock
 # brainrc.lock: written by brainrc. Don't edit it by hand.
@@ -399,6 +620,12 @@ FILE {BRAINRC_HOME}/harnesses.json
     "{PACK}"
   ],
   "harnesses": {
+    "amp": {
+      "home": "~/.config/amp",
+      "skills": "~/.config/amp/skills",
+      "instructions": "~/.config/amp/AGENTS.md",
+      "mcp": "~/.config/amp/settings.json"
+    },
     "antigravity": {
       "skills": "~/.gemini/config/skills",
       "instructions": "~/.gemini/config/AGENTS.md",
@@ -425,10 +652,44 @@ FILE {BRAINRC_HOME}/harnesses.json
       "settings": "~/.codex/hooks.json",
       "mcp": "~/.codex/config.toml"
     },
+    "copilot": {
+      "home": "~/.copilot",
+      "skills": "~/.copilot/skills",
+      "instructions": "~/.copilot/copilot-instructions.md",
+      "hooks_dir": "~/.copilot/hooks/brainrc",
+      "settings": "~/.copilot/hooks/brainrc.json",
+      "mcp": "~/.copilot/mcp-config.json"
+    },
     "cursor": {
       "skills": "~/.cursor/skills",
       "hooks_dir": "~/.cursor/hooks/brainrc",
       "settings": "~/.cursor/hooks.json"
+    },
+    "devin": {
+      "home": "~/.config/devin",
+      "skills": "~/.config/devin/skills",
+      "instructions": "~/.config/devin/AGENTS.md",
+      "hooks_dir": "~/.config/devin/hooks/brainrc",
+      "settings": "~/.config/devin/config.json",
+      "mcp": "~/.config/devin/mcp_config.json"
+    },
+    "junie": {
+      "home": "~/.junie",
+      "skills": "~/.junie/skills",
+      "agents": "~/.junie/agents",
+      "instructions": "~/.junie/AGENTS.md",
+      "hooks_dir": "~/.junie/hooks/brainrc",
+      "settings": "~/.junie/config.json",
+      "mcp": "~/.junie/mcp/mcp.json"
+    },
+    "kiro": {
+      "home": "~/.kiro",
+      "skills": "~/.kiro/skills",
+      "instructions": "~/.kiro/steering/AGENTS.md",
+      "hooks_dir": "~/.kiro/hooks/brainrc",
+      "settings": "~/.kiro/hooks/brainrc.json",
+      "settings_format": "kiro",
+      "mcp": "~/.kiro/settings/mcp.json"
     },
     "opencode": {
       "skills": "~/.config/opencode/skills",
@@ -450,6 +711,26 @@ FILE {BRAINRC_HOME}/mcp-owned.json
     "acme-search"
   ],
   "{HOME}/.config/opencode/opencode.json": [
+    "acme-docs",
+    "acme-search"
+  ],
+  "{HOME}/.copilot/mcp-config.json": [
+    "acme-docs",
+    "acme-search"
+  ],
+  "{HOME}/.config/devin/mcp_config.json": [
+    "acme-docs",
+    "acme-search"
+  ],
+  "{HOME}/.kiro/settings/mcp.json": [
+    "acme-docs",
+    "acme-search"
+  ],
+  "{HOME}/.config/amp/settings.json": [
+    "acme-docs",
+    "acme-search"
+  ],
+  "{HOME}/.junie/mcp/mcp.json": [
     "acme-docs",
     "acme-search"
   ]

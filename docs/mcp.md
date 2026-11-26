@@ -30,13 +30,20 @@ file that changed under it.
 | Claude Code | `~/.claude.json` | `mcpServers` |
 | Codex | `~/.codex/config.toml` | a marked `[mcp_servers]` block |
 | OpenCode | `~/.config/opencode/opencode.json` | `mcp` (`opencode.jsonc` when only that exists, keeping its comments) |
+| GitHub Copilot | `~/.copilot/mcp-config.json` | `mcpServers`, each with `tools: ["*"]` |
+| Devin Local | `~/.config/devin/mcp_config.json` | `mcpServers`; variables as `${env:NAME}` |
+| Kiro | `~/.kiro/settings/mcp.json` | `mcpServers`; Kiro expands `${NAME}` only for variables in its approved list |
+| Amp | `~/.config/amp/settings.json` | `amp.mcpServers` (`settings.jsonc` when only that exists) |
+| JetBrains Junie | `~/.junie/mcp/mcp.json` | `mcpServers`, with no `env`: Junie reads no variable references, so the server gets them from the environment Junie runs in |
+| Gemini CLI | `~/.gemini/settings.json` | `mcpServers`; a remote server as `httpUrl` |
 
 Antigravity and Cursor aren't supported yet.
 
 ## Secrets stay out of files
 
 `env_from` names environment variables; brainrc writes a reference the tool expands when it
-starts the server (`${NAME}`, `env_vars` or `{env:NAME}`), never the value. `validate` rejects a
+starts the server (`${NAME}`, `env_vars`, `{env:NAME}` or `${env:NAME}`), never the value; Junie, which reads
+no reference, gets none. `validate` rejects a
 server with an `env` table, which would hold values.
 
 ## Your own servers are safe

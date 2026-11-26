@@ -42,6 +42,9 @@ class Adapter:
     # settings file, e.g. {"path": [("filesystem", "denyRead")]}. Empty: no sandbox brainrc writes.
     sandbox: dict[str, list[tuple[str, str]]] = {}
 
+    # True when its hook entries give `timeout` in milliseconds (Gemini CLI), not seconds.
+    hook_timeout_ms: bool = False
+
     # --- agents -------------------------------------------------------------------------------
     def render_agent(self, path: Path) -> str:
         """An agent file rewritten in this adapter's agent format (defines_agents_format only)."""
@@ -76,6 +79,21 @@ class Adapter:
 
     def __repr__(self) -> str:
         return f"<adapter {self.name}>"
+
+
+def server_entry(server: dict, env_ref: str | None = "${{{}}}", url: dict | None = None,
+                 stdio: dict | None = None) -> dict:
+    """The common MCP spelling: {"url"} for a remote server, {"command", "args", "env"} for a local
+    one. env_ref spells a reference to the variable that `env_from` names ("${{{}}}" -> "${VAR}");
+    None leaves `env` out, for a tool that passes its own environment on and reads no reference.
+    url and stdio add a tool's own keys to each kind."""
+    if "url" in server:
+        return {"url": server["url"]} | (url or {})
+    entry = {"command": server["command"], "args": list(server.get("args", []))}
+    env = server.get("env_from", [])
+    if env and env_ref is not None:
+        entry["env"] = {v: env_ref.format(v) for v in env}
+    return entry | (stdio or {})
 
 
 class Plain(Adapter):

@@ -57,7 +57,8 @@ def copy_repo(dest: Path) -> None:
     shutil.copy2(REPO / "CHANGELOG.md", dest / "CHANGELOG.md")
 
 
-HARNESS_HOMES = (".claude", ".codex", ".config/opencode", ".gemini/config", ".cursor")
+HARNESS_HOMES = (".claude", ".codex", ".config/opencode", ".gemini/config", ".cursor", ".copilot", ".config/devin",
+                 ".kiro", ".config/amp", ".junie")
 
 
 def install_harnesses(home: Path) -> None:
@@ -77,7 +78,7 @@ def set_core_version(repo: Path, version: str) -> None:
     (repo / "CHANGELOG.md").write_text(f"# Changelog\n\n## {version} (2026-01-01)\n\n- Change.\n")
 
 
-HARNESS_VARS = ("XDG_CONFIG_HOME", "CLAUDE_CONFIG_DIR", "CODEX_HOME")
+HARNESS_VARS = ("XDG_CONFIG_HOME", "CLAUDE_CONFIG_DIR", "CODEX_HOME", "COPILOT_HOME", "KIRO_HOME")
 
 
 class TempRepoCase(unittest.TestCase):
@@ -727,9 +728,9 @@ class DoctorTest(TempRepoCase):
             self.assertEqual([f for f in brainrc.doctor_findings() if "hook" in f[1]], [])
         self.assertIn(("guard_outward.py", "{}", 5), calls)
         self.assertIn(("guard_secrets.py", "{}", 5), calls)
-        # Cursor (5s), Codex and Antigravity (10s): each harness's adapter once
+        # Cursor (5s); Codex, Antigravity, Copilot, Devin, Kiro and Junie (10s): each adapter once
         self.assertEqual(sorted(c for c in calls if c[0] == "guard.py"),
-                         [("guard.py", "{}", 5), ("guard.py", "{}", 10), ("guard.py", "{}", 10)])
+                         [("guard.py", "{}", 5)] + [("guard.py", "{}", 10)] * 6)
 
     def test_points_to_troubleshooting_only_when_something_is_wrong(self):
         _, clean = quiet(brainrc.cmd_doctor)
@@ -1481,8 +1482,7 @@ class InstalledModeTest(TempRepoCase):
         quiet(brainrc.cmd_sync, True)
         self.assertFalse((self.home / ".cursor/hooks/brainrc").is_symlink())
         self.assertTrue(self.copy_root().is_dir())  # claude still links into it
-        local.write_text("[cursor]\nenabled = false\n[claude]\nenabled = false\n[codex]\nenabled = false\n"
-                         "[antigravity]\nenabled = false\n")
+        local.write_text("".join(f"[{n}]\nenabled = false\n" for n in brainrc.config.load_harnesses(include_disabled=True)))
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertRegex(out, r"PRUNE +~?.*hooks/core")

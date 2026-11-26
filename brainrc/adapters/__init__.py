@@ -10,17 +10,23 @@ from __future__ import annotations
 from importlib import metadata
 
 from ..config import ConfigError
+from .amp import Amp
 from .antigravity import Antigravity
 from .base import Adapter, Plain
 from .claude import Claude
 from .codex import Codex
+from .copilot import Copilot
 from .cursor import Cursor
+from .devin import Devin
 from .gemini import Gemini
+from .junie import Junie
+from .kiro import Kiro
 from .opencode import OpenCode
 
 ENTRY_POINTS = "brainrc.adapters"
 # The tools brainrc ships, in harnesses.toml's order.
-BUILTIN: dict[str, Adapter] = {a.name: a for a in (Claude(), Codex(), OpenCode(), Antigravity(), Gemini(), Cursor())}
+BUILTIN: dict[str, Adapter] = {a.name: a for a in (Claude(), Codex(), OpenCode(), Antigravity(), Gemini(), Cursor(),
+                                                     Copilot(), Devin(), Kiro(), Amp(), Junie())}
 # The formats harnesses.toml can name: "claude" (as written), then each shipped adapter's own.
 AGENT_FORMATS = ("claude", *(n for n, a in BUILTIN.items() if a.defines_agents_format))
 SETTINGS_FORMATS = ("claude", *(n for n, a in BUILTIN.items() if a.defines_settings_format))

@@ -130,7 +130,9 @@ class AdapterGoldenTest(TempRepoCase):
         self.assertEqual((code, out.strip()), (0, "Everything in sync."))
 
     def user_scope(self) -> str:
-        return self.dump([(self.home, "{HOME}"), (self.settings_home, "{BRAINRC_HOME}")])
+        # Backups carry a timestamp (Gemini CLI's settings.json takes hooks, then MCP servers).
+        return self.dump([(self.home, "{HOME}"), (self.settings_home, "{BRAINRC_HOME}")],
+                         skip=lambda rel: ".bak-brainrc-" in rel)
 
     def test_user_scope_for_every_enabled_tool(self):
         self.apply()

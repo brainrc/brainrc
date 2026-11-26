@@ -64,7 +64,7 @@ path = "tools/team-pack"
 "AGENTS.md" = "sha256:189ad90bce8c3fa7a31cd24987d2cc0d4fd2887dc6b535b190f664f47055cde8"
 "CLAUDE.md" = "sha256:586886469365f1f599481474512c1b658f375b812aebf03aef321719ddc54df2"
 FILE {PROJECT}/brainrc.toml
-harnesses = ["antigravity", "claude", "codex", "cursor", "gemini", "opencode"]
+harnesses = ["amp", "antigravity", "claude", "codex", "copilot", "cursor", "devin", "gemini", "junie", "kiro", "opencode"]
 
 [packs.gatework]
 enabled = false

@@ -366,7 +366,8 @@ def _hook_findings(merges: list) -> list[Finding]:
             current = json.loads(m.dest.read_text())
         except json.JSONDecodeError:
             continue  # reported with the settings checks
-        scripts: dict[Path, int] = {}
+        scripts: dict[Path, float] = {}
+        per_second = 1000 if adapters.get(m.harness).hook_timeout_ms else 1
         hooks = as_claude(current, m.fmt).get("hooks", {}) if isinstance(current, dict) else {}
         for groups in hooks.values() if isinstance(hooks, dict) else ():
             for group in groups:
@@ -375,7 +376,9 @@ def _hook_findings(merges: list) -> list[Finding]:
                 for h in [group, *group.get("hooks", [])]:
                     match = HOOK_SCRIPT.search(str(h.get("command", "")))
                     if match:
-                        scripts.setdefault(Path(os.path.expandvars(match[1])), h.get("timeout", 5))
+                        timeout = h.get("timeoutSec", h.get("timeout"))  # timeoutSec: Copilot's
+                        scripts.setdefault(Path(os.path.expandvars(match[1])),
+                                           timeout / per_second if isinstance(timeout, (int, float)) else 5)
         for script, timeout in scripts.items():
             hook = f"{m.harness}: hook {tilde(script)}"
             if not script.is_file():

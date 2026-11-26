@@ -1,4 +1,4 @@
-"""Runs core's guards for another harness's hook (Cursor, Codex, Antigravity; E11, #116).
+"""Runs core's guards for another harness's hook (Cursor, Codex, Antigravity, E11 #116; and E31's).
 
 Each adapter turns its harness's event into Claude Code calls, (guard, tool name, tool input), and
 asks decide() what the guards make of them where the command runs (cwd), which is what a pack's
@@ -60,3 +60,18 @@ def shell_calls(command: str) -> list[tuple[str, str, dict]]:
     """A shell command, for both guards."""
     bash = {"command": command}
     return [(OUTWARD, "Bash", bash), (SECRETS, "Bash", bash)]
+
+
+def read_call(path: str) -> list[tuple[str, str, dict]]:
+    """Reading a file, for the secrets guard."""
+    return [(SECRETS, "Read", {"file_path": path})] if path else []
+
+
+def write_call(path: str, text: str) -> list[tuple[str, str, dict]]:
+    """Writing text to a file, or into one, for the secrets guard."""
+    return [(SECRETS, "Write", {"file_path": path, "content": text})] if path else []
+
+
+def mcp_call(server: str, tool: str, tool_input: dict) -> list[tuple[str, str, dict]]:
+    """An MCP tool, named as Claude Code names it (mcp__<server>__<tool>), for the outward guard."""
+    return [(OUTWARD, f"mcp__{server}__{tool}", tool_input)] if server and tool else []

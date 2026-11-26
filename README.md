@@ -1,6 +1,6 @@
 # brainrc
 
-brainrc installs one set of AI coding-agent config (rules, skills, agents, guard hooks and MCP servers) into **Claude Code, Codex CLI, OpenCode, Antigravity CLI and Cursor** ([what reaches each tool](docs/capabilities.md), [the words these docs use](docs/concepts.md)).
+brainrc installs one set of AI coding-agent config (rules, skills, agents, guard hooks and MCP servers) into **Claude Code, Codex CLI, OpenCode, Antigravity CLI, Cursor, GitHub Copilot, Devin Local (Windsurf), Kiro, Amp and Junie** ([what reaches each tool](docs/capabilities.md), [the words these docs use](docs/concepts.md)).
 
 You write your config once, as plain files in a git repo (a **pack**), and `brainrc apply` puts each
 piece where each tool looks for it. It never overwrites a file it didn't write. Full docs:

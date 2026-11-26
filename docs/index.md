@@ -1,8 +1,8 @@
 # brainrc
 
 brainrc installs one set of AI coding-agent config into **Claude Code, Codex CLI, OpenCode,
-Antigravity CLI and Cursor**. You keep your rules, skills, agents, guard hooks and MCP servers
-as plain files in git, and `brainrc apply` writes each piece where each tool looks for it.
+Antigravity CLI, Cursor, GitHub Copilot, Devin Local (Windsurf), Kiro, Amp and Junie**. You keep
+your rules, skills, agents, guard hooks and MCP servers as plain files in git, and `brainrc apply` writes each piece where each tool looks for it.
 
 ```bash
 uvx brainrc status          # preview: lists what apply would write, writes nothing

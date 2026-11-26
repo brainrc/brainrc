@@ -449,7 +449,7 @@ def tilde(path: Path) -> str:
     return Path(path).as_posix().replace(Path.home().as_posix(), "~", 1)
 
 
-HARNESS_VARS = ("CLAUDE_CONFIG_DIR", "CODEX_HOME", "XDG_CONFIG_HOME")  # read by harnesses.toml (#110)
+HARNESS_VARS = ("CLAUDE_CONFIG_DIR", "CODEX_HOME", "XDG_CONFIG_HOME", "COPILOT_HOME", "KIRO_HOME")  # harnesses.toml (#110)
 
 
 ENV_DEFAULT = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*):-([^}]*)\}")

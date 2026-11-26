@@ -14,12 +14,87 @@
   },
   "skipped": [],
   "members": [
-    {"ref": "gh:306", "order": 1, "depends_on": [], "slug": "306-adapter-interface", "status": "built", "branch": "claude/project-thread-arjeeu", "base": "main", "merged": false},
-    {"ref": "gh:307", "order": 2, "depends_on": ["gh:306"], "slug": "307-copilot-vscode", "status": "queued", "branch": "claude/project-thread-arjeeu", "base": "main", "merged": false},
-    {"ref": "gh:308", "order": 3, "depends_on": ["gh:306"], "slug": "308-gemini-cli", "status": "queued", "branch": "claude/project-thread-arjeeu", "base": "main", "merged": false},
-    {"ref": "gh:309", "order": 4, "depends_on": ["gh:306"], "slug": "309-windsurf", "status": "queued", "branch": "claude/project-thread-arjeeu", "base": "main", "merged": false},
-    {"ref": "gh:310", "order": 5, "depends_on": ["gh:306"], "slug": "310-kiro", "status": "queued", "branch": "claude/project-thread-arjeeu", "base": "main", "merged": false},
-    {"ref": "gh:311", "order": 6, "depends_on": ["gh:306"], "slug": "311-amp", "status": "queued", "branch": "claude/project-thread-arjeeu", "base": "main", "merged": false},
-    {"ref": "gh:312", "order": 7, "depends_on": ["gh:306"], "slug": "312-junie", "status": "queued", "branch": "claude/project-thread-arjeeu", "base": "main", "merged": false}
+    {
+      "ref": "gh:306",
+      "order": 1,
+      "depends_on": [],
+      "slug": "306-adapter-interface",
+      "status": "in_review",
+      "branch": "claude/project-thread-arjeeu",
+      "base": "main",
+      "merged": false
+    },
+    {
+      "ref": "gh:307",
+      "order": 2,
+      "depends_on": [
+        "gh:306"
+      ],
+      "slug": "307-copilot-vscode",
+      "status": "in_review",
+      "branch": "claude/project-thread-arjeeu",
+      "base": "main",
+      "merged": false
+    },
+    {
+      "ref": "gh:308",
+      "order": 3,
+      "depends_on": [
+        "gh:306"
+      ],
+      "slug": "308-gemini-cli",
+      "status": "in_review",
+      "branch": "claude/project-thread-arjeeu",
+      "base": "main",
+      "merged": false
+    },
+    {
+      "ref": "gh:309",
+      "order": 4,
+      "depends_on": [
+        "gh:306"
+      ],
+      "slug": "309-windsurf",
+      "status": "in_review",
+      "branch": "claude/project-thread-arjeeu",
+      "base": "main",
+      "merged": false
+    },
+    {
+      "ref": "gh:310",
+      "order": 5,
+      "depends_on": [
+        "gh:306"
+      ],
+      "slug": "310-kiro",
+      "status": "in_review",
+      "branch": "claude/project-thread-arjeeu",
+      "base": "main",
+      "merged": false
+    },
+    {
+      "ref": "gh:311",
+      "order": 6,
+      "depends_on": [
+        "gh:306"
+      ],
+      "slug": "311-amp",
+      "status": "in_review",
+      "branch": "claude/project-thread-arjeeu",
+      "base": "main",
+      "merged": false
+    },
+    {
+      "ref": "gh:312",
+      "order": 7,
+      "depends_on": [
+        "gh:306"
+      ],
+      "slug": "312-junie",
+      "status": "in_review",
+      "branch": "claude/project-thread-arjeeu",
+      "base": "main",
+      "merged": false
+    }
   ]
 }

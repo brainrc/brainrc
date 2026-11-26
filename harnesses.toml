@@ -18,9 +18,10 @@
 #   settings     JSON file; hooks from overrides/<harness>/settings.fragment.json are
 #                merged in (entries owned by other tools are preserved; backup first)
 #   settings_format "claude" (default; Cursor's and Codex's files too) keeps hooks under "hooks";
-#                "antigravity" keeps them under a named entry, `brainrc`, as Antigravity's hooks.json does
+#                "antigravity" keeps them under a named entry, `brainrc`, as Antigravity's hooks.json does;
+#                "kiro" keeps a list of hook entries, as Kiro's hook files do
 #   mcp          the harness's MCP config file; servers from mcp/servers.toml are merged in
-#                (claude, codex, opencode only; your own servers are never overwritten)
+#                (each tool with an adapter that writes MCP; your own servers are never overwritten)
 #
 # Project scope (a repo's brainrc.toml, docs/project.md) writes the standard .agents/skills/ and
 # AGENTS.md, which Codex, OpenCode, Cursor and Antigravity read. These two keys, paths in the repo,
@@ -30,7 +31,7 @@
 #
 # Paths expand ~ and $ENV_VARS. `${VAR:-default}` reads VAR when it holds an absolute path and
 # uses default when VAR is unset, empty or relative: that is how each harness's own variable
-# (CLAUDE_CONFIG_DIR, CODEX_HOME, XDG_CONFIG_HOME) moves its paths. Override per machine in
+# (CLAUDE_CONFIG_DIR, CODEX_HOME, XDG_CONFIG_HOME, COPILOT_HOME, KIRO_HOME) moves its paths. Override per machine in
 # harnesses.local.toml (gitignored) — e.g. `[cursor] enabled = false`.
 
 [claude]
@@ -73,12 +74,19 @@ settings = "~/.gemini/config/hooks.json"
 settings_format = "antigravity"
 # agents: Antigravity's agent frontmatter is unverified
 
-# Retired: Antigravity replaced Gemini CLI. Kept disabled so `apply` removes the links it made
-# here; enable it in harnesses.local.toml if your account still runs Gemini CLI.
+# Gemini CLI ended for individual accounts on June 18, 2026 (Antigravity CLI replaced it) and goes on
+# for Gemini Code Assist Standard and Enterprise and paid API keys. Off by default, since ~/.gemini
+# is Antigravity's too; `enabled = true` in harnesses.local.toml if your account runs it.
+# https://geminicli.com/docs/cli/skills/ , /docs/hooks/reference/ , /docs/tools/mcp-server/
 [gemini]
 enabled = false
 skills = "~/.gemini/skills"
 instructions = "~/.gemini/GEMINI.md"
+hooks_dir = "~/.gemini/hooks/brainrc"
+settings = "~/.gemini/settings.json"
+mcp = "~/.gemini/settings.json"  # the same file: hooks and mcpServers sit side by side
+# agents: its subagents (~/.gemini/agents) take Gemini's own tool names in `tools`
+# commands: its custom commands (~/.gemini/commands) are TOML, not Markdown
 
 [cursor]
 enabled = true
@@ -86,3 +94,66 @@ skills = "~/.cursor/skills"
 hooks_dir = "~/.cursor/hooks/brainrc"
 settings = "~/.cursor/hooks.json"
 # instructions: Cursor's global User Rules live in the Settings UI, not a file
+
+# The Copilot CLI and VS Code's Copilot agent share ~/.copilot.
+# https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-config-dir-reference
+# https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-hooks-reference
+[copilot]
+enabled = true
+home = "${COPILOT_HOME:-~/.copilot}"
+skills = "${COPILOT_HOME:-~/.copilot}/skills"
+instructions = "${COPILOT_HOME:-~/.copilot}/copilot-instructions.md"
+hooks_dir = "${COPILOT_HOME:-~/.copilot}/hooks/brainrc"
+settings = "${COPILOT_HOME:-~/.copilot}/hooks/brainrc.json"  # brainrc's own hook file in the hooks folder
+mcp = "${COPILOT_HOME:-~/.copilot}/mcp-config.json"
+# agents: Copilot's agents are *.agent.md files with a `tools` list in its own names
+# commands: no user-level command folder is documented
+
+# Devin Local, in Devin Desktop (formerly Windsurf): Windsurf's docs now lead to Devin's.
+# https://docs.devin.ai/desktop/devin-local/customizations , /cli/extensibility/rules ,
+# /cli/extensibility/mcp/configuration , /cli/extensibility/hooks/overview
+[devin]
+enabled = true
+home = "~/.config/devin"
+skills = "~/.config/devin/skills"
+instructions = "~/.config/devin/AGENTS.md"
+hooks_dir = "~/.config/devin/hooks/brainrc"
+settings = "~/.config/devin/config.json"  # hooks under "hooks", in Claude Code's shape
+mcp = "~/.config/devin/mcp_config.json"  # ${env:VAR} in `env` is unverified (documented for OAuth fields)
+# agents, commands: Devin Local documents no user-level folders (Cascade's workflows are retired)
+
+# https://kiro.dev/docs/configuration/ , /docs/skills/ , /docs/steering/ , /docs/hooks/ ,
+# /docs/mcp/configuration/
+[kiro]
+enabled = true
+home = "${KIRO_HOME:-~/.kiro}"
+skills = "${KIRO_HOME:-~/.kiro}/skills"
+instructions = "${KIRO_HOME:-~/.kiro}/steering/AGENTS.md"  # an AGENTS.md in global steering is always included
+hooks_dir = "${KIRO_HOME:-~/.kiro}/hooks/brainrc"
+settings = "${KIRO_HOME:-~/.kiro}/hooks/brainrc.json"  # Kiro CLI loads ~/.kiro/hooks as global hooks
+settings_format = "kiro"
+mcp = "${KIRO_HOME:-~/.kiro}/settings/mcp.json"  # ${VAR} expands only for its approved variables
+# agents: Kiro's agents take tool selectors (read, shell, @mcp) in `tools`, not Claude Code's names
+
+# https://ampcode.com/docs/customize/skills , /docs/customize/agents-md , /docs/customize/mcp
+[amp]
+enabled = true
+home = "~/.config/amp"
+skills = "~/.config/amp/skills"
+instructions = "~/.config/amp/AGENTS.md"
+mcp = "~/.config/amp/settings.json"  # under "amp.mcpServers"; settings.jsonc instead when only it exists
+# hooks: Amp's only hook point is its TypeScript plugin API, which brainrc doesn't write yet
+# agents, commands: no user-level folders are documented
+
+# https://junie.jetbrains.com/docs/agent-skills.html , /docs/guidelines-and-memory.html ,
+# /docs/junie-cli-subagents.html , /docs/junie-cli-mcp-configuration.html , /docs/junie-cli-hooks.html
+[junie]
+enabled = true
+home = "~/.junie"
+skills = "~/.junie/skills"
+agents = "~/.junie/agents"  # Claude Code's frontmatter: name, description, tools (Read, Bash, ...), model
+instructions = "~/.junie/AGENTS.md"
+hooks_dir = "~/.junie/hooks/brainrc"
+settings = "~/.junie/config.json"  # hooks under "hooks"; a project's own config.json hooks are ignored
+mcp = "~/.junie/mcp/mcp.json"  # no variable references: env_from variables come from Junie's environment
+# commands: Junie's commands take $name arguments, not $ARGUMENTS

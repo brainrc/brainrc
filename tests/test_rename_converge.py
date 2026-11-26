@@ -28,7 +28,8 @@ class OldInstallCase(TempRepoCase):
         (self.repo / "packs.local.toml").write_text(f'[acme]\npath = \'{self.pack}\'\n')
         (self.repo / "mcp").mkdir(exist_ok=True)
         (self.repo / "mcp/servers.toml").write_text(GH)
-        for d in (".claude", ".cursor", ".codex", ".config/opencode", ".gemini/config"):
+        for d in (".claude", ".cursor", ".codex", ".config/opencode", ".gemini/config", ".copilot", ".config/devin", ".kiro",
+                  ".config/amp", ".junie"):
             (self.home / d).mkdir(parents=True)
         self.settings = self.home / ".claude/settings.json"
         self.hooks_json = self.home / ".cursor/hooks.json"

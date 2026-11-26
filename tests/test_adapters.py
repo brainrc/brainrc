@@ -1,5 +1,6 @@
 """The adapter interface (#306): each shipped tool has an adapter, and a Python package can add a
 tool through the `brainrc.adapters` entry point group without a change to core."""
+import json
 import os
 import sys
 import tempfile
@@ -55,9 +56,71 @@ class BuiltinTest(unittest.TestCase):
             adapters.agents_format("opencode", {"agents_format": "nope"})
 
     def test_the_mcp_writers_and_sandboxes_are_the_adapters_own(self):
-        self.assertEqual(brainrc.mcp.writers(), ["claude", "codex", "opencode"])
+        self.assertEqual(brainrc.mcp.writers(),
+                         ["claude", "codex", "opencode", "gemini", "copilot", "devin", "kiro", "amp", "junie"])
         self.assertEqual([n for n, a in adapters.BUILTIN.items() if a.sandbox], ["claude"])
         self.assertEqual(capabilities.LABELS["antigravity"], "Antigravity CLI")
+
+
+class E31ToolsTest(TempRepoCase):
+    """The tools E31 adds (#307 to #312) next to files the user already has."""
+
+    def setUp(self):
+        super().setUp()
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
+        install_harnesses(self.home)
+
+    def tearDown(self):
+        restore_home(self.old_home)
+        rmtree(self.home)
+        super().tearDown()
+
+    def sync(self) -> None:
+        code, out = quiet(brainrc.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+
+    def test_kiro_keeps_the_user_s_own_hook_entries_as_they_are(self):
+        mine = {"name": "lint", "trigger": "PostToolUse", "matcher": "fs_write",
+                "action": {"type": "agent", "prompt": "Lint it."}, "enabled": False}
+        hooks = self.home / ".kiro/hooks/brainrc.json"
+        hooks.parent.mkdir(parents=True)
+        hooks.write_text(json.dumps({"version": "v1", "hooks": [mine]}))
+        self.sync()
+        data = json.loads(hooks.read_text())
+        self.assertEqual(data["hooks"][0], mine)
+        self.assertEqual([(e["trigger"], e["matcher"]) for e in data["hooks"][1:]], [("PreToolUse", "*")])
+        self.assertIn("/.kiro/hooks/brainrc/guard.py", data["hooks"][1]["action"]["command"])
+        (self.repo / "harnesses.local.toml").write_text("[kiro]\nenabled = false\n")
+        self.sync()
+        self.assertEqual(json.loads(hooks.read_text()), {"version": "v1", "hooks": [mine]})
+
+    def test_kiro_hooks_that_are_not_a_list_are_left_alone(self):
+        hooks = self.home / ".kiro/hooks/brainrc.json"
+        hooks.parent.mkdir(parents=True)
+        hooks.write_text('{"hooks": {"PreToolUse": []}}')
+        code, out = quiet(brainrc.cmd_sync, True)
+        self.assertIn("its `hooks` isn't a list of hook objects", out)
+        self.assertEqual(hooks.read_text(), '{"hooks": {"PreToolUse": []}}')
+
+    def test_amp_writes_into_settings_jsonc_when_only_it_exists_and_keeps_its_comments(self):
+        (self.repo / "mcp").mkdir(exist_ok=True)
+        (self.repo / "mcp/servers.toml").write_text('[servers.acme-search]\nurl = "https://search.acme.example/mcp"\n')
+        jsonc = self.home / ".config/amp/settings.jsonc"
+        jsonc.write_text('{\n  // my theme\n  "amp.theme": "dark"\n}\n')
+        self.sync()
+        text = jsonc.read_text()
+        self.assertIn("// my theme", text)
+        self.assertIn('"amp.mcpServers"', text)
+        self.assertFalse((self.home / ".config/amp/settings.json").exists())
+
+    def test_devin_and_junie_spell_an_env_variable_their_own_way(self):
+        server = {"command": "acme-docs-mcp", "env_from": ["ACME_DOCS_TOKEN"]}
+        self.assertEqual(adapters.get("devin").mcp_entry(server)["env"], {"ACME_DOCS_TOKEN": "${env:ACME_DOCS_TOKEN}"})
+        self.assertNotIn("env", adapters.get("junie").mcp_entry(server))  # Junie reads no references
+        self.assertEqual(adapters.get("gemini").mcp_entry({"url": "https://x.example/mcp"}),
+                         {"httpUrl": "https://x.example/mcp"})
 
 
 class EntryPointTest(TempRepoCase):

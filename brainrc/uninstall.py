@@ -51,6 +51,7 @@ class Step:
     run: Callable[[], None]
     note: str = ""
     removes: set[Path] = field(default_factory=set)  # paths gone afterwards, for the empty-dir check
+    backup: bool = True  # DELETE: keep the file as a backup; off when its folder goes too
 
 
 # What brainrc keeps in the settings home. --purge deletes these and nothing else.
@@ -114,6 +115,18 @@ def _fragment_extras(name: str) -> dict:
     return {k: v for k, v in fragment.items() if k != "hooks"} if isinstance(fragment, dict) else {}
 
 
+def _delete_step(name: str, dest: Path, note: str, forget: Callable[[], None]) -> Step:
+    """Delete a file that holds nothing of the user's: set aside as a backup, like apply does, unless
+    the folder it sits in goes too (a folder apply made for it, like ~/.copilot/hooks)."""
+    step = Step("DELETE", name, dest, lambda: None, note, {dest})
+
+    def run() -> None:
+        _set_aside(dest) if step.backup else dest.unlink()
+        forget()
+    step.run = run
+    return step
+
+
 def _set_aside(path: Path) -> None:
     """Delete a file that holds nothing of the user's, keeping it as a backup like apply does."""
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
@@ -142,10 +155,7 @@ def _settings_steps(name: str, h: dict, problems: list[str]) -> list[Step]:
         return []
     before = read_current(dest)
     if not merged or merged == _fragment_extras(name):
-        def delete() -> None:
-            _set_aside(dest)
-            record_settings_owned(dest, {})
-        return [Step("DELETE", name, dest, delete, "only brainrc's hooks were in it", {dest})]
+        return [_delete_step(name, dest, "only brainrc's hooks were in it", lambda: record_settings_owned(dest, {}))]
 
     def unmerge() -> None:
         write_settings(dest, merged, before)
@@ -169,10 +179,7 @@ def _mcp_file_steps(name: str, dest: Path, problems: list[str]) -> list[Step]:
         return []
     before = read_current(dest)
     if text.strip() in ("", "{}"):
-        def delete() -> None:
-            _set_aside(dest)
-            record_owned(m, [])
-        return [Step("DELETE", name, dest, delete, "only brainrc's MCP servers were in it", {dest})]
+        return [_delete_step(name, dest, "only brainrc's MCP servers were in it", lambda: record_owned(m, []))]
     return [Step("UNMERGE", name, dest, lambda: write_mcp(m, text, [], before), "mcp")]
 
 
@@ -296,6 +303,10 @@ def plan_uninstall(purge: bool = False) -> tuple[list[Step], list[str], list[str
     restored = {s.path for s in steps if s.action == "RESTORE"}
     gone = {p for s in steps for p in s.removes} - restored
     steps += _empty_dirs([s for s in starts if s[1] not in restored], gone)
+    emptied = {s.path for s in steps if s.action == "RMDIR"}
+    for step in steps:
+        if step.action == "DELETE" and step.path.parent in emptied:
+            step.backup = False
     refusal = _purge_refusal(settings_home(), configs) if purge and settings_home().is_dir() else None
     if refusal:
         problems.append(f"--purge left {tilde(settings_home())} alone: {refusal}. "

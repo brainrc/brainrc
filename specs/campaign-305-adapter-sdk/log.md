@@ -35,3 +35,25 @@ releasing and closing #305 stay with the maintainer.
 - Plan: `brainrc/adapters/` (new), `config.py`, `plan.py`, `settings.py`, `mcp.py`, `guard.py`,
   `capabilities.py`, `doctor.py`, `cli.py`, `uninstall.py`; `docs/adapters.md`; tests in
   `tests/test_adapters.py` and `tests/test_adapter_goldens.py`.
+
+## engine · gh:306 · Built
+Committed with the goldens unchanged and the full suite passing (1476 tests).
+
+## engine · Batch 1 and 2 · Docs check
+Each tool's paths and hook formats were read from its current official docs on 2026-11-26 and
+are cited in `harnesses.toml`. What changed since the epic was written:
+- Windsurf's docs now lead to Devin's: Devin Desktop replaced it and no longer starts Cascade
+  conversations. #309 targets what Devin Local reads (`~/.config/devin`), as table `devin`.
+- Gemini CLI ended for individual accounts on 2026-06-18 and goes on for Gemini Code Assist
+  Standard and Enterprise and paid API keys. #308 is finished and stays off by default.
+- Amp's only hook point is a TypeScript plugin API, so #311 ships no guard.
+- Field names the docs leave out (Copilot's MCP tool names, Devin's file fields, Kiro's tool
+  ids) are inferred, read leniently, and named in each guard's docstring.
+
+## engine · gh:307 to gh:312 · Built
+One adapter per tool in `brainrc/adapters/`, a `harnesses.toml` table each, a guard in
+`overrides/<tool>/hooks/` for each tool with a command hook (all but Amp), shared guard rule tests
+and fail-open tests in `tests/test_hooks.py`, the goldens extended to the new tools only, the
+capability matrix regenerated and its hand table extended. Batches of three ran together since
+they share files (harnesses.toml, the goldens, the matrix); one commit per child would split
+shared hunks, so the six land as one commit.

@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "BeforeTool": [
+      {
+        "matcher": "^(run_shell_command|read_file|read_many_files|write_file|replace|mcp_.*)$",
+        "hooks": [
+          {
+            "name": "brainrc-guard",
+            "type": "command",
+            "command": "f=\"{{hooks_dir}}/guard.py\"; [ ! -f \"$f\" ] || python3 \"$f\"",
+            "timeout": 10000
+          }
+        ]
+      }
+    ]
+  }
+}

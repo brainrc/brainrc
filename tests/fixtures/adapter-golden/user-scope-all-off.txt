@@ -5,13 +5,33 @@ FILE {HOME}/.claude.json
 FILE {HOME}/.codex/config.toml
 FILE {HOME}/.codex/hooks.json
 {}
+FILE {HOME}/.config/amp/settings.json
+{}
+FILE {HOME}/.config/devin/config.json
+{}
+FILE {HOME}/.config/devin/mcp_config.json
+{}
 FILE {HOME}/.config/opencode/opencode.json
+{}
+FILE {HOME}/.copilot/hooks/brainrc.json
+{
+  "version": 1
+}
+FILE {HOME}/.copilot/mcp-config.json
 {}
 FILE {HOME}/.cursor/hooks.json
 {
   "version": 1
 }
 FILE {HOME}/.gemini/config/hooks.json
+{}
+FILE {HOME}/.junie/config.json
+{}
+FILE {HOME}/.junie/mcp/mcp.json
+{}
+FILE {HOME}/.kiro/hooks/brainrc.json
+{}
+FILE {HOME}/.kiro/settings/mcp.json
 {}
 FILE {BRAINRC_HOME}/apply.lock
 FILE {BRAINRC_HOME}/brainrc.lock

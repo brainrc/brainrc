@@ -42,11 +42,12 @@ class CiTripwiresTest(unittest.TestCase):
         self.assertEqual(code, 0, out)
         self.assertTrue(out.startswith("::notice::Local tripwires skipped"), out)
 
-    def test_an_unset_secret_fails_loudly(self):
+    def test_an_unset_secret_skips_with_a_notice(self):
         for value in ("", "  \n\n "):
             code, out = run_main({"NO_SECRETS": "false", "TRIPWIRE_TERMS": value})
-            self.assertEqual(code, 1, out)
-            self.assertIn("::error::Local tripwire terms are not configured", out)
+            self.assertEqual(code, 0, out)
+            self.assertTrue(out.startswith("::notice::Local tripwires skipped: the TRIPWIRE_TERMS"), out)
+            self.assertNotIn("::error::", out)
 
     def test_every_term_is_masked_in_the_usual_spellings(self):
         buf = io.StringIO()

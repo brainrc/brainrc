@@ -6,7 +6,8 @@ validate.yml's `tripwires` job runs it with these environment variables:
   NO_SECRETS      "true" for a fork or Dependabot PR: skip with a notice, the push to main checks it
 Each term is masked in the log, written to a terms file in $RUNNER_TEMP (never the checkout), and
 `validate --local-tripwires` checks every tracked core file, naming a match's file, line and term
-number but never the term. Exits 0 when clean or skipped, 1 on a match or when the secret is unset.
+number but never the term. With the secret unset or empty, it skips with a notice (the repo's
+owner chose that over failing). Exits 0 when clean or skipped, 1 on a match.
 """
 import os
 import subprocess
@@ -44,9 +45,9 @@ def main() -> int:
         return 0
     terms = [t.strip() for t in os.environ.get(SECRET, "").splitlines() if t.strip()]
     if not terms:
-        print(f"::error::Local tripwire terms are not configured: set the {SECRET} repository secret, "
-              "one term per line.")
-        return 1
+        print(f"::notice::Local tripwires skipped: the {SECRET} repository secret isn't set. "
+              "Set it, one term per line, to check every PR for those terms.")
+        return 0
     for t in terms:
         mask(t)
     tmp = Path(tempfile.mkdtemp(dir=os.environ.get("RUNNER_TEMP")))

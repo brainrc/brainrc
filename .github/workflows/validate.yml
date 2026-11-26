@@ -116,8 +116,9 @@ jobs:
 
   # Local tripwires (#344): each maintainer's forbidden names (an employer, a client) live in a
   # gitignored tripwires.local.toml, so CI reads them from the TRIPWIRE_TERMS secret instead, one
-  # term per line. The log names a match's file, line and term number, never the term. Fork and
-  # Dependabot PRs get no secrets: they skip with a notice, and the push to main checks the merge.
+  # term per line. The log names a match's file, line and term number, never the term. Without the
+  # secret the job skips with a notice. Fork and Dependabot PRs get no secrets: they skip too, and the
+  # push to main checks the merge.
   tripwires:
     name: local tripwires
     runs-on: ubuntu-latest

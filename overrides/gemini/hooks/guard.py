@@ -40,9 +40,10 @@ def claude_calls(payload: dict) -> list[tuple[str, str, dict]]:
         return guard_bridge.write_call(path, text(args.get("content")))
     if tool == "replace":
         return guard_bridge.write_call(path, text(args.get("new_string")))
-    if tool.startswith("mcp_"):  # mcp_<server>_<tool>; Gemini CLI asks for no _ in a server's name
-        server, _, name = tool[len("mcp_"):].partition("_")
-        return guard_bridge.mcp_call(server, name, args)
+    if tool.startswith("mcp_"):  # mcp_<server>_<tool>, split by the servers it has configured
+        base = Path(text(payload.get("cwd")) or ".")
+        servers = guard_bridge.config_servers([Path.home() / ".gemini" / "settings.json", base / ".gemini" / "settings.json"])
+        return guard_bridge.mcp_call(*guard_bridge.split_mcp(tool[len("mcp_"):], servers), args)
     return []
 
 

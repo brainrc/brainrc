@@ -18,7 +18,7 @@ paths in [`harnesses.local.toml`](configuration.md#harnesseslocaltoml) instead.
 | `label` | the tool's name in prose and in the [capability matrix](capabilities.md) | required |
 | `paths` | its `harnesses.toml` table, for a tool core's file doesn't list | `{}` |
 | `agents_format`, `render_agent(path)` | the agent format it reads; set `defines_agents_format = True` and write `render_agent` for a format of its own (OpenCode's) | `"claude"`: agents linked as written |
-| `settings_format`, `hooks_view`, `hooks_put`, `hooks_problem` | where its settings file keeps hooks, mapped to and from Claude Code's shape; set `defines_settings_format = True` for a format of its own (Antigravity's named entry, Kiro's list) | `"claude"`: under `"hooks"` |
+| `settings_format`, `hooks_view`, `hooks_put`, `hooks_problem` | where its settings file keeps hooks, mapped to and from Claude Code's shape; set `defines_settings_format = True` for a format of its own (Antigravity's named entry, Kiro's list, Copilot's `bash` key) | `"claude"`: under `"hooks"` |
 | `writes_mcp`, `mcp_key`, `mcp_entry(server)` | whether `apply` writes its MCP servers, the JSON key they sit under, and how one server is spelled | no MCP |
 | `mcp_files(dest)` | other files that may hold its servers | its `mcp` path only |
 | `mcp_text_change(text, servers)` | a config file that isn't JSON (Codex's TOML block) | the JSON merge |

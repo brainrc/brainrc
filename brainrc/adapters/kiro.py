@@ -47,6 +47,8 @@ class Kiro(Adapter):
     def hooks_view(self, current: dict) -> dict:
         view = {k: copy.deepcopy(v) for k, v in current.items() if k not in ("hooks", "version")}
         events: dict[str, list] = {}
+        if self.hooks_problem(current):  # a merge stops at hooks_problem; doctor only reads the view
+            return view
         for entry in current.get("hooks") or []:
             events.setdefault(str(entry.get("trigger", "")), []).append(_group(copy.deepcopy(entry)))
         return view | ({"hooks": events} if events else {})

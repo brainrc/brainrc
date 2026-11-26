@@ -70,4 +70,8 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        code = main()
+    except Exception:  # noqa: BLE001: a hook that fails blocks the call here, so fail open instead
+        code = 0
+    sys.exit(code)

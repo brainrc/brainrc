@@ -75,7 +75,8 @@ def get(name: str) -> Adapter:
     return BUILTIN.get(name) or plugins().get(name) or Plain(name)
 
 
-def _formats(kind: str) -> tuple[str, ...]:
+def formats(kind: str) -> tuple[str, ...]:
+    """Every agents or settings format, a package adapter's included."""
     flag = f"defines_{kind}_format"
     return ("claude", *(n for n, a in every().items() if getattr(a, flag)))
 
@@ -83,16 +84,16 @@ def _formats(kind: str) -> tuple[str, ...]:
 def agents_format(name: str, h: dict) -> str:
     """The agent format harness `name` uses: its table's `agents_format`, else its adapter's."""
     fmt = h.get("agents_format", get(name).agents_format)
-    if fmt not in _formats("agents"):
-        raise ConfigError(f"harnesses.toml: unknown agents_format `{fmt}` (use one of {', '.join(_formats('agents'))})")
+    if fmt not in formats("agents"):
+        raise ConfigError(f"harnesses.toml: unknown agents_format `{fmt}` (use one of {', '.join(formats('agents'))})")
     return fmt
 
 
 def settings_format(name: str, h: dict) -> str:
     """The settings format harness `name` uses: its table's `settings_format`, else its adapter's."""
     fmt = h.get("settings_format", get(name).settings_format)
-    if fmt not in _formats("settings"):
-        raise ConfigError(f"harnesses.toml: unknown settings_format `{fmt}` (use one of {', '.join(_formats('settings'))})")
+    if fmt not in formats("settings"):
+        raise ConfigError(f"harnesses.toml: unknown settings_format `{fmt}` (use one of {', '.join(formats('settings'))})")
     return fmt
 
 
@@ -108,4 +109,4 @@ def settings_adapter(fmt: str) -> Adapter:
 
 
 __all__ = ["Adapter", "Plain", "BUILTIN", "AGENT_FORMATS", "SETTINGS_FORMATS", "ENTRY_POINTS", "get", "every",
-           "plugins", "reset", "agents_format", "settings_format", "agent_renderer", "settings_adapter"]
+           "plugins", "reset", "formats", "agents_format", "settings_format", "agent_renderer", "settings_adapter"]

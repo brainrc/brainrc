@@ -57,3 +57,13 @@ and fail-open tests in `tests/test_hooks.py`, the goldens extended to the new to
 capability matrix regenerated and its hand table extended. Batches of three ran together since
 they share files (harnesses.toml, the goldens, the matrix); one commit per child would split
 shared hunks, so the six land as one commit.
+
+## review · PR #389 · Fixed
+Code review found eight issues. Fixed here: Kiro and Gemini CLI split an MCP tool's server name by
+the tool's own MCP config; uninstall takes hooks and MCP servers out of Gemini CLI's one
+settings.json; Kiro's view of a malformed hook file no longer crashes doctor; a disabled tool's
+unparseable file with nothing of brainrc's in it is left alone; a package adapter's agent format
+is a rendered dir brainrc cleans; Copilot's hook is written as `bash`, and Copilot's and Kiro's
+hooks fail open since a failing hook blocks the call there. Two were in code this PR doesn't
+change (`env -S` in guard_outward.py, guard-rules.json kept by a plain uninstall) and are left for
+their own issue.

@@ -25,3 +25,8 @@ bump: patch
   a `PreToolUse` guard in `config.json` that can ask as well as deny (#312).
 - Each new tool is managed only once its folder exists, and its guard is tested with payloads
   shaped like its docs, not yet in the live tool ([guardrails](docs/guardrails.md)).
+- Uninstall takes both brainrc's hooks and its MCP servers out of a file that holds both, as Gemini
+  CLI's `settings.json` does, and an installed adapter's own agent format is cleaned up like
+  OpenCode's. A tool that is off no longer reports a conflict for a settings or MCP file brainrc
+  can't parse when nothing of brainrc's is in it, such as a Gemini CLI `settings.json` with
+  comments.

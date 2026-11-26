@@ -20,6 +20,7 @@
 #   settings_format "claude" (default; Cursor's and Codex's files too) keeps hooks under "hooks";
 #                "antigravity" keeps them under a named entry, `brainrc`, as Antigravity's hooks.json does;
 #                "kiro" keeps a list of hook entries, as Kiro's hook files do
+#                "copilot" keeps them under "hooks", with brainrc's script as `bash`, as Copilot's do
 #   mcp          the harness's MCP config file; servers from mcp/servers.toml are merged in
 #                (each tool with an adapter that writes MCP; your own servers are never overwritten)
 #

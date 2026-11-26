@@ -11,8 +11,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from support import home_env, restore_home, rmtree, saved_home  # noqa: E402
 from test_brainrc import TempRepoCase, brainrc, install_harnesses, quiet  # noqa: E402
 
-from brainrc import adapters, capabilities, config  # noqa: E402
+from brainrc import adapters, capabilities, config, uninstall  # noqa: E402
 from brainrc.config import ConfigError  # noqa: E402
+from brainrc.plan import rendered_dirs  # noqa: E402
 
 ADAPTER_MODULE = '''
 from brainrc.adapters import Adapter
@@ -122,6 +123,52 @@ class E31ToolsTest(TempRepoCase):
         self.assertEqual(adapters.get("gemini").mcp_entry({"url": "https://x.example/mcp"}),
                          {"httpUrl": "https://x.example/mcp"})
 
+    def test_kiro_hooks_that_are_not_a_list_give_doctor_no_hooks_to_read(self):
+        kiro = adapters.get("kiro")
+        for bad in ({"hooks": {"PreToolUse": []}}, {"hooks": ["x"]}):
+            self.assertNotIn("hooks", kiro.hooks_view(bad))
+
+    def test_copilot_writes_its_script_as_bash_and_keeps_the_user_s_command_entry(self):
+        mine = {"type": "command", "command": "./lint.sh", "timeoutSec": 5}
+        hooks = self.home / ".copilot/hooks/brainrc.json"
+        hooks.parent.mkdir(parents=True)
+        hooks.write_text(json.dumps({"version": 1, "hooks": {"preToolUse": [mine]}}))
+        self.sync()
+        entries = json.loads(hooks.read_text())["hooks"]["preToolUse"]
+        self.assertEqual(entries[0], mine)
+        self.assertNotIn("command", entries[1])
+        self.assertIn("/.copilot/hooks/brainrc/guard.py", entries[1]["bash"])
+        before = hooks.read_text()
+        self.sync()  # nothing to change the second time
+        self.assertEqual(hooks.read_text(), before)
+        (self.repo / "harnesses.local.toml").write_text("[copilot]\nenabled = false\n")
+        self.sync()
+        self.assertEqual(json.loads(hooks.read_text())["hooks"]["preToolUse"], [mine])
+
+    def test_gemini_cli_uninstall_takes_hooks_and_servers_out_of_its_one_settings_file(self):
+        (self.repo / "mcp").mkdir(exist_ok=True)
+        (self.repo / "mcp/servers.toml").write_text('[servers.acme-search]\nurl = "https://search.acme.example/mcp"\n')
+        (self.repo / "harnesses.local.toml").write_text("[gemini]\nenabled = true\n")
+        settings = self.home / ".gemini/settings.json"
+        settings.write_text(json.dumps({"theme": "dark"}))
+        self.sync()
+        data = json.loads(settings.read_text())
+        self.assertIn("acme-search", data["mcpServers"])
+        self.assertIn("BeforeTool", data["hooks"])
+        code, out = quiet(uninstall.cmd_uninstall)
+        self.assertEqual(code, 0, out)
+        self.assertEqual(json.loads(settings.read_text()), {"theme": "dark"})
+
+    def test_a_disabled_gemini_cli_leaves_a_settings_file_with_comments_alone(self):
+        settings = self.home / ".gemini/settings.json"
+        text = '{\n  // left from Gemini CLI\n  "theme": "dark"\n}\n'
+        settings.write_text(text)
+        self.sync()
+        self.assertEqual(settings.read_text(), text)
+        code, out = quiet(uninstall.cmd_uninstall)
+        self.assertEqual(code, 0, out)
+        self.assertEqual(settings.read_text(), text)
+
 
 class EntryPointTest(TempRepoCase):
     """An installed package's adapter, through a real dist-info on sys.path."""
@@ -174,6 +221,14 @@ class EntryPointTest(TempRepoCase):
         self.assertEqual(brainrc.config.check_config(), [])  # a known table, not the user's own
         (self.repo / "harnesses.local.toml").write_text("[acmetool]\nenabled = false\n")
         self.assertNotIn("acmetool", config.load_harnesses())
+
+    def test_its_own_agent_format_has_a_rendered_dir_brainrc_cleans(self):
+        self.assertNotIn(config.rendered_agents_dir("acmetool"), rendered_dirs())
+        (self.site / "acme_tool.py").write_text(ADAPTER_MODULE.replace(
+            "    label = \"Acme Tool\"", "    label = \"Acme Tool\"\n    defines_agents_format = True"))
+        sys.modules.pop("acme_tool", None)
+        adapters.reset()
+        self.assertIn(config.rendered_agents_dir("acmetool"), rendered_dirs())
 
     def test_a_shipped_tool_s_name_stays_the_shipped_adapter(self):
         self.points("codex = acme_tool:AcmeTool")

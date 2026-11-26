@@ -57,7 +57,11 @@ def obsolete_renders(extensions: str | None, agents: dict[Path, str], guard_rule
 
 def rendered_dirs() -> list[Path]:
     """Where agents rendered in another tool's format go, one directory per format (OpenCode's)."""
-    return [rendered_agents_dir(fmt) for fmt in adapters.AGENT_FORMATS if fmt != "claude"]
+    try:
+        formats = adapters.formats("agents")  # a package's adapter can add a format (#306)
+    except ConfigError:  # a broken entry point: apply stops on it; doctor and uninstall go on
+        formats = adapters.AGENT_FORMATS
+    return [rendered_agents_dir(fmt) for fmt in formats if fmt != "claude"]
 
 
 def rendered_agents(srcs: list[Source]) -> dict[Path, str]:
@@ -159,6 +163,9 @@ class SettingsMerge:
     extra_markers: set[str] = field(default_factory=set)
     fmt: str = "claude"  # harnesses.toml settings_format: where the file keeps its hooks
     sandbox: dict = field(default_factory=dict)  # guard.sandbox(): packs' path and host rules (#322)
+    # A removal from a tool brainrc doesn't manage (off, never applied): a file it can't parse with
+    # nothing of brainrc's in it is left alone, not a conflict (a Gemini CLI settings.json with comments).
+    lenient: bool = False
 
     def wanted(self) -> dict:
         hooks: dict[str, list] = {}
@@ -329,7 +336,8 @@ def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
             known = set()
             if "hooks_dir" in h:
                 known = {h["hooks_dir"]} | {pack_hooks_dir(h["hooks_dir"], s.name) for s in every_src}
-            merges.append(SettingsMerge(name, expand(h["settings"]), [], known, adapters.settings_format(name, h)))
+            merges.append(SettingsMerge(name, expand(h["settings"]), [], known, adapters.settings_format(name, h),
+                                        lenient=True))
 
     # Stale: links brainrc made earlier that it wouldn't make now (removed items, disabled packs,
     # disabled harnesses). Only symlinks pointing at a path brainrc links to are touched.

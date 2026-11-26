@@ -10,6 +10,7 @@ read, counts as no objection, as a broken Claude Code hook does.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -75,3 +76,33 @@ def write_call(path: str, text: str) -> list[tuple[str, str, dict]]:
 def mcp_call(server: str, tool: str, tool_input: dict) -> list[tuple[str, str, dict]]:
     """An MCP tool, named as Claude Code names it (mcp__<server>__<tool>), for the outward guard."""
     return [(OUTWARD, f"mcp__{server}__{tool}", tool_input)] if server and tool else []
+
+
+def config_servers(files: list[Path], key: str = "mcpServers") -> set[str]:
+    """The MCP server names in a tool's JSON config files, those that exist and parse."""
+    names: set[str] = set()
+    for f in files:
+        try:
+            data = json.loads(f.read_text())
+        except (OSError, ValueError):
+            continue
+        servers = data.get(key) if isinstance(data, dict) else None
+        if isinstance(servers, dict):
+            names.update(servers)
+    return names
+
+
+def split_mcp(rest: str, servers: set[str]) -> tuple[str, str]:
+    """A flat `<server>_<tool>` (after the tool's `mcp_` prefix) as (server, tool). A server's name
+    may hold `_` itself, so the longest configured name that fits wins; else it splits at the first."""
+    fits = [s for s in servers if rest.startswith(s + "_") and len(rest) > len(s) + 1]
+    if fits:
+        server = max(fits, key=len)
+        return server, rest[len(server) + 1:]
+    server, _, tool = rest.partition("_")
+    return server, tool
+
+
+def home_dir(env: str, default: str) -> Path:
+    """A tool's home folder: $env when set (KIRO_HOME), else default under ~."""
+    return Path(os.environ.get(env) or Path.home() / default)

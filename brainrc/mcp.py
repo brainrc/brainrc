@@ -223,6 +223,8 @@ def mcp_change(m: McpSync) -> tuple[str, str | None, list[str], list[str]]:
         custom = adapters.get(m.harness).mcp_text_change(text, m.servers)
         new, conflicts, owned = custom if custom is not None else _json_change(m, text)
     except (ValueError, IndexError, tomllib.TOMLDecodeError):
+        if not m.servers and adapters.get(m.harness).records_mcp and not _owned().get(str(m.dest)):
+            return "ok", text, [], []  # nothing of brainrc's in it to take out (a disabled tool's)
         return "invalid", None, [], []
     return ("ok" if new == text else "merge"), new, conflicts, owned
 

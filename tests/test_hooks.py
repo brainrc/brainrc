@@ -885,6 +885,40 @@ class E31GuardTest(unittest.TestCase):
         self.assertEqual(run_guard("copilot", {"toolName": "bash", "toolArgs": "{not json"}), (None, ""))
 
 
+    def test_a_server_name_with_an_underscore_is_split_by_the_tool_s_mcp_config(self):
+        # acme_memory is a local server (its name ends in memory), so its writes need no ask; split
+        # at the first _ it would be server acme and a create tool, which asks.
+        configs = {"gemini": ".gemini/settings.json", "kiro": ".kiro/settings/mcp.json"}
+        for name, config_file in configs.items():
+            with self.subTest(tool=name), tempfile.TemporaryDirectory() as project:
+                make = E31_CALLS[name][0]
+                call = make("mcp_acme_memory_create_entities", {"name": "x"}, project)
+                env = {"HOME": project, "KIRO_HOME": str(Path(project) / "kiro-home")}
+                self.assertEqual(run_guard(name, call, env=env)[0], "ask")  # no config: split at the first _
+                (Path(project) / config_file).parent.mkdir(parents=True)
+                (Path(project) / config_file).write_text(json.dumps({"mcpServers": {"acme_memory": {}, "acme": {}}}))
+                self.assertEqual(run_guard(name, call, env=env), (None, ""))
+
+    def test_split_mcp_takes_the_longest_configured_server(self):
+        sys.path.insert(0, str(HOOKS))
+        try:
+            import guard_bridge
+        finally:
+            sys.path.remove(str(HOOKS))
+        servers = {"acme", "acme_jira"}
+        self.assertEqual(guard_bridge.split_mcp("acme_jira_delete_issue", servers), ("acme_jira", "delete_issue"))
+        self.assertEqual(guard_bridge.split_mcp("acme_search", servers), ("acme", "search"))
+        self.assertEqual(guard_bridge.split_mcp("other_tool_x", servers), ("other", "tool_x"))
+        self.assertEqual(guard_bridge.split_mcp("acme_jira_", servers), ("acme", "jira_"))
+
+    def test_an_odd_field_does_not_block_in_tools_that_block_on_failure(self):
+        for name, payload in (("kiro", kiro_call("execute_bash", {"command": "ls"})),
+                              ("copilot", copilot_call("bash", {"command": "ls"}))):
+            with self.subTest(tool=name):
+                broken = {**payload, "cwd": {"not": "a path"}}  # an odd field must not crash the hook
+                self.assertEqual(run_guard(name, broken), (None, ""))
+
+
 class E31GuardRulesMixin(SharedGuardRuleCases):
     tool = ""
 

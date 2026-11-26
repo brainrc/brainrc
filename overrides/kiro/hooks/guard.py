@@ -44,9 +44,11 @@ def claude_calls(payload: dict) -> list[tuple[str, str, dict]]:
     if tool in WRITES:
         written = text(args.get("file_text")) or text(args.get("new_str")) or text(args.get("content"))
         return guard_bridge.write_call(path, written)
-    if tool.startswith("mcp_"):
-        server, _, name = tool[len("mcp_"):].partition("_")
-        return guard_bridge.mcp_call(server, name, args)
+    if tool.startswith("mcp_"):  # mcp_<server>_<tool>, split by the servers it has configured
+        base = Path(text(payload.get("cwd")) or ".")
+        servers = guard_bridge.config_servers([guard_bridge.home_dir("KIRO_HOME", ".kiro") / "settings" / "mcp.json",
+                                             base / ".kiro" / "settings" / "mcp.json"])
+        return guard_bridge.mcp_call(*guard_bridge.split_mcp(tool[len("mcp_"):], servers), args)
     return []
 
 
@@ -66,4 +68,8 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        code = main()
+    except Exception:  # noqa: BLE001: a hook that fails blocks the call here, so fail open instead
+        code = 0
+    sys.exit(code)

@@ -233,14 +233,27 @@ def settings_change(m: SettingsMerge) -> tuple[str, dict | None]:
     try:
         current = json.loads(m.dest.read_text()) if m.dest.exists() else {}
     except json.JSONDecodeError:
-        return "conflict", None
+        return ("ok" if _nothing_to_remove(m) else "conflict"), None
     if not isinstance(current, dict):
         return "conflict", None
     if adapters.settings_adapter(m.fmt).hooks_problem(current):
-        return "conflict", None
+        return ("ok" if _nothing_to_remove(m) else "conflict"), None
     view = as_claude(current, m.fmt)
     merged = from_claude(current, merge_settings(view, m.wanted(), m.markers(), read_owned(m.dest)), m.fmt)
     return ("ok" if merged == current else "merge"), merged
+
+
+def _nothing_to_remove(m: SettingsMerge) -> bool:
+    """A lenient merge that only takes brainrc's hooks out, of a file brainrc can't parse that
+    holds nothing of brainrc's: no hook command of its and no recorded entry. A tool brainrc
+    doesn't manage, such as Gemini CLI with a settings.json with comments, is then left alone."""
+    if not m.lenient or m.fragments or m.sandbox or any(read_owned(m.dest).values()):
+        return False
+    try:
+        text = m.dest.read_text()
+    except OSError:
+        return False
+    return not OWNED_HOOK.search(text) and not any(marker in text for marker in m.markers())
 
 
 def conflict_reason(m: SettingsMerge) -> str:

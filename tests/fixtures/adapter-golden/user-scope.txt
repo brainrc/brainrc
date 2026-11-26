@@ -284,7 +284,7 @@ FILE {HOME}/.copilot/hooks/brainrc.json
     "preToolUse": [
       {
         "type": "command",
-        "command": "f=\"$HOME/.copilot/hooks/brainrc/guard.py\"; [ ! -f \"$f\" ] || python3 \"$f\"",
+        "bash": "f=\"$HOME/.copilot/hooks/brainrc/guard.py\"; [ ! -f \"$f\" ] || ! command -v python3 >/dev/null || python3 \"$f\"",
         "timeoutSec": 10
       }
     ]
@@ -447,7 +447,7 @@ FILE {HOME}/.kiro/hooks/brainrc.json
       "matcher": "*",
       "action": {
         "type": "command",
-        "command": "f=\"$HOME/.kiro/hooks/brainrc/guard.py\"; [ ! -f \"$f\" ] || python3 \"$f\""
+        "command": "f=\"$HOME/.kiro/hooks/brainrc/guard.py\"; [ ! -f \"$f\" ] || ! command -v python3 >/dev/null || python3 \"$f\""
       },
       "timeout": 10
     }

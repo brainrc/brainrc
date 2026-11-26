@@ -133,7 +133,25 @@ def _set_aside(path: Path) -> None:
     os.replace(path, path.with_name(f"{path.name}.bak-brainrc-{stamp}"))  # rename's POSIX behaviour, on Windows too
 
 
-def _settings_steps(name: str, h: dict, problems: list[str]) -> list[Step]:
+# What a step of this run left in a file, so a later step on the same file builds on it: Gemini
+# CLI's settings.json holds both its hooks and its MCP servers.
+_wrote: dict[Path, str | None] = {}
+
+
+def _rebased(dest: Path, before: str | None) -> str | None:
+    """The text a step builds on: before, or what an earlier step of this run wrote over it."""
+    now = read_current(dest)
+    return now if now != before and _wrote.get(dest.resolve(), before) == now else before
+
+
+def _settle(dest: Path, emptied: bool) -> None:
+    """A rebased step with nothing left to take out, or that leaves the file empty (set aside)."""
+    if emptied:
+        _set_aside(dest)
+    _wrote.pop(dest.resolve(), None)
+
+
+def _settings_steps(name: str, h: dict, problems: list[str], lenient: bool = False) -> list[Step]:
     dest = expand(h["settings"])
     if not dest.is_file():
         return []
@@ -145,7 +163,7 @@ def _settings_steps(name: str, h: dict, problems: list[str]) -> list[Step]:
     except ConfigError as e:  # a typo in harnesses.local.toml mustn't stop the rest of uninstall
         problems.append(f"{tilde(dest)}: {e}, so brainrc's hooks may still be in it; fix it, then re-run")
         return []
-    m = SettingsMerge(name, dest, [], markers, fmt)
+    m = SettingsMerge(name, dest, [], markers, fmt, lenient=lenient)
     state, merged = settings_change(m)
     if state == "conflict":
         problems.append(f"{tilde(dest)}: {conflict_reason(m)}, so brainrc's hooks are still in it; "
@@ -158,12 +176,20 @@ def _settings_steps(name: str, h: dict, problems: list[str]) -> list[Step]:
         return [_delete_step(name, dest, "only brainrc's hooks were in it", lambda: record_settings_owned(dest, {}))]
 
     def unmerge() -> None:
-        write_settings(dest, merged, before)
+        base, new = _rebased(dest, before), merged
+        if base != before:  # this run took MCP servers out of it first (one file, Gemini CLI's)
+            state, new = settings_change(m)
+            if state != "merge" or not new or new == _fragment_extras(name):
+                _settle(dest, state == "merge")
+                record_settings_owned(dest, {})
+                return
+        write_settings(dest, new, base)
         record_settings_owned(dest, {})
+        _wrote[dest.resolve()] = read_current(dest)
     return [Step("UNMERGE", name, dest, unmerge, "hooks")]
 
 
-def _mcp_steps(name: str, h: dict, problems: list[str]) -> list[Step]:
+def _mcp_steps(name: str, h: dict, problems: list[str], lenient: bool = False) -> list[Step]:
     return [s for dest in mcp_files(name, h) for s in _mcp_file_steps(name, dest, problems)]
 
 
@@ -180,7 +206,17 @@ def _mcp_file_steps(name: str, dest: Path, problems: list[str]) -> list[Step]:
     before = read_current(dest)
     if text.strip() in ("", "{}"):
         return [_delete_step(name, dest, "only brainrc's MCP servers were in it", lambda: record_owned(m, []))]
-    return [Step("UNMERGE", name, dest, lambda: write_mcp(m, text, [], before), "mcp")]
+    def unmerge() -> None:
+        base, new = _rebased(dest, before), text
+        if base != before:  # this run took brainrc's hooks out of it first (one file, Gemini CLI's)
+            state, new, _, _ = mcp_change(m)
+            if state != "merge" or new.strip() in ("", "{}"):
+                _settle(dest, state == "merge")
+                record_owned(m, [])
+                return
+        write_mcp(m, new, [], base)
+        _wrote[dest.resolve()] = read_current(dest)
+    return [Step("UNMERGE", name, dest, unmerge, "mcp")]
 
 
 def _generated() -> list[Path]:
@@ -230,7 +266,9 @@ def _purge_refusal(home: Path, configs: list[tuple[str, dict]]) -> str | None:
         hh = harness_home(h)
         if hh and (hh == home or home in hh.parents):
             return f"it holds {name}'s config ({tilde(hh)})"
-    others = sorted(p.name for p in home.iterdir() if not SETTINGS_HOME_ENTRIES.fullmatch(p.name))
+    rendered = {d.parent.name for d in rendered_dirs()}  # a package adapter's agent format too
+    others = sorted(p.name for p in home.iterdir()
+                    if not SETTINGS_HOME_ENTRIES.fullmatch(p.name) and p.name not in rendered)
     if others:
         more = f" and {len(others) - 3} more" if len(others) > 3 else ""
         return f"it also holds files brainrc didn't make ({', '.join(others[:3])}{more})"
@@ -268,13 +306,14 @@ def finish_purge() -> int:
 
 def plan_uninstall(purge: bool = False) -> tuple[list[Step], list[str], list[str]]:
     """(steps in the order to run them, warnings, problems that stop part of the uninstall)."""
+    _wrote.clear()
     manifest, warnings = checked_manifest()
     configs = _harness_configs(manifest, warnings)
     roots = _roots(manifest)
     problems: list[str] = []
     steps: list[Step] = []
     starts: list[tuple[str, Path, Path]] = []  # (harness, removed path, dir never removed)
-    seen: set[Path] = set()
+    seen: set = set()  # links, and (kind, path) for settings and MCP files
     removed: set[Path] = set()
     home = Path.home()
     for name, h in configs:
@@ -295,9 +334,10 @@ def plan_uninstall(purge: bool = False) -> tuple[list[Step], list[str], list[str
                                   f"from {backup.name}, which init moved aside"))
     for name, h in configs:
         for key, make in (("settings", _settings_steps), ("mcp", _mcp_steps)):
-            if key in h and expand(h[key]) not in seen:
-                seen.add(expand(h[key]))
-                for step in make(name, h, problems):
+            if key in h and (key, expand(h[key])) not in seen:
+                seen.add((key, expand(h[key])))
+                # A tool apply never managed: a file it can't parse with nothing of brainrc's stays.
+                for step in make(name, h, problems, lenient=name not in manifest["harnesses"]):
                     steps.append(step)
                     starts += [(name, p, harness_home(h) or home) for p in step.removes]
     restored = {s.path for s in steps if s.action == "RESTORE"}

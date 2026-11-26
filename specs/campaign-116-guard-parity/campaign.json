@@ -1,0 +1,116 @@
+{
+  "ref": "gh:116",
+  "shape": "ordered",
+  "batch_size": 6,
+  "playbook_version": 1,
+  "dependency_source": "none",
+  "started_at": "2026-11-26T03:40:00Z",
+  "delivery": "one draft PR against main, one commit per child (one branch is pushable here)",
+  "gates": {
+    "campaign": {
+      "presented_at": "2026-11-26T03:40:00Z",
+      "approved_at": "2026-11-26T03:40:00Z"
+    }
+  },
+  "skipped": [
+    {
+      "ref": "gh:323",
+      "reason": "the security-baseline pack: left out by the maintainer's brief"
+    }
+  ],
+  "members": [
+    {
+      "ref": "gh:155",
+      "order": 1,
+      "depends_on": [],
+      "slug": "155-cursor-guard-rules",
+      "status": "in_review",
+      "branch": "claude/project-thread-e498ew",
+      "pr": 388,
+      "base": "main",
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 0,
+        "fixed": 0,
+        "no_change": []
+      }
+    },
+    {
+      "ref": "gh:156",
+      "order": 2,
+      "depends_on": [
+        "gh:155"
+      ],
+      "slug": "156-opencode-guard-rules",
+      "status": "in_review",
+      "branch": "claude/project-thread-e498ew",
+      "pr": 388,
+      "base": "main",
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 0,
+        "fixed": 0,
+        "no_change": []
+      }
+    },
+    {
+      "ref": "gh:157",
+      "order": 3,
+      "depends_on": [
+        "gh:155"
+      ],
+      "slug": "157-codex-guard",
+      "status": "in_review",
+      "branch": "claude/project-thread-e498ew",
+      "pr": 388,
+      "base": "main",
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 1,
+        "fixed": 1,
+        "no_change": []
+      }
+    },
+    {
+      "ref": "gh:158",
+      "order": 4,
+      "depends_on": [
+        "gh:155"
+      ],
+      "slug": "158-antigravity-guard",
+      "status": "in_review",
+      "branch": "claude/project-thread-e498ew",
+      "pr": 388,
+      "base": "main",
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 3,
+        "fixed": 3,
+        "no_change": []
+      }
+    },
+    {
+      "ref": "gh:322",
+      "order": 5,
+      "depends_on": [],
+      "slug": "322-sandbox-compile",
+      "status": "in_review",
+      "branch": "claude/project-thread-e498ew",
+      "pr": 388,
+      "base": "main",
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 4,
+        "fixed": 3,
+        "no_change": [
+          "an empty sandbox list or section the user had before brainrc added to it is removed with brainrc's entries, as #142's permission lists are"
+        ]
+      }
+    }
+  ]
+}

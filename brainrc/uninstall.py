@@ -31,13 +31,14 @@ from .config import (
     load_harnesses,
     rendered_agents_dir,
     rendered_instructions,
+    settings_format,
     settings_home,
     tilde,
 )
 from .manifest import checked_manifest, manifest_file
 from .mcp import ADAPTERS, McpSync, _owned_file, _read_record, mcp_change, mcp_files, record_owned, write_mcp
 from .plan import SettingsMerge, _managed_target, link_target
-from .settings import FileChanged, read_current, settings_change, write_settings
+from .settings import FileChanged, conflict_reason, read_current, settings_change, write_settings
 from .settings import record_owned as record_settings_owned
 from .sources import sources
 
@@ -128,10 +129,16 @@ def _settings_steps(name: str, h: dict, problems: list[str]) -> list[Step]:
     markers = set()
     if "hooks_dir" in h:
         markers = {h["hooks_dir"], *former_hooks_dirs(h["hooks_dir"])}
-    m = SettingsMerge(name, dest, [], markers)
+    try:
+        fmt = settings_format(h)
+    except ConfigError as e:  # a typo in harnesses.local.toml mustn't stop the rest of uninstall
+        problems.append(f"{tilde(dest)}: {e}, so brainrc's hooks may still be in it; fix it, then re-run")
+        return []
+    m = SettingsMerge(name, dest, [], markers, fmt)
     state, merged = settings_change(m)
     if state == "conflict":
-        problems.append(f"{tilde(dest)}: invalid JSON, so brainrc's hooks are still in it; fix it by hand, then re-run")
+        problems.append(f"{tilde(dest)}: {conflict_reason(m)}, so brainrc's hooks are still in it; "
+                        "fix it by hand, then re-run")
         return []
     if state == "ok":
         return []

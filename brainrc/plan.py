@@ -23,7 +23,7 @@ from .config import (
 )
 from .sources import Source, installed_items, render_instructions, sources
 from .opencode import agents_format
-from .guard import rules_file as guard_rules_file
+from .guard import rules_file as guard_rules_file, sandbox as guard_sandbox
 
 
 def stale_renders(srcs: list[Source], extensions: str | None, agents: dict[Path, str],
@@ -140,11 +140,14 @@ class SettingsMerge:
     dest: Path
     fragments: list[tuple[Path, str | None]]  # (fragment, hooks dir) per source, in order
     extra_markers: set[str] = field(default_factory=set)
+    fmt: str = "claude"  # harnesses.toml settings_format: where the file keeps its hooks
+    sandbox: dict = field(default_factory=dict)  # guard.sandbox(): packs' path and host rules (#322)
 
     def wanted(self) -> dict:
         hooks: dict[str, list] = {}
         wanted: dict = {}
         perms: dict = {}
+        box: dict = {}
         for fragment, hooks_dir in self.fragments:
             rendered = render_fragment(fragment, hooks_dir)
             for event, groups in rendered.get("hooks", {}).items():
@@ -156,17 +159,38 @@ class SettingsMerge:
                     perms[key] = list(dict.fromkeys([*perms.get(key, []), *entries]))
                 else:
                     perms.setdefault(key, value)
+            if isinstance(rendered.get("sandbox"), dict):
+                _join_sandbox(box, rendered["sandbox"])
             for key, value in rendered.items():  # e.g. Cursor's "version"; the first source wins
-                if key not in ("hooks", "permissions"):
+                if key not in ("hooks", "permissions", "sandbox"):
                     wanted.setdefault(key, value)
         if perms:
             wanted["permissions"] = perms
+        _join_sandbox(box, self.sandbox)  # packs' path and host rules after the fragments'
+        if box:
+            wanted["sandbox"] = box
         wanted["hooks"] = hooks
         return wanted
 
     def markers(self) -> set[str]:
         dirs = {hd for _, hd in self.fragments if hd} | self.extra_markers
         return {hook_command_dir(d).rstrip("/") + "/" for d in dirs}
+
+
+def _join_sandbox(box: dict, more: dict) -> None:
+    """Add more's sandbox keys into box: each source's list entries in order, any other value from
+    the first source that sets it (e.g. enabled)."""
+    for key, value in more.items():
+        if isinstance(value, dict) and isinstance(box.setdefault(key, {}), dict):
+            part = box[key]
+            for k, v in value.items():
+                if isinstance(v, list):
+                    have = part.get(k) if isinstance(part.get(k), list) else []
+                    part[k] = list(dict.fromkeys([*have, *(e for e in v if isinstance(e, str))]))
+                else:
+                    part.setdefault(k, v)
+        elif not isinstance(value, dict):
+            box.setdefault(key, value)
 
 
 def link_target(link: Path) -> Path:
@@ -272,12 +296,14 @@ def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
             fragment = src.root / "overrides" / name / "settings.fragment.json"
             if fragment.is_file():
                 fragments.append((fragment, hooks_dir))
-        if "settings" in h and fragments:
+        box = guard_sandbox(srcs, name) if "settings" in h and hooks_on else {}  # minimal: rules only
+        if "settings" in h and (fragments or box):
             known = {pack_hooks_dir(h["hooks_dir"], s.name) for s in every_src if "hooks_dir" in h}
-            merges.append(SettingsMerge(name, expand(h["settings"]), fragments, known))
+            merges.append(SettingsMerge(name, expand(h["settings"]), fragments, known,
+                                        config.settings_format(h), box))
         elif "settings" in h and "hooks_dir" in h and not hooks_on:  # take brainrc's hooks back out
             known = {h["hooks_dir"]} | {pack_hooks_dir(h["hooks_dir"], s.name) for s in every_src}
-            merges.append(SettingsMerge(name, expand(h["settings"]), [], known))
+            merges.append(SettingsMerge(name, expand(h["settings"]), [], known, config.settings_format(h)))
     # A disabled harness keeps its settings file, so take brainrc's hooks back out of it:
     # merging no fragments removes only the groups brainrc owns.
     enabled = load_harnesses()
@@ -286,7 +312,7 @@ def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
             known = set()
             if "hooks_dir" in h:
                 known = {h["hooks_dir"]} | {pack_hooks_dir(h["hooks_dir"], s.name) for s in every_src}
-            merges.append(SettingsMerge(name, expand(h["settings"]), [], known))
+            merges.append(SettingsMerge(name, expand(h["settings"]), [], known, config.settings_format(h)))
 
     # Stale: links brainrc made earlier that it wouldn't make now (removed items, disabled packs,
     # disabled harnesses). Only symlinks pointing at a path brainrc links to are touched.

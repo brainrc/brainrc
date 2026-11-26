@@ -88,6 +88,11 @@ prompt-injected ticket) set on getting around them. Matching text can't close th
   context with cluster-admin, or a Terraform backend it can write, one missed pattern is
   enough to change real infrastructure.
 
+A pack's `path` and `host` [guard rules](packs.md#guard-rules) close part of this for Claude Code:
+they compile into its OS sandbox, which refuses the read, write or connection whatever program
+makes it, once `sandbox.enabled` is on. The sandbox covers Bash and what it starts, not the Read
+tool or web fetches, which follow permission rules.
+
 So the hooks are a seatbelt. What stops a write is the **credentials**: a run should hold none
 that can apply, mutate a cluster, or write to a cloud account.
 
@@ -120,17 +125,41 @@ With this setup, a bypassed hook produces an access-denied error rather than a c
 
 OpenCode runs the same guards through a plugin (`overrides/opencode/plugin.js`), with one
 difference: a plugin can't prompt, so anything the guards would ask about is blocked, and the
-model is told to ask you to run it yourself. MCP tools aren't guarded there yet, and a pack's
-[guard rules](packs.md#guard-rules) aren't read there yet (epic #116). A pack can ship its own
+model is told to ask you to run it yourself. A pack's [guard rules](packs.md#guard-rules) apply
+under its `[scope]`, judged from the bash tool's `workdir`, else the session's directory, and a
+pack's deny reads as a refusal. MCP tools get the outward guard too: OpenCode names them
+`<server>_<tool>`, so the plugin asks OpenCode which servers are connected and matches the longest,
+and the guard reads the call as `mcp__<server>__<tool>`. Run in a real OpenCode (1.19.6). A pack can ship its own
 OpenCode plugin as `overrides/opencode/plugin.js`; `apply` links it beside core's, and the lock
 records it with the pack's hooks ([packs](packs.md#layout)).
 
 Cursor runs them through `overrides/cursor/hooks/guard.py` on `beforeShellExecution` (both
 guards) and `beforeReadFile` (secrets), from `~/.cursor/hooks.json` (`brainrc`) or the plugin's
 `.cursor-plugin/hooks.json`. Cursor's `ask` was reported broken and reads accept only allow or
-deny, so ask becomes deny there too. File writes and MCP calls aren't guarded in Cursor: it has no
-reliable pre-write hook. Packs' guard rules aren't read there yet. Not yet run in a real Cursor.
+deny, so ask becomes deny there too. A pack's [guard rules](packs.md#guard-rules) apply under its
+`[scope]`, judged from the event's `cwd` (else the first workspace root), and a pack's deny reads as
+a refusal, not as a call to ask you. File writes and MCP calls aren't guarded in Cursor: it has no
+reliable pre-write hook. Not yet run in a real Cursor: it is tested with payloads shaped like the
+hook input in the [`cursor-hooks`](https://www.npmjs.com/package/cursor-hooks) types.
 
-Codex and Antigravity CLI get the rules and workflow layers only. Use their own
-permission/sandbox settings (e.g. Codex approval modes) alongside. Porting the hooks to tools
-that support pre-execution hooks is on the [roadmap](roadmap.md).
+Codex runs them through `overrides/codex/hooks/guard.py` on `PreToolUse`, from
+`$CODEX_HOME/hooks.json`: shell commands get both guards, MCP tools the outward guard, and
+`apply_patch` the secrets guard (each file it adds or changes, with its added lines). Codex's
+`PreToolUse` takes only allow and deny, and treats an ask as a failed hook that lets the call run,
+so ask becomes deny there too. A pack's guard rules apply under its `[scope]`, judged from the
+payload's `cwd`; Codex names an MCP server's tools with its `-` turned into `_`, and a rule matches
+either spelling. Codex runs a hook only after you trust it: open `/hooks` in Codex once after
+`brainrc apply`. Until then it skips the hooks without a word, `codex exec` included. Hosted tools
+such as web search don't reach the hook. Run in a real Codex (0.172), shell, `apply_patch`, code
+mode and MCP calls alike.
+
+Antigravity runs them through `overrides/antigravity/hooks/guard.py` on `PreToolUse` for
+`run_command`, from `~/.gemini/config/hooks.json`, where brainrc's hooks sit under their own entry,
+`brainrc`. A guard's ask replies `force_ask`, which prompts even for a command you allowed before,
+and a deny replies `deny`. With no objection it replies `allow`, which Antigravity's docs define as
+handing the call on to the next hook or the default policy, so your own permission settings still
+decide; it is not `auto_approve`. In headless `agy -p`, which can't prompt, an ask ends as a deny. A
+pack's guard rules apply under its `[scope]`, judged from the command's `Cwd`, else the first
+workspace path. File tools and MCP tools aren't guarded there yet: the docs don't name their
+arguments or how MCP tools are called. Not yet run in a real Antigravity: it is tested with payloads
+shaped like the docs' `run_command` example.

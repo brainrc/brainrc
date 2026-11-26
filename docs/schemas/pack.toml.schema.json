@@ -49,7 +49,7 @@
       "$ref": "#/$defs/scope"
     },
     "guard": {
-      "description": "[[guard.deny]] and [[guard.ask]] rules core's guard hook enforces, with match or tool, reason and scope (docs/packs.md#guard-rules).",
+      "description": "[[guard.deny]] and [[guard.ask]] rules core's guard hook enforces, with match or tool, reason and scope; deny rules may name a path or host for the OS sandbox instead (docs/packs.md#guard-rules).",
       "type": "object",
       "$ref": "#/$defs/guard"
     },
@@ -122,6 +122,16 @@
           "type": "string",
           "pattern": "^mcp__"
         },
+        "path": {
+          "description": "A file or directory (~/... or /...) the OS sandbox refuses to read or write; [[guard.deny]] only, with scope = {} in a scoped pack.",
+          "type": "string",
+          "pattern": "^(~/|/)"
+        },
+        "host": {
+          "description": "A domain (*.example.com allowed) the OS sandbox refuses network access to; [[guard.deny]] only, with scope = {} in a scoped pack.",
+          "type": "string",
+          "pattern": "^(\\*\\.)?[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*$"
+        },
         "reason": {
           "description": "What the command does, shown when the guard stops it.",
           "type": "string",
@@ -139,7 +149,7 @@
       "additionalProperties": false,
       "properties": {
         "deny": {
-          "description": "Commands and MCP tools the guard refuses.",
+          "description": "Commands and MCP tools the guard refuses, and paths and hosts the OS sandbox refuses.",
           "type": "array",
           "items": {
             "$ref": "#/$defs/guard_rule"

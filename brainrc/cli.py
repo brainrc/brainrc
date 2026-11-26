@@ -42,7 +42,8 @@ from .plan import (
     stale_renders,
 )
 from .mcp import check_servers, mcp_change, mcp_plan, record_owned, write_mcp
-from .settings import FileChanged, read_current, read_owned, settings_change, settings_owned, write_settings
+from .settings import FileChanged, conflict_reason, read_current, read_owned, settings_change, settings_owned
+from .settings import write_settings
 from .settings import record_owned as record_settings_owned
 from .plugin import cmd_plugin
 from .plugins import machine_findings, render_extensions
@@ -192,6 +193,8 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True, moved: frozens
         srcs = sources()
         roots = [s.root for s in sources(include_disabled=True)]
         agents = rendered_agents(srcs)
+        for h in config.load_harnesses(include_disabled=True).values():
+            config.settings_format(h)  # the settings merges below depend on it
     except ConfigError as e:
         print(f"ERROR {e}")
         return 1
@@ -339,7 +342,7 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True, moved: frozens
                 record_settings_owned(m.dest, owned)  # e.g. an entry the user took out by hand
             continue
         print(f"{state.upper():9} {m.harness:9} {tilde(m.dest)}"
-              + ("  (invalid JSON, fix by hand)" if state == "conflict" else "  (hooks)"))
+              + (f"  ({conflict_reason(m)}, fix by hand)" if state == "conflict" else "  (hooks)"))
         if state == "conflict":
             conflicts += 1
             continue

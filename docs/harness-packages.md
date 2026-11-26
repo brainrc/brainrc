@@ -70,9 +70,12 @@ Nothing here was run against a real `agy`.
 - Hooks: `hooks.json` at the plugin root, `{"<name>": {"PreToolUse": [{"matcher", "hooks"}]}}`;
   commands run from the plugin folder. `PreToolUse` gets `toolCall: {name, args}` (`run_command`
   → `args.CommandLine`; `view_file`, `write_to_file`, `replace_file_content`) and prints
-  `{"decision": "ask" | "deny", "reason"}`. An empty `{}` is reported to deny every call and
-  `allow` is documented as auto-approve, so a guard has no safe reply for "no objection". **Not
-  shipped** until a live test settles it.
+  `{"decision": "ask" | "deny", "reason"}`. An empty `{}` is reported to deny every call. Its hooks
+  page (read 2026-11-26) now lists `allow` (hand on to the next hook or the default policy),
+  `auto_approve`, `deny`, `ask`, `force_ask` and `deny_unless_prior_grant`, and #1053 shows `allow`
+  doesn't approve a command the user hasn't granted, so `allow` is the "no objection" reply core's
+  guard uses through `brainrc apply` (`~/.gemini/config/hooks.json`). The plugin route is still
+  unshipped.
 - Skills: `disable-slash-command` hides a skill from `/`; `disable-model-invocation` is likely ignored.
 
 ## OpenCode

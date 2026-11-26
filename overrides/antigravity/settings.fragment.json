@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"{{hooks_dir}}/guard.py\"; if [ -f \"$f\" ]; then python3 \"$f\"; else echo '{\"decision\": \"allow\"}'; fi",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

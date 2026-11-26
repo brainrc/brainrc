@@ -67,7 +67,10 @@ Errors stop the command before it writes anything; warnings don't.
 | Message | Fix |
 |---|---|
 | ``pack name `acme` is used by both [work] and [acme]`` | Two packs share one `name`. Change `name` in one `pack.toml`, or set `enabled = false` for one in `packs.local.toml`. `core` is taken. |
-| ``skill `acme-deploy` is defined in both acme and acme2`` | Rename one. Each pack's items carry its own `prefix`. |
+| ``skill `acme-deploy` is defined in both acme and acme2`` | Rename one. Each pack's items carry its own `prefix`. When one pack takes over a skill another still ships (such as `brainrc/kubernetes` beside Gatework 0.8), exclude the other's copy in `brainrc.local.toml` instead ([naming](packs.md#naming)). |
+| ``pack python: no folder `python` in https://github.com/brainrc/packs.git at v1.0.0`` | That `ref` has no such folder. Fix `subdir` or `ref` in `packs.local.toml`. The clone stays at the commit it had. |
+| ``pack python: `python` in ... is a link or a file, not a folder`` | `subdir` must name a folder of the repo, not a link or a file. |
+| ``packs.toml [team]: `subdir` goes with `git` `` | `subdir` picks a folder of a git repo. For a folder on disk, point `path` at it. |
 | ``acme:skills/x: pack skills must start with `acme-` `` | Rename the item to start with the pack's `prefix`. |
 | ``acme:pack.toml: `prefix` must be ASCII lowercase letters, digits and hyphens, ending with '-'`` | Fix `prefix` in `pack.toml`, e.g. `acme-`. |
 | ``acme:pack.toml: `prefix` `aws-` uses the vendor name `aws` ``, ``... reserved for official packs``, ``... one or two edits from the official name `brainrc` `` | Rename the pack or its prefix to follow the [naming rules](packs.md#naming). |

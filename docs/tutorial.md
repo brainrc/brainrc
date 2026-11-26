@@ -134,6 +134,6 @@ on every push with the `validate-pack` action, against the brainrc version it pi
 - [Packs](packs.md) is the full pack reference.
 - To share the pack with a repo's agents instead of one machine, list it in the repo's
   `brainrc.toml` ([team setup](project.md)).
-- To add a domain skill to Gatework for everyone instead, open a pull request on
-  [brainrc/gatework](https://github.com/brainrc/gatework): the skill goes in `skills/<stack>/`
-  with a row in the Domains table of `skills/brainrc-gatework/SKILL.md`.
+- To share a domain skill with everyone instead, open a pull request on
+  [brainrc/packs](https://github.com/brainrc/packs): the skill goes in its stack's folder, with an
+  `[[extensions.gatework.domains]]` row in that folder's `pack.toml`.

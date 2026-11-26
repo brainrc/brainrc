@@ -56,8 +56,9 @@ and `frozen` (project scope and the lockfile), `mcp` and `mcp_pins`, `validate`,
 - **Core**: brainrc's own repo. Generic content only, versioned by `VERSION` ([CHANGELOG](../CHANGELOG.md)).
 - **Pack**: a folder or repo layered on core for content that doesn't belong in it ([packs](packs.md)).
 - **Default pack**: a pack core's `packs.toml` turns on: Gatework, which holds its engine, its agents and the domain skills ([packs](packs/use-a-pack.md#turn-the-default-pack-off-or-pin-it)).
+- **Official pack**: a pack the brainrc project publishes under a `brainrc/` ID. Gatework has a repo of its own; the others are folders of [brainrc/packs](https://github.com/brainrc/packs), enabled with `subdir` ([list](packs.md#naming)).
 - **Skill**: instructions a tool loads on demand, triggered by its description ([format](formats.md#skills-skillsnameskillmd)).
-- **Domain skill**: a skill for one stack (Terraform, Kubernetes, ...) that Gatework loads only when the ticket touches it ([list](gatework.md#domain-skills)).
+- **Domain skill**: a skill for one stack (Terraform, Kubernetes, ...) that Gatework loads only when the ticket touches it. Gatework ships some and the official packs add more ([list](gatework.md#domain-skills)).
 - **Agent**: one role in a Gatework run, such as analyst or verifier ([roles](gatework.md#roles)).
 - **Connector**: the skill Gatework uses to read and update a ticket system ([contract](https://github.com/brainrc/gatework/blob/main/skills/brainrc-gatework/references/connectors.md)).
 - **Gate**: a stop where you approve the spec, the plan, or delivery ([Gatework](gatework.md)).

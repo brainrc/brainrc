@@ -18,11 +18,13 @@ from __future__ import annotations
 
 import hashlib
 import importlib.util
+import json
 import sys
 from types import ModuleType
 
-from .config import ConfigError, _layered
-from .sources import Source
+from . import scope
+from .config import PROFILE_FILE, ConfigError, _layered, local_dir, machine_extensions, tilde
+from .sources import Source, frontmatter, installed_items, item_name, items, skills
 
 _LOADED: dict[tuple[str, int], ModuleType] = {}
 
@@ -134,10 +136,103 @@ def plugin_findings(plugins: list[tuple[Source, ModuleType]]) -> list[tuple[str,
     return [f for me, mod in plugins if hasattr(mod, "doctor") for f in _call(me, mod, "doctor", me)]
 
 
-def render_extensions(srcs: list[Source]) -> str | None:
-    """$BRAINRC_HOME/extensions.md from the first plugin that renders it, or None when none does."""
+def render_extensions(srcs: list[Source], here: scope.Context | None = None) -> str | None:
+    """$BRAINRC_HOME/extensions.md from the first plugin that renders it, or None when none does.
+
+    With `here`, only the packs whose [scope] applies there (`brainrc scope --extensions`): what a
+    run in that directory should see. Without it (apply), every enabled pack, then a section that
+    says where each scoped pack applies."""
     for me, mod in validators(srcs):
         if hasattr(mod, "render_extensions"):
             others = [s for s in srcs if not s.is_core and s is not me]
-            return _call(me, mod, "render_extensions", [(s.name, table(s, me, mod)) for s in others])
+            if here is not None:
+                others = [s for s in others if scope.applies(scope.of(s.meta), here)]
+            text = _call(me, mod, "render_extensions", [(s.name, table(s, me, mod)) for s in others])
+            if not isinstance(text, str):
+                raise ConfigError(f"{me.name}:{me.meta.get('validator')}: render_extensions returned "
+                                  f"{type(text).__name__}, not the text of extensions.md")
+            text += roles_section(others) + machine_section(me, mod)
+            return text if here is not None else text + scope_section(others)
     return None
+
+
+def machine_table(me: Source, mod: ModuleType) -> dict:
+    """This machine's table for the plugin (#144): brainrc.local.toml's older namespaces it still
+    reads, then its own, as table() reads a pack's."""
+    ext, found = machine_extensions(), {}
+    for ns in (*getattr(mod, "LEGACY_NAMESPACES", ()), namespace(me, mod)):
+        found.update(ext.get(ns, {}))
+    return found
+
+
+def machine_section(me: Source, mod: ModuleType) -> str:
+    """This machine's table from brainrc.local.toml, after every pack's."""
+    own = machine_table(me, mod)
+    if not own:
+        return ""
+    return "\n".join(["", "## This machine", "",
+                      f"From brainrc.local.toml's [extensions.{namespace(me, mod)}]: this machine's "
+                      "settings, which come after every pack's.", "",
+                      "```json", json.dumps(own, indent=2, sort_keys=True, default=str), "```"]) + "\n"
+
+
+def machine_findings(srcs: list[Source]) -> tuple[list[str], list[str]]:
+    """(errors, warnings) in brainrc.local.toml's [extensions]: each table is checked by the pack
+    that owns its namespace, as a pack's is; an older namespace warns to move it, and a table no
+    enabled pack reads warns."""
+    ext = machine_extensions()
+    if not ext:
+        return [], []
+    where = tilde(local_dir() / PROFILE_FILE)
+    plugins = validators(srcs)
+    owners = {namespace(me, mod): (me, mod) for me, mod in plugins}
+    old_ns = {ns: (me, mod) for me, mod in plugins for ns in getattr(mod, "LEGACY_NAMESPACES", ())}
+    skill_names = {p.name for s in srcs for p in skills(s)}
+    agent_names = {f.stem for s in srcs for f in items(s, "agents")}
+    errors, warnings = [], []
+    for ns in ext:
+        if ns in owners:
+            continue
+        if found := old_ns.get(ns):
+            until = getattr(found[1], "REMOVED_IN", "a later release")
+            warnings.append(f"{where}: [extensions.{ns}] is deprecated; move it under "
+                            f"[extensions.{namespace(*found)}] (read until {until})")
+        else:
+            warnings.append(f"{where}: no enabled pack reads [extensions.{ns}]")
+    for me, mod in plugins:
+        if t := machine_table(me, mod):
+            if hasattr(mod, "check_extensions"):
+                errors += _call(me, mod, "check_extensions", t, where, skill_names, agent_names)
+            if hasattr(mod, "warn_extensions"):
+                warnings += _call(me, mod, "warn_extensions", t, where)
+    return errors, warnings
+
+
+def roles_section(srcs: list[Source]) -> str:
+    """The agents other packs add (#143), each with the file that holds its instructions, so a
+    harness that installs no agents can still run one as a role in the one-session fallback."""
+    rows = []
+    for src in srcs:
+        for path in installed_items(src, "agents"):
+            desc = " ".join(frontmatter(path).get("description", "").split())
+            rows.append(f"- `{item_name(path)}` ({src.name}): {desc or 'no description'} File: `{path.resolve()}`")
+    if not rows:
+        return ""
+    return "\n".join(["", "## Pack roles", "",
+                      "Agents that packs add. Each adds to Gatework's own roles and never replaces one. "
+                      "Where the harness doesn't install agents, read the role's instructions from its "
+                      "file.", "", *rows]) + "\n"
+
+
+def scope_section(srcs: list[Source]) -> str:
+    """Where each scoped pack applies, for a reader of extensions.md that can't run `brainrc scope`."""
+    scoped = [s for s in srcs if not scope.unscoped(scope.of(s.meta))]
+    if not scoped:
+        return ""
+    lines = ["", "## Scope", "",
+             "These packs apply only where their [scope] matches; elsewhere, skip their extensions "
+             "above (their deliver checks, domains, intake context, ticket connector and pack "
+             "roles). "
+             "`brainrc scope --extensions` prints this file for the directory you're in.", ""]
+    lines += [f"- `{s.name}`: {scope.describe(scope.of(s.meta))}" for s in scoped]
+    return "\n".join(lines) + "\n"

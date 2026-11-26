@@ -274,8 +274,24 @@ def install_profile(warnings: list[str] | None = None) -> tuple[str, list[str]]:
                           "paths or patterns, e.g. [\"skills/brainrc-aws\"]")
     if warnings is not None:
         warnings += [f"{tilde(path)}:{line_of(text, k)}: unknown key `{k}`"
-                     for k in data if k not in ("profile", "exclude")]
+                     for k in data if k not in ("profile", "exclude", "extensions")]
     return profile, exclude
+
+
+def machine_extensions() -> dict[str, dict]:
+    """brainrc.local.toml's [extensions.<namespace>] tables (#144): this machine's settings for a
+    pack that owns the namespace, such as Gatework's mode, rendered after every pack's."""
+    path = local_dir() / PROFILE_FILE
+    data = _read_toml(path)
+    ext = data.get("extensions", {})
+    if not isinstance(ext, dict):
+        raise ConfigError(f"{tilde(path)}:{line_of(path.read_text(), 'extensions')}: `extensions` must be "
+                          "a table of tables, e.g. [extensions.gatework]")
+    for ns, table in ext.items():
+        if not isinstance(table, dict):
+            raise ConfigError(f"{tilde(path)}:{line_of(path.read_text(), 'extensions', ns)}: "
+                              f"`extensions.{ns}` must be a table, e.g. [extensions.{ns}]")
+    return ext
 
 
 def installs(part: str) -> bool:

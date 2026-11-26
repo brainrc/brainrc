@@ -1,0 +1,130 @@
+{
+  "ref": "gh:112",
+  "shape": "ordered",
+  "batch_size": 6,
+  "playbook_version": 1,
+  "dependency_source": "none",
+  "started_at": "2026-11-20T07:15:00Z",
+  "delivery": "one draft PR against main, one commit per child (the epic names stacked; one branch is pushable here)",
+  "gates": {
+    "campaign": {
+      "presented_at": "2026-11-20T07:15:00Z",
+      "approved_at": "2026-11-20T07:15:00Z"
+    }
+  },
+  "skipped": [],
+  "members": [
+    {
+      "ref": "gh:140",
+      "order": 1,
+      "depends_on": [],
+      "slug": "140-pack-scope",
+      "status": "in_review",
+      "branch": "claude/project-thread-je3086",
+      "pr": 387,
+      "base": "main",
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 3,
+        "fixed": 3,
+        "no_change": []
+      }
+    },
+    {
+      "ref": "gh:141",
+      "order": 2,
+      "depends_on": [
+        "gh:140"
+      ],
+      "slug": "141-guard-rules",
+      "status": "in_review",
+      "branch": "claude/project-thread-je3086",
+      "pr": 387,
+      "base": "main",
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 3,
+        "fixed": 3,
+        "no_change": []
+      }
+    },
+    {
+      "ref": "gh:142",
+      "order": 3,
+      "depends_on": [
+        "gh:141"
+      ],
+      "slug": "142-pack-settings-keys",
+      "status": "in_review",
+      "branch": "claude/project-thread-je3086",
+      "pr": 387,
+      "base": "main",
+      "merged": false,
+      "review": {
+        "by": "code-review (high)",
+        "findings": 2,
+        "fixed": 2,
+        "no_change": []
+      }
+    },
+    {
+      "ref": "gh:143",
+      "order": 4,
+      "depends_on": [
+        "gh:142"
+      ],
+      "slug": "143-pack-reviewers",
+      "status": "in_review",
+      "branch": "claude/project-thread-je3086",
+      "pr": 387,
+      "base": "main",
+      "merged": false,
+      "core_part": "extensions.md lists every in-scope pack's installed agents under Pack roles with their files; acme example gains acme-reviewer",
+      "needs_gatework": "Gatework: a `reviewers` key (name, domains, veto) in its validator and render, dispatch of pack reviewers in subagent and inline modes, fallback.md reading Pack roles, and the sandbox eval with acme-reviewer",
+      "review": {
+        "by": "code-review (high)",
+        "findings": 3,
+        "fixed": 3,
+        "no_change": []
+      }
+    },
+    {
+      "ref": "gh:144",
+      "order": 5,
+      "depends_on": [
+        "gh:143"
+      ],
+      "slug": "144-gatework-mode-override",
+      "status": "in_review",
+      "branch": "claude/project-thread-je3086",
+      "pr": 387,
+      "base": "main",
+      "merged": false,
+      "core_part": "brainrc.local.toml [extensions.<namespace>], checked by the owning pack and rendered last under This machine",
+      "needs_gatework": "Gatework: `mode` (auto, inline, subagent) and `forbid_writing_subagents` keys, read from a pack's table and from This machine, in references/efficiency.md",
+      "review": {
+        "by": "code-review (high)",
+        "findings": 3,
+        "fixed": 3,
+        "no_change": []
+      }
+    },
+    {
+      "ref": "gh:145",
+      "order": 6,
+      "depends_on": [
+        "gh:144"
+      ],
+      "slug": "145-unavailable-gates",
+      "status": "blocked",
+      "branch": null,
+      "pr": null,
+      "base": "main",
+      "merged": false,
+      "needs_gatework": "Gatework: an `unavailable_gates` key, rendered as not run, unavailable at the Deliver gate, with a tripwire against reporting it as passed",
+      "blocked_because": "no core part: the key, its rendering and the Deliver gate all live in brainrc/gatework, which this session can't reach"
+    }
+  ]
+}

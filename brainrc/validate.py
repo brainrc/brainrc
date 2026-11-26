@@ -12,7 +12,8 @@ from .mcp import check_servers
 from .naming import check_pack_names, unprefixed_ok
 from .packs import pinned_defaults
 from .plugins import extension_errors, extension_warnings, plugin_errors, validators
-from . import config, connectors, packtests, schema
+from . import config, connectors, guard, packtests, schema
+from . import scope as pack_scope
 from .config import (
     ConfigError,
     HOOKS_DIR_PLACEHOLDER,
@@ -223,13 +224,33 @@ def pack_toml_findings(src: Source) -> tuple[list[str], list[str]]:
     unknown: list[tuple[tuple, str]] = []
     errors = [f"{where}: {e}" for e in schema.errors(src.meta, known, unknown=unknown)
               if not e.startswith("id:")]  # check_pack_names reports any bad `id`, apply too
+    errors += pack_scope.check(src.meta.get("scope"), where)
+    errors += guard.check(src.meta, where)
     warnings = []
     for table, key in unknown:
-        hint = did_you_mean(key, known["properties"] if not table else {})
+        hint = did_you_mean(key, _known_keys(known, table))
         path_ = tuple(map(str, (*table, key)))
+        if "scope" in map(str, table):  # ignored, it would widen the scope to everywhere: fail
+            errors.append(f"{where}:{key_line(text, path_)}: unknown key `{'.'.join(path_)}`{hint}; "
+                          "a scope key brainrc doesn't know would make the pack apply everywhere")
+            continue
         warnings.append(f"{where}:{key_line(text, path_)}: unknown key `{'.'.join(path_)}`{hint}; "
                         "brainrc ignores it")
     return errors, warnings
+
+
+def _known_keys(known: dict, table: tuple) -> dict:
+    """The keys the schema knows in the pack.toml table at `table` (`scope`, a guard rule), for a
+    typo's hint; {} for a freer table, such as [extensions]."""
+    defs = known.get("$defs", {})
+    path = tuple(map(str, table))
+    if not path:
+        return known["properties"]
+    if path[-1] == "scope":
+        return defs.get("scope", {}).get("properties", {})
+    if path[0] == "guard":
+        return defs.get("guard" if len(path) == 1 else "guard_rule", {}).get("properties", {}) if len(path) in (1, 3) else {}
+    return {}
 
 
 def _validate_pack(src: Source) -> list[str]:

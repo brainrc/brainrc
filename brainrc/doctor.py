@@ -10,7 +10,7 @@ import shlex
 import subprocess
 from pathlib import Path
 
-from . import config
+from . import config, guard
 from .config import (
     ConfigError,
     KINDS,
@@ -37,7 +37,7 @@ from .settings import _owned, settings_change
 from .manifest import checked_manifest
 from .mcp import check_servers, mcp_change, mcp_plan
 from .moved import left_behind
-from .plugins import plugin_findings, render_extensions, validators
+from .plugins import machine_findings, plugin_findings, render_extensions, validators
 from .validate import cmd_validate
 
 
@@ -102,7 +102,7 @@ def _render_findings(srcs: list[Source]) -> list[Finding]:
     except ConfigError:  # a validator that won't load: doctor_findings reports it
         extensions = None
     found = []
-    for path, exists in stale_renders(srcs, extensions, rendered_agents(srcs)):
+    for path, exists in stale_renders(srcs, extensions, rendered_agents(srcs), guard.render(srcs)):
         rel = tilde(path) if not path.is_relative_to(config.REPO) else path.relative_to(config.REPO).as_posix()
         found.append(("FAIL", f"{rel} is stale (sources changed since the last apply)" if exists
                       else f"{rel} has not been rendered", command("apply")))
@@ -259,6 +259,12 @@ def doctor_findings() -> list[Finding]:
         found += plugin_findings(validators(srcs))
     except ConfigError as e:
         found.append(("FAIL", str(e), "fix the pack's validator, or disable the pack in packs.local.toml"))
+    try:
+        errors, warnings = machine_findings(srcs)
+        found += [("FAIL", e, "fix [extensions] in brainrc.local.toml") for e in errors]
+        found += [("WARN", w, "move or rename the table, or enable the pack that reads it") for w in warnings]
+    except ConfigError as e:
+        found.append(("FAIL", str(e), "fix [extensions] in the file named"))
     try:
         for h in load_harnesses().values():
             agents_format(h)

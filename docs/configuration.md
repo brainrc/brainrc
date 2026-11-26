@@ -18,7 +18,7 @@ packs into it.
 |---|---|
 | `harnesses.local.toml` | which tools brainrc manages, and their paths |
 | `packs.local.toml` | which packs this machine adds, or turns off |
-| `brainrc.local.toml` | the profile, and items to leave out |
+| `brainrc.local.toml` | the profile, items to leave out, and this machine's pack settings |
 | `rules/*.local.md` | rules for this machine only, loaded after all the others |
 
 `brainrc init` writes the first three for you. Every file is optional.
@@ -88,6 +88,16 @@ exclude = ["gatework:skills/brainrc-aws", "gatework:agents/brainrc-infra-*"]
 or that path after the pack's name (`gatework:skills/brainrc-aws`), and `*` and `?` work.
 `brainrc init --profile <name>` or `--starter <name>` writes this file. `apply` removes what a
 profile or pattern drops; `validate` still checks everything.
+
+`[extensions.<namespace>]` holds this machine's settings for the pack that owns the namespace,
+in the same form as a pack's [extensions](packs.md#extensions) table. That pack checks it on
+`apply` and `doctor`, and `extensions.md` lists it after every pack's, under "This machine". A
+namespace no enabled pack reads is a warning.
+
+```toml
+[extensions.gatework]
+deliver_checks = ["Load test signed off"]
+```
 
 ## Local rules
 

@@ -27,8 +27,8 @@ writes anything:
     | Starter | Installs |
     |---|---|
     | `minimal` | rules only |
-    | `app` | rules, skills, agents, commands and guard hooks, without Gatework's Terraform, AWS, Kubernetes and GitOps skills |
-    | `infra` | everything, MCP servers included |
+    | `app` | rules, skills, agents, commands and guard hooks |
+    | `infra` | everything, MCP servers included; add the [terraform-aws and kubernetes packs](packs.md#naming) for infrastructure skills |
 
 Run in a project folder, `init` also offers to turn that project's `CLAUDE.md`, `AGENTS.md`,
 Cursor rules and Copilot instructions into a pack ([import](packs/import.md)).
@@ -43,7 +43,7 @@ brainrc status
 ```
 
 ```text
-FETCH     gatework  https://github.com/brainrc/gatework.git (v0.8.0)
+FETCH     gatework  https://github.com/brainrc/gatework.git (v0.9.0)
 CREATE    claude    ~/.claude/CLAUDE.md
 CREATE    claude    ~/.claude/hooks/brainrc
 CREATE    claude    ~/.claude/skills/brainrc-work

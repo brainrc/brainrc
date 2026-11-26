@@ -232,7 +232,7 @@ are folders of [brainrc/packs](https://github.com/brainrc/packs), enabled with `
 
 | ID | What it holds | Issue |
 |---|---|---|
-| `brainrc/gatework` | the default pack: Gatework's engine, its roles, ticket connectors and domain skills ([brainrc/gatework](https://github.com/brainrc/gatework)) | [#172](https://github.com/brainrc/brainrc/issues/172) |
+| `brainrc/gatework` | the default pack: Gatework's engine, its roles, ticket connectors and general domain skills ([brainrc/gatework](https://github.com/brainrc/gatework)) | [#172](https://github.com/brainrc/brainrc/issues/172) |
 | `brainrc/starter` | the small, measured base for the default profile ([starter](https://github.com/brainrc/packs/tree/main/starter)) | [#313](https://github.com/brainrc/brainrc/issues/313) |
 | `brainrc/review` | review, PR description, commit message and unslop ([review](https://github.com/brainrc/packs/tree/main/review)) | [#314](https://github.com/brainrc/brainrc/issues/314) |
 | `brainrc/go` | Go, built from today's `brainrc-go-service` skill ([go](https://github.com/brainrc/packs/tree/main/go)) | [#315](https://github.com/brainrc/brainrc/issues/315) |
@@ -243,11 +243,12 @@ are folders of [brainrc/packs](https://github.com/brainrc/packs), enabled with `
 | `brainrc/rust` | Rust: rustfmt, Clippy and cargo test ([rust](https://github.com/brainrc/packs/tree/main/rust)) | [#185](https://github.com/brainrc/brainrc/issues/185) |
 | `brainrc/security-baseline` | the default guard policy, secret protection and a sandbox profile ([security-baseline](https://github.com/brainrc/packs/tree/main/security-baseline)) | [#323](https://github.com/brainrc/brainrc/issues/323) |
 
-`brainrc/go`, `brainrc/terraform-aws` and `brainrc/kubernetes` take over domain skills Gatework
-0.8 still ships, under the same names (#318). Until Gatework drops its copies, enable one beside
-Gatework by excluding Gatework's copy in `brainrc.local.toml`, for example
+`brainrc/go`, `brainrc/terraform-aws` and `brainrc/kubernetes` hold the domain skills Gatework
+shipped up to 0.8, under the same names (#318). Gatework 0.9 no longer ships them, so enable the
+packs for the stacks you use to keep those skills. If you pin Gatework 0.8, enable one beside it
+by excluding Gatework's copy in `brainrc.local.toml`, for example
 `exclude = ["gatework:skills/brainrc-kubernetes"]`: an excluded item isn't installed, so it
-doesn't collide. Each pack's README lists the lines it needs. `brainrc/starter` and
+doesn't collide. `brainrc/starter` and
 `brainrc/review` reuse Gatework's names too (`brainrc-project-commands`, and the review, PR
 description, commit message and unslop skills): they are for a setup with Gatework off.
 

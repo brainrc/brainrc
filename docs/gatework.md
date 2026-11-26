@@ -150,18 +150,22 @@ details: [after delivery](post-deliver.md).
 ## Domain skills
 
 Loaded only when the work touches their files, each with offline validation commands,
-conventions, a review checklist and what never to run without approval: `brainrc-go-service`,
-`brainrc-terraform` (Terragrunt, Atlantis, Spacelift), `brainrc-aws`, `brainrc-kubernetes` (Helm,
-Kustomize), `brainrc-gitops` (Argo CD, Flux), `brainrc-ci-pipelines` (GitHub Actions),
-`brainrc-containers`, `brainrc-db-migrations`, `brainrc-observability` and `brainrc-scripting`
-(Python, Bash). Your own pack can add more ([your first pack](tutorial.md)).
+conventions, a review checklist and what never to run without approval. Gatework ships
+`brainrc-ci-pipelines` (GitHub Actions), `brainrc-observability` and `brainrc-scripting` (Python,
+Bash). Your own pack can add more ([your first pack](tutorial.md)).
 
-`brainrc-go-service` and `brainrc-db-migrations`, `brainrc-terraform` and `brainrc-aws`, and
-`brainrc-kubernetes`, `brainrc-gitops` and `brainrc-containers` are moving to the official packs
-`brainrc/go`, `brainrc/terraform-aws` and `brainrc/kubernetes`, folders of
-[brainrc/packs](https://github.com/brainrc/packs). Until Gatework drops its copies, enable one
-beside Gatework by excluding Gatework's copies, as its README lists ([naming](packs.md#naming)).
-Python, Node and TypeScript, and Rust have official packs of their own there too.
+Stack skills come from the official packs in [brainrc/packs](https://github.com/brainrc/packs),
+which add them to the Domains table when enabled ([naming](packs.md#naming)):
+
+| Pack | Domain skills |
+|---|---|
+| `brainrc/go` | `brainrc-go-service`, `brainrc-db-migrations` |
+| `brainrc/terraform-aws` | `brainrc-terraform` (Terragrunt, Atlantis, Spacelift), `brainrc-aws` |
+| `brainrc/kubernetes` | `brainrc-kubernetes` (Helm, Kustomize), `brainrc-gitops` (Argo CD, Flux), `brainrc-containers` |
+
+Gatework shipped those seven skills itself up to 0.8. From 0.9, enable the packs for your stacks
+to keep them ([upgrade](upgrade.md#gatework-09-stack-skills-moved-to-packs)). Python, Node and
+TypeScript, and Rust have official packs there too.
 
 ## Environments
 

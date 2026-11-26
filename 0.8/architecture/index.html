@@ -1365,6 +1365,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../adapters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tool adapters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../formats/" class="md-nav__link">
         
   
@@ -1837,13 +1865,14 @@ time, the tool loads those files, and Gatework drives a ticket through them.</p>
 extensions are rendered, so re-run <code>apply</code> after changing them or enabling a pack.</p>
 <p>The code is the <code>brainrc/</code> package (<code>python3 scripts/brainrc.py</code> or <code>python3 -m brainrc</code>), stdlib
 only. The main modules: <code>cli</code> (the commands), <code>config</code> (config files and paths), <code>sources</code> and
-<code>packs</code> (reading and fetching packs), <code>plan</code> and <code>settings</code> (links and merges), <code>project</code>, <code>lock</code>
+<code>packs</code> (reading and fetching packs), <code>adapters/</code> (one module per tool: what its content looks
+like, <a href="../adapters/">adapters</a>), <code>plan</code> and <code>settings</code> (links and merges), <code>project</code>, <code>lock</code>
 and <code>frozen</code> (project scope and the lockfile), <code>mcp</code> and <code>mcp_pins</code>, <code>validate</code>, <code>doctor</code>,
 <code>audit</code>, <code>importers/</code>, and <code>plugin</code> (the plugin manifests).</p>
 <h2 id="glossary">Glossary<a class="headerlink" href="#glossary" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>Harness</strong>: an AI coding tool brainrc syncs into: Claude Code, Codex, OpenCode, Antigravity CLI, Cursor (<a href="../capabilities/">support</a>).</li>
-<li><strong>Core</strong>: brainrc's own repo. Generic content only, versioned by <code>VERSION</code> (<a href="https://github.com/brainrc/brainrc/blob/v0.8.34/CHANGELOG.md">CHANGELOG</a>).</li>
+<li><strong>Core</strong>: brainrc's own repo. Generic content only, versioned by <code>VERSION</code> (<a href="https://github.com/brainrc/brainrc/blob/v0.8.35/CHANGELOG.md">CHANGELOG</a>).</li>
 <li><strong>Pack</strong>: a folder or repo layered on core for content that doesn't belong in it (<a href="../packs/">packs</a>).</li>
 <li><strong>Default pack</strong>: a pack core's <code>packs.toml</code> turns on: Gatework, which holds its engine, its agents and the domain skills (<a href="../packs/use-a-pack/#turn-the-default-pack-off-or-pin-it">packs</a>).</li>
 <li><strong>Official pack</strong>: a pack the brainrc project publishes under a <code>brainrc/</code> ID. Gatework has a repo of its own; the others are folders of <a href="https://github.com/brainrc/packs">brainrc/packs</a>, enabled with <code>subdir</code> (<a href="../packs/#naming">list</a>).</li>

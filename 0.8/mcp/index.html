@@ -1467,6 +1467,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../adapters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tool adapters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../formats/" class="md-nav__link">
         
   
@@ -1838,12 +1866,43 @@ file that changed under it.</p>
 <td><code>~/.config/opencode/opencode.json</code></td>
 <td><code>mcp</code> (<code>opencode.jsonc</code> when only that exists, keeping its comments)</td>
 </tr>
+<tr>
+<td>GitHub Copilot</td>
+<td><code>~/.copilot/mcp-config.json</code></td>
+<td><code>mcpServers</code>, each with <code>tools: ["*"]</code></td>
+</tr>
+<tr>
+<td>Devin Local</td>
+<td><code>~/.config/devin/mcp_config.json</code></td>
+<td><code>mcpServers</code>; variables as <code>${env:NAME}</code></td>
+</tr>
+<tr>
+<td>Kiro</td>
+<td><code>~/.kiro/settings/mcp.json</code></td>
+<td><code>mcpServers</code>; Kiro expands <code>${NAME}</code> only for variables in its approved list</td>
+</tr>
+<tr>
+<td>Amp</td>
+<td><code>~/.config/amp/settings.json</code></td>
+<td><code>amp.mcpServers</code> (<code>settings.jsonc</code> when only that exists)</td>
+</tr>
+<tr>
+<td>JetBrains Junie</td>
+<td><code>~/.junie/mcp/mcp.json</code></td>
+<td><code>mcpServers</code>, with no <code>env</code>: Junie reads no variable references, so the server gets them from the environment Junie runs in</td>
+</tr>
+<tr>
+<td>Gemini CLI</td>
+<td><code>~/.gemini/settings.json</code></td>
+<td><code>mcpServers</code>; a remote server as <code>httpUrl</code></td>
+</tr>
 </tbody>
 </table>
 <p>Antigravity and Cursor aren't supported yet.</p>
 <h2 id="secrets-stay-out-of-files">Secrets stay out of files<a class="headerlink" href="#secrets-stay-out-of-files" title="Permanent link">&para;</a></h2>
 <p><code>env_from</code> names environment variables; brainrc writes a reference the tool expands when it
-starts the server (<code>${NAME}</code>, <code>env_vars</code> or <code>{env:NAME}</code>), never the value. <code>validate</code> rejects a
+starts the server (<code>${NAME}</code>, <code>env_vars</code>, <code>{env:NAME}</code> or <code>${env:NAME}</code>), never the value; Junie, which reads
+no reference, gets none. <code>validate</code> rejects a
 server with an <code>env</code> table, which would hold values.</p>
 <h2 id="your-own-servers-are-safe">Your own servers are safe<a class="headerlink" href="#your-own-servers-are-safe" title="Permanent link">&para;</a></h2>
 <p>brainrc only replaces or removes servers it wrote itself (it keeps a list in

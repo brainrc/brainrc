@@ -1473,6 +1473,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../adapters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tool adapters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../formats/" class="md-nav__link">
         
   
@@ -1866,7 +1894,7 @@
 - AWS CLI writes (create/delete/put/update/terminate/invoke/…, <code>s3 cp|mv|rm|sync</code>) and secret reads
   (<code>secretsmanager get-secret-value</code>, <code>ssm get-parameter --with-decryption</code>)
 - migration tools and <code>psql</code> writes against <strong>non-local</strong> databases
-- host reboot/poweroff. Proxmox <code>qm</code>/<code>pct</code> and <code>talosctl</code> are in the <a href="https://github.com/brainrc/brainrc/blob/v0.8.34/examples/pack-homelab/README.md">homelab example pack</a>.
+- host reboot/poweroff. Proxmox <code>qm</code>/<code>pct</code> and <code>talosctl</code> are in the <a href="https://github.com/brainrc/brainrc/blob/v0.8.35/examples/pack-homelab/README.md">homelab example pack</a>.
 - <code>rm -rf</code> in any flag spelling</p>
 <p>A pack adds its own deny and ask rules in <code>pack.toml</code>, under its <code>[scope]</code>, and this hook enforces
 them with the same unwrapping; a pack's deny wins over any ask (<a href="../packs/#guard-rules">guard rules</a>).</p>
@@ -1987,6 +2015,37 @@ pack's guard rules apply under its <code>[scope]</code>, judged from the command
 workspace path. File tools and MCP tools aren't guarded there yet: the docs don't name their
 arguments or how MCP tools are called. Not yet run in a real Antigravity: it is tested with payloads
 shaped like the docs' <code>run_command</code> example.</p>
+<p>Five more tools run them through their own <code>overrides/&lt;tool&gt;/hooks/guard.py</code>, each turning its
+tool's call into Claude Code's (#307 to #312). None has been run in the live tool yet: each is
+tested with payloads shaped like its docs, and where the docs don't name a tool's arguments the
+guard reads the likely fields and lets anything else through.</p>
+<ul>
+<li><strong>GitHub Copilot</strong> (<code>~/.copilot/hooks/brainrc.json</code>, <code>preToolUse</code>): shell (<code>bash</code>, <code>powershell</code>)
+  gets both guards, <code>view</code> reads and <code>create</code> or <code>edit</code> writes the secrets guard. It replies
+  <code>permissionDecision: deny</code>; Copilot acts on no ask, so ask becomes deny. MCP calls aren't
+  guarded: the docs don't say how Copilot names them. Copilot denies a call whose <code>preToolUse</code>
+  hook fails, so the hook is written as <code>bash</code>, never run by PowerShell, and it lets the call
+  through when it can't run (no <code>python3</code>) or can't read the call.</li>
+<li><strong>Devin Local</strong> (<code>~/.config/devin/config.json</code>, <code>PreToolUse</code>): <code>exec</code>, <code>read</code>, <code>write</code>, <code>edit</code>
+  and <code>mcp__&lt;server&gt;__&lt;tool&gt;</code>. It replies <code>decision: block</code>, so ask becomes a block. Its payload
+  has no working directory, so a pack's <code>[scope]</code> is judged from <code>$DEVIN_PROJECT_DIR</code>.</li>
+<li><strong>Kiro</strong> (<code>~/.kiro/hooks/brainrc.json</code>, <code>PreToolUse</code> on every tool): <code>execute_bash</code>, <code>fs_read</code>,
+  <code>fs_write</code>, <code>str_replace</code> and <code>mcp_&lt;server&gt;_&lt;tool&gt;</code>. A command hook blocks by exiting non-zero
+  with the reason on stderr, so ask becomes a block, and the guard exits 0 for anything it can't
+  read, and when there's no <code>python3</code>: a failure would block the call. Kiro CLI loads
+  <code>~/.kiro/hooks</code> as global hooks.</li>
+<li><strong>JetBrains Junie</strong> (<code>~/.junie/config.json</code>, <code>PreToolUse</code>): Claude Code's tool names, so its
+  calls reach the guards as they are, and it replies <code>decision: ask</code> or <code>deny</code>, so an ask stays an
+  ask. Junie runs hooks from your user config only, not a project's.</li>
+<li><strong>Gemini CLI</strong> (<code>~/.gemini/settings.json</code>, <code>BeforeTool</code>, off by default): <code>run_shell_command</code>,
+  <code>read_file</code>, <code>write_file</code>, <code>replace</code> and <code>mcp_&lt;server&gt;_&lt;tool&gt;</code>. It replies <code>decision: deny</code>, so
+  ask becomes deny.</li>
+</ul>
+<p>Kiro and Gemini CLI name an MCP tool <code>mcp_&lt;server&gt;_&lt;tool&gt;</code>, and a server's name may hold <code>_</code>
+too, so their guards split the name by the servers in the tool's own MCP config (user and
+project), the longest that fits.</p>
+<p>Amp has no command hooks: its only hook point is a TypeScript plugin API, which brainrc doesn't
+write yet, so Amp gets your instructions and MCP servers but no guard.</p>
 
 
 

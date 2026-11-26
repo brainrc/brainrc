@@ -16,7 +16,7 @@
         <link rel="prev" href="../configuration/">
       
       
-        <link rel="next" href="../formats/">
+        <link rel="next" href="../adapters/">
       
       
         
@@ -1434,6 +1434,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../adapters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tool adapters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../formats/" class="md-nav__link">
         
   
@@ -1741,11 +1769,23 @@
 <th>OpenCode</th>
 <th>Antigravity CLI</th>
 <th>Cursor</th>
+<th>GitHub Copilot</th>
+<th>Devin Local</th>
+<th>Kiro</th>
+<th>Amp</th>
+<th>Junie</th>
+<th>Gemini CLI</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Skills</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
 <td>✅</td>
 <td>✅</td>
 <td>✅</td>
@@ -1759,6 +1799,12 @@
 <td>✅ <code>AGENTS.md</code></td>
 <td>✅ <code>AGENTS.md</code></td>
 <td>↪ <a href="../plugins/#cursor">plugin</a> only</td>
+<td>✅ <code>copilot-instructions.md</code></td>
+<td>✅ <code>AGENTS.md</code></td>
+<td>✅ steering <code>AGENTS.md</code></td>
+<td>✅ <code>AGENTS.md</code></td>
+<td>✅ <code>AGENTS.md</code></td>
+<td>✅ <code>GEMINI.md</code></td>
 </tr>
 <tr>
 <td>Commands</td>
@@ -1767,6 +1813,12 @@
 <td>✅</td>
 <td>➖ skills are its slash commands</td>
 <td>⏳</td>
+<td>⏳</td>
+<td>➖ skills are its slash commands</td>
+<td>➖ skills are its slash commands</td>
+<td>⏳</td>
+<td>⏳</td>
+<td>⏳ TOML only</td>
 </tr>
 <tr>
 <td>Agents</td>
@@ -1774,6 +1826,12 @@
 <td>↪ role-switch fallback</td>
 <td>✅ subagents (rendered)</td>
 <td>↪ fallback</td>
+<td>↪ fallback</td>
+<td>↪ fallback</td>
+<td>↪ fallback</td>
+<td>↪ fallback</td>
+<td>↪ fallback</td>
+<td>✅ subagents</td>
 <td>↪ fallback</td>
 </tr>
 <tr>
@@ -1783,6 +1841,12 @@
 <td>✅ plugin, deny only</td>
 <td>⏳ rules only</td>
 <td>✅ shell and reads, deny only</td>
+<td>✅ shell and files, deny only</td>
+<td>✅ shell, files, MCP, deny only</td>
+<td>✅ shell, files, MCP, deny only</td>
+<td>⏳ plugin API only</td>
+<td>✅ allow, ask, deny</td>
+<td>✅ shell, files, MCP, deny only</td>
 </tr>
 <tr>
 <td>MCP servers</td>
@@ -1791,17 +1855,27 @@
 <td>✅</td>
 <td>⏳</td>
 <td>⏳</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
 </tr>
 </tbody>
 </table>
 <p>✅ supported · ↪ partly, or another way · ⏳ not yet · ➖ not needed · ❌ not possible today</p>
-<p>"Fallback" means the tool has no named subagents, so <a href="../gatework/#harness-support">Gatework</a>
-switches roles inside one session.</p>
+<p>"Fallback" means the tool has no named subagents brainrc can write, so
+<a href="../gatework/#harness-support">Gatework</a> switches roles inside one session. GitHub Copilot covers the
+Copilot CLI and VS Code's Copilot agent, which share <code>~/.copilot</code>. Devin Local is the agent in Devin
+Desktop, which Windsurf became. Gemini CLI is off by default (<a href="../configuration/">configuration</a>). The
+guards in Copilot, Devin Local, Kiro, Junie and Gemini CLI follow each tool's hook docs and are
+tested with payloads shaped like them, not yet in the live tools (<a href="../guardrails/">guardrails</a>).</p>
 <h2 id="where-each-piece-goes">Where each piece goes<a class="headerlink" href="#where-each-piece-goes" title="Permanent link">&para;</a></h2>
 <p>One row per tool: where <code>apply</code> puts each kind of content, and what a repo's <code>brainrc.toml</code>
 writes for it (<a href="../project/">team setup</a>). A dash means that tool gets none of it. Paths are the
 defaults; the variables in the last column move them (<a href="../configuration/#environment-variables">configuration</a>).
-This table is generated from <a href="https://github.com/brainrc/brainrc/blob/v0.8.34/harnesses.toml"><code>harnesses.toml</code></a>, and a test fails when the two
+This table is generated from <a href="https://github.com/brainrc/brainrc/blob/v0.8.35/harnesses.toml"><code>harnesses.toml</code></a>, and a test fails when the two
 disagree. The table at the top is written by hand: when you change <code>harnesses.toml</code>, update it too.</p>
 <!-- BEGIN capability matrix: generated from harnesses.toml by `brainrc capabilities --write` -->
 <table>
@@ -1869,8 +1943,8 @@ disagree. The table at the top is written by hand: when you change <code>harness
 <td><code>~/.gemini/GEMINI.md</code></td>
 <td>—</td>
 <td>—</td>
-<td>—</td>
-<td>—</td>
+<td><code>~/.gemini/settings.json</code>: BeforeTool</td>
+<td><code>~/.gemini/settings.json</code></td>
 <td><code>.agents/skills/</code>, <code>AGENTS.md</code></td>
 <td>—</td>
 </tr>
@@ -1882,6 +1956,61 @@ disagree. The table at the top is written by hand: when you change <code>harness
 <td>—</td>
 <td><code>~/.cursor/hooks.json</code>: beforeReadFile, beforeShellExecution</td>
 <td>—</td>
+<td><code>.agents/skills/</code>, <code>AGENTS.md</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td>GitHub Copilot (CLI, VS Code)</td>
+<td><code>~/.copilot/skills</code></td>
+<td><code>~/.copilot/copilot-instructions.md</code></td>
+<td>—</td>
+<td>—</td>
+<td><code>~/.copilot/hooks/brainrc.json</code>: preToolUse</td>
+<td><code>~/.copilot/mcp-config.json</code></td>
+<td><code>.agents/skills/</code>, <code>AGENTS.md</code></td>
+<td><code>COPILOT_HOME</code></td>
+</tr>
+<tr>
+<td>Devin Local (was Windsurf)</td>
+<td><code>~/.config/devin/skills</code></td>
+<td><code>~/.config/devin/AGENTS.md</code></td>
+<td>—</td>
+<td>—</td>
+<td><code>~/.config/devin/config.json</code>: PreToolUse</td>
+<td><code>~/.config/devin/mcp_config.json</code></td>
+<td><code>.agents/skills/</code>, <code>AGENTS.md</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td>Kiro</td>
+<td><code>~/.kiro/skills</code></td>
+<td><code>~/.kiro/steering/AGENTS.md</code></td>
+<td>—</td>
+<td>—</td>
+<td><code>~/.kiro/hooks/brainrc.json</code>: PreToolUse</td>
+<td><code>~/.kiro/settings/mcp.json</code></td>
+<td><code>.agents/skills/</code>, <code>AGENTS.md</code></td>
+<td><code>KIRO_HOME</code></td>
+</tr>
+<tr>
+<td>Amp</td>
+<td><code>~/.config/amp/skills</code></td>
+<td><code>~/.config/amp/AGENTS.md</code></td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td><code>~/.config/amp/settings.json</code></td>
+<td><code>.agents/skills/</code>, <code>AGENTS.md</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td>JetBrains Junie</td>
+<td><code>~/.junie/skills</code></td>
+<td><code>~/.junie/AGENTS.md</code></td>
+<td><code>~/.junie/agents</code></td>
+<td>—</td>
+<td><code>~/.junie/config.json</code>: PreToolUse</td>
+<td><code>~/.junie/mcp/mcp.json</code></td>
 <td><code>.agents/skills/</code>, <code>AGENTS.md</code></td>
 <td>—</td>
 </tr>
@@ -1907,9 +2036,9 @@ disagree. The table at the top is written by hand: when you change <code>harness
 <li><strong>Antigravity CLI's paths</strong> (<code>~/.gemini/config/</code>) come from its changelog and user reports, not
   a live run.</li>
 </ul>
-<p>Tool paths change often. To add or move a tool, edit <code>harnesses.toml</code> (and, for a new tool, its
-display name in <code>brainrc/capabilities.py</code>), then run
-<code>python3 scripts/brainrc.py capabilities --write</code>.</p>
+<p>Tool paths change often. To move a tool, edit <code>harnesses.toml</code>, then run
+<code>python3 scripts/brainrc.py capabilities --write</code>. To add one, write its adapter
+(<a href="../adapters/">tool adapters</a>).</p>
 
 
 

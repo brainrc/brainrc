@@ -80,3 +80,16 @@ security-baseline also pass beside Gatework 0.8.0, and the other five beside it 
 README's `exclude` lines. A local copy installed python, rust, kubernetes and security-baseline
 from folders on one clean home; a second home with only the lock got identical files after the
 tag moved. The scaffold's push to brainrc/packs `main` waits for the maintainer.
+
+## engine · packs · Pushed
+On the maintainer's yes, the scaffold went to brainrc/packs `main` and the nine packs to draft PR
+brainrc/packs#1 (untagged). Six pass CI; python, node-ts and rust fail there until a brainrc
+release lists their IDs (#390) and the `validate-pack` pin moves to it. The maintainer kept the
+two-part IDs (`brainrc/go`, not `brainrc/packs/go`).
+
+## engine · docs · Updated
+Core's README, Gatework, tutorial, stack-pack, glossary, upgrade and troubleshooting docs now point
+at brainrc/packs. In brainrc/packs, python, node-ts and rust no longer list a Gatework exclude they
+don't need. brainrc/gatework's README, AGENTS.md, `pack.toml` comment, the Domains table in
+`skills/brainrc-gatework/SKILL.md` and `evals/triggers.toml` still describe the moved skills as
+Gatework's; that change waits, since that repo isn't in this session.

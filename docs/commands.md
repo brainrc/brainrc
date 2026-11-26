@@ -27,7 +27,7 @@ to install. It writes `harnesses.local.toml`, `packs.local.toml` and `brainrc.lo
 | `--harness HARNESS` | manage exactly these tools (`--harness claude,codex`, or repeat it); asks nothing |
 | `--no-adopt` | leave your instruction files where they are |
 | `--profile minimal\|recommended\|full` | set the profile ([configuration](configuration.md#brainrclocaltoml)) |
-| `--starter minimal\|app\|infra` | set a starter profile instead: rules only; no infrastructure skills; everything |
+| `--starter minimal\|app\|infra` | set a starter profile instead: rules only; skills, agents, commands and hooks; everything |
 | `--import` | import this folder's CLAUDE.md, AGENTS.md, Cursor, Copilot and Windsurf files and Claude Code plugin into the pack `imported` without asking |
 | `--dry-run` | print what `init` would do, write nothing |
 

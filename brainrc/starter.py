@@ -4,8 +4,9 @@ A starter profile is a first answer to "what should this machine install": an in
 (`minimal`, `recommended`, `full`; docs/configuration.md) plus the `exclude` patterns that fit the work.
 
 - minimal: the rules only.
-- app: skills, agents, commands and hooks, without the infrastructure domain skills.
-- infra: everything, MCP servers included.
+- app: skills, agents, commands and hooks.
+- infra: everything, MCP servers included. Infrastructure skills come from the official
+  terraform-aws and kubernetes packs (docs/gatework.md § Domain skills).
 """
 from __future__ import annotations
 
@@ -18,17 +19,20 @@ from .config import PROFILES, TABLE_HEADER, ConfigError
 from .sources import Source, excluded, frontmatter, markdown_files, render_instructions, skills
 from .tokens import estimate_tokens
 
-# Gatework's infrastructure domain skills (docs/gatework.md § Domain skills).
-INFRA_SKILLS = ("brainrc-terraform", "brainrc-aws", "brainrc-kubernetes", "brainrc-gitops")
-APP_EXCLUDE = tuple(f"gatework:skills/{s}" for s in INFRA_SKILLS)
+# Gatework up to 0.8 shipped infrastructure domain skills, and the app starter excluded them. From
+# 0.9 they live in the official terraform-aws and kubernetes packs (#318), so no starter excludes
+# them; the patterns stay managed so switching starters clears them from an older file.
+OLD_APP_EXCLUDE = tuple(f"gatework:skills/{s}"
+                        for s in ("brainrc-terraform", "brainrc-aws", "brainrc-kubernetes", "brainrc-gitops"))
 STARTERS: dict[str, tuple[str, tuple[str, ...]]] = {
     "minimal": ("minimal", ()),
-    "app": ("recommended", APP_EXCLUDE),
+    "app": ("recommended", ()),
     "infra": ("full", ()),
 }
-STARTER_HELP = {"minimal": "rules only", "app": "skills, agents, commands and hooks; no infra skills",
+STARTER_HELP = {"minimal": "rules only", "app": "skills, agents, commands and hooks",
                 "infra": "everything, MCP servers included"}
-MANAGED = frozenset(p for _, patterns in STARTERS.values() for p in patterns)  # patterns a starter owns
+# patterns a starter owns
+MANAGED = frozenset([*OLD_APP_EXCLUDE, *(p for _, patterns in STARTERS.values() for p in patterns)])
 
 
 def _top_level(lines: list[str]) -> int:

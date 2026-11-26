@@ -93,5 +93,8 @@ If you move the checkout, run `python3 scripts/brainrc.py apply --repair` from t
 macOS and Linux. brainrc installs by symlink. On a Windows machine that can't make one (no
 Developer Mode, not an administrator), `apply` copies instead and records each copy
 ([`link_mode`](configuration.md#brainrclocaltoml)), so skills, agents, commands and rules install
-without WSL. The hook commands `apply` writes are still POSIX shell, so the guards need WSL
-until native Windows hooks land. Those, and a Windows CI cell, are on the [roadmap](roadmap.md).
+without WSL. On Windows `apply` also writes each of brainrc's hooks as one Python call
+(`py -3 -I -c "..."`, falling back to `python`) instead of a POSIX shell line, in the field each
+tool's docs give for it: Claude Code's exec form, Codex's `commandWindows`, Copilot's `powershell`,
+and `command` for the rest. macOS and Linux get exactly the lines they got before. A Windows CI
+cell that runs without symlinks is on the [roadmap](roadmap.md).

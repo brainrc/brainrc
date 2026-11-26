@@ -8,3 +8,5 @@ from .base import Adapter
 class Cursor(Adapter):
     name = "cursor"
     label = "Cursor"
+    # "On Windows, the desktop app runs hook commands through PowerShell" (https://cursor.com/docs/hooks).
+    windows_shell = "powershell"

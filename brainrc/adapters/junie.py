@@ -13,6 +13,9 @@ class Junie(Adapter):
     label = "JetBrains Junie"
     writes_mcp = True
     mcp_key = "mcpServers"
+    # "Executed via `sh -c` on macOS/Linux and `cmd /c` on Windows"
+    # (https://junie.jetbrains.com/docs/junie-cli-hooks.html).
+    windows_shell = "cmd"
 
     def mcp_entry(self, server: dict) -> dict:
         return server_entry(server, None)

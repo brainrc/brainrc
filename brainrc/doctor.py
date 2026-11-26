@@ -10,7 +10,7 @@ import shlex
 import subprocess
 from pathlib import Path
 
-from . import adapters, config, copies, guard
+from . import adapters, config, copies, guard, hookcmd
 from .config import (
     ConfigError,
     KINDS,
@@ -352,7 +352,8 @@ def _moved_findings() -> list[Finding]:
     return found
 
 
-HOOK_SCRIPT = re.compile(r'"([^"]+\.py)"')  # the script in a `python3 "<dir>/<guard>.py"` command
+# The script in a `python3 "<dir>/<guard>.py"` command, or in the Windows form's f='<path>' (#178).
+HOOK_SCRIPT = re.compile(r'"([^"]+\.py)"|f=\'([^\']+\.py)\'')
 
 
 def _stray_link_findings(known: set[Path]) -> list[Finding]:
@@ -387,28 +388,40 @@ def _hook_findings(merges: list) -> list[Finding]:
                 if not _owned(group, m.markers()):
                     continue
                 for h in [group, *group.get("hooks", [])]:
-                    match = HOOK_SCRIPT.search(str(h.get("command", "")))
+                    if not isinstance(h, dict):
+                        continue
+                    fields = [h.get("commandWindows", ""), h.get("powershell", ""),
+                              *(h["args"] if isinstance(h.get("args"), list) else [])]
+                    # The line this machine runs first: on Windows, Codex's and Copilot's `command`
+                    # is the POSIX one, with a $HOME that cmd and PowerShell don't set.
+                    fields = [*fields, h.get("command", "")] if hookcmd.windows_hooks() else [h.get("command", ""), *fields]
+                    match = HOOK_SCRIPT.search(" ".join(str(p) for p in fields))
                     if match:
                         timeout = h.get("timeoutSec", h.get("timeout"))  # timeoutSec: Copilot's
-                        scripts.setdefault(Path(os.path.expandvars(match[1])),
+                        scripts.setdefault(Path(os.path.expandvars(hookcmd.expand(match[1] or match[2]))),
                                            timeout / per_second if isinstance(timeout, (int, float)) else 5)
         for script, timeout in scripts.items():
             hook = f"{m.harness}: hook {tilde(script)}"
             if not script.is_file():
                 found.append(("FAIL", f"{m.harness}: hook missing: {tilde(script)}", command("apply")))
                 continue
+            exe, args = ("python3", [])
+            if hookcmd.windows_hooks():
+                exe, args = hookcmd.python()
+                args = [*args, "-X", "utf8"]  # as the hook runs it
+            shown = "py -3" if args[:1] == ["-3"] else "python3" if exe == "python3" else os.path.basename(exe)
             try:  # -B: doctor is read-only, so no __pycache__ next to the guards
-                result = subprocess.run(["python3", "-B", str(script)], input="{}", capture_output=True,
+                result = subprocess.run([exe, *args, "-B", str(script)], input="{}", capture_output=True,
                                         text=True, timeout=timeout)
             except FileNotFoundError:
-                found.append(("FAIL", f"{hook} can't run: python3 is not on PATH", "install Python 3"))
+                found.append(("FAIL", f"{hook} can't run: {shown} is not on PATH", "install Python 3"))
                 continue
             except subprocess.TimeoutExpired:
-                found.append(("FAIL", f"{hook} timed out after {timeout}s", f"run `python3 {shell_path(script)}`"))
+                found.append(("FAIL", f"{hook} timed out after {timeout}s", f"run `{shown} {shell_path(script)}`"))
                 continue
             if result.returncode:
                 found.append(("FAIL", f"{hook} exits {result.returncode} on an empty payload",
-                              f"run `python3 {shell_path(script)}` to see why, then {command('apply')}"))
+                              f"run `{shown} {shell_path(script)}` to see why, then {command('apply')}"))
     return found
 
 

@@ -6,7 +6,7 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from . import config, copies
+from . import config, copies, hookcmd
 from .config import (
     HOOKS_DIR_PLACEHOLDER,
     KINDS,
@@ -205,12 +205,17 @@ class SettingsMerge:
         _join_sandbox(box, self.sandbox)  # packs' path and host rules after the fragments'
         if box:
             wanted["sandbox"] = box
+        if hooks and hookcmd.windows_hooks():  # #178: each guard as a Python call, no POSIX shell
+            hooks = hookcmd.windows(hooks, adapters.get(self.harness))
         wanted["hooks"] = hooks
         return wanted
 
     def markers(self) -> set[str]:
         dirs = {hd for _, hd in self.fragments if hd} | self.extra_markers
-        return {hook_command_dir(d).rstrip("/") + "/" for d in dirs}
+        found = {hook_command_dir(d).rstrip("/") + "/" for d in dirs}
+        if hookcmd.windows_hooks():  # the Windows form names the guard by its full path
+            found |= {os.path.expanduser(d).replace("\\", "/").rstrip("/") + "/" for d in dirs}
+        return found
 
 
 def _join_sandbox(box: dict, more: dict) -> None:

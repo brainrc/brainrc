@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_brainrc import TempRepoCase, brainrc, quiet  # noqa: E402
-from brainrc import config, mcp, opencode, schema  # noqa: E402
+from brainrc import adapters, config, mcp, schema  # noqa: E402
 from brainrc.scaffold import PACK_SCHEMA, PackSpec, Rule, Skill, render_pack, write_pack  # noqa: E402
 from support import rmtree  # noqa: E402
 
@@ -55,8 +55,8 @@ class SchemaFilesTest(unittest.TestCase):
         self.assertEqual(set(server["properties"]), mcp.SERVER_KEYS)
         harness = schema.load("harnesses.toml")["$defs"]["harness"]
         self.assertEqual(set(harness["properties"]), set(config.LAYERED_KEYS["harnesses"]))
-        self.assertEqual(harness["properties"]["agents_format"]["enum"], list(opencode.AGENT_FORMATS))
-        self.assertEqual(harness["properties"]["settings_format"]["enum"], list(config.SETTINGS_FORMATS))
+        self.assertEqual(harness["properties"]["agents_format"]["enum"], list(adapters.AGENT_FORMATS))
+        self.assertEqual(harness["properties"]["settings_format"]["enum"], list(adapters.SETTINGS_FORMATS))
         for key, kind in config.LAYERED_KEYS["harnesses"].items():
             want = "boolean" if kind is bool else "string"
             self.assertEqual(harness["properties"][key]["type"], want, key)

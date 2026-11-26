@@ -1,0 +1,100 @@
+{
+  "ref": "gh:305",
+  "shape": "playbook",
+  "batch_size": 3,
+  "playbook_version": 1,
+  "dependency_source": "epic body: #306 first, then the tool adapters",
+  "started_at": "2026-11-26T16:05:00Z",
+  "delivery": "one draft PR against main, one commit per child (one branch is pushable here)",
+  "gates": {
+    "campaign": {
+      "presented_at": "2026-11-26T16:05:00Z",
+      "approved_at": "2026-11-26T16:05:00Z"
+    }
+  },
+  "skipped": [],
+  "members": [
+    {
+      "ref": "gh:306",
+      "order": 1,
+      "depends_on": [],
+      "slug": "306-adapter-interface",
+      "status": "in_review",
+      "branch": "claude/project-thread-arjeeu",
+      "base": "main",
+      "merged": false
+    },
+    {
+      "ref": "gh:307",
+      "order": 2,
+      "depends_on": [
+        "gh:306"
+      ],
+      "slug": "307-copilot-vscode",
+      "status": "in_review",
+      "branch": "claude/project-thread-arjeeu",
+      "base": "main",
+      "merged": false
+    },
+    {
+      "ref": "gh:308",
+      "order": 3,
+      "depends_on": [
+        "gh:306"
+      ],
+      "slug": "308-gemini-cli",
+      "status": "in_review",
+      "branch": "claude/project-thread-arjeeu",
+      "base": "main",
+      "merged": false
+    },
+    {
+      "ref": "gh:309",
+      "order": 4,
+      "depends_on": [
+        "gh:306"
+      ],
+      "slug": "309-windsurf",
+      "status": "in_review",
+      "branch": "claude/project-thread-arjeeu",
+      "base": "main",
+      "merged": false
+    },
+    {
+      "ref": "gh:310",
+      "order": 5,
+      "depends_on": [
+        "gh:306"
+      ],
+      "slug": "310-kiro",
+      "status": "in_review",
+      "branch": "claude/project-thread-arjeeu",
+      "base": "main",
+      "merged": false
+    },
+    {
+      "ref": "gh:311",
+      "order": 6,
+      "depends_on": [
+        "gh:306"
+      ],
+      "slug": "311-amp",
+      "status": "in_review",
+      "branch": "claude/project-thread-arjeeu",
+      "base": "main",
+      "merged": false
+    },
+    {
+      "ref": "gh:312",
+      "order": 7,
+      "depends_on": [
+        "gh:306"
+      ],
+      "slug": "312-junie",
+      "status": "in_review",
+      "branch": "claude/project-thread-arjeeu",
+      "base": "main",
+      "merged": false
+    }
+  ]
+}

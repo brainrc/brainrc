@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "type": "command",
+        "command": "f=\"{{hooks_dir}}/guard.py\"; [ ! -f \"$f\" ] || ! command -v python3 >/dev/null || python3 \"$f\"",
+        "timeoutSec": 10
+      }
+    ]
+  }
+}

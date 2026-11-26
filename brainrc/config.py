@@ -113,18 +113,6 @@ LAYERED_KEYS = {
 }
 
 
-# harnesses.toml `settings_format`: how a harness's settings file holds hooks. "claude" (also
-# Cursor's and Codex's) keeps them under "hooks"; "antigravity" under a named entry, brainrc's own.
-SETTINGS_FORMATS = ("claude", "antigravity")
-
-
-def settings_format(h: dict) -> str:
-    fmt = h.get("settings_format", "claude")
-    if fmt not in SETTINGS_FORMATS:
-        raise ConfigError(f"harnesses.toml: unknown settings_format `{fmt}` (use one of {', '.join(SETTINGS_FORMATS)})")
-    return fmt
-
-
 PACK_ORIGIN_KEYS = {"path", "git"}  # where a pack comes from: exactly one per pack
 
 
@@ -239,11 +227,12 @@ def _check_toml(name: str, path: Path, data: dict, known_tables: set[str] | None
 def _layered(name: str, warnings: list[str] | None = None) -> dict[str, dict]:
     """<name>.toml with <name>.local.toml merged over it, one table at a time. Each file is
     checked before the merge, so an error names the file the bad value is in; warnings are
-    added to `warnings` when given. A harness defined only in the local file still loads."""
-    config: dict[str, dict] = {}
-    for path in (REPO / f"{name}.toml", local_dir() / f"{name}.local.toml"):
+    added to `warnings` when given. A harness defined only in the local file still loads.
+    Harnesses start from the tables adapters from installed packages bring (#306)."""
+    config: dict[str, dict] = _adapter_tables(warnings) if name == "harnesses" else {}
+    for local, path in enumerate((REPO / f"{name}.toml", local_dir() / f"{name}.local.toml")):
         data = _read_toml(path)
-        known = set(config) if name == "harnesses" and config else None
+        known = set(config) if name == "harnesses" and local and config else None
         found = _check_toml(name, path, data, known)
         if warnings is not None:
             warnings += found
@@ -254,6 +243,28 @@ def _layered(name: str, warnings: list[str] | None = None) -> dict[str, dict]:
                     table.pop(k, None)
             table.update(overrides)
     return config
+
+
+def _adapter_tables(warnings: list[str] | None) -> dict[str, dict]:
+    """The harness tables adapters from installed packages bring (#306), for tools core's
+    harnesses.toml doesn't list; that file and harnesses.local.toml are merged over them."""
+    from . import adapters  # adapters import this module
+    shipped = _read_toml(REPO / "harnesses.toml")
+    tables = {}
+    for name, adapter in adapters.plugins().items():
+        if name in shipped:
+            continue
+        table = dict(adapter.paths)
+        for key, value in table.items():
+            kind = LAYERED_KEYS["harnesses"].get(key)
+            if kind is None:
+                if warnings is not None:
+                    warnings.append(f"adapter `{name}`: unknown key `{key}` in its paths")
+            elif not isinstance(value, kind):
+                raise ConfigError(f"adapter `{name}`: `{key}` in its paths must be "
+                                  f"{'true or false' if kind is bool else 'a string'}")
+        tables[name] = table
+    return tables
 
 
 def check_config() -> list[str]:
@@ -345,7 +356,8 @@ def harness_installed(h: dict) -> bool:
 def _forced() -> set[str]:
     """Harnesses managed even when not detected: those harnesses.local.toml enables explicitly,
     and those it defines that the shipped harnesses.toml doesn't (the user's own harness)."""
-    shipped = _read_toml(REPO / "harnesses.toml")
+    from . import adapters  # an installed adapter's tool counts as shipped: managed once installed
+    shipped = {**adapters.plugins(), **_read_toml(REPO / "harnesses.toml")}
     local = _read_toml(local_dir() / "harnesses.local.toml")
     return {n for n, t in local.items() if isinstance(t, dict)
             and (t.get("enabled") is True or (n not in shipped and t.get("enabled", True)))}
@@ -437,7 +449,7 @@ def tilde(path: Path) -> str:
     return Path(path).as_posix().replace(Path.home().as_posix(), "~", 1)
 
 
-HARNESS_VARS = ("CLAUDE_CONFIG_DIR", "CODEX_HOME", "XDG_CONFIG_HOME")  # read by harnesses.toml (#110)
+HARNESS_VARS = ("CLAUDE_CONFIG_DIR", "CODEX_HOME", "XDG_CONFIG_HOME", "COPILOT_HOME", "KIRO_HOME")  # harnesses.toml (#110)
 
 
 ENV_DEFAULT = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*):-([^}]*)\}")
@@ -554,8 +566,9 @@ def rendered_instructions() -> Path:
     return settings_home() / "instructions.md"
 
 
-def rendered_agents_dir() -> Path:
-    return settings_home() / "opencode" / "agents"
+def rendered_agents_dir(fmt: str = "opencode") -> Path:
+    """Where agents rendered in agent format fmt go (harnesses.toml `agents_format`)."""
+    return settings_home() / fmt / "agents"
 
 
 def home_extensions_file() -> Path:

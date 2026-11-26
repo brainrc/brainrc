@@ -135,7 +135,7 @@ class ProfileConfigTest(ProfileCase):
 
     def test_init_asks_about_the_default_pack(self):
         feed = io.StringIO("\n" * 10 + "n\n")
-        answers = iter([True] * 10)
+        answers = iter([True] * 20)
 
         def ask(question, default=True):
             return False if "gatework" in question else next(answers)

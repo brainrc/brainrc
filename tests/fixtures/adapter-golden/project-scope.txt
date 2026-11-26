@@ -1,0 +1,73 @@
+FILE {PROJECT}/.agents/skills/team-context/SKILL.md
+---
+name: team-context
+description: Test skill team-context.
+---
+Body.
+FILE {PROJECT}/.agents/skills/team-deploy/SKILL.md
+---
+name: team-deploy
+description: Test skill team-deploy.
+---
+Body.
+FILE {PROJECT}/.claude/skills/team-context/SKILL.md
+---
+name: team-context
+description: Test skill team-context.
+---
+Body.
+FILE {PROJECT}/.claude/skills/team-deploy/SKILL.md
+---
+name: team-deploy
+description: Test skill team-deploy.
+---
+Body.
+FILE {PROJECT}/AGENTS.md
+<!-- brainrc:begin: generated from brainrc.toml (packs: team). Edit the packs, not this block. -->
+
+<!-- pack: team -->
+Rules from pack team.
+
+# Team
+
+- Team rule.
+
+<!-- brainrc:end -->
+FILE {PROJECT}/CLAUDE.md
+<!-- brainrc:begin: generated from brainrc.toml. Edit the packs, not this block. -->
+@AGENTS.md
+<!-- brainrc:end -->
+FILE {PROJECT}/brainrc.lock
+# brainrc.lock: written by brainrc. Don't edit it by hand.
+version = 2
+brainrc = "1.2.3"
+scope = "project"
+
+[packs.team]
+path = "tools/team-pack"
+
+[packs.team.files]
+"pack.toml" = "sha256:49670a3d5ce1923898def96b22c946f6e2cc5722a699b937de3c05b9a42da2d0"
+"rules/50-team.md" = "sha256:823d8b3dcc16d442c540f74cefc3e8cb178bb4fd9f88cf8c3627b656abf1afa7"
+"skills/team-context/SKILL.md" = "sha256:7383bac41230b66b54989928cec6bb3cf3b7585c901022e32a74c98a70a1f72d"
+"skills/team-deploy/SKILL.md" = "sha256:0034b19aa83732bf75c7666638ff076eea3dddf4c46be85a3f33540f76af0425"
+
+[packs.team.permissions]
+
+[outputs]
+".agents/skills/team-context/SKILL.md" = "sha256:7383bac41230b66b54989928cec6bb3cf3b7585c901022e32a74c98a70a1f72d"
+".agents/skills/team-deploy/SKILL.md" = "sha256:0034b19aa83732bf75c7666638ff076eea3dddf4c46be85a3f33540f76af0425"
+".claude/skills/team-context/SKILL.md" = "sha256:7383bac41230b66b54989928cec6bb3cf3b7585c901022e32a74c98a70a1f72d"
+".claude/skills/team-deploy/SKILL.md" = "sha256:0034b19aa83732bf75c7666638ff076eea3dddf4c46be85a3f33540f76af0425"
+
+[blocks]
+"AGENTS.md" = "sha256:189ad90bce8c3fa7a31cd24987d2cc0d4fd2887dc6b535b190f664f47055cde8"
+"CLAUDE.md" = "sha256:586886469365f1f599481474512c1b658f375b812aebf03aef321719ddc54df2"
+FILE {PROJECT}/brainrc.toml
+harnesses = ["amp", "antigravity", "claude", "codex", "copilot", "cursor", "devin", "gemini", "junie", "kiro", "opencode"]
+
+[packs.gatework]
+enabled = false
+
+[packs.team]
+path = "tools/team-pack"

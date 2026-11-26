@@ -752,3 +752,236 @@ class FailOpenTest(unittest.TestCase):
         merged = brainrc.merge_settings(current, wanted)
         self.assertEqual(merged["hooks"], wanted["hooks"])
         self.assertNotIn(old_command, json.dumps(merged))
+
+
+# E31's tools (#307 to #312): each guard turns its tool's call into Claude Code's and replies in
+# its tool's format. run_guard gives (verdict, reason): "deny", "ask" or None.
+E31_GUARDS = {name: REPO / "overrides" / name / "hooks" / "guard.py" for name in ("gemini", "copilot", "devin", "kiro", "junie")}
+
+
+def run_guard(name: str, payload, env: dict | None = None, cwd: str | None = None) -> tuple[str | None, str]:
+    stdin = payload if isinstance(payload, str) else json.dumps(payload)
+    result = subprocess.run([sys.executable, str(E31_GUARDS[name])], input=stdin, capture_output=True, text=True,
+                            timeout=30, env={**os.environ, **(env or {})}, cwd=cwd)
+    if name == "kiro":  # exit 2 blocks, with the reason on stderr; anything else must exit 0, silent
+        if result.returncode == 2:
+            return from_message(result.stderr), result.stderr.strip()
+        assert (result.returncode, result.stdout) == (0, ""), result
+        return None, ""
+    assert result.returncode == 0, result.stderr
+    if not result.stdout.strip():
+        return None, ""
+    reply = json.loads(result.stdout)
+    if name == "copilot":
+        assert reply["permissionDecision"] == "deny", reply
+        return from_message(reply["permissionDecisionReason"]), reply["permissionDecisionReason"]
+    if name == "junie":  # Junie can ask, so its verdict is the reply's own
+        assert reply["decision"] in ("ask", "deny"), reply
+        return reply["decision"], reply["reason"]
+    assert reply["decision"] == {"gemini": "deny", "devin": "block"}[name], reply
+    return from_message(reply["reason"]), reply["reason"]
+
+
+# One shell, read, write and MCP call per tool, in its own spelling: (tool name, input) or a payload maker.
+def gemini_call(tool: str, args: dict, cwd: str = "/tmp/project") -> dict:
+    return {"hook_event_name": "BeforeTool", "tool_name": tool, "tool_input": args, "cwd": cwd,
+            "session_id": "s", "transcript_path": "/t", "timestamp": "2026-11-26T00:00:00Z"}
+
+
+def copilot_call(tool: str, args: dict, cwd: str = "/tmp/project") -> dict:
+    return {"toolName": tool, "toolArgs": json.dumps(args), "cwd": cwd, "sessionId": "s", "timestamp": 1}
+
+
+def devin_call(tool: str, args: dict, cwd: str = "") -> dict:
+    return {"hook_event_name": "PreToolUse", "tool_name": tool, "tool_input": args, "session_id": "s",
+            "prompt_id": "p"}
+
+
+def kiro_call(tool: str, args: dict, cwd: str = "/tmp/project") -> dict:
+    return {"hook_event_name": "PreToolUse", "cwd": cwd, "session_id": "s", "tool_name": tool, "tool_input": args}
+
+
+def junie_call(tool: str, args: dict, cwd: str = "") -> dict:
+    return {"hook_event_name": "PreToolUse", "tool_name": tool, "tool_input": args} | ({"cwd": cwd} if cwd else {})
+
+
+E31_CALLS = {
+    # name: (payload maker, shell, read, write, edit, mcp write, mcp read)
+    "gemini": (gemini_call, ("run_shell_command", "command"), ("read_file", {"file_path": "/p/.env"}),
+               ("write_file", {"file_path": "/p/.env", "content": "x"}),
+               ("replace", {"file_path": "/p/app.py", "old_string": "a", "new_string": "-----BEGIN OPENSSH " + "PRIVATE KEY-----"}),
+               "mcp_github_create_pull_request", "mcp_github_get_pull_request"),
+    "copilot": (copilot_call, ("bash", "command"), ("view", {"path": "/p/.env"}),
+                ("create", {"path": "/p/.env", "file_text": "x"}),
+                ("str_replace_editor", {"path": "/p/app.py", "old_str": "a", "new_str": "-----BEGIN OPENSSH " + "PRIVATE KEY-----"}),
+                None, None),
+    "devin": (devin_call, ("exec", "command"), ("read", {"file_path": "/p/.env"}),
+              ("write", {"file_path": "/p/.env", "content": "x"}),
+              ("edit", {"path": "/p/app.py", "old_string": "a", "new_string": "-----BEGIN OPENSSH " + "PRIVATE KEY-----"}),
+              "mcp__github__create_pull_request", "mcp__github__get_pull_request"),
+    "kiro": (kiro_call, ("execute_bash", "command"), ("fs_read", {"operations": [{"mode": "Line", "path": "/p/.env"}]}),
+             ("fs_write", {"command": "create", "path": "/p/.env", "file_text": "x"}),
+             ("str_replace", {"path": "/p/app.py", "old_str": "a", "new_str": "-----BEGIN OPENSSH " + "PRIVATE KEY-----"}),
+             "mcp_github_create_pull_request", "mcp_github_get_pull_request"),
+    "junie": (junie_call, ("Bash", "command"), ("Read", {"file_path": "/p/.env"}),
+              ("Write", {"file_path": "/p/.env", "content": "x"}),
+              ("Edit", {"file_path": "/p/app.py", "old_string": "a", "new_string": "-----BEGIN OPENSSH " + "PRIVATE KEY-----"}),
+              "mcp__github__create_pull_request", "mcp__github__get_pull_request"),
+}
+
+
+def e31_shell(name: str, command: str, cwd: str = "/tmp/project") -> tuple[str | None, str]:
+    make, (tool, field) = E31_CALLS[name][:2]
+    env = {"DEVIN_PROJECT_DIR": cwd} if name == "devin" else None
+    return run_guard(name, make(tool, {field: command}, cwd), env=env, cwd=cwd if os.path.isdir(cwd) else None)
+
+
+class E31GuardTest(unittest.TestCase):
+    """Core's guards in each new tool's own hook (#307 to #312)."""
+
+    def test_an_outward_command_is_stopped_and_its_near_miss_passes(self):
+        for name in E31_GUARDS:
+            with self.subTest(tool=name):
+                verdict, reason = e31_shell(name, "git push origin main")
+                self.assertEqual(verdict, "ask")
+                self.assertIn("git push publishes commits", reason)
+                self.assertEqual(e31_shell(name, "git status"), (None, ""))
+                self.assertEqual(e31_shell(name, "git fetch origin main"), (None, ""))
+
+    def test_a_secret_file_read_is_stopped_and_an_ordinary_one_passes(self):
+        for name, (make, _, (tool, args), *_rest) in E31_CALLS.items():
+            with self.subTest(tool=name):
+                self.assertEqual(run_guard(name, make(tool, args))[0], "ask")
+                plain = json.loads(json.dumps(args).replace("/p/.env", "/p/README.md"))
+                self.assertEqual(run_guard(name, make(tool, plain)), (None, ""))
+
+    def test_writing_a_secret_is_denied_and_an_ordinary_write_passes(self):
+        for name, (make, _, _, write, edit, *_rest) in E31_CALLS.items():
+            with self.subTest(tool=name):
+                self.assertEqual(run_guard(name, make(*write))[0], "deny")
+                self.assertEqual(run_guard(name, make(*edit))[0], "deny")
+                tool, args = edit
+                plain = {k: ("b" if "new" in k else v) for k, v in args.items()}
+                self.assertEqual(run_guard(name, make(tool, plain)), (None, ""))
+
+    def test_an_mcp_write_is_stopped_and_a_read_passes(self):
+        for name, (make, *_, writes, reads) in E31_CALLS.items():
+            if writes is None:
+                continue  # Copilot's docs give no MCP tool names
+            with self.subTest(tool=name):
+                self.assertEqual(run_guard(name, make(writes, {"title": "x"}))[0], "ask")
+                self.assertEqual(run_guard(name, make(reads, {"number": 1})), (None, ""))
+
+    def test_bad_input_and_other_tools_have_no_opinion(self):
+        for name, (make, *_) in E31_CALLS.items():
+            with self.subTest(tool=name):
+                self.assertEqual(run_guard(name, "not json"), (None, ""))
+                self.assertEqual(run_guard(name, "[1]"), (None, ""))
+                self.assertEqual(run_guard(name, make("web_fetch", {"url": "https://example.com"})), (None, ""))
+
+    def test_copilot_reads_its_arguments_as_an_object_too(self):
+        payload = {"toolName": "bash", "toolArgs": {"command": "git push origin main"}, "cwd": "/tmp"}
+        self.assertEqual(run_guard("copilot", payload)[0], "ask")
+        self.assertEqual(run_guard("copilot", {"toolName": "bash", "toolArgs": "{not json"}), (None, ""))
+
+
+    def test_a_server_name_with_an_underscore_is_split_by_the_tool_s_mcp_config(self):
+        # acme_memory is a local server (its name ends in memory), so its writes need no ask; split
+        # at the first _ it would be server acme and a create tool, which asks.
+        configs = {"gemini": ".gemini/settings.json", "kiro": ".kiro/settings/mcp.json"}
+        for name, config_file in configs.items():
+            with self.subTest(tool=name), tempfile.TemporaryDirectory() as project:
+                make = E31_CALLS[name][0]
+                call = make("mcp_acme_memory_create_entities", {"name": "x"}, project)
+                env = {"HOME": project, "KIRO_HOME": str(Path(project) / "kiro-home")}
+                self.assertEqual(run_guard(name, call, env=env)[0], "ask")  # no config: split at the first _
+                (Path(project) / config_file).parent.mkdir(parents=True)
+                (Path(project) / config_file).write_text(json.dumps({"mcpServers": {"acme_memory": {}, "acme": {}}}))
+                self.assertEqual(run_guard(name, call, env=env), (None, ""))
+
+    def test_split_mcp_takes_the_longest_configured_server(self):
+        sys.path.insert(0, str(HOOKS))
+        try:
+            import guard_bridge
+        finally:
+            sys.path.remove(str(HOOKS))
+        servers = {"acme", "acme_jira"}
+        self.assertEqual(guard_bridge.split_mcp("acme_jira_delete_issue", servers), ("acme_jira", "delete_issue"))
+        self.assertEqual(guard_bridge.split_mcp("acme_search", servers), ("acme", "search"))
+        self.assertEqual(guard_bridge.split_mcp("other_tool_x", servers), ("other", "tool_x"))
+        self.assertEqual(guard_bridge.split_mcp("acme_jira_", servers), ("acme", "jira_"))
+
+    def test_an_odd_field_does_not_block_in_tools_that_block_on_failure(self):
+        for name, payload in (("kiro", kiro_call("execute_bash", {"command": "ls"})),
+                              ("copilot", copilot_call("bash", {"command": "ls"}))):
+            with self.subTest(tool=name):
+                broken = {**payload, "cwd": {"not": "a path"}}  # an odd field must not crash the hook
+                self.assertEqual(run_guard(name, broken), (None, ""))
+
+
+class E31GuardRulesMixin(SharedGuardRuleCases):
+    tool = ""
+
+    def verdict(self, command: str, cwd: Path) -> str | None:
+        return e31_shell(self.tool, command, str(cwd))[0]
+
+
+class GeminiGuardRulesTest(E31GuardRulesMixin, unittest.TestCase):
+    """#308: packs' guard rules in Gemini CLI's BeforeTool, under their [scope] (from cwd)."""
+    tool = "gemini"
+
+
+class CopilotGuardRulesTest(E31GuardRulesMixin, unittest.TestCase):
+    """#307: packs' guard rules in Copilot's preToolUse, under their [scope] (from cwd)."""
+    tool = "copilot"
+
+
+class DevinGuardRulesTest(E31GuardRulesMixin, unittest.TestCase):
+    """#309: packs' guard rules in Devin's PreToolUse, under their [scope] (from $DEVIN_PROJECT_DIR)."""
+    tool = "devin"
+
+    def test_without_the_project_variable_the_hook_s_own_directory_counts(self):
+        env = {"DEVIN_PROJECT_DIR": ""}
+        call = devin_call("exec", {"command": "acme-deploy prod"})
+        self.assertEqual(run_guard("devin", call, env=env, cwd=str(self.acme_repo))[0], "deny")
+        self.assertIsNone(run_guard("devin", call, env=env, cwd=str(self.personal_repo))[0])
+
+
+class KiroGuardRulesTest(E31GuardRulesMixin, unittest.TestCase):
+    """#310: packs' guard rules in Kiro's PreToolUse, under their [scope] (from cwd)."""
+    tool = "kiro"
+
+
+class JunieGuardRulesTest(E31GuardRulesMixin, unittest.TestCase):
+    """#312: packs' guard rules in Junie's PreToolUse, under their [scope] (from cwd, else the hook's
+    own directory)."""
+    tool = "junie"
+
+    def test_without_a_cwd_the_hook_s_own_directory_counts(self):
+        call = junie_call("Bash", {"command": "acme-deploy prod"})
+        self.assertEqual(run_guard("junie", call, cwd=str(self.acme_repo))[0], "deny")
+        self.assertIsNone(run_guard("junie", call, cwd=str(self.personal_repo))[0])
+
+
+E31_RISKY = {"gemini": gemini_call("run_shell_command", {"command": "git push origin main"}),
+             "copilot": copilot_call("bash", {"command": "git push origin main"}),
+             "devin": devin_call("exec", {"command": "git push origin main"}),
+             "kiro": kiro_call("execute_bash", {"command": "git push origin main"}),
+             "junie": junie_call("Bash", {"command": "git push origin main"})}
+
+
+class E31FailOpenTest(unittest.TestCase):
+    setUp, tearDown = FailOpenTest.setUp, FailOpenTest.tearDown
+    hooks_dir, remove_target = FailOpenTest.hooks_dir, FailOpenTest.remove_target
+
+    def test_each_command_stops_when_present_and_passes_when_the_hooks_are_gone(self):
+        for name, risky in E31_RISKY.items():
+            with self.subTest(tool=name):
+                d = self.hooks_dir(name)
+                (command,) = fragment_commands(name, d)
+                result = run_command(command, risky)
+                self.assertEqual(result.returncode, 2 if name == "kiro" else 0, result.stderr)
+                self.assertIn("git push publishes commits", result.stdout + result.stderr)
+                self.remove_target(d)
+                self.assertEqual(run_command(command, risky).returncode, 0)
+                self.assertEqual(run_command(command, risky).stdout, "")

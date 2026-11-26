@@ -46,7 +46,8 @@ extensions are rendered, so re-run `apply` after changing them or enabling a pac
 
 The code is the `brainrc/` package (`python3 scripts/brainrc.py` or `python3 -m brainrc`), stdlib
 only. The main modules: `cli` (the commands), `config` (config files and paths), `sources` and
-`packs` (reading and fetching packs), `plan` and `settings` (links and merges), `project`, `lock`
+`packs` (reading and fetching packs), `adapters/` (one module per tool: what its content looks
+like, [adapters](adapters.md)), `plan` and `settings` (links and merges), `project`, `lock`
 and `frozen` (project scope and the lockfile), `mcp` and `mcp_pins`, `validate`, `doctor`,
 `audit`, `importers/`, and `plugin` (the plugin manifests).
 

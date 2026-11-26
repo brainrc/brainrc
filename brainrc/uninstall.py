@@ -18,7 +18,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable
 
-from . import config
+from . import adapters, config
 from .config import (
     KINDS,
     ConfigError,
@@ -29,15 +29,13 @@ from .config import (
     hooks_copy_root,
     home_extensions_file,
     load_harnesses,
-    rendered_agents_dir,
     rendered_instructions,
-    settings_format,
     settings_home,
     tilde,
 )
 from .manifest import checked_manifest, manifest_file
-from .mcp import ADAPTERS, McpSync, _owned_file, _read_record, mcp_change, mcp_files, record_owned, write_mcp
-from .plan import SettingsMerge, _managed_target, link_target
+from .mcp import McpSync, _owned_file, _read_record, mcp_change, mcp_files, record_owned, write_mcp
+from .plan import SettingsMerge, _managed_target, link_target, rendered_dirs
 from .settings import FileChanged, conflict_reason, read_current, settings_change, write_settings
 from .settings import record_owned as record_settings_owned
 from .sources import sources
@@ -53,6 +51,7 @@ class Step:
     run: Callable[[], None]
     note: str = ""
     removes: set[Path] = field(default_factory=set)  # paths gone afterwards, for the empty-dir check
+    backup: bool = True  # DELETE: keep the file as a backup; off when its folder goes too
 
 
 # What brainrc keeps in the settings home. --purge deletes these and nothing else.
@@ -116,13 +115,43 @@ def _fragment_extras(name: str) -> dict:
     return {k: v for k, v in fragment.items() if k != "hooks"} if isinstance(fragment, dict) else {}
 
 
+def _delete_step(name: str, dest: Path, note: str, forget: Callable[[], None]) -> Step:
+    """Delete a file that holds nothing of the user's: set aside as a backup, like apply does, unless
+    the folder it sits in goes too (a folder apply made for it, like ~/.copilot/hooks)."""
+    step = Step("DELETE", name, dest, lambda: None, note, {dest})
+
+    def run() -> None:
+        _set_aside(dest) if step.backup else dest.unlink()
+        forget()
+    step.run = run
+    return step
+
+
 def _set_aside(path: Path) -> None:
     """Delete a file that holds nothing of the user's, keeping it as a backup like apply does."""
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     os.replace(path, path.with_name(f"{path.name}.bak-brainrc-{stamp}"))  # rename's POSIX behaviour, on Windows too
 
 
-def _settings_steps(name: str, h: dict, problems: list[str]) -> list[Step]:
+# What a step of this run left in a file, so a later step on the same file builds on it: Gemini
+# CLI's settings.json holds both its hooks and its MCP servers.
+_wrote: dict[Path, str | None] = {}
+
+
+def _rebased(dest: Path, before: str | None) -> str | None:
+    """The text a step builds on: before, or what an earlier step of this run wrote over it."""
+    now = read_current(dest)
+    return now if now != before and _wrote.get(dest.resolve(), before) == now else before
+
+
+def _settle(dest: Path, emptied: bool) -> None:
+    """A rebased step with nothing left to take out, or that leaves the file empty (set aside)."""
+    if emptied:
+        _set_aside(dest)
+    _wrote.pop(dest.resolve(), None)
+
+
+def _settings_steps(name: str, h: dict, problems: list[str], lenient: bool = False) -> list[Step]:
     dest = expand(h["settings"])
     if not dest.is_file():
         return []
@@ -130,11 +159,11 @@ def _settings_steps(name: str, h: dict, problems: list[str]) -> list[Step]:
     if "hooks_dir" in h:
         markers = {h["hooks_dir"], *former_hooks_dirs(h["hooks_dir"])}
     try:
-        fmt = settings_format(h)
+        fmt = adapters.settings_format(name, h)
     except ConfigError as e:  # a typo in harnesses.local.toml mustn't stop the rest of uninstall
         problems.append(f"{tilde(dest)}: {e}, so brainrc's hooks may still be in it; fix it, then re-run")
         return []
-    m = SettingsMerge(name, dest, [], markers, fmt)
+    m = SettingsMerge(name, dest, [], markers, fmt, lenient=lenient)
     state, merged = settings_change(m)
     if state == "conflict":
         problems.append(f"{tilde(dest)}: {conflict_reason(m)}, so brainrc's hooks are still in it; "
@@ -144,23 +173,28 @@ def _settings_steps(name: str, h: dict, problems: list[str]) -> list[Step]:
         return []
     before = read_current(dest)
     if not merged or merged == _fragment_extras(name):
-        def delete() -> None:
-            _set_aside(dest)
-            record_settings_owned(dest, {})
-        return [Step("DELETE", name, dest, delete, "only brainrc's hooks were in it", {dest})]
+        return [_delete_step(name, dest, "only brainrc's hooks were in it", lambda: record_settings_owned(dest, {}))]
 
     def unmerge() -> None:
-        write_settings(dest, merged, before)
+        base, new = _rebased(dest, before), merged
+        if base != before:  # this run took MCP servers out of it first (one file, Gemini CLI's)
+            state, new = settings_change(m)
+            if state != "merge" or not new or new == _fragment_extras(name):
+                _settle(dest, state == "merge")
+                record_settings_owned(dest, {})
+                return
+        write_settings(dest, new, base)
         record_settings_owned(dest, {})
+        _wrote[dest.resolve()] = read_current(dest)
     return [Step("UNMERGE", name, dest, unmerge, "hooks")]
 
 
-def _mcp_steps(name: str, h: dict, problems: list[str]) -> list[Step]:
+def _mcp_steps(name: str, h: dict, problems: list[str], lenient: bool = False) -> list[Step]:
     return [s for dest in mcp_files(name, h) for s in _mcp_file_steps(name, dest, problems)]
 
 
 def _mcp_file_steps(name: str, dest: Path, problems: list[str]) -> list[Step]:
-    if name not in ADAPTERS or not dest.is_file():
+    if not adapters.get(name).writes_mcp or not dest.is_file():
         return []
     m = McpSync(name, dest, {})
     state, text, _, _ = mcp_change(m)
@@ -171,17 +205,24 @@ def _mcp_file_steps(name: str, dest: Path, problems: list[str]) -> list[Step]:
         return []
     before = read_current(dest)
     if text.strip() in ("", "{}"):
-        def delete() -> None:
-            _set_aside(dest)
-            record_owned(m, [])
-        return [Step("DELETE", name, dest, delete, "only brainrc's MCP servers were in it", {dest})]
-    return [Step("UNMERGE", name, dest, lambda: write_mcp(m, text, [], before), "mcp")]
+        return [_delete_step(name, dest, "only brainrc's MCP servers were in it", lambda: record_owned(m, []))]
+    def unmerge() -> None:
+        base, new = _rebased(dest, before), text
+        if base != before:  # this run took brainrc's hooks out of it first (one file, Gemini CLI's)
+            state, new, _, _ = mcp_change(m)
+            if state != "merge" or new.strip() in ("", "{}"):
+                _settle(dest, state == "merge")
+                record_owned(m, [])
+                return
+        write_mcp(m, new, [], base)
+        _wrote[dest.resolve()] = read_current(dest)
+    return [Step("UNMERGE", name, dest, unmerge, "mcp")]
 
 
 def _generated() -> list[Path]:
     """What apply generates in the settings home; local config and fetched packs stay."""
     return [p for p in (rendered_instructions(), home_extensions_file(), manifest_file(), settings_home() / "brainrc.lock")
-            if p.is_file()] + [d for d in (rendered_agents_dir(), hooks_copy_root()) if d.is_dir()]
+            if p.is_file()] + [d for d in (*rendered_dirs(), hooks_copy_root()) if d.is_dir()]
 
 
 def _remove(path: Path) -> None:
@@ -225,7 +266,9 @@ def _purge_refusal(home: Path, configs: list[tuple[str, dict]]) -> str | None:
         hh = harness_home(h)
         if hh and (hh == home or home in hh.parents):
             return f"it holds {name}'s config ({tilde(hh)})"
-    others = sorted(p.name for p in home.iterdir() if not SETTINGS_HOME_ENTRIES.fullmatch(p.name))
+    rendered = {d.parent.name for d in rendered_dirs()}  # a package adapter's agent format too
+    others = sorted(p.name for p in home.iterdir()
+                    if not SETTINGS_HOME_ENTRIES.fullmatch(p.name) and p.name not in rendered)
     if others:
         more = f" and {len(others) - 3} more" if len(others) > 3 else ""
         return f"it also holds files brainrc didn't make ({', '.join(others[:3])}{more})"
@@ -263,13 +306,14 @@ def finish_purge() -> int:
 
 def plan_uninstall(purge: bool = False) -> tuple[list[Step], list[str], list[str]]:
     """(steps in the order to run them, warnings, problems that stop part of the uninstall)."""
+    _wrote.clear()
     manifest, warnings = checked_manifest()
     configs = _harness_configs(manifest, warnings)
     roots = _roots(manifest)
     problems: list[str] = []
     steps: list[Step] = []
     starts: list[tuple[str, Path, Path]] = []  # (harness, removed path, dir never removed)
-    seen: set[Path] = set()
+    seen: set = set()  # links, and (kind, path) for settings and MCP files
     removed: set[Path] = set()
     home = Path.home()
     for name, h in configs:
@@ -290,14 +334,19 @@ def plan_uninstall(purge: bool = False) -> tuple[list[Step], list[str], list[str
                                   f"from {backup.name}, which init moved aside"))
     for name, h in configs:
         for key, make in (("settings", _settings_steps), ("mcp", _mcp_steps)):
-            if key in h and expand(h[key]) not in seen:
-                seen.add(expand(h[key]))
-                for step in make(name, h, problems):
+            if key in h and (key, expand(h[key])) not in seen:
+                seen.add((key, expand(h[key])))
+                # A tool apply never managed: a file it can't parse with nothing of brainrc's stays.
+                for step in make(name, h, problems, lenient=name not in manifest["harnesses"]):
                     steps.append(step)
                     starts += [(name, p, harness_home(h) or home) for p in step.removes]
     restored = {s.path for s in steps if s.action == "RESTORE"}
     gone = {p for s in steps for p in s.removes} - restored
     steps += _empty_dirs([s for s in starts if s[1] not in restored], gone)
+    emptied = {s.path for s in steps if s.action == "RMDIR"}
+    for step in steps:
+        if step.action == "DELETE" and step.path.parent in emptied:
+            step.backup = False
     refusal = _purge_refusal(settings_home(), configs) if purge and settings_home().is_dir() else None
     if refusal:
         problems.append(f"--purge left {tilde(settings_home())} alone: {refusal}. "

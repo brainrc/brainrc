@@ -1,0 +1,65 @@
+#!/usr/bin/env python3
+"""Gemini CLI hook for BeforeTool (#308): runs the same guards as Claude Code
+(overrides/claude/hooks), packs' guard rules included, under their [scope] judged from `cwd`.
+
+Gemini CLI sends {"tool_name", "tool_input", "cwd", ...}: run_shell_command with
+tool_input.command, read_file, write_file and replace with tool_input.file_path (read_file's
+older absolute_path too), and MCP tools as mcp_<server>_<tool>. Its hooks reply "allow" or
+"deny", with no "ask", so an ask denies here and the agent is told to ask the user to run it
+themselves. No objection prints nothing, which leaves Gemini CLI's own confirmation in charge.
+Anything this hook can't handle is allowed, as a failing hook is.
+"""
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
+# brainrc links this directory; resolve the link so the guards are found in a checkout or a package.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "claude" / "hooks"))
+import guard_bridge  # noqa: E402
+
+
+def text(value) -> str:
+    return value if isinstance(value, str) else ""
+
+
+def claude_calls(payload: dict) -> list[tuple[str, str, dict]]:
+    """Gemini CLI BeforeTool payload -> (guard, Claude tool name, tool input) calls."""
+    tool = text(payload.get("tool_name"))
+    args = payload.get("tool_input") if isinstance(payload.get("tool_input"), dict) else {}
+    path = text(args.get("file_path")) or text(args.get("absolute_path"))
+    if tool == "run_shell_command":
+        return guard_bridge.shell_calls(text(args.get("command")))
+    if tool == "read_file":
+        return guard_bridge.read_call(path)
+    if tool == "read_many_files":
+        paths = args.get("paths") if isinstance(args.get("paths"), list) else []
+        return [c for p in paths for c in guard_bridge.read_call(text(p))]
+    if tool == "write_file":
+        return guard_bridge.write_call(path, text(args.get("content")))
+    if tool == "replace":
+        return guard_bridge.write_call(path, text(args.get("new_string")))
+    if tool.startswith("mcp_"):  # mcp_<server>_<tool>, split by the servers it has configured
+        base = Path(text(payload.get("cwd")) or ".")
+        servers = guard_bridge.config_servers([Path.home() / ".gemini" / "settings.json", base / ".gemini" / "settings.json"])
+        return guard_bridge.mcp_call(*guard_bridge.split_mcp(tool[len("mcp_"):], servers), args)
+    return []
+
+
+def main() -> int:
+    try:
+        payload = json.load(sys.stdin)
+    except ValueError:
+        return 0
+    if not isinstance(payload, dict):
+        return 0
+    cwd = payload.get("cwd") if isinstance(payload.get("cwd"), str) else None
+    found = guard_bridge.decide(claude_calls(payload), cwd)
+    if found:
+        json.dump({"decision": "deny", "reason": guard_bridge.blocked(*found, "Gemini CLI")}, sys.stdout)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -37,8 +37,10 @@ enabled = false        # leave Cursor alone, even though it's installed
 enabled = true         # manage OpenCode before its folder exists
 ```
 
-The table names are `claude`, `codex`, `opencode`, `antigravity`, `cursor`, and `gemini` (Gemini
-CLI, off by default since Antigravity CLI replaced it). A table can also change any path from
+The table names are `claude`, `codex`, `opencode`, `antigravity`, `cursor`, `copilot` (the Copilot
+CLI and VS Code's Copilot agent), `devin` (Devin Local, which Windsurf became), `kiro`, `amp`,
+`junie`, and `gemini` (Gemini CLI, off by default: Google ended it for individual accounts in June
+2026, and it shares `~/.gemini` with Antigravity CLI). A table can also change any path from
 [`harnesses.toml`](../harnesses.toml), such as `skills` or `instructions`, though the variables below
 are usually the better way.
 

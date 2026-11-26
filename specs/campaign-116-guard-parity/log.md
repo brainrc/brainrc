@@ -1,0 +1,82 @@
+# Campaign gh:116 · guard parity across tools (E11)
+
+## 2026-11-26T03:40:00Z · engine · Campaign gate · dry run
+`/brainrc-work --campaign gh:116 --shape ordered --dry-run`, worked by hand: the skill ships in
+brainrc/gatework, which isn't installed in the build environment.
+
+- Members: #155 (Cursor), #156 (OpenCode), #157 (Codex), #158 (Antigravity), #322 (compile guard
+  rules into OS sandbox settings). #323 (the security-baseline pack) is skipped: the brief leaves it
+  out.
+- Shape: `ordered`. Dependency source: `none`. #155 comes first because it moves the shared
+  plumbing (`guard_bridge.py`, `tests/guard_cases.py`) the other evaluators reuse; #322 stands alone.
+- Delivery: one draft PR with one commit per child, since only one branch is pushable here.
+- Starts from `main` after #387 (E10) merged as ed6debb, checked on GitHub.
+
+## engine · Campaign gate · approved
+The coordinator's brief passes on the maintainer's "Yes, merge and start" to its question about
+merging #387 and building the four evaluators and the sandbox compile as draft PRs, leaving #323
+out. Recorded as approved on that basis; per-child Spec and Plan are logged here. Merging stays
+with the maintainer.
+
+## engine · shared · Spec and Plan
+- Every tool's guard runs core's Claude Code guards through `overrides/claude/hooks/guard_bridge.py`,
+  passing where the command runs, so a pack's `[[guard.deny]]` and `[[guard.ask]]` apply under its
+  `[scope]` the same way everywhere. A pack deny wins over any ask. A tool that can't ask blocks an
+  ask and tells the model to ask the user to run it.
+- `tests/guard_cases.py` holds the acme cases (19 wrapped denies, 8 near misses, deny over ask, a
+  missing or broken rules file); each tool's test class mixes them in.
+
+## engine · gh:155 · Spec and Plan
+- Cursor's `beforeShellExecution` and `beforeReadFile` hook runs core's guards through the bridge,
+  with the event's `cwd` (else the first workspace root) as where. Cursor's ask is unreliable for
+  shell commands, so an ask denies with the reason.
+- Plan: `overrides/cursor/hooks/guard.py`, `guard_bridge.py` (new), tests in `tests/test_hooks.py`.
+
+## engine · gh:156 · Spec and Plan
+- OpenCode's plugin passes the session `directory`, joined with a command's `workdir`, as where.
+  A plugin can't ask, so an ask throws with the reason and the run-it-yourself line.
+- Plan: `overrides/opencode/plugin.js`, tests in `tests/test_hooks.py`.
+
+## engine · gh:157 · Spec and Plan
+- Codex reads PreToolUse hooks from `$CODEX_HOME/hooks.json`, in Claude Code's shape. Its hook gets
+  `Bash`, `apply_patch` (the patch in `tool_input.command`) and `mcp__*` calls; only allow and
+  deny work, an ask counts as a failed hook and the call runs, so the hook maps ask to deny. The
+  patch's added files and lines go to the secrets guard as a Write.
+- `harnesses.toml` gains Codex's `hooks_dir` and `settings`. Codex asks the user to trust new hooks
+  once in `/hooks`; the docs say so.
+- Plan: `overrides/codex/hooks/guard.py` and `settings.fragment.json` (new), harnesses.toml,
+  tests in `tests/test_hooks.py` and `tests/test_brainrc.py`.
+
+## engine · gh:158 · Spec and Plan
+- Antigravity reads `~/.gemini/config/hooks.json`, where each hook set sits under a name. brainrc's
+  goes under `brainrc`, through a new `settings_format = "antigravity"` in harnesses.toml that
+  maps the file to Claude Code's shape and back, so merge, ownership, doctor and uninstall reuse
+  the same code. An unknown format is a config error in apply and doctor.
+- The hook guards `run_command` (`CommandLine`, `Cwd`, else the first workspace path). A deny
+  replies `deny`, an ask `force_ask`, and no objection `allow`, which Antigravity's docs say passes
+  the decision on to the next hook or the default policy, so it doesn't widen what runs.
+- Plan: `overrides/antigravity/hooks/guard.py` and `settings.fragment.json` (new), harnesses.toml,
+  `brainrc/config.py`, `plan.py`, `settings.py`, `doctor.py`, `uninstall.py`, `cli.py`, the
+  harnesses schema; tests in `tests/test_hooks.py` and `tests/test_brainrc.py`.
+
+## engine · gh:322 · Spec and Plan
+- A `[[guard.deny]]` can set `path` (starting `~/` or `/`) or `host` (a domain, optionally `*.`)
+  in place of `match` or `tool`. apply compiles them into Claude Code's
+  `sandbox.filesystem.denyRead` and `denyWrite` and `sandbox.network.deniedDomains`, and records
+  the entries it adds in `settings-owned.json`, as #142 does for permissions: the user's stay, and
+  exactly the pack's go when it's disabled or brainrc is uninstalled.
+- The sandbox can't ask and doesn't know where a command runs, so validate refuses a path or host
+  rule under `[[guard.ask]]` and one a scoped pack leaves scoped (`scope = {}` says everywhere).
+- Plan: `brainrc/guard.py` (`sandbox()`), `settings.py`, `plan.py`, the pack.toml schema,
+  docs/packs.md and docs/guardrails.md; tests in `tests/test_guard_rules.py` and
+  `tests/test_pack_settings_keys.py`.
+
+## engine · gaps left open
+- OpenCode's plugin doesn't see MCP calls in a way the guard can check, so packs' `tool` rules
+  don't apply there. Antigravity's hook covers `run_command` only: its file tools' argument names
+  and MCP tool naming aren't documented.
+- None of the four evaluators has run in a real Cursor, OpenCode, Codex or Antigravity session;
+  the tests drive each hook with the payloads the tools' docs describe.
+- The sandbox covers Bash and its child processes, not Claude Code's Read tool or web fetches, and
+  takes effect only with `sandbox.enabled` on. Other tools have no sandbox settings brainrc writes.
+- Nothing here needs brainrc/gatework.

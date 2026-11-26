@@ -33,7 +33,7 @@ from .sources import (
 from .opencode import agents_format, rendered_agents
 from .packs import needs_fetch
 from .plan import FragmentError, Link, invalid_fragments, link_target, moved_item, plan, stale_renders
-from .settings import _owned, as_claude, settings_change
+from .settings import _owned, as_claude, conflict_reason, settings_change
 from .manifest import checked_manifest
 from .mcp import check_servers, mcp_change, mcp_plan
 from .moved import left_behind
@@ -271,7 +271,7 @@ def doctor_findings() -> list[Finding]:
     except ConfigError as e:  # renders and links depend on it, so stop here
         return found + [("FAIL", str(e), "set agents_format to claude or opencode in harnesses.local.toml")]
     try:
-        for h in load_harnesses().values():
+        for h in load_harnesses(include_disabled=True).values():  # plan merges disabled ones too
             config.settings_format(h)
     except ConfigError as e:  # the settings merges depend on it
         return found + [("FAIL", str(e), "set settings_format to claude or antigravity in harnesses.local.toml")]
@@ -313,7 +313,7 @@ def doctor_findings() -> list[Finding]:
         elif state == "merge":
             found.append(("FAIL", f"{m.harness}: {tilde(m.dest)} is missing brainrc's hooks", command("apply")))
         elif state == "conflict":
-            found.append(("FAIL", f"{m.harness}: {tilde(m.dest)} is invalid JSON",
+            found.append(("FAIL", f"{m.harness}: {tilde(m.dest)}: {conflict_reason(m)}",
                           f"fix it by hand, then {command('apply')}"))
     found += _hook_findings(merges)
     found += _mcp_findings(srcs)

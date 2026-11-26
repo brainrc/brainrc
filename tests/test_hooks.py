@@ -527,6 +527,11 @@ class CodexGuardTest(unittest.TestCase):
         moved = "*** Begin Patch\n*** Update File: a.txt\n*** Move to: .env\n@@\n-a\n+b\n*** End Patch\n"
         self.assertEqual(codex_call("apply_patch", {"command": moved})[0], "deny")
 
+    def test_a_command_sent_as_an_argv_list_is_still_checked(self):
+        self.assertEqual(codex_call("Bash", {"command": ["git", "push", "origin", "main"]})[0], "deny")
+        self.assertIsNone(codex_call("Bash", {"command": ["git", "status"]})[0])
+        self.assertEqual(codex_call("apply_patch", {"command": ["apply_patch", PATCH_ENV]})[0], "deny")
+
     def test_an_ordinary_patch_passes(self):
         patch = "*** Begin Patch\n*** Update File: src/app.py\n@@\n-a = 1\n+a = 2\n*** End Patch\n"
         self.assertIsNone(codex_call("apply_patch", {"command": patch})[0])

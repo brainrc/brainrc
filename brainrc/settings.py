@@ -257,6 +257,17 @@ def settings_change(m: SettingsMerge) -> tuple[str, dict | None]:
     return ("ok" if merged == current else "merge"), merged
 
 
+def conflict_reason(m: SettingsMerge) -> str:
+    """Why settings_change returned conflict, for the message: bad JSON or a wrong-shaped entry."""
+    try:
+        current = json.loads(m.dest.read_text())
+    except (OSError, ValueError):
+        return "invalid JSON"
+    if not isinstance(current, dict):
+        return "not a JSON object"
+    return f"its `{ANTIGRAVITY_ENTRY}` entry isn't an object"
+
+
 def settings_owned(m: SettingsMerge) -> dict[str, list[str]]:
     """What settings-owned.json should record for m.dest after apply merges it."""
     try:

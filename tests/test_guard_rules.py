@@ -101,6 +101,8 @@ class GuardRulesTest(TempRepoCase):
         self.assertIn("guard.deny[0]: `path` must be a string that starts with ~/ or /", text)
         self.assertIn("guard.deny[1]: `host` must be a domain name", text)
         self.assertIn("guard.deny[2]: a `path` rule compiles to sandbox settings", text)
+        trailing = self.pack('[[guard.deny]]\nhost = """acme.example\n"""\nreason = "r"\n')
+        self.assertTrue(any("`host` must be a domain" in e for e in pack_toml_findings(trailing)[0]))
         self.assertEqual(guard.sandbox([src], "claude"), {})
 
     def test_an_unscoped_pack_needs_no_scope_on_its_sandbox_rules(self):

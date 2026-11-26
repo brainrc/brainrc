@@ -118,7 +118,7 @@ def _sandbox_errors(rule: dict, kind: str, action: str, meta: dict, at: str) -> 
     if kind == "path" and not (isinstance(value, str) and (value.startswith("~/") or value.startswith("/"))
                                and value.strip("/~")):
         errors.append(f"{at}: `path` must be a string that starts with ~/ or / (e.g. \"~/.acme/credentials\")")
-    if kind == "host" and not (isinstance(value, str) and HOST.match(value)):
+    if kind == "host" and not (isinstance(value, str) and HOST.fullmatch(value)):
         errors.append(f"{at}: `host` must be a domain name, optionally starting with *. (e.g. \"*.acme.example\"), "
                       "with no scheme, port or path")
     own = rule.get("scope")

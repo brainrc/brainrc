@@ -168,6 +168,23 @@ class SandboxTest(TempRepoCase):
         self.assertEqual(code, 0, out)
         self.assertEqual(self.box(), {"enabled": True, "filesystem": {"denyRead": ["~/.ssh"]}})
 
+    def test_the_minimal_profile_writes_no_sandbox_entries(self):
+        (self.repo / "brainrc.local.toml").write_text('profile = "minimal"\n')  # the checkout's
+        self.enable(True)
+        self.assertEqual(self.box(), {"enabled": True, "filesystem": {"denyRead": ["~/.ssh"]}})
+
+    def test_every_fragments_sandbox_lists_are_joined(self):
+        from brainrc.plan import SettingsMerge
+        frags = []
+        for name, box in (("a", {"enabled": True}), ("b", {"filesystem": {"denyRead": ["~/.b"]}}),
+                          ("c", {"enabled": False, "filesystem": {"denyRead": ["~/.c", "~/.b"]}})):
+            f = self.repo / f"{name}.json"
+            f.write_text(json.dumps({"sandbox": box}))
+            frags.append((f, None))
+        merge = SettingsMerge("claude", self.settings, frags, sandbox={"network": {"deniedDomains": ["x.example"]}})
+        self.assertEqual(merge.wanted()["sandbox"], {"enabled": True, "filesystem": {"denyRead": ["~/.b", "~/.c"]},
+                                                     "network": {"deniedDomains": ["x.example"]}})
+
     def test_merge_leaves_a_sandbox_that_is_not_an_object_alone(self):
         frag = {"sandbox": {"network": {"deniedDomains": ["acme.example"]}}}
         self.assertEqual(merge_settings({"sandbox": "odd"}, frag)["sandbox"], "odd")

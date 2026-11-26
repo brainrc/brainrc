@@ -1962,6 +1962,7 @@ class AntigravityHooksTest(TempRepoCase):
         self.hooks_json.write_text(json.dumps({"brainrc": ["x"]}))
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertIn("hooks.json", out)
+        self.assertIn("`brainrc` entry isn't an object", out)  # not "invalid JSON": it parses
         self.assertEqual(json.loads(self.hooks_json.read_text()), {"brainrc": ["x"]})
 
     def test_an_unknown_settings_format_is_an_error(self):
@@ -1970,6 +1971,17 @@ class AntigravityHooksTest(TempRepoCase):
         self.assertNotEqual(code, 0, out)
         self.assertIn("settings_format", out)
         self.assertTrue(any("settings_format" in what for _, what, _ in brainrc.doctor_findings()))
+
+    def test_an_unknown_settings_format_on_a_disabled_harness_is_a_finding_not_a_crash(self):
+        (self.repo / "harnesses.local.toml").write_text('[antigravity]\nenabled = false\nsettings_format = "nope"\n')
+        self.assertTrue(any("settings_format" in what for _, what, _ in brainrc.doctor_findings()))
+
+    def test_uninstall_says_when_a_bad_settings_format_leaves_the_hooks(self):
+        self.assertEqual(quiet(brainrc.cmd_sync, True)[0], 0)
+        problems: list[str] = []
+        h = {"settings": str(self.hooks_json), "settings_format": "nope"}
+        self.assertEqual(brainrc.uninstall._settings_steps("antigravity", h, problems), [])
+        self.assertTrue(any("settings_format" in p for p in problems), problems)  # left, and said so
 
 
 class CursorPluginTest(TempRepoCase):

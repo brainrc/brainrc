@@ -80,3 +80,18 @@ with the maintainer.
 - The sandbox covers Bash and its child processes, not Claude Code's Read tool or web fetches, and
   takes effect only with `sandbox.enabled` on. Other tools have no sandbox settings brainrc writes.
 - Nothing here needs brainrc/gatework.
+
+## review · code-review (high) on PR #388, 7 of 8 findings fixed in one commit
+- gh:157: a command sent as an argv list skipped the guards (an `apply_patch` list lost its
+  newlines); lists are joined, and the patch is read from its last string.
+- gh:158: doctor crashed on a disabled harness's unknown `settings_format`, since plan reads
+  disabled ones too; it checks them all now. A `brainrc` entry that isn't an object was reported
+  as invalid JSON; apply, doctor and uninstall now say what's wrong. uninstall fell back to
+  Claude's shape on an unknown format and left Antigravity's hooks silently; it says so now.
+- gh:322: a `host` with a trailing newline passed validate (`$` before a final newline); it uses
+  a full match. The minimal profile wrote sandbox entries; they follow the hooks profile now, as
+  a pack's permissions do. Only the first fragment's `sandbox` table was kept; every fragment's
+  lists are joined now.
+- Not changed: an empty sandbox list the user had before brainrc added to it goes with brainrc's
+  entries, as #142's permission lists do; keeping it needs settings-owned.json to record what was
+  there first, for permissions and sandbox alike.

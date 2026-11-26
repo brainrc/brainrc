@@ -147,6 +147,7 @@ class SettingsMerge:
         hooks: dict[str, list] = {}
         wanted: dict = {}
         perms: dict = {}
+        box: dict = {}
         for fragment, hooks_dir in self.fragments:
             rendered = render_fragment(fragment, hooks_dir)
             for event, groups in rendered.get("hooks", {}).items():
@@ -158,20 +159,15 @@ class SettingsMerge:
                     perms[key] = list(dict.fromkeys([*perms.get(key, []), *entries]))
                 else:
                     perms.setdefault(key, value)
+            if isinstance(rendered.get("sandbox"), dict):
+                _join_sandbox(box, rendered["sandbox"])
             for key, value in rendered.items():  # e.g. Cursor's "version"; the first source wins
-                if key not in ("hooks", "permissions"):  # "sandbox" too: the first source's
+                if key not in ("hooks", "permissions", "sandbox"):
                     wanted.setdefault(key, value)
         if perms:
             wanted["permissions"] = perms
-        if self.sandbox:  # merged over any fragment's own sandbox keys, lists joined
-            box = wanted.get("sandbox") if isinstance(wanted.get("sandbox"), dict) else {}
-            box = {**box}
-            for section, lists in self.sandbox.items():
-                part = {**(box.get(section) if isinstance(box.get(section), dict) else {})}
-                for key, entries in lists.items():
-                    have = part.get(key) if isinstance(part.get(key), list) else []
-                    part[key] = list(dict.fromkeys([*have, *entries]))
-                box[section] = part
+        _join_sandbox(box, self.sandbox)  # packs' path and host rules after the fragments'
+        if box:
             wanted["sandbox"] = box
         wanted["hooks"] = hooks
         return wanted
@@ -179,6 +175,22 @@ class SettingsMerge:
     def markers(self) -> set[str]:
         dirs = {hd for _, hd in self.fragments if hd} | self.extra_markers
         return {hook_command_dir(d).rstrip("/") + "/" for d in dirs}
+
+
+def _join_sandbox(box: dict, more: dict) -> None:
+    """Add more's sandbox keys into box: each source's list entries in order, any other value from
+    the first source that sets it (e.g. enabled)."""
+    for key, value in more.items():
+        if isinstance(value, dict) and isinstance(box.setdefault(key, {}), dict):
+            part = box[key]
+            for k, v in value.items():
+                if isinstance(v, list):
+                    have = part.get(k) if isinstance(part.get(k), list) else []
+                    part[k] = list(dict.fromkeys([*have, *(e for e in v if isinstance(e, str))]))
+                else:
+                    part.setdefault(k, v)
+        elif not isinstance(value, dict):
+            box.setdefault(key, value)
 
 
 def link_target(link: Path) -> Path:
@@ -284,11 +296,9 @@ def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
             fragment = src.root / "overrides" / name / "settings.fragment.json"
             if fragment.is_file():
                 fragments.append((fragment, hooks_dir))
-        box = guard_sandbox(srcs, name) if "settings" in h else {}
+        box = guard_sandbox(srcs, name) if "settings" in h and hooks_on else {}  # minimal: rules only
         if "settings" in h and (fragments or box):
             known = {pack_hooks_dir(h["hooks_dir"], s.name) for s in every_src if "hooks_dir" in h}
-            if not hooks_on and "hooks_dir" in h:  # take brainrc's hooks back out
-                known |= {h["hooks_dir"]}
             merges.append(SettingsMerge(name, expand(h["settings"]), fragments, known,
                                         config.settings_format(h), box))
         elif "settings" in h and "hooks_dir" in h and not hooks_on:  # take brainrc's hooks back out

@@ -12,6 +12,7 @@ can't handle is allowed, as a broken hook is.
 from __future__ import annotations
 
 import json
+import shlex
 import sys
 from pathlib import Path
 
@@ -36,17 +37,28 @@ def patch_files(patch: str) -> list[tuple[str, str]]:
     return [(path, "\n".join(added)) for path, added in files if path]
 
 
+def command_text(value, patch: bool = False) -> str:
+    """tool_input.command as text: a string as it is, an argv list joined (the patch is its last
+    string, which holds the newlines patch_files reads)."""
+    if isinstance(value, list):
+        words = [str(w) for w in value if isinstance(w, str)]
+        if patch:
+            return next((w for w in reversed(words) if "*** " in w), "")
+        return shlex.join(words)
+    return str(value or "")
+
+
 def claude_calls(payload: dict) -> list[tuple[str, str, dict]]:
     """Codex PreToolUse payload -> (guard, Claude tool name, tool input) calls the guards understand."""
     tool = str(payload.get("tool_name") or "")
     tool_input = payload.get("tool_input") if isinstance(payload.get("tool_input"), dict) else {}
     if tool == "Bash":
-        return guard_bridge.shell_calls(str(tool_input.get("command") or ""))
+        return guard_bridge.shell_calls(command_text(tool_input.get("command")))
     if tool.startswith("mcp__"):
         return [(guard_bridge.OUTWARD, tool, tool_input)]
     if tool == "apply_patch":
         return [(guard_bridge.SECRETS, "Write", {"file_path": path, "content": added})
-                for path, added in patch_files(str(tool_input.get("command") or ""))]
+                for path, added in patch_files(command_text(tool_input.get("command"), patch=True))]
     return []
 
 

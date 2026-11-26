@@ -23,7 +23,7 @@ from .config import (
 )
 from .sources import Source, installed_items, render_instructions, sources
 from .opencode import agents_format
-from .guard import rules_file as guard_rules_file
+from .guard import rules_file as guard_rules_file, sandbox as guard_sandbox
 
 
 def stale_renders(srcs: list[Source], extensions: str | None, agents: dict[Path, str],
@@ -141,6 +141,7 @@ class SettingsMerge:
     fragments: list[tuple[Path, str | None]]  # (fragment, hooks dir) per source, in order
     extra_markers: set[str] = field(default_factory=set)
     fmt: str = "claude"  # harnesses.toml settings_format: where the file keeps its hooks
+    sandbox: dict = field(default_factory=dict)  # guard.sandbox(): packs' path and host rules (#322)
 
     def wanted(self) -> dict:
         hooks: dict[str, list] = {}
@@ -158,10 +159,20 @@ class SettingsMerge:
                 else:
                     perms.setdefault(key, value)
             for key, value in rendered.items():  # e.g. Cursor's "version"; the first source wins
-                if key not in ("hooks", "permissions"):
+                if key not in ("hooks", "permissions"):  # "sandbox" too: the first source's
                     wanted.setdefault(key, value)
         if perms:
             wanted["permissions"] = perms
+        if self.sandbox:  # merged over any fragment's own sandbox keys, lists joined
+            box = wanted.get("sandbox") if isinstance(wanted.get("sandbox"), dict) else {}
+            box = {**box}
+            for section, lists in self.sandbox.items():
+                part = {**(box.get(section) if isinstance(box.get(section), dict) else {})}
+                for key, entries in lists.items():
+                    have = part.get(key) if isinstance(part.get(key), list) else []
+                    part[key] = list(dict.fromkeys([*have, *entries]))
+                box[section] = part
+            wanted["sandbox"] = box
         wanted["hooks"] = hooks
         return wanted
 
@@ -273,9 +284,13 @@ def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
             fragment = src.root / "overrides" / name / "settings.fragment.json"
             if fragment.is_file():
                 fragments.append((fragment, hooks_dir))
-        if "settings" in h and fragments:
+        box = guard_sandbox(srcs, name) if "settings" in h else {}
+        if "settings" in h and (fragments or box):
             known = {pack_hooks_dir(h["hooks_dir"], s.name) for s in every_src if "hooks_dir" in h}
-            merges.append(SettingsMerge(name, expand(h["settings"]), fragments, known, config.settings_format(h)))
+            if not hooks_on and "hooks_dir" in h:  # take brainrc's hooks back out
+                known |= {h["hooks_dir"]}
+            merges.append(SettingsMerge(name, expand(h["settings"]), fragments, known,
+                                        config.settings_format(h), box))
         elif "settings" in h and "hooks_dir" in h and not hooks_on:  # take brainrc's hooks back out
             known = {h["hooks_dir"]} | {pack_hooks_dir(h["hooks_dir"], s.name) for s in every_src}
             merges.append(SettingsMerge(name, expand(h["settings"]), [], known, config.settings_format(h)))

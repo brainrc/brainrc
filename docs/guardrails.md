@@ -88,6 +88,11 @@ prompt-injected ticket) set on getting around them. Matching text can't close th
   context with cluster-admin, or a Terraform backend it can write, one missed pattern is
   enough to change real infrastructure.
 
+A pack's `path` and `host` [guard rules](packs.md#guard-rules) close part of this for Claude Code:
+they compile into its OS sandbox, which refuses the read, write or connection whatever program
+makes it, once `sandbox.enabled` is on. The sandbox covers Bash and what it starts, not the Read
+tool or web fetches, which follow permission rules.
+
 So the hooks are a seatbelt. What stops a write is the **credentials**: a run should hold none
 that can apply, mutate a cluster, or write to a cloud account.
 

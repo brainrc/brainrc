@@ -48,7 +48,7 @@ class GuardRulesTest(TempRepoCase):
                         '[[guard.block]]\nmatch = "acme-x"\nreason = "unknown action"\n')
         errors, warnings = pack_toml_findings(src)
         text = "\n".join(errors)
-        self.assertIn("guard.deny[0]: set `match` (a command) or `tool`", text)
+        self.assertIn("guard.deny[0]: set `match` (a command), `tool`", text)
         self.assertIn("guard.deny[1]: set `match`", text)
         self.assertIn("guard.ask[0]: `match` can't be split", text)
         self.assertIn("guard.ask[1]: `tool` must be a string that starts with mcp__", text)
@@ -77,6 +77,36 @@ class GuardRulesTest(TempRepoCase):
         hook = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(hook)
         self.assertEqual(set(hook.WRAPPERS), set(guard.WRAPPERS))
+
+    def test_path_and_host_rules_compile_to_the_claude_sandbox(self):
+        src = self.pack('[scope]\nremotes = ["github.com/acme/*"]\n'
+                        '[[guard.deny]]\npath = "~/.acme/credentials"\nreason = "acme keys"\nscope = {}\n'
+                        '[[guard.deny]]\nhost = "*.acme.example"\nreason = "acme internal"\nscope = {}\n'
+                        '[[guard.deny]]\nmatch = "acme-deploy prod"\nreason = "prod"\n')
+        self.assertEqual(pack_toml_findings(src), ([], []))
+        self.assertEqual(guard.sandbox([Source("core", self.repo), src], "claude"), {
+            "filesystem": {"denyRead": ["~/.acme/credentials"], "denyWrite": ["~/.acme/credentials"]},
+            "network": {"deniedDomains": ["*.acme.example"]}})
+        self.assertEqual(guard.sandbox([src], "cursor"), {})  # no sandbox there
+        self.assertEqual([r["match"] for r in guard.rules([src])], [["acme-deploy", "prod"]])  # hooks skip them
+
+    def test_bad_path_and_host_rules_fail_validate_and_compile_to_nothing(self):
+        src = self.pack('[scope]\nremotes = ["github.com/acme/*"]\n'
+                        '[[guard.ask]]\npath = "~/.acme"\nreason = "r"\nscope = {}\n'
+                        '[[guard.deny]]\npath = "relative/dir"\nreason = "r"\nscope = {}\n'
+                        '[[guard.deny]]\nhost = "https://acme.example/x"\nreason = "r"\nscope = {}\n'
+                        '[[guard.deny]]\npath = "~/.acme"\nreason = "the pack\'s scope can\'t hold"\n')
+        text = "\n".join(pack_toml_findings(src)[0])
+        self.assertIn("guard.ask[0]: a `path` rule goes under [[guard.deny]]", text)
+        self.assertIn("guard.deny[0]: `path` must be a string that starts with ~/ or /", text)
+        self.assertIn("guard.deny[1]: `host` must be a domain name", text)
+        self.assertIn("guard.deny[2]: a `path` rule compiles to sandbox settings", text)
+        self.assertEqual(guard.sandbox([src], "claude"), {})
+
+    def test_an_unscoped_pack_needs_no_scope_on_its_sandbox_rules(self):
+        src = self.pack('[[guard.deny]]\nhost = "acme.example"\nreason = "r"\n')
+        self.assertEqual(pack_toml_findings(src), ([], []))
+        self.assertEqual(guard.sandbox([src], "claude"), {"network": {"deniedDomains": ["acme.example"]}})
 
     def test_good_rules_pass_validate(self):
         errors, warnings = pack_toml_findings(load_pack(ACME, "acme"))

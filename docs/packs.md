@@ -100,7 +100,7 @@ Generated from [`pack.toml.schema.json`](schemas/pack.toml.schema.json) by
 | `validator` | string | A Python module in the pack that checks what only it understands ([validator plugins](#validator-plugins)). |
 | `test` | string | The pack's own unittest tests, a directory or a .py file in the pack; validate --pack runs them ([pack tests](#pack-tests)). |
 | `scope` | table | Where the pack applies: any glob matching means it does; none means everywhere ([scope](#scope)). |
-| `guard` | table | [[guard.deny]] and [[guard.ask]] rules core's guard hook enforces, with match or tool, reason and scope ([guard rules](#guard-rules)). |
+| `guard` | table | [[guard.deny]] and [[guard.ask]] rules core's guard hook enforces, with match or tool, reason and scope; deny rules may name a path or host for the OS sandbox instead ([guard rules](#guard-rules)). |
 | `extensions` | table | Tables other packs read, one per namespace, e.g. [extensions.gatework]; the pack that owns a namespace checks it ([extensions](#extensions)). |
 <!-- end generated -->
 
@@ -286,6 +286,31 @@ file (no rules, or before the first `apply`), the guard behaves as before. `vali
 rule. Claude Code, Cursor, OpenCode, Codex and Antigravity all enforce them through core's guard,
 judging the scope where each runs the command; where a tool can't ask, a pack's ask blocks the call
 and tells the model to ask you to run it ([guardrails](guardrails.md#gaps-by-tool)).
+
+A `[[guard.deny]]` rule can set `path` or `host` instead, to reach what the hooks can't see (a
+script that reads a file, a client that calls a host). `apply` compiles these into Claude Code's
+sandbox settings in `~/.claude/settings.json`, which the OS enforces on every Bash command and its
+child processes:
+
+```toml
+[[guard.deny]]
+path = "~/.acme/credentials"   # sandbox.filesystem.denyRead and denyWrite
+reason = "Acme's deploy keys"
+scope = {}                     # the sandbox applies everywhere, so say so in a scoped pack
+
+[[guard.deny]]
+host = "*.acme.example"        # sandbox.network.deniedDomains
+reason = "Acme's internal services"
+scope = {}
+```
+
+`path` starts with `~/` or `/`; `host` is a domain, optionally `*.` first. These rules can't ask
+and can't follow a `[scope]`, so `validate` refuses one under `[[guard.ask]]` or one that a scoped
+pack leaves scoped. The entries brainrc adds are recorded in `settings-owned.json`, as permission
+entries are: your own stay, and the pack's go when it's disabled or brainrc is uninstalled. They
+take effect only where Claude Code's sandbox is on (`sandbox.enabled`), and the sandbox covers
+Bash, not the Read tool or web fetches ([guardrails](guardrails.md#known-gaps)). Other tools have
+no sandbox brainrc can write, so there these rules do nothing.
 
 Test a rule with [`brainrc.testing`](#pack-tests) against core's hook, with `BRAINRC_HOME` set to
 a directory holding the rendered file, and a near miss beside the risky command.

@@ -110,5 +110,72 @@ class DisablePackTest(TempRepoCase):
         self.assertEqual(self.perms(), {"allow": ["Read", "Bash(ls:*)"]})
 
 
+class SandboxTest(TempRepoCase):
+    """#322: a pack's path and host guard rules land in Claude Code's sandbox lists, owned like
+    permission entries: the user's own stay, and exactly the pack's go when it does."""
+
+    def setUp(self):
+        super().setUp()
+        self.old_home = saved_home()
+        self.home = self.settings_home.parent / "home"
+        self.home.mkdir()
+        restore_home(home_env(self.home))
+        install_harnesses(self.home)
+        brainrc.permissions.ASSUME_YES = True
+        pack = self.repo / "packs/acme"
+        pack.mkdir(parents=True)
+        (pack / "pack.toml").write_text(
+            'name = "acme"\nrequires_core = ">=0"\n'
+            '[[guard.deny]]\npath = "~/.acme/credentials"\nreason = "acme keys"\n'
+            '[[guard.deny]]\nhost = "*.acme.example"\nreason = "acme internal"\n')
+        self.settings = self.home / ".claude/settings.json"
+        self.settings.write_text(json.dumps({"sandbox": {"enabled": True, "filesystem": {"denyRead": ["~/.ssh"]}}}))
+
+    def tearDown(self):
+        brainrc.permissions.ASSUME_YES = False
+        restore_home(self.old_home)
+        super().tearDown()
+
+    def enable(self, on: bool) -> None:
+        (self.repo / "packs.local.toml").write_text(f'[acme]\npath = "packs/acme"\nenabled = {str(on).lower()}\n')
+        code, out = quiet(brainrc.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+
+    def box(self) -> dict:
+        return json.loads(self.settings.read_text()).get("sandbox")
+
+    def test_apply_adds_them_keeps_the_users_and_disabling_takes_them_out(self):
+        self.enable(True)
+        self.assertEqual(self.box(), {"enabled": True,
+                                      "filesystem": {"denyRead": ["~/.ssh", "~/.acme/credentials"],
+                                                     "denyWrite": ["~/.acme/credentials"]},
+                                      "network": {"deniedDomains": ["*.acme.example"]}})
+        code, out = quiet(brainrc.cmd_sync, False)
+        self.assertIn("Everything in sync", out)
+        self.enable(False)
+        self.assertEqual(self.box(), {"enabled": True, "filesystem": {"denyRead": ["~/.ssh"]}})
+        self.assertFalse((self.settings_home / "settings-owned.json").exists())
+
+    def test_an_entry_the_user_had_first_stays_theirs(self):
+        self.settings.write_text(json.dumps({"sandbox": {"network": {"deniedDomains": ["*.acme.example"]}}}))
+        self.enable(True)
+        self.enable(False)
+        self.assertEqual(self.box(), {"network": {"deniedDomains": ["*.acme.example"]}})
+
+    def test_uninstall_takes_them_out_too(self):
+        self.enable(True)
+        code, out = quiet(brainrc.uninstall.cmd_uninstall)
+        self.assertEqual(code, 0, out)
+        self.assertEqual(self.box(), {"enabled": True, "filesystem": {"denyRead": ["~/.ssh"]}})
+
+    def test_merge_leaves_a_sandbox_that_is_not_an_object_alone(self):
+        frag = {"sandbox": {"network": {"deniedDomains": ["acme.example"]}}}
+        self.assertEqual(merge_settings({"sandbox": "odd"}, frag)["sandbox"], "odd")
+        self.assertEqual(merge_settings({"sandbox": {"network": "odd"}}, frag)["sandbox"]["network"], "odd")
+        owned = owned_permissions({}, frag, {})
+        self.assertEqual(owned, {"sandbox.network.deniedDomains": ["acme.example"]})
+        self.assertEqual(merge_settings(merge_settings({}, frag), {}, owned=owned), {})
+
+
 if __name__ == "__main__":
     unittest.main()

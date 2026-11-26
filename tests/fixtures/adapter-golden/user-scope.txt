@@ -1,0 +1,586 @@
+LINK {HOME}/.claude/CLAUDE.md -> {BRAINRC_HOME}/instructions.md
+LINK {HOME}/.claude/agents/acme-reviewer.md -> {PACK}/agents/acme-reviewer.md
+LINK {HOME}/.claude/agents/analyst.md -> {REPO}/packs/gatework/agents/analyst.md
+LINK {HOME}/.claude/agents/brainrc-analyst.md -> {REPO}/packs/gatework/agents/brainrc-analyst.md
+LINK {HOME}/.claude/agents/brainrc-code-reviewer.md -> {REPO}/packs/gatework/agents/brainrc-code-reviewer.md
+LINK {HOME}/.claude/agents/brainrc-infra-reviewer.md -> {REPO}/packs/gatework/agents/brainrc-infra-reviewer.md
+LINK {HOME}/.claude/agents/brainrc-verifier.md -> {REPO}/packs/gatework/agents/brainrc-verifier.md
+LINK {HOME}/.claude/agents/code-reviewer.md -> {REPO}/packs/gatework/agents/code-reviewer.md
+LINK {HOME}/.claude/agents/verifier.md -> {REPO}/packs/gatework/agents/verifier.md
+LINK {HOME}/.claude/commands/acme-ship.md -> {PACK}/commands/acme-ship.md
+LINK {HOME}/.claude/hooks/brainrc -> {REPO}/overrides/claude/hooks
+LINK {HOME}/.claude/hooks/brainrc-acme -> {PACK}/overrides/claude/hooks
+FILE {HOME}/.claude/settings.json
+{
+  "sandbox": {
+    "filesystem": {
+      "denyRead": [
+        "~/.acme/credentials"
+      ],
+      "denyWrite": [
+        "~/.acme/credentials"
+      ]
+    },
+    "network": {
+      "deniedDomains": [
+        "*.acme-internal.example"
+      ]
+    }
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|mcp__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"$HOME/.claude/hooks/brainrc/guard_outward.py\"; [ ! -f \"$f\" ] || python3 \"$f\"",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Write|Edit|MultiEdit|Grep|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"$HOME/.claude/hooks/brainrc/guard_secrets.py\"; [ ! -f \"$f\" ] || python3 \"$f\"",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/brainrc-acme/guard_acme.py\""
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"$HOME/.claude/hooks/brainrc/check_mcp_pins.py\"; [ ! -f \"$f\" ] || python3 \"$f\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
+LINK {HOME}/.claude/skills/acme-context -> {PACK}/skills/acme-context
+LINK {HOME}/.claude/skills/acme-deploy -> {PACK}/skills/acme-deploy
+LINK {HOME}/.claude/skills/brainrc-aws -> {REPO}/packs/gatework/skills/brainrc-aws
+LINK {HOME}/.claude/skills/brainrc-gatework -> {REPO}/packs/gatework/skills/brainrc-gatework
+LINK {HOME}/.claude/skills/brainrc-kubernetes -> {REPO}/packs/gatework/skills/brainrc-kubernetes
+LINK {HOME}/.claude/skills/brainrc-terraform -> {REPO}/packs/gatework/skills/brainrc-terraform
+LINK {HOME}/.claude/skills/brainrc-ticket-github -> {REPO}/packs/gatework/skills/brainrc-ticket-github
+LINK {HOME}/.claude/skills/brainrc-ticket-jira -> {REPO}/packs/gatework/skills/brainrc-ticket-jira
+LINK {HOME}/.claude/skills/brainrc-work -> {REPO}/packs/gatework/skills/brainrc-work
+LINK {HOME}/.claude/skills/spec-agent -> {REPO}/packs/gatework/skills/spec-agent
+FILE {HOME}/.claude.json
+{
+  "mcpServers": {
+    "acme-docs": {
+      "type": "stdio",
+      "command": "acme-docs-mcp",
+      "args": [
+        "--stdio"
+      ],
+      "env": {
+        "ACME_DOCS_TOKEN": "${ACME_DOCS_TOKEN}"
+      }
+    },
+    "acme-search": {
+      "type": "http",
+      "url": "https://search.acme.example/mcp"
+    },
+    "acme-claude-only": {
+      "type": "stdio",
+      "command": "acme-only",
+      "args": []
+    }
+  }
+}
+LINK {HOME}/.codex/AGENTS.md -> {BRAINRC_HOME}/instructions.md
+FILE {HOME}/.codex/config.toml
+# >>> brainrc mcp servers (written by brainrc apply; edits here are replaced)
+[mcp_servers.acme-docs]
+command = "acme-docs-mcp"
+args = ["--stdio"]
+env_vars = ["ACME_DOCS_TOKEN"]
+
+[mcp_servers.acme-search]
+url = "https://search.acme.example/mcp"
+# <<< brainrc mcp servers
+LINK {HOME}/.codex/hooks/brainrc -> {REPO}/overrides/codex/hooks
+LINK {HOME}/.codex/hooks/brainrc-acme -> {PACK}/overrides/codex/hooks
+FILE {HOME}/.codex/hooks.json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "^(Bash|apply_patch|mcp__.*)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"$HOME/.codex/hooks/brainrc/guard.py\"; [ ! -f \"$f\" ] || python3 \"$f\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.codex/hooks/brainrc-acme/guard_acme.py\""
+          }
+        ]
+      }
+    ]
+  }
+}
+LINK {HOME}/.codex/prompts/acme-ship.md -> {PACK}/commands/acme-ship.md
+LINK {HOME}/.codex/skills/acme-context -> {PACK}/skills/acme-context
+LINK {HOME}/.codex/skills/acme-deploy -> {PACK}/skills/acme-deploy
+LINK {HOME}/.codex/skills/brainrc-aws -> {REPO}/packs/gatework/skills/brainrc-aws
+LINK {HOME}/.codex/skills/brainrc-gatework -> {REPO}/packs/gatework/skills/brainrc-gatework
+LINK {HOME}/.codex/skills/brainrc-kubernetes -> {REPO}/packs/gatework/skills/brainrc-kubernetes
+LINK {HOME}/.codex/skills/brainrc-terraform -> {REPO}/packs/gatework/skills/brainrc-terraform
+LINK {HOME}/.codex/skills/brainrc-ticket-github -> {REPO}/packs/gatework/skills/brainrc-ticket-github
+LINK {HOME}/.codex/skills/brainrc-ticket-jira -> {REPO}/packs/gatework/skills/brainrc-ticket-jira
+LINK {HOME}/.codex/skills/brainrc-work -> {REPO}/packs/gatework/skills/brainrc-work
+LINK {HOME}/.codex/skills/spec-agent -> {REPO}/packs/gatework/skills/spec-agent
+LINK {HOME}/.config/opencode/AGENTS.md -> {BRAINRC_HOME}/instructions.md
+LINK {HOME}/.config/opencode/agents/acme-reviewer.md -> {BRAINRC_HOME}/opencode/agents/acme-reviewer.md
+LINK {HOME}/.config/opencode/agents/analyst.md -> {BRAINRC_HOME}/opencode/agents/analyst.md
+LINK {HOME}/.config/opencode/agents/brainrc-analyst.md -> {BRAINRC_HOME}/opencode/agents/brainrc-analyst.md
+LINK {HOME}/.config/opencode/agents/brainrc-code-reviewer.md -> {BRAINRC_HOME}/opencode/agents/brainrc-code-reviewer.md
+LINK {HOME}/.config/opencode/agents/brainrc-infra-reviewer.md -> {BRAINRC_HOME}/opencode/agents/brainrc-infra-reviewer.md
+LINK {HOME}/.config/opencode/agents/brainrc-verifier.md -> {BRAINRC_HOME}/opencode/agents/brainrc-verifier.md
+LINK {HOME}/.config/opencode/agents/code-reviewer.md -> {BRAINRC_HOME}/opencode/agents/code-reviewer.md
+LINK {HOME}/.config/opencode/agents/verifier.md -> {BRAINRC_HOME}/opencode/agents/verifier.md
+LINK {HOME}/.config/opencode/command/acme-ship.md -> {PACK}/commands/acme-ship.md
+FILE {HOME}/.config/opencode/opencode.json
+{
+  "mcp": {
+    "acme-docs": {
+      "type": "local",
+      "command": [
+        "acme-docs-mcp",
+        "--stdio"
+      ],
+      "environment": {
+        "ACME_DOCS_TOKEN": "{env:ACME_DOCS_TOKEN}"
+      },
+      "enabled": true
+    },
+    "acme-search": {
+      "type": "remote",
+      "url": "https://search.acme.example/mcp",
+      "enabled": true
+    }
+  }
+}
+LINK {HOME}/.config/opencode/plugins/brainrc-guard-acme.js -> {PACK}/overrides/opencode/plugin.js
+LINK {HOME}/.config/opencode/plugins/brainrc-guard.js -> {REPO}/overrides/opencode/plugin.js
+LINK {HOME}/.config/opencode/skills/acme-context -> {PACK}/skills/acme-context
+LINK {HOME}/.config/opencode/skills/acme-deploy -> {PACK}/skills/acme-deploy
+LINK {HOME}/.config/opencode/skills/brainrc-aws -> {REPO}/packs/gatework/skills/brainrc-aws
+LINK {HOME}/.config/opencode/skills/brainrc-gatework -> {REPO}/packs/gatework/skills/brainrc-gatework
+LINK {HOME}/.config/opencode/skills/brainrc-kubernetes -> {REPO}/packs/gatework/skills/brainrc-kubernetes
+LINK {HOME}/.config/opencode/skills/brainrc-terraform -> {REPO}/packs/gatework/skills/brainrc-terraform
+LINK {HOME}/.config/opencode/skills/brainrc-ticket-github -> {REPO}/packs/gatework/skills/brainrc-ticket-github
+LINK {HOME}/.config/opencode/skills/brainrc-ticket-jira -> {REPO}/packs/gatework/skills/brainrc-ticket-jira
+LINK {HOME}/.config/opencode/skills/brainrc-work -> {REPO}/packs/gatework/skills/brainrc-work
+LINK {HOME}/.config/opencode/skills/spec-agent -> {REPO}/packs/gatework/skills/spec-agent
+LINK {HOME}/.cursor/hooks/brainrc -> {REPO}/overrides/cursor/hooks
+LINK {HOME}/.cursor/hooks/brainrc-acme -> {PACK}/overrides/cursor/hooks
+FILE {HOME}/.cursor/hooks.json
+{
+  "version": 1,
+  "hooks": {
+    "beforeShellExecution": [
+      {
+        "command": "f=\"$HOME/.cursor/hooks/brainrc/guard.py\"; if [ -f \"$f\" ]; then python3 \"$f\"; else echo '{\"permission\": \"allow\"}'; fi"
+      },
+      {
+        "command": "python3 \"$HOME/.cursor/hooks/brainrc-acme/guard_acme.py\""
+      }
+    ],
+    "beforeReadFile": [
+      {
+        "command": "f=\"$HOME/.cursor/hooks/brainrc/guard.py\"; if [ -f \"$f\" ]; then python3 \"$f\"; else echo '{\"permission\": \"allow\"}'; fi"
+      }
+    ]
+  }
+}
+LINK {HOME}/.cursor/skills/acme-context -> {PACK}/skills/acme-context
+LINK {HOME}/.cursor/skills/acme-deploy -> {PACK}/skills/acme-deploy
+LINK {HOME}/.cursor/skills/brainrc-aws -> {REPO}/packs/gatework/skills/brainrc-aws
+LINK {HOME}/.cursor/skills/brainrc-gatework -> {REPO}/packs/gatework/skills/brainrc-gatework
+LINK {HOME}/.cursor/skills/brainrc-kubernetes -> {REPO}/packs/gatework/skills/brainrc-kubernetes
+LINK {HOME}/.cursor/skills/brainrc-terraform -> {REPO}/packs/gatework/skills/brainrc-terraform
+LINK {HOME}/.cursor/skills/brainrc-ticket-github -> {REPO}/packs/gatework/skills/brainrc-ticket-github
+LINK {HOME}/.cursor/skills/brainrc-ticket-jira -> {REPO}/packs/gatework/skills/brainrc-ticket-jira
+LINK {HOME}/.cursor/skills/brainrc-work -> {REPO}/packs/gatework/skills/brainrc-work
+LINK {HOME}/.cursor/skills/spec-agent -> {REPO}/packs/gatework/skills/spec-agent
+LINK {HOME}/.gemini/config/AGENTS.md -> {BRAINRC_HOME}/instructions.md
+LINK {HOME}/.gemini/config/hooks/brainrc -> {REPO}/overrides/antigravity/hooks
+FILE {HOME}/.gemini/config/hooks.json
+{
+  "brainrc": {
+    "PreToolUse": [
+      {
+        "matcher": "run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"$HOME/.gemini/config/hooks/brainrc/guard.py\"; if [ -f \"$f\" ]; then python3 \"$f\"; else echo '{\"decision\": \"allow\"}'; fi",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
+LINK {HOME}/.gemini/config/skills/acme-context -> {PACK}/skills/acme-context
+LINK {HOME}/.gemini/config/skills/acme-deploy -> {PACK}/skills/acme-deploy
+LINK {HOME}/.gemini/config/skills/brainrc-aws -> {REPO}/packs/gatework/skills/brainrc-aws
+LINK {HOME}/.gemini/config/skills/brainrc-gatework -> {REPO}/packs/gatework/skills/brainrc-gatework
+LINK {HOME}/.gemini/config/skills/brainrc-kubernetes -> {REPO}/packs/gatework/skills/brainrc-kubernetes
+LINK {HOME}/.gemini/config/skills/brainrc-terraform -> {REPO}/packs/gatework/skills/brainrc-terraform
+LINK {HOME}/.gemini/config/skills/brainrc-ticket-github -> {REPO}/packs/gatework/skills/brainrc-ticket-github
+LINK {HOME}/.gemini/config/skills/brainrc-ticket-jira -> {REPO}/packs/gatework/skills/brainrc-ticket-jira
+LINK {HOME}/.gemini/config/skills/brainrc-work -> {REPO}/packs/gatework/skills/brainrc-work
+LINK {HOME}/.gemini/config/skills/spec-agent -> {REPO}/packs/gatework/skills/spec-agent
+FILE {BRAINRC_HOME}/apply.lock
+FILE {BRAINRC_HOME}/brainrc.lock
+# brainrc.lock: written by brainrc. Don't edit it by hand.
+version = 2
+brainrc = "1.2.3"
+scope = "user"
+
+[packs.acme]
+path = "{PACK}"
+
+[packs.acme.files]
+"agents/acme-reviewer.md" = "sha256:0216d060443cae98a8aca4a1e05941bcd4fd249c34efeffb513f65465a574a0e"
+"commands/acme-ship.md" = "sha256:d22a2da6cb36a685d59d01b488524e4afbc3f8a7af3c778078289f47d4a21cce"
+"overrides/claude/hooks/guard_acme.py" = "sha256:d8594fa1268ecabc62af7c9e2449b8c46db0f426cd9aad384c67efe59e582b3e"
+"overrides/claude/settings.fragment.json" = "sha256:309daa3e53c065cbe46e187bb75a935adba9888c67fd800ebc401d42cdc7280b"
+"overrides/codex/hooks/guard_acme.py" = "sha256:d8594fa1268ecabc62af7c9e2449b8c46db0f426cd9aad384c67efe59e582b3e"
+"overrides/codex/settings.fragment.json" = "sha256:309daa3e53c065cbe46e187bb75a935adba9888c67fd800ebc401d42cdc7280b"
+"overrides/cursor/hooks/guard_acme.py" = "sha256:d8594fa1268ecabc62af7c9e2449b8c46db0f426cd9aad384c67efe59e582b3e"
+"overrides/cursor/settings.fragment.json" = "sha256:d7429d361e60b030039ee1f33e2e5811e60810ecffd88b75a2887cb54f672af6"
+"overrides/opencode/plugin.js" = "sha256:3300e617d0c079a63bda77387caf39ff7ae5b35835f6b7fb41241651fe316f24"
+"pack.toml" = "sha256:c32b89830857b0215023b5b568ead5b223d36652561da2fa98ba6eb4892f5cff"
+"rules/50-acme.md" = "sha256:f1f623b69708bf74cee182be5c5e8ac76221033e3b210c35a9efcfbfd786b440"
+"skills/acme-context/SKILL.md" = "sha256:041db8ba2db52cb3323f5034f6d86b488abff9ce1d187e2f4960ec14e27b4709"
+"skills/acme-deploy/SKILL.md" = "sha256:1635a09b54d910af74738dc7e6d8ca28f7c4d2bf232c0facae8ed154a1dd039b"
+
+[packs.acme.permissions]
+domains = [
+  "search.acme.example",
+]
+hooks = [
+  "claude PreToolUse [Bash] python3 \"{{hooks_dir}}/guard_acme.py\"",
+  "codex PreToolUse [Bash] python3 \"{{hooks_dir}}/guard_acme.py\"",
+  "cursor beforeShellExecution [*] python3 \"{{hooks_dir}}/guard_acme.py\"",
+  "opencode plugin overrides/opencode/plugin.js",
+]
+mcp = [
+  "acme-claude-only acme-only (for claude)",
+  "acme-docs acme-docs-mcp --stdio (env ACME_DOCS_TOKEN)",
+  "acme-search https://search.acme.example/mcp",
+]
+tools = [
+  "agent acme-reviewer: Read",
+  "agent acme-reviewer: mcp__docs__search",
+  "cursor sets version = 1",
+]
+
+[packs.gatework]
+path = "packs/gatework"
+
+[packs.gatework.files]
+"agents/analyst.md" = "sha256:480e275dac73e18f0502e9855a3b6fb9251caf86e26716616f0711415a2bac3e"
+"agents/brainrc-analyst.md" = "sha256:74d20e52f895204d90a56e3f7409a03b87aac4415700ae8f0f66445a2a9e4312"
+"agents/brainrc-code-reviewer.md" = "sha256:525937e56e8d1b2f8246d41cd0ac4e5b9d59ddd3d9c5c0b471aaf3f03d47dafd"
+"agents/brainrc-infra-reviewer.md" = "sha256:02dd51a1226e909357a5d638264d9226981467fd1a243b4f6acf29b5a60fdefe"
+"agents/brainrc-verifier.md" = "sha256:76bdb8de15bdc0ac1a74b0e4f9e8dfd76c27303232c6fc1fcca2d2e0c6c738bc"
+"agents/code-reviewer.md" = "sha256:64a3026e7436e3a1b0e961758ffb139bf93233627d0e13a4ea617c2164185e9a"
+"agents/verifier.md" = "sha256:88951f360f20e5060176ad7a8b6a99e8c38d6ddd1a0b93de362aa9471e016a7c"
+"pack.toml" = "sha256:ec3d2d4a813c780d637a54dfe35dad237dcb2513c30ee53ba069d25cb0881c2b"
+"skills/brainrc-aws/SKILL.md" = "sha256:7a4033da5b2a9e45fa43059ff757fad279803b13acf90994e2d7201398427568"
+"skills/brainrc-gatework/SKILL.md" = "sha256:e3c442733e7fb8db2455ce8ef65559cfef93c7a07215cf312b15c47f467b3ba0"
+"skills/brainrc-gatework/references/campaign.md" = "sha256:0f840d30457a147c56eb98b588422e4384cb7ac0c6f0a981645a6bb451194ae6"
+"skills/brainrc-gatework/roles/analyst.md" = "sha256:480e275dac73e18f0502e9855a3b6fb9251caf86e26716616f0711415a2bac3e"
+"skills/brainrc-gatework/roles/brainrc-analyst.md" = "sha256:74d20e52f895204d90a56e3f7409a03b87aac4415700ae8f0f66445a2a9e4312"
+"skills/brainrc-gatework/roles/brainrc-code-reviewer.md" = "sha256:525937e56e8d1b2f8246d41cd0ac4e5b9d59ddd3d9c5c0b471aaf3f03d47dafd"
+"skills/brainrc-gatework/roles/brainrc-infra-reviewer.md" = "sha256:02dd51a1226e909357a5d638264d9226981467fd1a243b4f6acf29b5a60fdefe"
+"skills/brainrc-gatework/roles/brainrc-verifier.md" = "sha256:76bdb8de15bdc0ac1a74b0e4f9e8dfd76c27303232c6fc1fcca2d2e0c6c738bc"
+"skills/brainrc-gatework/roles/code-reviewer.md" = "sha256:64a3026e7436e3a1b0e961758ffb139bf93233627d0e13a4ea617c2164185e9a"
+"skills/brainrc-gatework/roles/verifier.md" = "sha256:88951f360f20e5060176ad7a8b6a99e8c38d6ddd1a0b93de362aa9471e016a7c"
+"skills/brainrc-kubernetes/SKILL.md" = "sha256:46ac2eae0115bb384a7973e119e4967f15c53529146032a213882e4aae942d67"
+"skills/brainrc-terraform/SKILL.md" = "sha256:a508b0e2cbbff3f9c009dfae6bf3216d94d03056eedb564175d29434b137eaba"
+"skills/brainrc-ticket-github/SKILL.md" = "sha256:cc02212da4974384251ebcaa235fc8e8d979e5b7389766afaa390c117d1080db"
+"skills/brainrc-ticket-jira/SKILL.md" = "sha256:446808d3c80bcba6a1aaecf51db9a6818a4c5aea95fec135fae862030d66bed6"
+"skills/brainrc-work/SKILL.md" = "sha256:6636ac33b9cc88d51fc7f08c2d7bd44c35b0fbc8a115095fab487012cdab5bc3"
+"skills/spec-agent/SKILL.md" = "sha256:453980a3d6a4ba373d8b2ac1f945ecdc7815086bb954c7f64e84803f9d9e98d3"
+"validator.py" = "sha256:3604180f32febef59843eccb3d2a8af9fb8473d20e3c9261dd1346e5cefab358"
+
+[packs.gatework.permissions]
+hooks = [
+  "brainrc validator validator.py",
+]
+tools = [
+  "agent analyst: Glob",
+  "agent analyst: Grep",
+  "agent analyst: Read",
+  "agent brainrc-analyst: Glob",
+  "agent brainrc-analyst: Grep",
+  "agent brainrc-analyst: Read",
+  "agent brainrc-code-reviewer: Glob",
+  "agent brainrc-code-reviewer: Grep",
+  "agent brainrc-code-reviewer: Read",
+  "agent brainrc-infra-reviewer: Glob",
+  "agent brainrc-infra-reviewer: Grep",
+  "agent brainrc-infra-reviewer: Read",
+  "agent brainrc-verifier: Glob",
+  "agent brainrc-verifier: Grep",
+  "agent brainrc-verifier: Read",
+  "agent code-reviewer: Glob",
+  "agent code-reviewer: Grep",
+  "agent code-reviewer: Read",
+  "agent verifier: Glob",
+  "agent verifier: Grep",
+  "agent verifier: Read",
+]
+FILE {BRAINRC_HOME}/extensions.md (rendered for every tool; not compared)
+FILE {BRAINRC_HOME}/guard-rules.json
+{
+  "version": 1,
+  "generated_by": "brainrc apply from each pack's pack.toml",
+  "rules": [
+    {
+      "pack": "acme",
+      "action": "deny",
+      "match": [
+        "acme-deploy",
+        "prod"
+      ],
+      "tool": null,
+      "reason": "deploys to production",
+      "scope": null
+    },
+    {
+      "pack": "acme",
+      "action": "ask",
+      "match": null,
+      "tool": "mcp__acme-jira__*transition*",
+      "reason": "moves an Acme ticket",
+      "scope": null
+    }
+  ]
+}
+FILE {BRAINRC_HOME}/harnesses.json
+{
+  "version": 1,
+  "roots": [
+    "{REPO}",
+    "{REPO}/packs/gatework",
+    "{PACK}"
+  ],
+  "harnesses": {
+    "antigravity": {
+      "skills": "~/.gemini/config/skills",
+      "instructions": "~/.gemini/config/AGENTS.md",
+      "hooks_dir": "~/.gemini/config/hooks/brainrc",
+      "settings": "~/.gemini/config/hooks.json",
+      "settings_format": "antigravity"
+    },
+    "claude": {
+      "skills": "~/.claude/skills",
+      "agents": "~/.claude/agents",
+      "commands": "~/.claude/commands",
+      "instructions": "~/.claude/CLAUDE.md",
+      "hooks_dir": "~/.claude/hooks/brainrc",
+      "settings": "~/.claude/settings.json",
+      "mcp": "~/.claude.json",
+      "project_skills": ".claude/skills",
+      "project_instructions": "CLAUDE.md"
+    },
+    "codex": {
+      "skills": "~/.codex/skills",
+      "commands": "~/.codex/prompts",
+      "instructions": "~/.codex/AGENTS.md",
+      "hooks_dir": "~/.codex/hooks/brainrc",
+      "settings": "~/.codex/hooks.json",
+      "mcp": "~/.codex/config.toml"
+    },
+    "cursor": {
+      "skills": "~/.cursor/skills",
+      "hooks_dir": "~/.cursor/hooks/brainrc",
+      "settings": "~/.cursor/hooks.json"
+    },
+    "opencode": {
+      "skills": "~/.config/opencode/skills",
+      "commands": "~/.config/opencode/command",
+      "agents": "~/.config/opencode/agents",
+      "agents_format": "opencode",
+      "plugin": "~/.config/opencode/plugins/brainrc-guard.js",
+      "instructions": "~/.config/opencode/AGENTS.md",
+      "mcp": "~/.config/opencode/opencode.json"
+    }
+  }
+}
+FILE {BRAINRC_HOME}/instructions.md (rendered for every tool; not compared)
+FILE {BRAINRC_HOME}/mcp-owned.json
+{
+  "{HOME}/.claude.json": [
+    "acme-claude-only",
+    "acme-docs",
+    "acme-search"
+  ],
+  "{HOME}/.config/opencode/opencode.json": [
+    "acme-docs",
+    "acme-search"
+  ]
+}
+FILE {BRAINRC_HOME}/opencode/agents/acme-reviewer.md
+---
+name: acme-reviewer
+description: Reviews deploys.
+mode: subagent
+permission:
+  bash: deny
+  edit: deny
+  glob: deny
+  grep: deny
+  task: deny
+  todowrite: deny
+  webfetch: deny
+  websearch: deny
+---
+Review.
+FILE {BRAINRC_HOME}/opencode/agents/analyst.md
+---
+name: analyst
+description: Deprecated, use brainrc-analyst (removed in 0.8.0).
+mode: subagent
+permission:
+  bash: deny
+  edit: deny
+  task: deny
+  todowrite: deny
+  webfetch: deny
+  websearch: deny
+---
+Use `brainrc-analyst`. Do the analyst step.
+FILE {BRAINRC_HOME}/opencode/agents/brainrc-analyst.md
+---
+name: brainrc-analyst
+description: Stand-in analyst role.
+mode: subagent
+permission:
+  bash: deny
+  edit: deny
+  task: deny
+  todowrite: deny
+  webfetch: deny
+  websearch: deny
+---
+Do the analyst step.
+FILE {BRAINRC_HOME}/opencode/agents/brainrc-code-reviewer.md
+---
+name: brainrc-code-reviewer
+description: Stand-in code-reviewer role.
+mode: subagent
+permission:
+  bash: deny
+  edit: deny
+  task: deny
+  todowrite: deny
+  webfetch: deny
+  websearch: deny
+---
+Do the code-reviewer step.
+FILE {BRAINRC_HOME}/opencode/agents/brainrc-infra-reviewer.md
+---
+name: brainrc-infra-reviewer
+description: Stand-in infra-reviewer role.
+mode: subagent
+permission:
+  bash: deny
+  edit: deny
+  task: deny
+  todowrite: deny
+  webfetch: deny
+  websearch: deny
+---
+Do the infra-reviewer step.
+FILE {BRAINRC_HOME}/opencode/agents/brainrc-verifier.md
+---
+name: brainrc-verifier
+description: Stand-in verifier role.
+mode: subagent
+permission:
+  bash: deny
+  edit: deny
+  task: deny
+  todowrite: deny
+  webfetch: deny
+  websearch: deny
+---
+Do the verifier step.
+FILE {BRAINRC_HOME}/opencode/agents/code-reviewer.md
+---
+name: code-reviewer
+description: Deprecated, use brainrc-code-reviewer (removed in 0.8.0).
+mode: subagent
+permission:
+  bash: deny
+  edit: deny
+  task: deny
+  todowrite: deny
+  webfetch: deny
+  websearch: deny
+---
+Use `brainrc-code-reviewer`. Do the code-reviewer step.
+FILE {BRAINRC_HOME}/opencode/agents/verifier.md
+---
+name: verifier
+description: Deprecated, use brainrc-verifier (removed in 0.8.0).
+mode: subagent
+permission:
+  bash: deny
+  edit: deny
+  task: deny
+  todowrite: deny
+  webfetch: deny
+  websearch: deny
+---
+Use `brainrc-verifier`. Do the verifier step.
+FILE {BRAINRC_HOME}/settings-owned.json
+{
+  "{HOME}/.claude/settings.json": {
+    "sandbox": {
+      "filesystem.denyRead": [
+        "~/.acme/credentials"
+      ],
+      "filesystem.denyWrite": [
+        "~/.acme/credentials"
+      ],
+      "network.deniedDomains": [
+        "*.acme-internal.example"
+      ]
+    }
+  }
+}

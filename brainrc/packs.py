@@ -9,11 +9,12 @@ from pathlib import Path
 
 from . import config
 from .config import ConfigError, _layered
-from .sources import _pack_root
+from .sources import _pack_root, check_subdir, clone_root, in_clone, subdir
 
 
 def git_packs() -> list[tuple[str, dict, Path]]:
-    """(key, config, clone dir) for each enabled pack that names a `git` URL."""
+    """(key, config, pack root) for each enabled pack that names a `git` URL. The root is its clone,
+    or the clone's `subdir` folder; the fetch functions here take that root and find the clone."""
     return [(key, cfg, _pack_root(cfg, key)) for key, cfg in _layered("packs").items()
             if "git" in cfg and cfg.get("enabled", True)]
 
@@ -22,7 +23,8 @@ def describe(key: str, cfg: dict, commit: str | None = None) -> str:
     """One `FETCH` line: the key, the URL, and the ref (or the remote's default branch), with the
     commit the lock pins it to when apply fetches that commit and not the ref."""
     pin = f", locked at {commit[:12]}" if commit else ""
-    return f"{'FETCH':9} {key:9} {cfg['git']} ({cfg.get('ref', 'default branch')}{pin})"
+    folder = f", folder {subdir(cfg)}" if subdir(cfg) else ""
+    return f"{'FETCH':9} {key:9} {cfg['git']} ({cfg.get('ref', 'default branch')}{folder}{pin})"
 
 
 FETCHED = ".git/brainrc-fetched.json"  # inside .git: invisible to `git status` and the pack's items
@@ -46,9 +48,12 @@ def fetched(root: Path) -> dict | None:
 
 
 def adopt_record(cfg: dict, root: Path) -> None:
-    """On apply, once the clone matches, keep only a valid new-named record (no fetch needed)."""
-    if needs_fetch(cfg, root) or (_read_record(root / FETCHED) == _wanted(cfg)
-                                  and not (root / OLD_FETCHED).exists()):
+    """On apply, once the clone matches, keep only a valid new-named record (no fetch needed).
+    root is the pack's root, as for needs_fetch."""
+    if needs_fetch(cfg, root):
+        return
+    root = clone_root(cfg, root)
+    if _read_record(root / FETCHED) == _wanted(cfg) and not (root / OLD_FETCHED).exists():
         return
     try:
         _record(root, cfg)
@@ -63,15 +68,19 @@ def _record(root: Path, cfg: dict) -> None:
 
 
 def needs_fetch(cfg: dict, root: Path) -> str | None:
-    """Why the clone at root needs fetching for this config, or None when it matches."""
-    if not root.exists():
+    """Why the pack at root needs fetching for this config, or None when it matches. root is the
+    pack's root: its clone, or the clone's `subdir` folder (sources.clone_root finds the clone)."""
+    clone = clone_root(cfg, root)
+    if not clone.exists():
         return "not fetched yet"
-    was, want = fetched(root), _wanted(cfg)
+    was, want = fetched(clone), _wanted(cfg)
     if was is None:
         return "fetched before brainrc recorded its ref"
     for key in ("git", "ref"):
         if was.get(key) != want[key]:
             return f"fetched {key} `{was.get(key)}`, packs.toml says `{want[key]}`"
+    if not root.is_dir():
+        return f"no folder `{subdir(cfg)}` in its clone"
     return None
 
 
@@ -108,7 +117,9 @@ def fetch_pack(key: str, cfg: dict, root: Path, commit: str | None = None, depth
     """Shallow-fetch the pack's ref, or the locked commit when one is given, and check it out,
     detached. A new clone is built beside its final place and moved in only when complete; an
     existing one is updated in place unless it has local changes. depth > 1 keeps that much
-    history, so `update` can list the commits between the old pin and the new one."""
+    history, so `update` can list the commits between the old pin and the new one. root is the
+    pack's root; with a `subdir` the clone is the folder above it, checked to hold that folder."""
+    root = clone_root(cfg, root)
     url, ref = str(cfg["git"]), str(cfg.get("ref", "HEAD"))
     if url.startswith("-") or ref.startswith("-"):
         raise ConfigError(f"pack {key}: `git` and `ref` can't start with '-'")
@@ -120,6 +131,7 @@ def fetch_pack(key: str, cfg: dict, root: Path, commit: str | None = None, depth
             _git("fetch", "-q", "--depth", str(depth), url, want, cwd=root)
         _git("checkout", "-q", "--detach", commit or "FETCH_HEAD", cwd=root)
         _check_head(key, root, commit)
+        check_subdir(key, cfg, root)
         _record(root, cfg)
         return
     tmp = root.with_name(f".{root.name}.fetching")
@@ -130,6 +142,7 @@ def fetch_pack(key: str, cfg: dict, root: Path, commit: str | None = None, depth
         _git("fetch", "-q", "--depth", str(depth), url, want, cwd=tmp)
         _git("checkout", "-q", "--detach", "FETCH_HEAD", cwd=tmp)
         _check_head(key, tmp, commit)
+        check_subdir(key, cfg, tmp)
         _record(tmp, cfg)
     except ConfigError:
         config.rmtree(tmp, ignore_errors=True)
@@ -169,7 +182,8 @@ def to_fetch(cfg: dict, root: Path, pin: str | None) -> str | None:
     reason = needs_fetch(cfg, root)
     if reason or not pin:
         return reason
-    return None if head(root) == pin else f"at {(head(root) or '?')[:12]}, the lock pins {pin[:12]}"
+    at = head(clone_root(cfg, root))
+    return None if at == pin else f"at {(at or '?')[:12]}, the lock pins {pin[:12]}"
 
 
 UPDATE_DEPTH = 50  # commits of history `update` fetches, to list what moved
@@ -204,11 +218,11 @@ def pinned_defaults(skip: str = "") -> list:
         cfg = core[key]
         if "git" in cfg:
             tag = hashlib.sha256(f"{cfg['git']}\n{cfg.get('ref', 'HEAD')}".encode()).hexdigest()[:12]
-            root = config.settings_home() / "validate-packs" / f"{key}-{tag}"
+            root = in_clone(cfg, config.settings_home() / "validate-packs" / f"{key}-{tag}")
             if needs_fetch(cfg, root):
                 print(describe(key, cfg))
-                if root.exists():
-                    config.rmtree(root)
+                if clone_root(cfg, root).exists():
+                    config.rmtree(clone_root(cfg, root))
                 fetch_pack(key, cfg, root)
         else:
             root = _pack_root(cfg, key)

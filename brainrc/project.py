@@ -19,7 +19,7 @@ from .config import ConfigError, _read_toml, settings_home, tilde, toml_error
 from .packs import describe, fetch_pack, pinned, to_fetch
 from .sources import (
     Source, check_packs, collisions, default_packs, duplicate_packs, excluded, items, load_pack,
-    markdown_files, rule_text, tree_files,
+    markdown_files, rule_text, subdir, tree_files,
 )
 
 MANIFEST = "brainrc.toml"
@@ -111,7 +111,7 @@ class Project:
             cfg, base = dict(core.get(key, {})), config.REPO  # a default pack's path is core's
             if key in own:
                 if any(k in own[key] for k in ORIGIN_KEYS):
-                    for k in (*ORIGIN_KEYS, "ref"):
+                    for k in (*ORIGIN_KEYS, "ref", "subdir"):
                         cfg.pop(k, None)
                     base = self.root
                 cfg.update(own[key])
@@ -123,7 +123,7 @@ class Project:
 def _pack_root(key: str, cfg: dict, base: Path) -> Path:
     if "git" in cfg:  # one clone per URL and ref, shared by every project that pins the same
         tag = hashlib.sha256(f"{cfg['git']}\n{cfg.get('ref', 'HEAD')}".encode()).hexdigest()[:12]
-        return settings_home() / "project-packs" / f"{key}-{tag}"
+        return settings_home() / "project-packs" / f"{key}-{tag}" / subdir(cfg, MANIFEST, key)
     root = config.expand(str(cfg["path"]))
     return root if root.is_absolute() else base / root
 

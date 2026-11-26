@@ -38,6 +38,25 @@ Skills, agents, commands, and MCP servers must start with the pack's `prefix`, a
 exist in two sources. `apply` refuses to write anything if one does. The full rules are in
 [Naming](#naming), and each file's format in [formats](formats.md).
 
+## Packs from one repo
+
+A repo can hold several packs, one per folder, each with its own `pack.toml`. `subdir` next to
+`git` and `ref` names the folder that is the pack:
+
+```toml
+[python]
+git = "https://github.com/brainrc/packs.git"
+ref = "v1.0.0"
+subdir = "python"   # a folder inside the repo, using /; no `.` or `..`
+```
+
+`apply` fetches the repo into `$BRAINRC_HOME/packs/<key>` and installs from that folder; the rest
+of the repo is never read. It fails, naming the folder, if the ref has no such folder or the folder
+is a link out of the repo. The lock records `subdir` next to `git`, `ref` and `commit`, so
+`install --frozen` and `check` install and compare that folder at the locked commit
+([lock format](project.md#brainrclock)). Each pack keeps a clone of its own, so two packs from one
+repo can sit at different refs. `subdir` works the same in a repo's `brainrc.toml`.
+
 ## pack.toml
 
 ```toml
@@ -206,17 +225,19 @@ A clear name is the cheapest trust signal a pack has. Every pack follows these s
 checks are listed in `brainrc/naming.py`.
 
 A pack's ID is `<owner>/<pack>`, where the owner is the GitHub user or organization that
-publishes it. Official packs are owned by `brainrc`:
+publishes it. Official packs are owned by `brainrc`. Gatework has a repo of its own; the others
+are folders of [brainrc/packs](https://github.com/brainrc/packs), enabled with `subdir`
+([packs from one repo](#packs-from-one-repo)):
 
 | ID | What it holds | Issue |
 |---|---|---|
 | `brainrc/gatework` | the default pack: Gatework's engine, its roles, ticket connectors and domain skills ([brainrc/gatework](https://github.com/brainrc/gatework)) | [#172](https://github.com/brainrc/brainrc/issues/172) |
-| `brainrc/starter` | the small, measured base for the default profile | [#313](https://github.com/brainrc/brainrc/issues/313) |
-| `brainrc/review` | review, PR description, commit message and unslop | [#314](https://github.com/brainrc/brainrc/issues/314) |
-| `brainrc/go` | Go, built from today's `brainrc-go-service` skill | [#315](https://github.com/brainrc/brainrc/issues/315) |
-| `brainrc/terraform-aws` | Terraform and AWS | [#316](https://github.com/brainrc/brainrc/issues/316) |
-| `brainrc/kubernetes` | Kubernetes, including GitOps | [#317](https://github.com/brainrc/brainrc/issues/317) |
-| `brainrc/security-baseline` | the default guard policy, secret protection and a sandbox profile | [#323](https://github.com/brainrc/brainrc/issues/323) |
+| `brainrc/starter` | the small, measured base for the default profile ([starter](https://github.com/brainrc/packs/tree/main/starter)) | [#313](https://github.com/brainrc/brainrc/issues/313) |
+| `brainrc/review` | review, PR description, commit message and unslop ([review](https://github.com/brainrc/packs/tree/main/review)) | [#314](https://github.com/brainrc/brainrc/issues/314) |
+| `brainrc/go` | Go, built from today's `brainrc-go-service` skill ([go](https://github.com/brainrc/packs/tree/main/go)) | [#315](https://github.com/brainrc/brainrc/issues/315) |
+| `brainrc/terraform-aws` | Terraform and AWS ([terraform-aws](https://github.com/brainrc/packs/tree/main/terraform-aws)) | [#316](https://github.com/brainrc/brainrc/issues/316) |
+| `brainrc/kubernetes` | Kubernetes, including GitOps and containers ([kubernetes](https://github.com/brainrc/packs/tree/main/kubernetes)) | [#317](https://github.com/brainrc/brainrc/issues/317) |
+| `brainrc/security-baseline` | the default guard policy, secret protection and a sandbox profile ([security-baseline](https://github.com/brainrc/packs/tree/main/security-baseline)) | [#323](https://github.com/brainrc/brainrc/issues/323) |
 
 ## Rules
 

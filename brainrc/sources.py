@@ -160,11 +160,52 @@ def default_packs() -> list[str]:
     return _DEFAULT_PACKS[text]
 
 
+def subdir(cfg: dict, where: str = "packs.toml", key: str = "") -> str:
+    """A git pack's `subdir`, the folder of the repo that is the pack (#121): '' for the repo root.
+    It must name a folder inside the repo: relative, `/`-separated, no `.` or `..` parts."""
+    if "subdir" not in cfg:
+        return ""
+    label = f"{where} [{key}]" if key else where
+    if "git" not in cfg:
+        raise ConfigError(f"{label}: `subdir` goes with `git`; a `path` pack names its folder in `path`")
+    text = cfg["subdir"]
+    parts = text.rstrip("/").split("/") if isinstance(text, str) else []
+    if not parts or text.startswith(("/", "-")) or "\\" in text or ":" in text \
+            or any(p in ("", ".", "..") for p in parts):
+        raise ConfigError(f"{label}: `subdir` must be a folder inside the repo, like `python` or "
+                          f"`packs/python` (got `{text}`)")
+    return "/".join(parts)
+
+
+def clone_root(cfg: dict, root: Path) -> Path:
+    """The clone holding a git pack whose root is root: root itself, or root less its `subdir`."""
+    sub = subdir(cfg)
+    return root.parents[sub.count("/")] if sub else root
+
+
+def in_clone(cfg: dict, clone: Path) -> Path:
+    """A git pack's root inside its clone: the clone, or its `subdir`."""
+    sub = subdir(cfg)
+    return clone / sub if sub else clone
+
+
+def check_subdir(key: str, cfg: dict, clone: Path) -> None:
+    """After a fetch: the pack's `subdir` is a folder of the clone, not a link out of it."""
+    sub = subdir(cfg)
+    if not sub:
+        return
+    root = clone / sub
+    if not root.is_dir():
+        raise ConfigError(f"pack {key}: no folder `{sub}` in {cfg['git']} at {cfg.get('ref', 'its default branch')}")
+    if not root.resolve().is_relative_to(clone.resolve()):
+        raise ConfigError(f"pack {key}: `{sub}` in {cfg['git']} links outside the repo")
+
+
 def _pack_root(cfg: dict, key: str) -> Path:
     if ("path" in cfg) == ("git" in cfg):
         raise ConfigError(f"packs.toml [{key}]: set `path` or `git` (one of them)")
-    if "git" in cfg:
-        return config.settings_home() / "packs" / key  # fetched by brainrc (brainrc/packs.py)
+    if "git" in cfg:  # fetched by brainrc (brainrc/packs.py), the pack in its `subdir` when set
+        return config.settings_home() / "packs" / key / subdir(cfg, "packs.toml", key)
     root = expand(str(cfg["path"]))
     return root if root.is_absolute() else config.local_dir() / root  # beside packs.local.toml
 
@@ -179,7 +220,7 @@ def sources(include_disabled: bool = False) -> list[Source]:
             continue
         root = _pack_root(cfg, key)
         if "git" in cfg and not root.exists():
-            continue  # not fetched yet: apply fetches it, status and doctor report it
+            continue  # not fetched yet (or no `subdir` there): apply fetches it, status and doctor report it
         found.append(load_pack(root, key) if enabled else Source(key, root))
     return found
 

@@ -37,6 +37,16 @@ tag or branch moves. To move it:
   then applies ([pinned commits](../project.md#pinned-commits-and-update)).
 - Changing `ref` or `git` fetches the new one on the next `apply` (`status` shows a `FETCH` line).
 
+A repo can hold several packs, one per folder, as [brainrc/packs](https://github.com/brainrc/packs)
+does. Name the folder with `subdir`:
+
+```toml
+[python]
+git = "https://github.com/brainrc/packs.git"
+ref = "v1.0.0"
+subdir = "python"
+```
+
 Both refuse a clone with local changes, and stop any git call after 60 seconds. Pin a tag, and
 bump `ref` to upgrade. `doctor` reports a git pack that isn't fetched yet or doesn't match its
 `git` and `ref`.

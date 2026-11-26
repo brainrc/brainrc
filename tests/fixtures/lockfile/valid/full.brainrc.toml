@@ -10,5 +10,10 @@ git = "https://example.com/acme/agent-pack.git"
 ref = "v2"
 description = "Acme's deploy skills"
 
+[packs.python]
+git = "https://example.com/acme/packs.git"
+ref = "v1.0.0"
+subdir = "python"
+
 [packs.team]
 path = "tools/agent-pack"

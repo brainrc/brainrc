@@ -17,7 +17,7 @@ from .project import (
     MANIFEST, Project, _linked, _read, _unit, foreign, load, outputs, planned, project_pack_files, remember,
     with_block,
 )
-from .sources import _pack_root, core_version, load_pack
+from .sources import _pack_root, check_subdir, clone_root, core_version, in_clone, load_pack, subdir
 
 
 def _version_note(locked: dict) -> None:
@@ -28,7 +28,7 @@ def _version_note(locked: dict) -> None:
 
 def compare_config(cfgs: dict[str, dict], locked: dict[str, dict], where: str) -> list[str]:
     """Each way the config's enabled packs differ from the lock's: a pack only in one of them, or
-    another origin (git URL, ref, path)."""
+    another origin (git URL, ref, subdir, path)."""
     errors = [f"pack {k}: in {where} but not in {lock.NAME} (run apply to relock)" for k in cfgs if k not in locked]
     errors += [f"pack {k}: in {lock.NAME} but not enabled in {where}" for k in locked if k not in cfgs]
     for key in (k for k in cfgs if k in locked):
@@ -37,11 +37,12 @@ def compare_config(cfgs: dict[str, dict], locked: dict[str, dict], where: str) -
             kinds = ("git" if "git" in cfg else "path", "git" if "git" in entry else "path")
             errors.append(f"pack {key}: {where} names it by `{kinds[0]}`, {lock.NAME} by `{kinds[1]}`")
             continue
-        wanted = {"git": lock.clean_url(str(cfg["git"])), "ref": str(cfg.get("ref", "HEAD"))} if "git" in cfg \
-            else {"path": lock.shown_path(str(cfg["path"]))}
+        wanted = {"git": lock.clean_url(str(cfg["git"])), "ref": str(cfg.get("ref", "HEAD")),
+                  "subdir": subdir(cfg)} if "git" in cfg else {"path": lock.shown_path(str(cfg["path"]))}
         for k, v in wanted.items():
-            if entry[k] != v:
-                errors.append(f"pack {key}: `{k}` is {v!r} in {where} but {entry[k]!r} in {lock.NAME} (run apply to relock)")
+            if entry.get(k, "") != v:
+                errors.append(f"pack {key}: `{k}` is {v!r} in {where} but {entry.get(k, '')!r} in {lock.NAME} "
+                              "(run apply to relock)")
     return errors
 
 
@@ -64,12 +65,13 @@ class Stage:
         self.moves: list[tuple[Path, Path]] = []  # (temporary clone, final place)
 
     def clone(self, key: str, cfg: dict, entry: dict, final: Path) -> Path:
-        """A directory holding the pack at its locked commit: the existing clone when it is already
-        there, else a fresh one beside it. Raises ConfigError naming the commit."""
+        """A clone holding the pack at its locked commit: the existing clone (final) when it is
+        already there, else a fresh one beside it. Raises ConfigError naming the commit."""
         commit, url = entry["commit"], str(cfg["git"])
         if url.startswith("-"):
             raise ConfigError(f"pack {key}: `git` can't start with '-'")
         if final.is_dir() and head(final) == commit and not _git("status", "--porcelain", cwd=final).strip():
+            check_subdir(key, cfg, final)
             return final
         tmp = final.with_name(f".{final.name}.frozen-{os.getpid()}")
         rmtree(tmp, ignore_errors=True)
@@ -83,6 +85,7 @@ class Stage:
             raise ConfigError(f"pack {key}: locked commit {commit[:12]} can't be fetched from {entry['git']} ({e})") from None
         if head(tmp) != commit:
             raise ConfigError(f"pack {key}: fetched {head(tmp)} for locked commit {commit}")
+        check_subdir(key, cfg, tmp)
         _record(tmp, cfg)  # its git and ref, so apply and status see a clone that matches the config
         return tmp
 
@@ -118,7 +121,8 @@ def check_packs(cfgs: dict[str, dict], roots: dict[str, Path], locked: dict, whe
     for key, cfg in cfgs.items():
         entry = locked["packs"][key]
         try:
-            root = stage.clone(key, cfg, entry, roots[key]) if "git" in cfg else roots[key]
+            root = in_clone(cfg, stage.clone(key, cfg, entry, clone_root(cfg, roots[key]))) if "git" in cfg \
+                else roots[key]
             if not root.is_dir():
                 raise ConfigError(f"pack {key}: no directory at {tilde(root)}")
             srcs[key] = load_pack(root, key)

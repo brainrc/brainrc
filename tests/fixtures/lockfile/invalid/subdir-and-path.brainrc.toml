@@ -1,0 +1,4 @@
+# expect: set only one of `subdir`, `path`
+[packs.acme]
+path = "tools/a"
+subdir = "a"

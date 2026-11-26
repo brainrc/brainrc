@@ -63,6 +63,7 @@ enabled = false                  # turn off the default pack
 | `path` | the pack's folder |
 | `git` | a URL to fetch instead; private repos use your git credentials |
 | `ref` | with `git`: what to fetch |
+| `subdir` | with `git`: the folder of the repo that is the pack, for a repo that holds several ([packs](packs.md#packs-from-one-repo)) |
 | `enabled` | `false` removes the pack's items on the next `apply` |
 | `run_validator` | `true` lets a pack's own `validator.py` run ([packs](packs.md#validator-plugins)) |
 | `description` | a note for people; ignored |

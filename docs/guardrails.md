@@ -135,6 +135,12 @@ deny, so ask becomes deny there too. A pack's [guard rules](packs.md#guard-rules
 a refusal, not as a call to ask you. File writes and MCP calls aren't guarded in Cursor: it has no
 reliable pre-write hook. Not yet run in a real Cursor.
 
-Codex and Antigravity CLI get the rules and workflow layers only. Use their own
-permission/sandbox settings (e.g. Codex approval modes) alongside. Porting the hooks to tools
-that support pre-execution hooks is on the [roadmap](roadmap.md).
+Codex runs them through `overrides/codex/hooks/guard.py` on `PreToolUse`, from
+`$CODEX_HOME/hooks.json`: shell commands get both guards, MCP tools the outward guard, and
+`apply_patch` the secrets guard (each file it adds or changes, with its added lines). Codex's
+`PreToolUse` takes only allow and deny, and treats an ask as a failed hook that lets the call run,
+so ask becomes deny there too. A pack's guard rules apply under its `[scope]`, judged from the
+payload's `cwd`. Codex runs a hook only after you trust it: open `/hooks` in Codex once after
+`brainrc apply`. Hosted tools such as web search don't reach the hook. Not yet run in a real Codex.
+
+Antigravity CLI gets the rules and workflow layers only. Use its own permission settings alongside.

@@ -48,6 +48,8 @@ enabled = true
 skills = "${CODEX_HOME:-~/.codex}/skills"
 commands = "${CODEX_HOME:-~/.codex}/prompts"
 instructions = "${CODEX_HOME:-~/.codex}/AGENTS.md"
+hooks_dir = "${CODEX_HOME:-~/.codex}/hooks/brainrc"
+settings = "${CODEX_HOME:-~/.codex}/hooks.json"  # Codex asks you to trust new hooks once, in /hooks
 mcp = "${CODEX_HOME:-~/.codex}/config.toml"
 
 [opencode]

@@ -476,6 +476,82 @@ class CursorGuardRulesTest(SharedGuardRuleCases, unittest.TestCase):
         self.assertNotIn("run it themselves", reply["user_message"])
 
 
+CODEX_GUARD = HOOKS.parent.parent / "codex" / "hooks" / "guard.py"
+
+
+def codex(payload) -> tuple[str | None, str]:
+    """Run Codex's guard adapter: (permissionDecision or None, reason). It must exit 0."""
+    stdin = payload if isinstance(payload, str) else json.dumps(payload)
+    result = subprocess.run([sys.executable, str(CODEX_GUARD)], input=stdin, capture_output=True,
+                            text=True, timeout=30)
+    assert result.returncode == 0, result.stderr
+    if not result.stdout.strip():
+        return None, ""
+    out = json.loads(result.stdout)["hookSpecificOutput"]
+    assert out["hookEventName"] == "PreToolUse", out
+    return out["permissionDecision"], out["permissionDecisionReason"]
+
+
+def codex_call(tool: str, tool_input: dict, cwd: str = "/tmp/project") -> tuple[str | None, str]:
+    return codex({"hook_event_name": "PreToolUse", "tool_name": tool, "tool_input": tool_input, "cwd": cwd,
+                  "session_id": "s", "turn_id": "t", "tool_use_id": "u"})
+
+
+PATCH_ENV = "*** Begin Patch\n*** Add File: app/.env\n+TOKEN=x\n*** End Patch\n"
+
+
+class CodexGuardTest(unittest.TestCase):
+    """#157: overrides/codex/hooks/guard.py ports core's guards to Codex's PreToolUse."""
+
+    def test_outward_command_is_denied_since_codex_cannot_ask(self):
+        decision, reason = codex_call("Bash", {"command": "git push origin main"})
+        self.assertEqual(decision, "deny")
+        self.assertIn("git push publishes commits", reason)
+        self.assertIn("ask the user to run it themselves", reason)
+
+    def test_safe_command_has_no_opinion(self):
+        self.assertEqual(codex_call("Bash", {"command": "git status"}), (None, ""))
+
+    def test_bash_naming_a_secret_file_is_denied(self):
+        self.assertEqual(codex_call("Bash", {"command": "cat .env"})[0], "deny")
+
+    def test_an_mcp_write_is_denied_and_a_read_passes(self):
+        self.assertEqual(codex_call("mcp__github__create_pull_request", {"title": "x"})[0], "deny")
+        self.assertIsNone(codex_call("mcp__github__get_pull_request", {"number": 1})[0])
+
+    def test_a_patch_that_writes_a_secret_is_denied(self):
+        self.assertEqual(codex_call("apply_patch", {"command": PATCH_ENV})[0], "deny")
+        key = "-----BEGIN OPENSSH " + "PRIVATE KEY-----"
+        patch = f"*** Begin Patch\n*** Update File: notes.txt\n@@\n-a\n+{key}\n*** End Patch\n"
+        self.assertEqual(codex_call("apply_patch", {"command": patch})[0], "deny")
+        moved = "*** Begin Patch\n*** Update File: a.txt\n*** Move to: .env\n@@\n-a\n+b\n*** End Patch\n"
+        self.assertEqual(codex_call("apply_patch", {"command": moved})[0], "deny")
+
+    def test_an_ordinary_patch_passes(self):
+        patch = "*** Begin Patch\n*** Update File: src/app.py\n@@\n-a = 1\n+a = 2\n*** End Patch\n"
+        self.assertIsNone(codex_call("apply_patch", {"command": patch})[0])
+        self.assertIsNone(codex_call("apply_patch", {"command": "*** Begin Patch\n*** Delete File: .env\n"})[0])
+
+    def test_bad_json_and_other_tools_have_no_opinion(self):
+        self.assertEqual(codex("not json"), (None, ""))
+        self.assertEqual(codex("[1]"), (None, ""))
+        self.assertEqual(codex_call("update_plan", {"plan": []}), (None, ""))
+
+
+class CodexGuardRulesTest(SharedGuardRuleCases, unittest.TestCase):
+    """#157: packs' guard rules in Codex's PreToolUse, under their [scope] (from the payload's cwd)."""
+
+    def verdict(self, command: str, cwd: Path) -> str | None:
+        decision, reason = codex_call("Bash", {"command": command}, str(cwd))
+        return None if decision is None else from_message(reason)
+
+    def test_an_mcp_tool_rule_applies_where_the_pack_does(self):
+        tool = "mcp__acme-jira__get_transitions"
+        decision, reason = codex_call(tool, {}, str(self.acme_repo))
+        self.assertEqual((decision, from_message(reason)), ("deny", "ask"))
+        self.assertIsNone(codex_call(tool, {}, str(self.personal_repo))[0])
+
+
 REPO = HOOKS.parent.parent.parent
 sys.path.insert(0, str(REPO))
 import brainrc  # noqa: E402  (the package at the repo root)
@@ -552,6 +628,15 @@ class FailOpenTest(unittest.TestCase):
             result = run_command(command, CURSOR_RISKY)
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual(json.loads(result.stdout), {"permission": "allow"})
+
+    def test_codex_command_denies_when_present_and_passes_when_the_hooks_are_gone(self):
+        d = self.hooks_dir("codex")
+        (command,) = fragment_commands("codex", d)
+        result = run_command(command, RISKY)
+        self.assertEqual(json.loads(result.stdout)["hookSpecificOutput"]["permissionDecision"], "deny")
+        self.remove_target(d)
+        result = run_command(command, RISKY)
+        self.assertEqual((result.returncode, result.stdout), (0, ""))
 
     def test_apply_replaces_old_form_hook_groups(self):
         old_command = 'python3 "$HOME/.claude/hooks/ai-config/guard_outward.py"'

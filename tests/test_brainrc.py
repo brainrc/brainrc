@@ -1429,7 +1429,7 @@ class InstalledModeTest(TempRepoCase):
     def test_installed_hooks_link_into_a_copy_in_settings_home(self):
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
-        for harness in ("claude", "cursor"):
+        for harness in ("claude", "cursor", "codex"):
             copy = self.copy_root() / harness / "hooks"
             self.assertEqual(brainrc.link_target(self.home / f".{harness}/hooks/brainrc"), copy)
             self.assertEqual(sorted(p.name for p in copy.iterdir()),
@@ -1479,7 +1479,7 @@ class InstalledModeTest(TempRepoCase):
         quiet(brainrc.cmd_sync, True)
         self.assertFalse((self.home / ".cursor/hooks/brainrc").is_symlink())
         self.assertTrue(self.copy_root().is_dir())  # claude still links into it
-        local.write_text("[cursor]\nenabled = false\n[claude]\nenabled = false\n")
+        local.write_text("[cursor]\nenabled = false\n[claude]\nenabled = false\n[codex]\nenabled = false\n")
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
         self.assertRegex(out, r"PRUNE +~?.*hooks/core")
@@ -1871,6 +1871,42 @@ class CursorHooksTest(TempRepoCase):
                          self.repo / "overrides/cursor/hooks")
         self.assertEqual(brainrc.doctor_findings(), [])
         code, out = quiet(brainrc.cmd_sync, True)
+        self.assertEqual(json.loads(self.hooks_json.read_text()), data)
+
+
+class CodexHooksTest(TempRepoCase):
+    """[codex] merges the guard hook into $CODEX_HOME/hooks.json, in Claude Code's shape (#157)."""
+
+    def setUp(self):
+        super().setUp()
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.old_home = saved_home()
+        os.environ.update(home_env(self.home))
+        install_harnesses(self.home)
+        self.hooks_json = self.home / ".codex/hooks.json"
+
+    def tearDown(self):
+        restore_home(self.old_home)
+        rmtree(self.home)
+        super().tearDown()
+
+    def test_apply_writes_hooks_json_whose_command_denies_and_keeps_a_users_hook(self):
+        own = {"matcher": "^Bash$", "hooks": [{"type": "command", "command": "python3 /opt/mine.py"}]}
+        self.hooks_json.write_text(json.dumps({"hooks": {"PreToolUse": [own]}}))
+        code, out = quiet(brainrc.cmd_sync, True)
+        self.assertEqual(code, 0, out)
+        groups = json.loads(self.hooks_json.read_text())["hooks"]["PreToolUse"]
+        self.assertEqual(groups[0], own)
+        self.assertEqual(groups[1]["matcher"], "^(Bash|apply_patch|mcp__.*)$")
+        self.assertEqual(brainrc.link_target(self.home / ".codex/hooks/brainrc"), self.repo / "overrides/codex/hooks")
+        risky = {"hook_event_name": "PreToolUse", "tool_name": "Bash",
+                 "tool_input": {"command": "git push origin main"}, "cwd": str(self.home)}
+        run = subprocess.run(["sh", "-c", groups[1]["hooks"][0]["command"]], input=json.dumps(risky),
+                             capture_output=True, text=True)
+        self.assertEqual(json.loads(run.stdout)["hookSpecificOutput"]["permissionDecision"], "deny", run.stderr)
+        self.assertEqual(brainrc.doctor_findings(), [])
+        data = json.loads(self.hooks_json.read_text())
+        quiet(brainrc.cmd_sync, True)
         self.assertEqual(json.loads(self.hooks_json.read_text()), data)
 
 

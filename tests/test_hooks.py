@@ -334,9 +334,9 @@ if __name__ == "__main__":
 
 PLUGIN = HOOKS.parent.parent / "opencode" / "plugin.js"
 DRIVER = """
-const [url, call] = process.argv.slice(-2);
+const [url, call, directory] = process.argv.slice(-3);
 const plugin = Object.values(await import(url))[0];
-const hooks = await plugin({});
+const hooks = await plugin(directory ? { directory } : {});
 const [tool, args] = JSON.parse(call);
 try {
   await hooks["tool.execute.before"]({ tool, sessionID: "s", callID: "c" }, { args });
@@ -347,15 +347,20 @@ try {
 """
 
 
+def opencode(tool: str, args: dict, directory: str = "") -> str:
+    """Run the plugin's tool.execute.before on one call, in a session opened in directory."""
+    result = subprocess.run(["node", "--input-type=module", "-e", DRIVER, "--", PLUGIN.as_uri(),
+                             json.dumps([tool, args]), directory], capture_output=True, text=True, timeout=30)
+    assert result.returncode == 0, result.stderr
+    return result.stdout.strip()
+
+
 @unittest.skipUnless(shutil.which("node"), "node is not installed")
 class OpenCodePluginTest(unittest.TestCase):
     """overrides/opencode/plugin.js runs the same guards for OpenCode's tool calls."""
 
-    def call(self, tool: str, args: dict) -> str:
-        result = subprocess.run(["node", "--input-type=module", "-e", DRIVER, "--", PLUGIN.as_uri(),
-                                 json.dumps([tool, args])], capture_output=True, text=True, timeout=30)
-        self.assertEqual(result.returncode, 0, result.stderr)
-        return result.stdout.strip()
+    def call(self, tool: str, args: dict, directory: str = "") -> str:
+        return opencode(tool, args, directory)
 
     def test_outward_command_is_blocked_with_the_reason(self):
         out = self.call("bash", {"command": "git push origin main"})
@@ -378,6 +383,23 @@ class OpenCodePluginTest(unittest.TestCase):
 
     def test_unmapped_tools_pass(self):
         self.assertEqual(self.call("github_create_issue", {"title": "x"}), "OK")
+
+
+@unittest.skipUnless(shutil.which("node"), "node is not installed")
+class OpenCodeGuardRulesTest(SharedGuardRuleCases, unittest.TestCase):
+    """#156: packs' guard rules in OpenCode's tool.execute.before, under their [scope] (from the
+    bash tool's workdir, else the session's directory)."""
+
+    def verdict(self, command: str, cwd: Path) -> str | None:
+        out = opencode("bash", {"command": command}, str(cwd))
+        return None if out == "OK" else from_message(out.removeprefix("BLOCKED "))
+
+    def test_the_bash_workdir_wins_over_the_session_directory(self):
+        out = opencode("bash", {"command": "acme-deploy prod", "workdir": "src"}, str(self.acme_repo))
+        self.assertEqual(out, "BLOCKED brainrc guard (acme pack): " + "acme-deploy prod deploys to production, "
+                         "which only the release pipeline does. The acme pack doesn't allow this.")
+        self.assertEqual(opencode("bash", {"command": "acme-deploy prod", "workdir": str(self.personal_repo)},
+                                  str(self.acme_repo)), "OK")
 
 
 CURSOR_GUARD = HOOKS.parent.parent / "cursor" / "hooks" / "guard.py"

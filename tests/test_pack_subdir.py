@@ -149,7 +149,7 @@ class SubdirApplyTest(SubdirCase):
         self.assertTrue((self.home / ".claude/skills/python-validate/SKILL.md").is_file())
 
     def test_subdir_with_path_is_refused_in_packs_toml(self):
-        (self.repo / "packs.local.toml").write_text(f'[team]\npath = "{self.tmp}"\nsubdir = "python"\n')
+        (self.repo / "packs.local.toml").write_text(f"[team]\npath = '{self.tmp}'\nsubdir = 'python'\n")
         self.assertIn("packs.toml [team]: `subdir` goes with `git`", self.apply(1))
 
     def test_changing_the_folder_reuses_the_clone_and_relocks(self):

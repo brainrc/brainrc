@@ -47,7 +47,7 @@ A repo can hold several packs, one per folder, each with its own `pack.toml`. `s
 ```toml
 [python]
 git = "https://github.com/brainrc/packs.git"
-ref = "v1.0.0"
+ref = "v0.1.0"
 subdir = "python"   # a folder inside the repo, using /; no `.` or `..`
 ```
 

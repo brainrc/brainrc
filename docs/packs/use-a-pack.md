@@ -43,7 +43,7 @@ does. Name the folder with `subdir`:
 ```toml
 [python]
 git = "https://github.com/brainrc/packs.git"
-ref = "v1.0.0"
+ref = "v0.1.0"
 subdir = "python"
 ```
 

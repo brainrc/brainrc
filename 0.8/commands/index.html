@@ -2700,6 +2700,10 @@ token budgets and tripwires. CI runs it on brainrc itself; pack authors run it w
 <td><code>--fetch-defaults</code></td>
 <td>with <code>--pack</code>: check it against the default packs at the versions core pins, fetched into separate clones</td>
 </tr>
+<tr>
+<td><code>--local-tripwires FILE</code></td>
+<td>read local tripwire terms from FILE instead of <code>tripwires.local.toml</code>; FILE must exist and list a term (CI writes it from a secret)</td>
+</tr>
 </tbody>
 </table>
 <h2 id="brainrc-tokens">brainrc tokens<a class="headerlink" href="#brainrc-tokens" title="Permanent link">&para;</a></h2>

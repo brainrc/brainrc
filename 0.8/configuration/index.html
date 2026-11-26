@@ -1882,7 +1882,7 @@ packs into it.</p>
 </tr>
 <tr>
 <td><code>brainrc.local.toml</code></td>
-<td>the profile, and items to leave out</td>
+<td>the profile, items to leave out, and this machine's pack settings</td>
 </tr>
 <tr>
 <td><code>rules/*.local.md</code></td>
@@ -1903,7 +1903,7 @@ tool:</p>
 </code></pre></div>
 <p>The table names are <code>claude</code>, <code>codex</code>, <code>opencode</code>, <code>antigravity</code>, <code>cursor</code>, and <code>gemini</code> (Gemini
 CLI, off by default since Antigravity CLI replaced it). A table can also change any path from
-<a href="https://github.com/brainrc/brainrc/blob/v0.8.29/harnesses.toml"><code>harnesses.toml</code></a>, such as <code>skills</code> or <code>instructions</code>, though the variables below
+<a href="https://github.com/brainrc/brainrc/blob/v0.8.30/harnesses.toml"><code>harnesses.toml</code></a>, such as <code>skills</code> or <code>instructions</code>, though the variables below
 are usually the better way.</p>
 <h2 id="packslocaltoml">packs.local.toml<a class="headerlink" href="#packslocaltoml" title="Permanent link">&para;</a></h2>
 <p>One table per pack, by a <code>path</code> on disk or a <code>git</code> URL:</p>
@@ -1983,6 +1983,13 @@ are usually the better way.</p>
 or that path after the pack's name (<code>gatework:skills/brainrc-aws</code>), and <code>*</code> and <code>?</code> work.
 <code>brainrc init --profile &lt;name&gt;</code> or <code>--starter &lt;name&gt;</code> writes this file. <code>apply</code> removes what a
 profile or pattern drops; <code>validate</code> still checks everything.</p>
+<p><code>[extensions.&lt;namespace&gt;]</code> holds this machine's settings for the pack that owns the namespace,
+in the same form as a pack's <a href="../packs/#extensions">extensions</a> table. That pack checks it on
+<code>apply</code> and <code>doctor</code>, and <code>extensions.md</code> lists it after every pack's, under "This machine". A
+namespace no enabled pack reads is a warning.</p>
+<div class="highlight"><pre><span></span><code><span class="k">[extensions.gatework]</span>
+<span class="n">deliver_checks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"Load test signed off"</span><span class="p">]</span>
+</code></pre></div>
 <h2 id="local-rules">Local rules<a class="headerlink" href="#local-rules" title="Permanent link">&para;</a></h2>
 <p>Files named <code>rules/NN-&lt;topic&gt;.local.md</code> in the settings home (or the clone) are added after every
 other rule, under a note that they refine the rules above. They are plain markdown. Run <code>apply</code>

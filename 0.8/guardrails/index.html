@@ -1866,8 +1866,10 @@
 - AWS CLI writes (create/delete/put/update/terminate/invoke/…, <code>s3 cp|mv|rm|sync</code>) and secret reads
   (<code>secretsmanager get-secret-value</code>, <code>ssm get-parameter --with-decryption</code>)
 - migration tools and <code>psql</code> writes against <strong>non-local</strong> databases
-- host reboot/poweroff. Proxmox <code>qm</code>/<code>pct</code> and <code>talosctl</code> are in the <a href="https://github.com/brainrc/brainrc/blob/v0.8.29/examples/pack-homelab/README.md">homelab example pack</a>.
+- host reboot/poweroff. Proxmox <code>qm</code>/<code>pct</code> and <code>talosctl</code> are in the <a href="https://github.com/brainrc/brainrc/blob/v0.8.30/examples/pack-homelab/README.md">homelab example pack</a>.
 - <code>rm -rf</code> in any flag spelling</p>
+<p>A pack adds its own deny and ask rules in <code>pack.toml</code>, under its <code>[scope]</code>, and this hook enforces
+them with the same unwrapping; a pack's deny wins over any ask (<a href="../packs/#guard-rules">guard rules</a>).</p>
 <p>Commands inside <code>sh -c '…'</code>, <code>eval</code>, <code>$(…)</code>, and backticks are unwrapped and checked, and shell
 operators are split even without spaces (<code>ls;kubectl delete …</code>). Read-only and offline commands
 (plan, validate, template, lint, diff, get, describe) are not prompted; <code>--dry-run=none</code> counts
@@ -1946,14 +1948,15 @@ that can apply, mutate a cluster, or write to a cloud account.</p>
 <h2 id="gaps-by-tool">Gaps by tool<a class="headerlink" href="#gaps-by-tool" title="Permanent link">&para;</a></h2>
 <p>OpenCode runs the same guards through a plugin (<code>overrides/opencode/plugin.js</code>), with one
 difference: a plugin can't prompt, so anything the guards would ask about is blocked, and the
-model is told to ask you to run it yourself. MCP tools aren't guarded there yet. A pack can ship its own
+model is told to ask you to run it yourself. MCP tools aren't guarded there yet, and a pack's
+<a href="../packs/#guard-rules">guard rules</a> aren't read there yet (epic #116). A pack can ship its own
 OpenCode plugin as <code>overrides/opencode/plugin.js</code>; <code>apply</code> links it beside core's, and the lock
 records it with the pack's hooks (<a href="../packs/#layout">packs</a>).</p>
 <p>Cursor runs them through <code>overrides/cursor/hooks/guard.py</code> on <code>beforeShellExecution</code> (both
 guards) and <code>beforeReadFile</code> (secrets), from <code>~/.cursor/hooks.json</code> (<code>brainrc</code>) or the plugin's
 <code>.cursor-plugin/hooks.json</code>. Cursor's <code>ask</code> was reported broken and reads accept only allow or
 deny, so ask becomes deny there too. File writes and MCP calls aren't guarded in Cursor: it has no
-reliable pre-write hook. Not yet run in a real Cursor.</p>
+reliable pre-write hook. Packs' guard rules aren't read there yet. Not yet run in a real Cursor.</p>
 <p>Codex and Antigravity CLI get the rules and workflow layers only. Use their own
 permission/sandbox settings (e.g. Codex approval modes) alongside. Porting the hooks to tools
 that support pre-execution hooks is on the <a href="../roadmap/">roadmap</a>.</p>

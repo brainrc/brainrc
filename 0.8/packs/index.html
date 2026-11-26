@@ -905,6 +905,39 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#guard-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Guard rules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#permissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Permissions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#extensions" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1970,6 +2003,39 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#guard-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Guard rules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#permissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Permissions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#extensions" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2095,8 +2161,8 @@ and installs the lot into every tool. This page is the reference: every file, ke
   <a href="employer-pack/">an employer</a>, <a href="team-pack/">a team</a>, <a href="personal-pack/">yourself</a>
   or <a href="stack-pack/">a stack</a>, or <a href="from-a-plugin/">from a Claude Code plugin</a>.</li>
 <li><strong>Understand</strong>: <a href="why-packs/">why packs, and what you trust when you enable one</a>.</li>
-<li><strong>Copy</strong>: <a href="https://github.com/brainrc/brainrc/blob/v0.8.29/examples/pack-acme/README.md">examples/pack-acme</a> (every feature but hooks) and
-  <a href="https://github.com/brainrc/brainrc/blob/v0.8.29/examples/pack-homelab/README.md">examples/pack-homelab</a> (a guard hook).</li>
+<li><strong>Copy</strong>: <a href="https://github.com/brainrc/brainrc/blob/v0.8.30/examples/pack-acme/README.md">examples/pack-acme</a> (every feature but hooks) and
+  <a href="https://github.com/brainrc/brainrc/blob/v0.8.30/examples/pack-homelab/README.md">examples/pack-homelab</a> (a guard hook).</li>
 </ul>
 <h2 id="layout">Layout<a class="headerlink" href="#layout" title="Permanent link">&para;</a></h2>
 <p>Every folder is optional.</p>
@@ -2109,7 +2175,7 @@ and installs the lot into every tool. This page is the reference: every file, ke
   commands/acme-*.md     linked into each tool's commands folder
   rules/NN-*.md          rendered after all core rules, as one labelled block (see Rules)
   overrides/claude/hooks/                 linked to &lt;hooks_dir&gt;-acme (e.g. ~/.claude/hooks/brainrc-acme)
-  overrides/claude/settings.fragment.json merged after the core fragment; {{hooks_dir}} = the pack's hooks dir
+  overrides/claude/settings.fragment.json merged after the core fragment; {{hooks_dir}} = the pack's hooks dir (see Permissions)
   overrides/opencode/plugin.js            linked beside core's guard plugin, as brainrc-guard-acme.js
   mcp/servers.toml       MCP servers, synced after core's (see formats.md#mcp-servers-mcpserverstoml)
   tripwires.toml         patterns that must not appear in the pack (checked by validate)
@@ -2124,6 +2190,13 @@ exist in two sources. <code>apply</code> refuses to write anything if one does. 
 <span class="n">requires_core</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"&gt;=0.7, &lt;0.9"</span><span class="w">   </span><span class="c1"># core versions this pack works with (see Compatibility)</span>
 <span class="n">max_always_tokens</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">800</span><span class="w">   </span><span class="c1"># optional budget for rules + descriptions (see Context cost)</span>
 <span class="n">test</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"tests"</span><span class="w">            </span><span class="c1"># optional: tests validate --pack runs (see Pack tests)</span>
+
+<span class="k">[scope]</span><span class="w">                   </span><span class="c1"># optional: where the pack applies (see Scope)</span>
+<span class="n">remotes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"github.com/acme/*"</span><span class="p">]</span>
+
+<span class="k">[[guard.deny]]</span><span class="w">            </span><span class="c1"># optional: commands core's guard refuses here (see Guard rules)</span>
+<span class="n">match</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"acme-deploy prod"</span>
+<span class="n">reason</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"deploys to production"</span>
 
 <span class="k">[extensions.gatework]</span><span class="w">      </span><span class="c1"># what Gatework reads; see Extensions</span>
 <span class="n">deliver_checks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="w">        </span><span class="c1"># listed in the Deliver gate as done / not applicable / not run</span>
@@ -2205,6 +2278,16 @@ wrong type fails, and a key it doesn't know warns, naming the closest known key
 <td>The pack's own unittest tests, a directory or a .py file in the pack; validate --pack runs them (<a href="#pack-tests">pack tests</a>).</td>
 </tr>
 <tr>
+<td><code>scope</code></td>
+<td>table</td>
+<td>Where the pack applies: any glob matching means it does; none means everywhere (<a href="#scope">scope</a>).</td>
+</tr>
+<tr>
+<td><code>guard</code></td>
+<td>table</td>
+<td>[[guard.deny]] and [[guard.ask]] rules core's guard hook enforces, with match or tool, reason and scope (<a href="#guard-rules">guard rules</a>).</td>
+</tr>
+<tr>
 <td><code>extensions</code></td>
 <td>table</td>
 <td>Tables other packs read, one per namespace, e.g. [extensions.gatework]; the pack that owns a namespace checks it (<a href="#extensions">extensions</a>).</td>
@@ -2221,7 +2304,7 @@ wrong ones from a first line naming the schema, which <code>brainrc import</code
 <div class="highlight"><pre><span></span><code><span class="c1">#:schema https://raw.githubusercontent.com/brainrc/brainrc/main/docs/schemas/pack.toml.schema.json</span>
 <span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"acme"</span>
 </code></pre></div>
-<p>In a checkout of this repo, <a href="https://github.com/brainrc/brainrc/blob/v0.8.29/.taplo.toml"><code>.taplo.toml</code></a> maps each file to its schema. Files
+<p>In a checkout of this repo, <a href="https://github.com/brainrc/brainrc/blob/v0.8.30/.taplo.toml"><code>.taplo.toml</code></a> maps each file to its schema. Files
 outside it (a pack's own repo, <code>~/.config/brainrc/harnesses.local.toml</code>) take the <code>#:schema</code> line.</p>
 <h2 id="mcpserverstoml">mcp/servers.toml<a class="headerlink" href="#mcpserverstoml" title="Permanent link">&para;</a></h2>
 <p>Each <code>[servers.&lt;name&gt;]</code> table is one MCP server, named with the pack's prefix
@@ -2319,7 +2402,7 @@ brainrc<span class="w"> </span>validate<span class="w"> </span>--pack<span class
 system (<code>github</code>, <code>jira</code> or <code>local</code>), which becomes an <code>[extensions.gatework.ticket]</code> table. It
 checks the <a href="#naming">naming rules</a> before it writes anything, never writes into a folder with files
 in it but <code>.git</code> (<code>--force</code> replaces an earlier pack and keeps its <code>.git</code>), and <code>--enable</code> adds the pack to <code>packs.local.toml</code>.</p>
-<p><a href="https://github.com/brainrc/brainrc/blob/v0.8.29/examples/pack-template/README.md">examples/pack-template</a> holds the same files for a pack
+<p><a href="https://github.com/brainrc/brainrc/blob/v0.8.30/examples/pack-template/README.md">examples/pack-template</a> holds the same files for a pack
 called <code>mypack</code>, with steps for renaming it: the contents of a GitHub template repository, for
 anyone who would rather start from <strong>Use this template</strong> than install brainrc first.
 <code>scripts/pack_template.py</code> keeps it in step with <code>new pack</code>, and CI validates it.</p>
@@ -2438,6 +2521,68 @@ publishes it. Official packs are owned by <code>brainrc</code>:</p>
 <p>Pack rule numbers only order rules within the pack. Later rules refine earlier ones and must
 not contradict them: a pack rule that contradicts core is a bug in the pack. Write it as a
 narrower case ("in Acme repos, also ...") instead.</p>
+<h2 id="scope">Scope<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
+<p><code>[scope]</code> says where a pack applies, so a work pack's deliver checks, guard rules and reviewers
+stay out of your personal repos, in place of free text such as "in acme repos":</p>
+<div class="highlight"><pre><span></span><code><span class="k">[scope]</span>
+<span class="n">remotes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"github.com/acme/*"</span><span class="p">,</span><span class="w"> </span><span class="s2">"git.acme.example.net/*"</span><span class="p">]</span><span class="w">   </span><span class="c1"># a git remote of the repo you're in</span>
+<span class="n">paths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"~/src/acme"</span><span class="p">]</span><span class="w">          </span><span class="c1"># the directory you're in, or one above it; ~ and $VARS expand</span>
+<span class="n">kube_contexts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"acme-*"</span><span class="p">]</span><span class="w">      </span><span class="c1"># kubectl's current context ($KUBECONFIG or ~/.kube/config)</span>
+<span class="n">aws_profiles</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"acme-*"</span><span class="p">]</span><span class="w">       </span><span class="c1"># $AWS_PROFILE, "default" when it isn't set</span>
+<span class="n">tickets</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"ACME-*"</span><span class="p">]</span><span class="w">            </span><span class="c1"># a ticket ref in the branch name (acme-42-fix), or one passed in</span>
+</code></pre></div>
+<p>Every value is a list of globs, and the pack applies when any one of them matches. A remote is
+matched as written and as <code>host/owner/repo</code>, so one glob covers its SSH and HTTPS URLs. A pack
+without <code>[scope]</code>, or with an empty one, applies everywhere, as before. The rules, skills and
+agents a pack installs are still installed everywhere: scope decides where its extensions and
+guard rules take effect.</p>
+<p><code>brainrc scope</code> lists each enabled pack as <code>APPLIES</code> or <code>SKIPPED</code> in the directory you're in and
+says why, and <code>brainrc scope --extensions</code> prints the <a href="#extensions">extensions</a> a run there
+should read: only the packs that apply. The <code>extensions.md</code> that <code>apply</code> renders holds every
+pack and ends with a Scope section saying where each scoped pack applies.</p>
+<h2 id="guard-rules">Guard rules<a class="headerlink" href="#guard-rules" title="Permanent link">&para;</a></h2>
+<p>A pack adds rules to core's Claude Code guard in <code>pack.toml</code>, without a hook of its own:</p>
+<div class="highlight"><pre><span></span><code><span class="k">[[guard.deny]]</span><span class="w">                 </span><span class="c1"># refused</span>
+<span class="n">match</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"acme-deploy prod"</span>
+<span class="n">reason</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"deploys to production, which only the release pipeline does"</span>
+
+<span class="k">[[guard.ask]]</span><span class="w">                  </span><span class="c1"># asked about first</span>
+<span class="n">tool</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"mcp__acme-jira__*transition*"</span>
+<span class="n">reason</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"moves an Acme ticket to another status"</span>
+<span class="n">scope</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">kube_contexts</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"acme-*"</span><span class="p">]</span><span class="w"> </span><span class="p">}</span><span class="w">   </span><span class="c1"># optional: in place of the pack's [scope]</span>
+</code></pre></div>
+<p>Each rule sets <code>reason</code> and one of <code>match</code> or <code>tool</code>. <code>match</code> is a command: its program (by name,
+from any directory, after <code>VAR=value</code>, <code>sudo</code> or <code>env</code>) and then the other words in that order,
+with other words and flags allowed between them; each word may be a glob. <code>tool</code> is a glob for an
+MCP tool's full name. A rule takes effect only where the pack's <a href="#scope"><code>[scope]</code></a> matches the
+directory the command runs in, or the rule's own <code>scope</code> when it sets one.</p>
+<p><code>apply</code> renders every enabled pack's rules, with their scopes, into
+<code>$BRAINRC_HOME/guard-rules.json</code>, and core's <code>guard_outward.py</code> checks them on every Bash and MCP
+call. Commands inside <code>sh -c</code>, <code>eval</code>, <code>$(…)</code> and backticks are unwrapped as for core's own rules.
+A pack's deny wins over any ask; a pack's ask is shown when core has nothing to ask. Without the
+file (no rules, or before the first <code>apply</code>), the guard behaves as before. <code>validate</code> checks each
+rule. Claude Code enforces them today; the other tools' guards follow
+(<a href="../guardrails/#gaps-by-tool">guardrails</a>).</p>
+<p>Test a rule with <a href="#pack-tests"><code>brainrc.testing</code></a> against core's hook, with <code>BRAINRC_HOME</code> set to
+a directory holding the rendered file, and a near miss beside the risky command.</p>
+<h2 id="permissions">Permissions<a class="headerlink" href="#permissions" title="Permanent link">&para;</a></h2>
+<p>A pack's <code>overrides/claude/settings.fragment.json</code> can list permission entries, so it ships a
+read-only allow list or hard denies without a hook:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">"permissions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"allow"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"Bash(acme-status:*)"</span><span class="p">,</span><span class="w"> </span><span class="s2">"mcp__acme-jira__get_issue"</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">"deny"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"Bash(acme-deploy prod:*)"</span><span class="p">]</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><code>apply</code> adds each <code>allow</code>, <code>deny</code> and <code>ask</code> entry to the settings file after yours, and records the
+ones it added in <code>$BRAINRC_HOME/settings-owned.json</code>. Disable the pack and the next <code>apply</code> removes
+exactly those: an entry you had before the pack, or one another enabled pack still lists, stays.
+<code>uninstall</code> takes them out too. Other keys under <code>permissions</code> (<code>defaultMode</code>, say) are set only
+when the file has none, and stay. <code>brainrc.lock</code> records every entry as one of the pack's tool
+grants, so <code>apply</code> lists a new one as <code>PERMS</code> and asks first (<a href="why-packs/">why packs</a>).
+The <code>minimal</code> profile installs no settings fragment, so a pack's permissions and hooks need
+<code>recommended</code> or <code>full</code>.</p>
 <h2 id="extensions">Extensions<a class="headerlink" href="#extensions" title="Permanent link">&para;</a></h2>
 <p><code>[extensions.&lt;namespace&gt;]</code> is a table another pack reads; core passes it through untouched. The
 pack that owns the namespace checks it with its <a href="#validator-plugins">validator plugin</a>, and
@@ -2446,6 +2591,12 @@ pack that owns the namespace checks it with its <a href="#validator-plugins">val
 <code>$BRAINRC_HOME/extensions.md</code> (default <code>~/.config/brainrc/extensions.md</code>), which Gatework reads
 at intake. With no other packs enabled, the file says so and Gatework runs as before; with
 Gatework disabled, there is no file.</p>
+<p>The file also lists, under <strong>Pack roles</strong>, every agent the other packs install, with the path of
+its file. A pack's agent adds to Gatework's roles and never replaces one, and a harness that
+installs no agents (Codex, Antigravity, Cursor) can still run it as a role in the one-session
+fallback by reading that file. The acme example's <code>acme-reviewer</code> is one.</p>
+<p>A machine can add its own <code>[extensions.gatework]</code> in <code>brainrc.local.toml</code>
+(<a href="../configuration/#brainrclocaltoml">configuration</a>); <code>extensions.md</code> lists it after every pack's.</p>
 <p>The old forms from before 0.7.0, the same keys directly under <code>[extensions]</code> or under
 <code>[extensions.spec-agent]</code>, still work with a warning: move them under <code>[extensions.gatework]</code>.</p>
 <p>A pack has at most one <code>[extensions.gatework.ticket]</code>: one connector and the refs it handles. A team
@@ -2536,7 +2687,7 @@ test needs no scaffolding of its own. A string is a Bash command; a dict is the 
 <p><code>assert_allows</code> passes when the hook allows or has no opinion, and <code>assert_no_opinion</code> only when it
 stays out, so Claude Code's own permission check still decides; <code>assert_denies</code> counts exit code 2
 as a deny. Each lists every case that came out wrong, and a missing, failing or hung hook fails.
-<code>run_hook(hook, payload)</code> returns the decision itself. <a href="https://github.com/brainrc/brainrc/blob/v0.8.29/examples/pack-homelab/tests/test_guard.py">pack-homelab</a>
+<code>run_hook(hook, payload)</code> returns the decision itself. <a href="https://github.com/brainrc/brainrc/blob/v0.8.30/examples/pack-homelab/tests/test_guard.py">pack-homelab</a>
 has a full example.</p>
 <h2 id="tripwirestoml">tripwires.toml<a class="headerlink" href="#tripwirestoml" title="Permanent link">&para;</a></h2>
 <p>Stale facts that must not come back, checked by <code>validate</code>:</p>
@@ -2548,7 +2699,7 @@ has a full example.</p>
 <span class="n">paths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"*.md"</span><span class="p">]</span><span class="w">                              </span><span class="c1"># default; fnmatch against the path in the pack</span>
 </code></pre></div>
 <h2 id="compatibility">Compatibility<a class="headerlink" href="#compatibility" title="Permanent link">&para;</a></h2>
-<p>brainrc's version is in <code>VERSION</code>. <a href="https://github.com/brainrc/brainrc/blob/v0.8.29/CHANGELOG.md">CHANGELOG.md</a> tags changes that affect packs
+<p>brainrc's version is in <code>VERSION</code>. <a href="https://github.com/brainrc/brainrc/blob/v0.8.30/CHANGELOG.md">CHANGELOG.md</a> tags changes that affect packs
 with <strong>[pack contract]</strong>. Declare the versions your pack supports with <code>requires_core</code>:
 comma-separated clauses of <code>&gt;=</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&lt;</code>, <code>==</code>, <code>!=</code> and a version (missing parts
 are zero, and a bare version means <code>&gt;=</code>).</p>

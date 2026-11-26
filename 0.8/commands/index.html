@@ -1495,6 +1495,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#brainrc-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        brainrc scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#brainrc-doctor" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2040,6 +2051,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#brainrc-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        brainrc scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#brainrc-doctor" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2136,7 +2158,7 @@ there is.</p>
 <a href="#brainrc-new-skill">new skill</a> · <a href="#brainrc-new-agent">new agent</a> · <a href="#brainrc-new-rule">new rule</a> ·
 <a href="#brainrc-new-command">new command</a> ·
 <strong>Install</strong>: <a href="#brainrc-status">status</a> · <a href="#brainrc-apply">apply</a> · <a href="#brainrc-update">update</a> · <a href="#brainrc-install">install</a> · <a href="#brainrc-uninstall">uninstall</a> ·
-<strong>Check</strong>: <a href="#brainrc-check">check</a> · <a href="#brainrc-audit">audit</a> · <a href="#brainrc-doctor">doctor</a> · <a href="#brainrc-validate">validate</a> · <a href="#brainrc-tokens">tokens</a> ·
+<strong>Check</strong>: <a href="#brainrc-check">check</a> · <a href="#brainrc-audit">audit</a> · <a href="#brainrc-scope">scope</a> · <a href="#brainrc-doctor">doctor</a> · <a href="#brainrc-validate">validate</a> · <a href="#brainrc-tokens">tokens</a> ·
 <strong>Other</strong>: <a href="#brainrc-pin-mcp">pin-mcp</a> · <a href="#brainrc-migrate">migrate</a></p>
 <h2 id="brainrc-init">brainrc init<a class="headerlink" href="#brainrc-init" title="Permanent link">&para;</a></h2>
 <p>First run: pick the tools to manage, adopt your existing instruction files, and choose how much
@@ -2618,6 +2640,36 @@ each MCP server's pinned tools. No network, writes nothing (<a href="../guardrai
 </tr>
 </thead>
 <tbody>
+<tr>
+<td><code>--json</code></td>
+<td>print it as JSON</td>
+</tr>
+</tbody>
+</table>
+<h2 id="brainrc-scope">brainrc scope<a class="headerlink" href="#brainrc-scope" title="Permanent link">&para;</a></h2>
+<p>List each enabled pack as <code>APPLIES</code> or <code>SKIPPED</code> in the directory you're in, and why: the git
+remote, directory, kube context, AWS profile or ticket ref that matched its <code>[scope]</code>, or what it
+needs. A pack without <code>[scope]</code> applies everywhere. Writes nothing (<a href="../packs/#scope">packs</a>).</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--cwd DIR</code></td>
+<td>check this directory instead of the current one</td>
+</tr>
+<tr>
+<td><code>--ticket REF</code></td>
+<td>a ticket ref the run is for (repeat it); the branch name's refs count too</td>
+</tr>
+<tr>
+<td><code>--extensions</code></td>
+<td>print <code>extensions.md</code> with only the packs that apply here</td>
+</tr>
 <tr>
 <td><code>--json</code></td>
 <td>print it as JSON</td>

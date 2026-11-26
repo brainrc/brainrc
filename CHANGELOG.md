@@ -12,6 +12,14 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.8.34 (2026-11-26)
+
+- CI now runs local tripwires on every pull request and push to `main`, with the terms from the
+  `TRIPWIRE_TERMS` repository secret, so changes made in cloud sessions or on github.com can't skip
+  the check. The log names a match's file, line and term number, never the term. Without the secret
+  the check skips with a notice, and fork PRs are checked on the merge to `main` (#344).
+- `validate --local-tripwires FILE` reads the terms from FILE instead of `tripwires.local.toml`.
+
 ## 0.8.33 (2026-11-26)
 
 - Gatework's pin moves to v0.9.0. Gatework 0.9 no longer ships `brainrc-go-service`,

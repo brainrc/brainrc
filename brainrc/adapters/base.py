@@ -1,0 +1,87 @@
+"""The adapter interface (#306): what brainrc knows about one AI tool beyond its paths.
+
+harnesses.toml says where a tool reads each kind of content. An Adapter says what that content has
+to look like there: how agents are written, where the settings file keeps hooks, how MCP servers
+are spelled, which guard rules a sandbox can take, and the tool's name in prose. The defaults
+below describe a tool that reads everything as Claude Code writes it, so an adapter overrides only
+what its tool does differently.
+
+A tool brainrc doesn't ship can come from a Python package: one entry point in the
+`brainrc.adapters` group whose object is an Adapter subclass (or instance) that also sets `paths`,
+its harnesses.toml table (docs/adapters.md).
+"""
+from __future__ import annotations
+
+from pathlib import Path
+
+
+class Adapter:
+    # The harnesses.toml table this adapter serves, e.g. "codex".
+    name: str = ""
+    # The tool's name in prose and in the capability matrix, e.g. "Codex".
+    label: str = ""
+    # Default harnesses.toml table, for a tool core's harnesses.toml doesn't list (an adapter from a
+    # package). Shipped tools keep their paths in harnesses.toml; harnesses.local.toml overrides both.
+    paths: dict[str, str | bool] = {}
+
+    # The agent and settings formats this tool uses unless its table sets `agents_format` or
+    # `settings_format`. A format is named after the adapter that defines it; "claude" is the base.
+    agents_format: str = "claude"
+    settings_format: str = "claude"
+    # True when this adapter defines a format of that kind (render_agent, or hooks_view/hooks_put).
+    defines_agents_format: bool = False
+    defines_settings_format: bool = False
+
+    # MCP: True when apply can write this tool's MCP servers. JSON tools name the key the servers
+    # sit under (mcp_key) and spell one server (mcp_entry); others override mcp_text_change.
+    writes_mcp: bool = False
+    mcp_key: str | None = None
+    records_mcp: bool = True  # False when the file itself marks what is brainrc's (Codex's block)
+
+    # Guard rules a tool's OS sandbox can take (#322): rule kind -> [(section, key)] lists in its
+    # settings file, e.g. {"path": [("filesystem", "denyRead")]}. Empty: no sandbox brainrc writes.
+    sandbox: dict[str, list[tuple[str, str]]] = {}
+
+    # --- agents -------------------------------------------------------------------------------
+    def render_agent(self, path: Path) -> str:
+        """An agent file rewritten in this adapter's agent format (defines_agents_format only)."""
+        raise NotImplementedError(f"{self.name} defines no agent format")
+
+    # --- settings and hooks -------------------------------------------------------------------
+    def hooks_view(self, current: dict) -> dict:
+        """The settings file in Claude Code's shape (hooks under "hooks"), whatever its own format."""
+        return current
+
+    def hooks_put(self, current: dict, merged: dict) -> dict:
+        """current with the hooks in merged (Claude Code's shape) put back in this format's place."""
+        return merged
+
+    def hooks_problem(self, current: dict) -> str | None:
+        """Why this format can't merge into current (a JSON object), or None when it can."""
+        return None
+
+    # --- MCP ----------------------------------------------------------------------------------
+    def mcp_entry(self, server: dict) -> dict:
+        """One server from mcp/servers.toml as this tool's JSON config spells it."""
+        raise NotImplementedError(f"{self.name} writes no MCP servers")
+
+    def mcp_files(self, dest: Path) -> list[Path]:
+        """The files that may hold this tool's MCP servers, its `mcp` path first."""
+        return [dest]
+
+    def mcp_text_change(self, text: str, servers: dict[str, dict]) -> tuple[str, list[str], list[str]] | None:
+        """(new text, conflicting names, owned names) for a file that isn't JSON at mcp_key, or None
+        to use the JSON merge."""
+        return None
+
+    def __repr__(self) -> str:
+        return f"<adapter {self.name}>"
+
+
+class Plain(Adapter):
+    """A harness with no adapter of its own (a table the user added in harnesses.local.toml): it
+    reads content as Claude Code writes it, and gets no MCP servers or sandbox."""
+
+    def __init__(self, name: str):
+        self.name = name
+        self.label = name

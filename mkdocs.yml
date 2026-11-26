@@ -81,6 +81,7 @@ nav:
       - Commands: commands.md
       - Configuration: configuration.md
       - What reaches each tool: capabilities.md
+      - Tool adapters: adapters.md
       - File formats: formats.md
       - JSON Schemas: schemas.md
       - Architecture: architecture.md

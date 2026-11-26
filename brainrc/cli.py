@@ -13,7 +13,7 @@ import shutil
 import sys
 from pathlib import Path
 
-from . import capabilities, config, guard
+from . import adapters, capabilities, config, guard
 from .config import (
     ConfigError,
     check_config,
@@ -34,12 +34,11 @@ from .init import cmd_init
 from .newpack import TICKETS, cmd_new_pack
 from . import newitem
 from .uninstall import cmd_uninstall, finish_purge
-from .opencode import rendered_agents
 from .packs import adopt_record, describe, fetch_pack, git_packs, pinned, to_fetch
 from . import update as pin_update
 from .plan import (
-    hooks_copy_current, invalid_fragments, link_target, obsolete_renders, old_root, plan, stale_hooks_copy,
-    stale_renders,
+    hooks_copy_current, invalid_fragments, link_target, obsolete_renders, old_root, plan, rendered_agents,
+    stale_hooks_copy, stale_renders,
 )
 from .mcp import check_servers, mcp_change, mcp_plan, record_owned, write_mcp
 from .settings import FileChanged, conflict_reason, read_current, read_owned, settings_change, settings_owned
@@ -193,8 +192,8 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True, moved: frozens
         srcs = sources()
         roots = [s.root for s in sources(include_disabled=True)]
         agents = rendered_agents(srcs)
-        for h in config.load_harnesses(include_disabled=True).values():
-            config.settings_format(h)  # the settings merges below depend on it
+        for name, h in config.load_harnesses(include_disabled=True).items():
+            adapters.settings_format(name, h)  # the settings merges below depend on it
     except ConfigError as e:
         print(f"ERROR {e}")
         return 1

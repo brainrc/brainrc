@@ -12,22 +12,21 @@ import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 
-from . import jsonc
+from . import adapters, jsonc
 from .config import ConfigError, expand, former_homes, in_scope, installs, load_harnesses, settings_home
 from .settings import replace_file
 from .sources import Source
+from .adapters.codex import render_block as render_codex_block  # noqa: F401  (tests and callers)
 
 REGISTRY = Path("mcp") / "servers.toml"
 SERVER_KEYS = {"command", "args", "url", "env_from", "harnesses"}
 NAME = re.compile(r"^[A-Za-z0-9_-]+$")
 ENV_NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
-# The harnesses brainrc can write MCP servers for, and the key their JSON config keeps them under.
-ADAPTERS = {"claude": "mcpServers", "codex": None, "opencode": "mcp"}
-BLOCK_START = "# >>> brainrc mcp servers (written by brainrc apply; edits here are replaced)"
-BLOCK_END = "# <<< brainrc mcp servers"
-# The pre-rename markers: still recognized, so the next apply replaces an old block.
-OLD_BLOCKS = [("# >>> ai-config mcp servers (written by aicfg apply; edits here are replaced)",
-               "# <<< ai-config mcp servers")]
+
+
+def writers() -> list[str]:
+    """The harnesses brainrc can write MCP servers for: those whose adapter writes them (#306)."""
+    return [n for n, a in adapters.every().items() if a.writes_mcp]
 
 
 def _registry(src: Source) -> dict:
@@ -87,9 +86,9 @@ def check_servers(srcs: list[Source]) -> list[str]:
                 if h not in names:
                     bad(f"unknown harness `{h}` in `harnesses`")
     for name, h in load_harnesses(include_disabled=True).items():
-        if "mcp" in h and name not in ADAPTERS:
+        if "mcp" in h and not adapters.get(name).writes_mcp:
             errors.append(f"harnesses.toml [{name}] sets `mcp`, but brainrc can only write MCP servers "
-                          f"for {', '.join(ADAPTERS)}")
+                          f"for {', '.join(writers())}")
     return errors
 
 
@@ -103,42 +102,8 @@ def load_servers(srcs: list[Source]) -> dict[str, dict]:
 
 
 def render_entry(harness: str, s: dict) -> dict:
-    """One server as Claude Code's or OpenCode's JSON config wants it."""
-    env = s.get("env_from", [])
-    if harness == "claude":
-        if "url" in s:
-            return {"type": "http", "url": s["url"]}
-        entry = {"type": "stdio", "command": s["command"], "args": list(s.get("args", []))}
-        return entry | ({"env": {v: f"${{{v}}}" for v in env}} if env else {})
-    if "url" in s:
-        return {"type": "remote", "url": s["url"], "enabled": True}
-    entry = {"type": "local", "command": [s["command"], *s.get("args", [])]}
-    return entry | ({"environment": {v: f"{{env:{v}}}" for v in env}} if env else {}) | {"enabled": True}
-
-
-def _toml_str(value: str) -> str:
-    return json.dumps(value)  # a JSON string with ASCII escapes is a valid TOML basic string
-
-
-def _toml_list(values: list[str]) -> str:
-    return "[" + ", ".join(map(_toml_str, values)) + "]"
-
-
-def render_codex_block(servers: dict[str, dict]) -> str:
-    """The servers as Codex `[mcp_servers.<name>]` tables (env vars forwarded by name)."""
-    tables = []
-    for name, s in servers.items():
-        lines = [f"[mcp_servers.{name}]"]
-        if "url" in s:
-            lines.append(f"url = {_toml_str(s['url'])}")
-        else:
-            lines.append(f"command = {_toml_str(s['command'])}")
-            if s.get("args"):
-                lines.append(f"args = {_toml_list(s['args'])}")
-            if s.get("env_from"):
-                lines.append(f"env_vars = {_toml_list(s['env_from'])}")
-        tables.append("\n".join(lines))
-    return "\n\n".join(tables) + "\n" if tables else ""
+    """One server as harness's JSON config wants it (its adapter's mcp_entry)."""
+    return adapters.get(harness).mcp_entry(s)
 
 
 @dataclass
@@ -154,7 +119,7 @@ def mcp_plan(srcs: list[Source]) -> list[McpSync]:
     enabled = load_harnesses()
     syncs = []
     for name, h in load_harnesses(include_disabled=True).items():
-        if "mcp" not in h or name not in ADAPTERS or not in_scope(name):
+        if "mcp" not in h or not adapters.get(name).writes_mcp or not in_scope(name):
             continue
         wanted = {n: s for n, s in servers.items()
                   if name in enabled and name in s.get("harnesses", [name])}
@@ -163,11 +128,9 @@ def mcp_plan(srcs: list[Source]) -> list[McpSync]:
 
 
 def mcp_files(name: str, h: dict) -> list[Path]:
-    """The files that may hold the harness's MCP servers: its `mcp` path, and for OpenCode the
-    opencode.jsonc beside an opencode.json (OpenCode reads both)."""
-    dest = expand(h["mcp"])
-    alt = dest.with_suffix(".jsonc")
-    return [dest, alt] if name == "opencode" and dest.suffix == ".json" else [dest]
+    """The files that may hold the harness's MCP servers: its `mcp` path, and any other its adapter
+    names (OpenCode reads an opencode.jsonc beside opencode.json)."""
+    return adapters.get(name).mcp_files(expand(h["mcp"]))
 
 
 def mcp_file(name: str, h: dict) -> Path:
@@ -204,60 +167,12 @@ def _owned() -> dict[str, list[str]]:
     return merged
 
 
-def _blocks(text: str) -> list[tuple[int, int]]:
-    """(start, end) offsets of each complete brainrc block, old markers included, end after its newline."""
-    spans, pos = [], 0
-    while True:
-        found = [(text.find(o, pos), o, c) for o, c in [(BLOCK_START, BLOCK_END), *OLD_BLOCKS]]
-        found = [f for f in found if f[0] != -1]
-        if not found:
-            return spans
-        start, open_, close = min(found)
-        end = text.find(close, start + len(open_))
-        if end == -1:
-            return spans
-        end += len(close)
-        spans.append((start, end + 1 if text[end:end + 1] == "\n" else end))
-        pos = spans[-1][1]
-
-
-def _drop(text: str, start: int, end: int) -> str:
-    """Remove text[start:end] and one blank line beside it, so removing a block leaves no gap."""
-    if text[end:end + 1] == "\n":
-        end += 1
-    elif start and text[start - 1] == "\n" and (start == 1 or text[start - 2] == "\n"):
-        start -= 1
-    return text[:start] + text[end:]
-
-
-def _codex_change(m: McpSync, text: str) -> tuple[str, list[str], list[str]]:
-    spans = _blocks(text)
-    rest = text
-    for start, end in reversed(spans):
-        rest = rest[:start] + rest[end:]
-    foreign = tomllib.loads(rest).get("mcp_servers", {})
-    conflicts = sorted(n for n in m.servers if n in foreign)
-    block = render_codex_block({n: s for n, s in m.servers.items() if n not in conflicts})
-    new = f"{BLOCK_START}\n{block}{BLOCK_END}\n" if block else ""
-    if not spans:
-        out = (text.rstrip("\n") + "\n\n" if text.strip() else "") + new if new else text
-    else:
-        # The first block is replaced where it is, so the user's bytes around it never move.
-        out = text
-        for start, end in reversed(spans[1:]):
-            out = _drop(out, start, end)
-        start, end = spans[0]
-        out = out[:start] + new + out[end:] if new else _drop(out, start, end)
-    owned = [n for n in m.servers if n not in conflicts]
-    return out, conflicts, owned
-
-
 def _json_change(m: McpSync, text: str) -> tuple[str, list[str], list[str]]:
     commented = m.dest.suffix == ".jsonc"
     data = (jsonc.loads if commented else json.loads)(text) if text.strip() else {}
     if not isinstance(data, dict):
         raise ValueError("not a JSON object")
-    key = ADAPTERS[m.harness]
+    key = adapters.get(m.harness).mcp_key
     current = data.get(key) if isinstance(data.get(key), dict) else {}
     was_owned = set(_owned().get(str(m.dest), []))
     servers = {n: e for n, e in current.items() if n not in was_owned or n in m.servers}
@@ -305,7 +220,8 @@ def mcp_change(m: McpSync) -> tuple[str, str | None, list[str], list[str]]:
     state is ok | merge | invalid (the file can't be parsed, so it's left alone)."""
     text = m.dest.read_text() if m.dest.is_file() else ""
     try:
-        new, conflicts, owned = (_codex_change if m.harness == "codex" else _json_change)(m, text)
+        custom = adapters.get(m.harness).mcp_text_change(text, m.servers)
+        new, conflicts, owned = custom if custom is not None else _json_change(m, text)
     except (ValueError, IndexError, tomllib.TOMLDecodeError):
         return "invalid", None, [], []
     return ("ok" if new == text else "merge"), new, conflicts, owned
@@ -318,8 +234,8 @@ def write_mcp(m: McpSync, text: str, owned: list[str], before: str | None) -> No
 
 
 def record_owned(m: McpSync, owned: list[str]) -> None:
-    if m.harness == "codex":
-        return  # the marked block is the record
+    if not adapters.get(m.harness).records_mcp:
+        return  # the file marks what is brainrc's (Codex's block)
     data = _read_record(_owned_file())  # only the resolved home's own record is ever written
     dest = str(m.dest)
     if owned:

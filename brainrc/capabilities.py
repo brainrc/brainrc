@@ -6,15 +6,14 @@ rewrites it, and tests/test_capabilities.py fails when the page and harnesses.to
 import json
 from pathlib import Path
 
-from . import config
+from . import adapters, config
 from .config import ConfigError
 
 PAGE = "docs/capabilities.md"
 BEGIN = "<!-- BEGIN capability matrix: generated from harnesses.toml by `brainrc capabilities --write` -->"
 END = "<!-- END capability matrix -->"
-# How each harness table is named in prose; a harness missing here shows its table name.
-LABELS = {"claude": "Claude Code", "codex": "Codex", "opencode": "OpenCode",
-          "antigravity": "Antigravity CLI", "gemini": "Gemini CLI", "cursor": "Cursor"}
+# How each shipped tool is named in prose: its adapter's label (brainrc/adapters/).
+LABELS = {n: a.label for n, a in adapters.BUILTIN.items()}
 COLUMNS = ("Tool", "Skills", "Rules", "Agents", "Commands", "Guard hooks", "MCP servers", "In a repo",
            "Moves with")
 NONE = "—"
@@ -45,8 +44,9 @@ def _repo(h: dict) -> str:
 
 
 def _row(root: Path, name: str, h: dict) -> list[str]:
-    label = LABELS.get(name, name) + ("" if h.get("enabled", True) else " (off by default)")
-    agents = _path(h, "agents") + (" (rendered)" if h.get("agents_format") == "opencode" else "")
+    label = adapters.get(name).label + ("" if h.get("enabled", True) else " (off by default)")
+    rendered = adapters.agents_format(name, h) != "claude"
+    agents = _path(h, "agents") + (" (rendered)" if rendered else "")
     return [label, _path(h, "skills"), _path(h, "instructions"), agents if "agents" in h else NONE,
             _path(h, "commands"), _hooks(root, name, h), _path(h, "mcp"), _repo(h),
             ", ".join(f"`{v}`" for v in config.env_vars(h)) or NONE]

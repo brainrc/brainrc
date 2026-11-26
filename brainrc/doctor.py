@@ -10,7 +10,7 @@ import shlex
 import subprocess
 from pathlib import Path
 
-from . import config, guard
+from . import adapters, config, guard
 from .config import (
     ConfigError,
     KINDS,
@@ -30,9 +30,8 @@ from .sources import (
     load_pack,
     pack_compat,
 )
-from .opencode import agents_format, rendered_agents
 from .packs import needs_fetch
-from .plan import FragmentError, Link, invalid_fragments, link_target, moved_item, plan, stale_renders
+from .plan import FragmentError, Link, invalid_fragments, link_target, moved_item, plan, rendered_agents, stale_renders
 from .settings import _owned, as_claude, conflict_reason, settings_change
 from .manifest import checked_manifest
 from .mcp import check_servers, mcp_change, mcp_plan
@@ -266,15 +265,17 @@ def doctor_findings() -> list[Finding]:
     except ConfigError as e:
         found.append(("FAIL", str(e), "fix [extensions] in the file named"))
     try:
-        for h in load_harnesses().values():
-            agents_format(h)
+        for name, h in load_harnesses().items():
+            adapters.agents_format(name, h)
     except ConfigError as e:  # renders and links depend on it, so stop here
-        return found + [("FAIL", str(e), "set agents_format to claude or opencode in harnesses.local.toml")]
+        return found + [("FAIL", str(e), f"set agents_format to {' or '.join(adapters.AGENT_FORMATS)} "
+                         "in harnesses.local.toml")]
     try:
-        for h in load_harnesses(include_disabled=True).values():  # plan merges disabled ones too
-            config.settings_format(h)
+        for name, h in load_harnesses(include_disabled=True).items():  # plan merges disabled ones too
+            adapters.settings_format(name, h)
     except ConfigError as e:  # the settings merges depend on it
-        return found + [("FAIL", str(e), "set settings_format to claude or antigravity in harnesses.local.toml")]
+        return found + [("FAIL", str(e), f"set settings_format to {' or '.join(adapters.SETTINGS_FORMATS)} "
+                         "in harnesses.local.toml")]
     found += _render_findings(srcs)
     roots = [s.root for s in every_src]
     links, stale, merges = plan(srcs, every_src)

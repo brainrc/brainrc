@@ -68,9 +68,9 @@ ALLOW = [
     ("brainrc/doctor.py", r"old ai-config plugin", "C: old Cursor plugin warning"),
     ("brainrc/doctor.py", r"when the old `ai-config` plugin", "C: docstring of the old-plugin check"),
     # D. On-disk names kept for compatibility.
-    ("brainrc/mcp.py", r"# >>> ai-config mcp servers \(written by aicfg apply; edits here are replaced\)",
+    ("brainrc/adapters/codex.py", r"# >>> ai-config mcp servers \(written by aicfg apply; edits here are replaced\)",
      "D: Codex block start marker"),
-    ("brainrc/mcp.py", r"# <<< ai-config mcp servers", "D: Codex block end marker"),
+    ("brainrc/adapters/codex.py", r"# <<< ai-config mcp servers", "D: Codex block end marker"),
     ("brainrc/config.py", r"ai-config-guard\.js", "D: the old OpenCode link, pruned on apply"),
     ("brainrc/packs.py", r"\.git/aicfg-fetched\.json", "D: the fetch record"),
     # E. Docs sentences about old names: exact tokens, or lines that say old/former/deprecated/legacy.

@@ -17,6 +17,7 @@ import stat
 from datetime import datetime, timezone
 from pathlib import Path
 
+from . import adapters
 from .config import BACKUPS_KEPT, OWNED_HOOK, settings_home
 from .plan import SettingsMerge
 
@@ -216,30 +217,15 @@ def record_owned(dest: Path, owned: dict[str, list[str]]) -> None:
         owned_file().unlink()
 
 
-# Antigravity's hooks.json maps a name to each hook set ({"<name>": {"PreToolUse": [...]}}); brainrc's
-# groups go under this name, and a hook set the user named stays theirs.
-ANTIGRAVITY_ENTRY = "brainrc"
-
-
 def as_claude(current: dict, fmt: str) -> dict:
-    """A settings file in Claude Code's shape, hooks under "hooks", whatever its own format."""
-    if fmt != "antigravity":
-        return current
-    entry = current.get(ANTIGRAVITY_ENTRY)
-    return {"hooks": copy.deepcopy(entry)} if isinstance(entry, dict) else {}
+    """A settings file in Claude Code's shape, hooks under "hooks", whatever its own format: the
+    format's adapter maps it (#306), e.g. Antigravity's named hook sets."""
+    return adapters.settings_adapter(fmt).hooks_view(current)
 
 
 def from_claude(current: dict, merged: dict, fmt: str) -> dict:
     """current with the hooks in merged (Claude Code's shape) put back in fmt's place."""
-    if fmt != "antigravity":
-        return merged
-    out = copy.deepcopy(current)
-    hooks = merged.get("hooks")
-    if hooks:
-        out[ANTIGRAVITY_ENTRY] = hooks
-    elif isinstance(current.get(ANTIGRAVITY_ENTRY), dict):
-        out.pop(ANTIGRAVITY_ENTRY)  # brainrc emptied its own entry
-    return out
+    return adapters.settings_adapter(fmt).hooks_put(current, merged)
 
 
 def settings_change(m: SettingsMerge) -> tuple[str, dict | None]:
@@ -250,7 +236,7 @@ def settings_change(m: SettingsMerge) -> tuple[str, dict | None]:
         return "conflict", None
     if not isinstance(current, dict):
         return "conflict", None
-    if m.fmt == "antigravity" and ANTIGRAVITY_ENTRY in current and not isinstance(current[ANTIGRAVITY_ENTRY], dict):
+    if adapters.settings_adapter(m.fmt).hooks_problem(current):
         return "conflict", None
     view = as_claude(current, m.fmt)
     merged = from_claude(current, merge_settings(view, m.wanted(), m.markers(), read_owned(m.dest)), m.fmt)
@@ -265,7 +251,7 @@ def conflict_reason(m: SettingsMerge) -> str:
         return "invalid JSON"
     if not isinstance(current, dict):
         return "not a JSON object"
-    return f"its `{ANTIGRAVITY_ENTRY}` entry isn't an object"
+    return adapters.settings_adapter(m.fmt).hooks_problem(current) or "invalid JSON"
 
 
 def settings_owned(m: SettingsMerge) -> dict[str, list[str]]:

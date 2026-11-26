@@ -21,8 +21,8 @@ and MCP call. Cursor's, OpenCode's, Codex's and Antigravity's guards run that ho
 each passing where the command runs.
 
 `path` and `host` rules (#322) aren't for the hook: apply compiles them into the OS sandbox settings
-of each harness that has one (SANDBOXES), where no command can talk its way around them. Claude Code's
-sandbox.filesystem.denyRead and denyWrite take the paths, sandbox.network.deniedDomains the hosts.
+of each harness whose adapter has one (its `sandbox`, brainrc/adapters/), where no command can talk
+its way around them. Claude Code's sandbox.filesystem.denyRead and denyWrite take the paths, sandbox.network.deniedDomains the hosts.
 A sandbox has no notion of where a command runs and can't ask, so these rules are deny-only and apply
 everywhere: a pack with a [scope] gives each one `scope = {}`.
 """
@@ -33,7 +33,7 @@ import re
 import shlex
 from pathlib import Path
 
-from . import config
+from . import adapters, config
 from . import scope as pack_scope
 from .sources import Source
 
@@ -41,9 +41,6 @@ ACTIONS = ("deny", "ask")
 KINDS = ("match", "tool", "path", "host")  # what a rule is about: exactly one per rule
 SANDBOX_KINDS = ("path", "host")
 VERSION = 1
-# Harnesses whose settings file holds an OS sandbox's lists: where each compiled kind goes.
-SANDBOXES = {"claude": {"path": [("filesystem", "denyRead"), ("filesystem", "denyWrite")],
-                        "host": [("network", "deniedDomains")]}}
 HOST = re.compile(r"^(\*\.)?[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*$")
 # The commands the hook looks past to find the program (its WRAPPERS); tests/test_guard_rules.py
 # keeps the two in step.
@@ -171,7 +168,7 @@ def sandbox(srcs: list[Source], harness: str) -> dict:
     """The sandbox lists every enabled pack's path and host rules compile to in harness's settings
     file: {"filesystem": {"denyRead": [...], ...}, "network": {...}}; {} when the harness has no
     sandbox or no pack has such a rule. A malformed rule is left out here; validate names it."""
-    targets = SANDBOXES.get(harness)
+    targets = adapters.get(harness).sandbox
     out: dict[str, dict[str, list[str]]] = {}
     for src in srcs if targets else []:
         if src.is_core:
@@ -182,7 +179,7 @@ def sandbox(srcs: list[Source], harness: str) -> dict:
             alone = {"guard": {"deny": [rule]}, "scope": src.meta.get("scope")}  # the pack's scope counts
             if kind is None or not isinstance(rule.get("reason"), str) or check(alone, ""):
                 continue
-            for section, key in targets[kind]:
+            for section, key in targets.get(kind, []):
                 found = out.setdefault(section, {}).setdefault(key, [])
                 if rule[kind] not in found:
                     found.append(rule[kind])

@@ -22,7 +22,7 @@ from .config import (
     tilde,
 )
 from .sources import Source, installed_items, render_instructions, sources
-from .opencode import agents_format
+from . import adapters
 from .guard import rules_file as guard_rules_file, sandbox as guard_sandbox
 
 
@@ -49,9 +49,26 @@ def obsolete_renders(extensions: str | None, agents: dict[Path, str], guard_rule
     gone = [config.home_extensions_file()] if extensions is None and config.home_extensions_file().is_file() else []
     if guard_rules is None and guard_rules_file().is_file():
         gone.append(guard_rules_file())
-    if rendered_agents_dir().is_dir():
-        gone += sorted(p for p in rendered_agents_dir().glob("*.md") if p not in agents)
+    for d in rendered_dirs():
+        if d.is_dir():
+            gone += sorted(p for p in d.glob("*.md") if p not in agents)
     return gone
+
+
+def rendered_dirs() -> list[Path]:
+    """Where agents rendered in another tool's format go, one directory per format (OpenCode's)."""
+    return [rendered_agents_dir(fmt) for fmt in adapters.AGENT_FORMATS if fmt != "claude"]
+
+
+def rendered_agents(srcs: list[Source]) -> dict[Path, str]:
+    """A rendered copy of every agent for each agent format an enabled harness uses (#306: the
+    format's adapter writes it), e.g. OpenCode's, which rejects Claude Code's frontmatter."""
+    renderers = {}
+    for name, h in load_harnesses().items():
+        if (adapter := adapters.agent_renderer(name, h)) is not None:
+            renderers.setdefault(adapters.agents_format(name, h), adapter)
+    return {rendered_agents_dir(fmt) / f.name: adapter.render_agent(f)
+            for fmt, adapter in renderers.items() for src in srcs for f in installed_items(src, "agents")}
 
 @dataclass
 class Link:
@@ -235,7 +252,7 @@ def _pack_plugin(target: Path) -> bool:
 def _managed_target(target: Path, roots: list[Path]) -> bool:
     """True if target is a path brainrc itself links to: in a source root, or the hooks copy."""
     t = Path(os.path.abspath(target)).resolve()
-    if t == rendered_instructions().resolve() or t.parent == rendered_agents_dir().resolve():
+    if t == rendered_instructions().resolve() or t.parent in {d.resolve() for d in rendered_dirs()}:
         return True
     for root in (r.resolve() for r in roots):
         if t.parent in {root / k for k in KINDS}:
@@ -272,8 +289,8 @@ def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
         for kind in KINDS:
             if kind in h:
                 d = expand(h[kind])
-                rendered = kind == "agents" and agents_format(h) == "opencode"
-                links += [Link(name, d / p.name, rendered_agents_dir() / p.name if rendered else p)
+                fmt = adapters.agents_format(name, h) if kind == "agents" else "claude"
+                links += [Link(name, d / p.name, rendered_agents_dir(fmt) / p.name if fmt != "claude" else p)
                           for src in srcs for p in installed_items(src, kind)]
         if "instructions" in h:
             links.append(Link(name, expand(h["instructions"]), rendered_instructions()))
@@ -300,10 +317,10 @@ def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
         if "settings" in h and (fragments or box):
             known = {pack_hooks_dir(h["hooks_dir"], s.name) for s in every_src if "hooks_dir" in h}
             merges.append(SettingsMerge(name, expand(h["settings"]), fragments, known,
-                                        config.settings_format(h), box))
+                                        adapters.settings_format(name, h), box))
         elif "settings" in h and "hooks_dir" in h and not hooks_on:  # take brainrc's hooks back out
             known = {h["hooks_dir"]} | {pack_hooks_dir(h["hooks_dir"], s.name) for s in every_src}
-            merges.append(SettingsMerge(name, expand(h["settings"]), [], known, config.settings_format(h)))
+            merges.append(SettingsMerge(name, expand(h["settings"]), [], known, adapters.settings_format(name, h)))
     # A disabled harness keeps its settings file, so take brainrc's hooks back out of it:
     # merging no fragments removes only the groups brainrc owns.
     enabled = load_harnesses()
@@ -312,7 +329,7 @@ def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
             known = set()
             if "hooks_dir" in h:
                 known = {h["hooks_dir"]} | {pack_hooks_dir(h["hooks_dir"], s.name) for s in every_src}
-            merges.append(SettingsMerge(name, expand(h["settings"]), [], known, config.settings_format(h)))
+            merges.append(SettingsMerge(name, expand(h["settings"]), [], known, adapters.settings_format(name, h)))
 
     # Stale: links brainrc made earlier that it wouldn't make now (removed items, disabled packs,
     # disabled harnesses). Only symlinks pointing at a path brainrc links to are touched.

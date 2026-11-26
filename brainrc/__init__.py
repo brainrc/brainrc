@@ -4,7 +4,7 @@ Run it with `python3 scripts/brainrc.py <command>` or `python3 -m brainrc <comma
 `brainrc.cli`. Below are the names tests and scripts/evals.py use. Shared state such as `REPO`
 lives in the module that owns it (`brainrc.config.REPO`), so patch it there.
 """
-from . import cli, config, doctor, init, mcp, opencode, plan, plugin, plugins, settings, tokens, uninstall, validate  # noqa: F401
+from . import adapters, cli, config, doctor, init, mcp, plan, plugin, plugins, settings, tokens, uninstall, validate  # noqa: F401
 from .config import (
     BACKUPS_KEPT,
     HOOKS_DIR_PLACEHOLDER,
@@ -24,7 +24,6 @@ from .sources import (
     skills,
     sources,
 )
-from .opencode import opencode_agent
 from .plan import Link, SettingsMerge, link_target, render_fragment
 from .settings import _owned, merge_settings
 from .plugin import check_plugin, cmd_plugin, plugin_manifests
@@ -33,3 +32,5 @@ from .tokens import always_tokens, check_budgets, cmd_tokens, estimate_tokens
 from .validate import cmd_validate
 from .doctor import cmd_doctor, doctor_findings
 from .cli import cmd_sync, cmd_update, main
+
+opencode_agent = adapters.BUILTIN["opencode"].render_agent  # an agent in OpenCode's format

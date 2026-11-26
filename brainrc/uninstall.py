@@ -18,7 +18,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable
 
-from . import config
+from . import adapters, config
 from .config import (
     KINDS,
     ConfigError,
@@ -29,15 +29,13 @@ from .config import (
     hooks_copy_root,
     home_extensions_file,
     load_harnesses,
-    rendered_agents_dir,
     rendered_instructions,
-    settings_format,
     settings_home,
     tilde,
 )
 from .manifest import checked_manifest, manifest_file
-from .mcp import ADAPTERS, McpSync, _owned_file, _read_record, mcp_change, mcp_files, record_owned, write_mcp
-from .plan import SettingsMerge, _managed_target, link_target
+from .mcp import McpSync, _owned_file, _read_record, mcp_change, mcp_files, record_owned, write_mcp
+from .plan import SettingsMerge, _managed_target, link_target, rendered_dirs
 from .settings import FileChanged, conflict_reason, read_current, settings_change, write_settings
 from .settings import record_owned as record_settings_owned
 from .sources import sources
@@ -130,7 +128,7 @@ def _settings_steps(name: str, h: dict, problems: list[str]) -> list[Step]:
     if "hooks_dir" in h:
         markers = {h["hooks_dir"], *former_hooks_dirs(h["hooks_dir"])}
     try:
-        fmt = settings_format(h)
+        fmt = adapters.settings_format(name, h)
     except ConfigError as e:  # a typo in harnesses.local.toml mustn't stop the rest of uninstall
         problems.append(f"{tilde(dest)}: {e}, so brainrc's hooks may still be in it; fix it, then re-run")
         return []
@@ -160,7 +158,7 @@ def _mcp_steps(name: str, h: dict, problems: list[str]) -> list[Step]:
 
 
 def _mcp_file_steps(name: str, dest: Path, problems: list[str]) -> list[Step]:
-    if name not in ADAPTERS or not dest.is_file():
+    if not adapters.get(name).writes_mcp or not dest.is_file():
         return []
     m = McpSync(name, dest, {})
     state, text, _, _ = mcp_change(m)
@@ -181,7 +179,7 @@ def _mcp_file_steps(name: str, dest: Path, problems: list[str]) -> list[Step]:
 def _generated() -> list[Path]:
     """What apply generates in the settings home; local config and fetched packs stay."""
     return [p for p in (rendered_instructions(), home_extensions_file(), manifest_file(), settings_home() / "brainrc.lock")
-            if p.is_file()] + [d for d in (rendered_agents_dir(), hooks_copy_root()) if d.is_dir()]
+            if p.is_file()] + [d for d in (*rendered_dirs(), hooks_copy_root()) if d.is_dir()]
 
 
 def _remove(path: Path) -> None:

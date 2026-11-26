@@ -55,6 +55,6 @@ What the tables can't show:
 - **Antigravity CLI's paths** (`~/.gemini/config/`) come from its changelog and user reports, not
   a live run.
 
-Tool paths change often. To add or move a tool, edit `harnesses.toml` (and, for a new tool, its
-display name in `brainrc/capabilities.py`), then run
-`python3 scripts/brainrc.py capabilities --write`.
+Tool paths change often. To move a tool, edit `harnesses.toml`, then run
+`python3 scripts/brainrc.py capabilities --write`. To add one, write its adapter
+([tool adapters](adapters.md)).

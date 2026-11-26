@@ -12,7 +12,12 @@ its harnesses.toml table (docs/adapters.md).
 """
 from __future__ import annotations
 
+import json
+import os
 from pathlib import Path
+
+# How a Python hook finds itself; through a link it resolves to the source, so a copy is told that path.
+PY_SELF = "Path(__file__).resolve()"
 
 
 class Adapter:
@@ -62,6 +67,15 @@ class Adapter:
     def hooks_problem(self, current: dict) -> str | None:
         """Why this format can't merge into current (a JSON object), or None when it can."""
         return None
+
+    # --- copy mode (#177) ------------------------------------------------------------------------
+    def copied_file(self, text: str, source: Path) -> str:
+        """A file apply copies into this tool where it can't link (Windows without Developer Mode),
+        rewritten so it behaves as the link would. A Python hook that finds the guards beside its
+        own real path (`Path(__file__).resolve()`) is given its source's real path instead."""
+        if source.suffix == ".py" and PY_SELF in text:
+            return text.replace(PY_SELF, f"Path({json.dumps(os.path.realpath(source))})")
+        return text
 
     # --- MCP ----------------------------------------------------------------------------------
     def mcp_entry(self, server: dict) -> dict:

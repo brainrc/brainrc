@@ -90,7 +90,8 @@ If you move the checkout, run `python3 scripts/brainrc.py apply --repair` from t
 
 ## Platforms
 
-macOS and Linux. brainrc installs by symlink, so on Windows use WSL, or turn on Developer Mode and
-run `git config --global core.symlinks true` before you clone anything. `validate` and `doctor`
-say when symlinks don't work, with the fix. Native Windows support is on the
-[roadmap](roadmap.md).
+macOS and Linux. brainrc installs by symlink. On a Windows machine that can't make one (no
+Developer Mode, not an administrator), `apply` copies instead and records each copy
+([`link_mode`](configuration.md#brainrclocaltoml)), so skills, agents, commands and rules install
+without WSL. The hook commands `apply` writes are still POSIX shell, so the guards need WSL
+until native Windows hooks land. Those, and a Windows CI cell, are on the [roadmap](roadmap.md).

@@ -13,7 +13,7 @@ import shutil
 import sys
 from pathlib import Path
 
-from . import adapters, capabilities, config, guard
+from . import adapters, capabilities, config, copies, guard
 from .config import (
     ConfigError,
     check_config,
@@ -37,8 +37,8 @@ from .uninstall import cmd_uninstall, finish_purge
 from .packs import adopt_record, describe, fetch_pack, git_packs, pinned, to_fetch
 from . import update as pin_update
 from .plan import (
-    hooks_copy_current, invalid_fragments, link_target, obsolete_renders, old_root, plan, rendered_agents,
-    stale_hooks_copy, stale_renders,
+    edited_stale_copies, hooks_copy_current, invalid_fragments, link_target, obsolete_renders, old_root, plan,
+    rendered_agents, stale_hooks_copy, stale_renders,
 )
 from .mcp import check_servers, mcp_change, mcp_plan, record_owned, write_mcp
 from .settings import FileChanged, conflict_reason, read_current, read_owned, settings_change, settings_owned
@@ -64,6 +64,7 @@ from .audit import cmd_audit
 
 
 CHANGED_HINT = "(changed during apply; close Claude Code and re-run)"
+EDITED_HINT = "(a copy edited since apply wrote it; left alone)"
 
 
 def cmd_sync(apply: bool, only: list[str] | None = None, repair: bool = False, yes: bool = False) -> int:
@@ -303,29 +304,34 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True, moved: frozens
 
     old, prune = _old_roots(srcs, roots) if repair else (None, None)
     links, stale, merges = plan(srcs, old_roots=prune)
-    conflicts, changed, changes, repairable = 0, 0, len(pending) + len(perms) + len(renders) + len(obsolete), 0
+    conflicts, changed, changes, repairable, edited = 0, 0, len(pending) + len(perms) + len(renders) + len(obsolete), 0, 0
     for link in links:
         state = link.state(roots, old)
         if state == "ok":
             continue
-        print(f"{state.upper():9} {link.harness:9} {tilde(link.dest)}")
-        if state == "conflict":
+        print(f"{state.upper():9} {link.harness:9} {tilde(link.dest)}" + (f"  {EDITED_HINT}" if state == "edited" else ""))
+        if state in ("conflict", "edited"):
             conflicts += 1
-            repairable += link.state(roots, []) == "repair"
+            edited += state == "edited"
+            repairable += state == "conflict" and link.state(roots, []) == "repair"
             continue
         changes += 1
         if apply:
             if link.copy:
                 _copy_hooks(*link.copy)
             link.dest.parent.mkdir(parents=True, exist_ok=True)
-            if link.dest.is_symlink():
-                link.dest.unlink()
-            config.symlink(link.dest, link.source)
+            copies.place(link.harness, link.dest, link.source, adapters.get(link.harness).copied_file)
     for p in stale:
         changes += 1
         print(f"{'PRUNE':9} {'':9} {tilde(p)}")
         if apply:
-            p.unlink()
+            copies.remove(p)
+    for p in edited_stale_copies(links):
+        conflicts += 1
+        edited += 1
+        print(f"{'EDITED':9} {'':9} {tilde(p)}  {EDITED_HINT}")
+    if apply:
+        copies.tidy(config.in_scope)
     copy = stale_hooks_copy(links) if config.harness_scope() is None else None
     if copy:
         changes += 1
@@ -391,12 +397,15 @@ def _sync(apply: bool, repair: bool = False, relock: bool = True, moved: frozens
         print("Everything in sync.")
     elif not apply and changes:
         print("\nDry run. Run `apply` to write.")
-    if conflicts:
-        print(f"\n{conflicts} conflict(s): existing files not managed by this repo. "
+    if conflicts - edited:
+        print(f"\n{conflicts - edited} conflict(s): existing files not managed by this repo. "
               "Move them into the repo (or delete them), then re-run.")
         if repairable:
             print(f"{repairable} of them are broken links to where an item used to be (a moved checkout?): "
                   f"`{config.command('apply --repair')}` relinks them.")
+    if edited:
+        print(f"\n{edited} cop{'y' if edited == 1 else 'ies'} edited since apply wrote {'it' if edited == 1 else 'them'}, "
+              "so left alone. Move the change into its source (or delete the copy), then re-run.")
     if changed:
         print(f"\n{changed} file(s) changed while apply ran, so they were left alone. "
               f"Close Claude Code (it rewrites {tilde(config.claude_json())} while running), then re-run.")

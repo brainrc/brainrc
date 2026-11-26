@@ -13,7 +13,8 @@ says `brainrc`.
 ## A harness doesn't see a skill, agent, command, or rule
 
 Run `brainrc apply`. Skills, agents, and commands are symlinks, so edits to
-existing ones show up at once, but new or removed ones need `apply`. Rules are different:
+existing ones show up at once, but new or removed ones need `apply`. In
+[copy mode](configuration.md#brainrclocaltoml) they are copies, so edits need `apply` too. Rules are different:
 they're rendered into `~/.config/brainrc/instructions.md`, so **every** change to a rule needs
 `apply`, edits included; `status` lists `instructions.md` as `UPDATE` until you do. Start a new session
 in the tool afterwards.
@@ -43,7 +44,8 @@ a link. `brainrc` never overwrites it. Look at it, then either:
 - move it into a pack (as a skill, agent, or command) and delete the original, or
 - delete it if you don't need it,
 
-and run `apply` again. `CONFLICT` on a settings file means it isn't valid JSON: fix it by
+and run `apply` again. `EDITED` is a copy `apply` made in copy mode that has changed since: move
+the change into its source (or delete the copy), then run `apply`. `CONFLICT` on a settings file means it isn't valid JSON: fix it by
 hand. `CONFLICT` naming an MCP server means your harness config already defines a server of that
 name: rename or remove yours (or the registry's), then run `apply`.
 

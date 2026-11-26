@@ -42,6 +42,14 @@
             "opencode"
           ]
         },
+        "settings_format": {
+          "description": "How the settings file holds hooks: \"claude\" (also Cursor's and Codex's) under \"hooks\"; \"antigravity\" under a named entry, \"brainrc\".",
+          "type": "string",
+          "enum": [
+            "claude",
+            "antigravity"
+          ]
+        },
         "commands": {
           "type": "string",
           "minLength": 1,

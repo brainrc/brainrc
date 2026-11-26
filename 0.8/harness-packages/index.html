@@ -1973,9 +1973,12 @@ Nothing here was run against a real <code>agy</code>.</p>
 <li>Hooks: <code>hooks.json</code> at the plugin root, <code>{"&lt;name&gt;": {"PreToolUse": [{"matcher", "hooks"}]}}</code>;
   commands run from the plugin folder. <code>PreToolUse</code> gets <code>toolCall: {name, args}</code> (<code>run_command</code>
   → <code>args.CommandLine</code>; <code>view_file</code>, <code>write_to_file</code>, <code>replace_file_content</code>) and prints
-  <code>{"decision": "ask" | "deny", "reason"}</code>. An empty <code>{}</code> is reported to deny every call and
-  <code>allow</code> is documented as auto-approve, so a guard has no safe reply for "no objection". <strong>Not
-  shipped</strong> until a live test settles it.</li>
+  <code>{"decision": "ask" | "deny", "reason"}</code>. An empty <code>{}</code> is reported to deny every call. Its hooks
+  page (read 2026-11-26) now lists <code>allow</code> (hand on to the next hook or the default policy),
+  <code>auto_approve</code>, <code>deny</code>, <code>ask</code>, <code>force_ask</code> and <code>deny_unless_prior_grant</code>, and #1053 shows <code>allow</code>
+  doesn't approve a command the user hasn't granted, so <code>allow</code> is the "no objection" reply core's
+  guard uses through <code>brainrc apply</code> (<code>~/.gemini/config/hooks.json</code>). The plugin route is still
+  unshipped.</li>
 <li>Skills: <code>disable-slash-command</code> hides a skill from <code>/</code>; <code>disable-model-invocation</code> is likely ignored.</li>
 </ul>
 <h2 id="opencode">OpenCode<a class="headerlink" href="#opencode" title="Permanent link">&para;</a></h2>

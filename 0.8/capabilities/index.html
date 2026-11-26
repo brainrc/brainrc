@@ -1801,7 +1801,7 @@ switches roles inside one session.</p>
 <p>One row per tool: where <code>apply</code> puts each kind of content, and what a repo's <code>brainrc.toml</code>
 writes for it (<a href="../project/">team setup</a>). A dash means that tool gets none of it. Paths are the
 defaults; the variables in the last column move them (<a href="../configuration/#environment-variables">configuration</a>).
-This table is generated from <a href="https://github.com/brainrc/brainrc/blob/v0.8.30/harnesses.toml"><code>harnesses.toml</code></a>, and a test fails when the two
+This table is generated from <a href="https://github.com/brainrc/brainrc/blob/v0.8.31/harnesses.toml"><code>harnesses.toml</code></a>, and a test fails when the two
 disagree. The table at the top is written by hand: when you change <code>harnesses.toml</code>, update it too.</p>
 <!-- BEGIN capability matrix: generated from harnesses.toml by `brainrc capabilities --write` -->
 <table>
@@ -1836,7 +1836,7 @@ disagree. The table at the top is written by hand: when you change <code>harness
 <td><code>~/.codex/AGENTS.md</code></td>
 <td>—</td>
 <td><code>~/.codex/prompts</code></td>
-<td>—</td>
+<td><code>~/.codex/hooks.json</code>: PreToolUse</td>
 <td><code>~/.codex/config.toml</code></td>
 <td><code>.agents/skills/</code>, <code>AGENTS.md</code></td>
 <td><code>CODEX_HOME</code></td>
@@ -1858,7 +1858,7 @@ disagree. The table at the top is written by hand: when you change <code>harness
 <td><code>~/.gemini/config/AGENTS.md</code></td>
 <td>—</td>
 <td>—</td>
-<td>—</td>
+<td><code>~/.gemini/config/hooks.json</code>: PreToolUse</td>
 <td>—</td>
 <td><code>.agents/skills/</code>, <code>AGENTS.md</code></td>
 <td>—</td>

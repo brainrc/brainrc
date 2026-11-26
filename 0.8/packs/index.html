@@ -2161,8 +2161,8 @@ and installs the lot into every tool. This page is the reference: every file, ke
   <a href="employer-pack/">an employer</a>, <a href="team-pack/">a team</a>, <a href="personal-pack/">yourself</a>
   or <a href="stack-pack/">a stack</a>, or <a href="from-a-plugin/">from a Claude Code plugin</a>.</li>
 <li><strong>Understand</strong>: <a href="why-packs/">why packs, and what you trust when you enable one</a>.</li>
-<li><strong>Copy</strong>: <a href="https://github.com/brainrc/brainrc/blob/v0.8.30/examples/pack-acme/README.md">examples/pack-acme</a> (every feature but hooks) and
-  <a href="https://github.com/brainrc/brainrc/blob/v0.8.30/examples/pack-homelab/README.md">examples/pack-homelab</a> (a guard hook).</li>
+<li><strong>Copy</strong>: <a href="https://github.com/brainrc/brainrc/blob/v0.8.31/examples/pack-acme/README.md">examples/pack-acme</a> (every feature but hooks) and
+  <a href="https://github.com/brainrc/brainrc/blob/v0.8.31/examples/pack-homelab/README.md">examples/pack-homelab</a> (a guard hook).</li>
 </ul>
 <h2 id="layout">Layout<a class="headerlink" href="#layout" title="Permanent link">&para;</a></h2>
 <p>Every folder is optional.</p>
@@ -2285,7 +2285,7 @@ wrong type fails, and a key it doesn't know warns, naming the closest known key
 <tr>
 <td><code>guard</code></td>
 <td>table</td>
-<td>[[guard.deny]] and [[guard.ask]] rules core's guard hook enforces, with match or tool, reason and scope (<a href="#guard-rules">guard rules</a>).</td>
+<td>[[guard.deny]] and [[guard.ask]] rules core's guard hook enforces, with match or tool, reason and scope; deny rules may name a path or host for the OS sandbox instead (<a href="#guard-rules">guard rules</a>).</td>
 </tr>
 <tr>
 <td><code>extensions</code></td>
@@ -2304,7 +2304,7 @@ wrong ones from a first line naming the schema, which <code>brainrc import</code
 <div class="highlight"><pre><span></span><code><span class="c1">#:schema https://raw.githubusercontent.com/brainrc/brainrc/main/docs/schemas/pack.toml.schema.json</span>
 <span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"acme"</span>
 </code></pre></div>
-<p>In a checkout of this repo, <a href="https://github.com/brainrc/brainrc/blob/v0.8.30/.taplo.toml"><code>.taplo.toml</code></a> maps each file to its schema. Files
+<p>In a checkout of this repo, <a href="https://github.com/brainrc/brainrc/blob/v0.8.31/.taplo.toml"><code>.taplo.toml</code></a> maps each file to its schema. Files
 outside it (a pack's own repo, <code>~/.config/brainrc/harnesses.local.toml</code>) take the <code>#:schema</code> line.</p>
 <h2 id="mcpserverstoml">mcp/servers.toml<a class="headerlink" href="#mcpserverstoml" title="Permanent link">&para;</a></h2>
 <p>Each <code>[servers.&lt;name&gt;]</code> table is one MCP server, named with the pack's prefix
@@ -2402,7 +2402,7 @@ brainrc<span class="w"> </span>validate<span class="w"> </span>--pack<span class
 system (<code>github</code>, <code>jira</code> or <code>local</code>), which becomes an <code>[extensions.gatework.ticket]</code> table. It
 checks the <a href="#naming">naming rules</a> before it writes anything, never writes into a folder with files
 in it but <code>.git</code> (<code>--force</code> replaces an earlier pack and keeps its <code>.git</code>), and <code>--enable</code> adds the pack to <code>packs.local.toml</code>.</p>
-<p><a href="https://github.com/brainrc/brainrc/blob/v0.8.30/examples/pack-template/README.md">examples/pack-template</a> holds the same files for a pack
+<p><a href="https://github.com/brainrc/brainrc/blob/v0.8.31/examples/pack-template/README.md">examples/pack-template</a> holds the same files for a pack
 called <code>mypack</code>, with steps for renaming it: the contents of a GitHub template repository, for
 anyone who would rather start from <strong>Use this template</strong> than install brainrc first.
 <code>scripts/pack_template.py</code> keeps it in step with <code>new pack</code>, and CI validates it.</p>
@@ -2541,7 +2541,7 @@ says why, and <code>brainrc scope --extensions</code> prints the <a href="#exten
 should read: only the packs that apply. The <code>extensions.md</code> that <code>apply</code> renders holds every
 pack and ends with a Scope section saying where each scoped pack applies.</p>
 <h2 id="guard-rules">Guard rules<a class="headerlink" href="#guard-rules" title="Permanent link">&para;</a></h2>
-<p>A pack adds rules to core's Claude Code guard in <code>pack.toml</code>, without a hook of its own:</p>
+<p>A pack adds rules to core's guard in <code>pack.toml</code>, without a hook of its own:</p>
 <div class="highlight"><pre><span></span><code><span class="k">[[guard.deny]]</span><span class="w">                 </span><span class="c1"># refused</span>
 <span class="n">match</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"acme-deploy prod"</span>
 <span class="n">reason</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"deploys to production, which only the release pipeline does"</span>
@@ -2561,8 +2561,30 @@ directory the command runs in, or the rule's own <code>scope</code> when it sets
 call. Commands inside <code>sh -c</code>, <code>eval</code>, <code>$(…)</code> and backticks are unwrapped as for core's own rules.
 A pack's deny wins over any ask; a pack's ask is shown when core has nothing to ask. Without the
 file (no rules, or before the first <code>apply</code>), the guard behaves as before. <code>validate</code> checks each
-rule. Claude Code enforces them today; the other tools' guards follow
-(<a href="../guardrails/#gaps-by-tool">guardrails</a>).</p>
+rule. Claude Code, Cursor, OpenCode, Codex and Antigravity all enforce them through core's guard,
+judging the scope where each runs the command; where a tool can't ask, a pack's ask blocks the call
+and tells the model to ask you to run it (<a href="../guardrails/#gaps-by-tool">guardrails</a>).</p>
+<p>A <code>[[guard.deny]]</code> rule can set <code>path</code> or <code>host</code> instead, to reach what the hooks can't see (a
+script that reads a file, a client that calls a host). <code>apply</code> compiles these into Claude Code's
+sandbox settings in <code>~/.claude/settings.json</code>, which the OS enforces on every Bash command and its
+child processes:</p>
+<div class="highlight"><pre><span></span><code><span class="k">[[guard.deny]]</span>
+<span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"~/.acme/credentials"</span><span class="w">   </span><span class="c1"># sandbox.filesystem.denyRead and denyWrite</span>
+<span class="n">reason</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Acme's deploy keys"</span>
+<span class="n">scope</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">                     </span><span class="c1"># the sandbox applies everywhere, so say so in a scoped pack</span>
+
+<span class="k">[[guard.deny]]</span>
+<span class="n">host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"*.acme.example"</span><span class="w">        </span><span class="c1"># sandbox.network.deniedDomains</span>
+<span class="n">reason</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Acme's internal services"</span>
+<span class="n">scope</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span>
+</code></pre></div>
+<p><code>path</code> starts with <code>~/</code> or <code>/</code>; <code>host</code> is a domain, optionally <code>*.</code> first. These rules can't ask
+and can't follow a <code>[scope]</code>, so <code>validate</code> refuses one under <code>[[guard.ask]]</code> or one that a scoped
+pack leaves scoped. The entries brainrc adds are recorded in <code>settings-owned.json</code>, as permission
+entries are: your own stay, and the pack's go when it's disabled or brainrc is uninstalled. They
+take effect only where Claude Code's sandbox is on (<code>sandbox.enabled</code>), and the sandbox covers
+Bash, not the Read tool or web fetches (<a href="../guardrails/#known-gaps">guardrails</a>). Other tools have
+no sandbox brainrc can write, so there these rules do nothing.</p>
 <p>Test a rule with <a href="#pack-tests"><code>brainrc.testing</code></a> against core's hook, with <code>BRAINRC_HOME</code> set to
 a directory holding the rendered file, and a near miss beside the risky command.</p>
 <h2 id="permissions">Permissions<a class="headerlink" href="#permissions" title="Permanent link">&para;</a></h2>
@@ -2687,7 +2709,7 @@ test needs no scaffolding of its own. A string is a Bash command; a dict is the 
 <p><code>assert_allows</code> passes when the hook allows or has no opinion, and <code>assert_no_opinion</code> only when it
 stays out, so Claude Code's own permission check still decides; <code>assert_denies</code> counts exit code 2
 as a deny. Each lists every case that came out wrong, and a missing, failing or hung hook fails.
-<code>run_hook(hook, payload)</code> returns the decision itself. <a href="https://github.com/brainrc/brainrc/blob/v0.8.30/examples/pack-homelab/tests/test_guard.py">pack-homelab</a>
+<code>run_hook(hook, payload)</code> returns the decision itself. <a href="https://github.com/brainrc/brainrc/blob/v0.8.31/examples/pack-homelab/tests/test_guard.py">pack-homelab</a>
 has a full example.</p>
 <h2 id="tripwirestoml">tripwires.toml<a class="headerlink" href="#tripwirestoml" title="Permanent link">&para;</a></h2>
 <p>Stale facts that must not come back, checked by <code>validate</code>:</p>
@@ -2699,7 +2721,7 @@ has a full example.</p>
 <span class="n">paths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"*.md"</span><span class="p">]</span><span class="w">                              </span><span class="c1"># default; fnmatch against the path in the pack</span>
 </code></pre></div>
 <h2 id="compatibility">Compatibility<a class="headerlink" href="#compatibility" title="Permanent link">&para;</a></h2>
-<p>brainrc's version is in <code>VERSION</code>. <a href="https://github.com/brainrc/brainrc/blob/v0.8.30/CHANGELOG.md">CHANGELOG.md</a> tags changes that affect packs
+<p>brainrc's version is in <code>VERSION</code>. <a href="https://github.com/brainrc/brainrc/blob/v0.8.31/CHANGELOG.md">CHANGELOG.md</a> tags changes that affect packs
 with <strong>[pack contract]</strong>. Declare the versions your pack supports with <code>requires_core</code>:
 comma-separated clauses of <code>&gt;=</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&lt;</code>, <code>==</code>, <code>!=</code> and a version (missing parts
 are zero, and a bare version means <code>&gt;=</code>).</p>

@@ -180,7 +180,8 @@ class WindowsHookFormTest(unittest.TestCase):
         """As the POSIX line's $HOME: one lock gives every machine the same settings file."""
         (entry,) = entries(windows("codex", "~/.codex/hooks/brainrc"))
         self.assertIn("f=os.path.expanduser('~/.codex/hooks/brainrc/guard.py')", entry["commandWindows"])
-        self.assertNotIn(os.path.expanduser("~").replace("\\", "/"), entry["commandWindows"])
+        code = runnable(entry, "codex")[0]  # the Python it runs may itself live under home
+        self.assertNotIn(os.path.expanduser("~").replace("\\", "/"), code)
 
     def test_a_path_a_shell_would_read_is_refused(self):
         with self.assertRaisesRegex(ConfigError, "hooks_dir in harnesses.local.toml"):

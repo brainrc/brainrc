@@ -274,6 +274,8 @@ def check_config() -> list[str]:
     for name in LAYERED_KEYS:
         _layered(name, warnings)
     install_profile(warnings)
+    from .copies import configured
+    configured()  # brainrc.local.toml's link_mode (#177)
     return warnings
 
 
@@ -297,7 +299,7 @@ def install_profile(warnings: list[str] | None = None) -> tuple[str, list[str]]:
                           "paths or patterns, e.g. [\"skills/brainrc-aws\"]")
     if warnings is not None:
         warnings += [f"{tilde(path)}:{line_of(text, k)}: unknown key `{k}`"
-                     for k in data if k not in ("profile", "exclude", "extensions")]
+                     for k in data if k not in ("profile", "exclude", "extensions", "link_mode")]
     return profile, exclude
 
 

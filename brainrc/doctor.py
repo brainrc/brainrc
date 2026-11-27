@@ -10,7 +10,7 @@ import shlex
 import subprocess
 from pathlib import Path
 
-from . import adapters, config, guard
+from . import adapters, config, copies, guard
 from .config import (
     ConfigError,
     KINDS,
@@ -31,7 +31,10 @@ from .sources import (
     pack_compat,
 )
 from .packs import needs_fetch
-from .plan import FragmentError, Link, invalid_fragments, link_target, moved_item, plan, rendered_agents, stale_renders
+from .plan import (
+    FragmentError, Link, edited_stale_copies, invalid_fragments, link_target, moved_item, plan, rendered_agents,
+    stale_renders,
+)
 from .settings import _owned, as_claude, conflict_reason, settings_change
 from .manifest import checked_manifest
 from .mcp import check_servers, mcp_change, mcp_plan
@@ -123,8 +126,16 @@ def _link_finding(link: Link, roots: list[Path]) -> Finding | None:
     state, dest = link.state(roots), tilde(link.dest)
     if state == "create":
         return "FAIL", f"{link.harness}: {dest} is missing", command("apply")
+    if state == "update" and copies.recorded(link.dest) is not None and not link.dest.is_symlink():
+        why = "its source changed" if copies.copying() else "this machine links now (link_mode)"
+        return "FAIL", f"{link.harness}: {dest} is an out-of-date copy ({why})", command("apply")
+    if state == "update" and copies.copying() and link.dest.is_symlink():
+        return "FAIL", f"{link.harness}: {dest} is a link, but this machine copies (link_mode)", command("apply")
     if state == "update":
         return "FAIL", f"{link.harness}: {dest} points at the wrong item", command("apply")
+    if state == "edited":
+        return ("FAIL", f"{link.harness}: {dest} is a copy edited since apply wrote it, so apply leaves it alone",
+                f"move the change into its source (or delete the copy), then {command('apply')}")
     if state == "ok":
         return None
     if not link.dest.is_symlink():
@@ -297,8 +308,10 @@ def doctor_findings() -> list[Finding]:
                           command("apply")))
         else:
             found += [_link_finding(link, roots) for link in group]
-    found += [("FAIL", f"{tilde(p)} is a stale link brainrc no longer makes", f"{command('apply')} (prunes it)")
-              for p in stale]
+    found += [("FAIL", f"{tilde(p)} is a stale {'link' if p.is_symlink() else 'copy'} brainrc no longer makes",
+               f"{command('apply')} (prunes it)") for p in stale]
+    found += [("FAIL", f"{tilde(p)} is a copy brainrc no longer makes, edited since apply wrote it",
+               "keep what you need from it, then delete it") for p in edited_stale_copies(links)]
 
     found += _stray_link_findings({link.dest for link in links} | set(stale))
 

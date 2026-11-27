@@ -18,7 +18,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable
 
-from . import adapters, config
+from . import adapters, config, copies
 from .config import (
     KINDS,
     ConfigError,
@@ -45,7 +45,7 @@ BACKUP = r"\.bak-brainrc-\d{8}T\d{6}Z"
 
 @dataclass
 class Step:
-    action: str  # REMOVE, RESTORE, UNMERGE, DELETE, RMDIR, PURGE
+    action: str  # REMOVE, RESTORE, UNMERGE, DELETE, SETASIDE, FORGET, RMDIR, PURGE
     harness: str
     path: Path
     run: Callable[[], None]
@@ -57,7 +57,7 @@ class Step:
 # What brainrc keeps in the settings home. --purge deletes these and nothing else.
 SETTINGS_HOME_ENTRIES = re.compile(
     r".*\.local\.(toml|md)|rules|packs|instructions\.md|extensions\.md|harnesses\.json|"
-    r"\.harnesses\.json\.tmp|mcp-owned\.json|guard-rules\.json|settings-owned\.json|apply\.lock|active-run|opencode|hooks|"
+    r"\.harnesses\.json\.tmp|mcp-owned\.json|guard-rules\.json|settings-owned\.json|copies\.json|\.copies\.json\.brainrc-tmp-\d+|apply\.lock|active-run|opencode|hooks|"
     r"\.?brainrc\.lock(\.tmp)?|project-packs|project-state")
 
 
@@ -316,6 +316,22 @@ def plan_uninstall(purge: bool = False) -> tuple[list[Step], list[str], list[str
     seen: set = set()  # links, and (kind, path) for settings and MCP files
     removed: set[Path] = set()
     home = Path.home()
+    for dest, entry in sorted(copies.read().items()):  # copy mode (#177): each copy apply recorded
+        p = Path(dest)
+        if p in seen or not os.path.lexists(p) or p.is_symlink():
+            continue
+        seen.add(p)
+        removed.add(p)  # either way the path is free afterwards, for init's backup to go back
+        name = entry.get("harness", "")
+        if copies.edited(p, entry):  # it holds the user's change: renamed to a backup beside it, so its folder stays
+            steps.append(Step("SETASIDE", name, p, lambda p=p: (_set_aside(p), copies.forget(p)),
+                              "a copy edited since apply wrote it; kept as a backup beside it"))
+            continue
+        steps.append(Step("REMOVE", name, p, lambda p=p: copies.remove(p), removes={p}))
+        starts.append((name, p, harness_home(dict(configs).get(name, {})) or home))
+    if copies.record_path().is_file():  # what's left of the record once each copy is gone
+        steps.append(Step("FORGET", "", copies.record_path(), lambda: copies.tidy(lambda _: True),
+                          "the record of the copies above"))
     for name, h in configs:
         stop = harness_home(h) or home
         for p in _link_candidates(h):
@@ -329,7 +345,7 @@ def plan_uninstall(purge: bool = False) -> tuple[list[Step], list[str], list[str
             path = expand(h["instructions"])
             backup = _init_backup(path)
             if backup and not any(s.action == "RESTORE" and s.path == path for s in steps) \
-                    and (path in removed or not os.path.lexists(path)):
+                    and (path in removed or Path(copies.key(path)) in removed or not os.path.lexists(path)):
                 steps.append(Step("RESTORE", name, path, lambda b=backup, p=path: os.rename(b, p),
                                   f"from {backup.name}, which init moved aside"))
     for name, h in configs:

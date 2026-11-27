@@ -2,6 +2,8 @@
 beside opencode.json. Its guards are a plugin (harnesses.toml `plugin`), not a settings file."""
 from __future__ import annotations
 
+import json
+import os
 from pathlib import Path
 
 from ..sources import frontmatter
@@ -38,6 +40,12 @@ class OpenCode(Adapter):
             denied = sorted({k for keys in PERMISSIONS.values() for k in keys} - allowed)
             lines += ["permission:", *(f"  {key}: deny" for key in denied)]
         return "\n".join(lines) + "\n---\n" + body
+
+    def copied_file(self, text: str, source: Path) -> str:
+        """The guard plugin finds its guards from where it sits (a link resolves to the checkout or
+        the package); a copy is told where its original is instead."""
+        text = text.replace("realpathSync(fileURLToPath(import.meta.url))", json.dumps(os.path.realpath(source)))
+        return super().copied_file(text, source)
 
     def mcp_entry(self, server: dict) -> dict:
         if "url" in server:

@@ -22,7 +22,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
-from . import config, importers
+from . import config, copies, importers
 from .config import (
     PROFILE_FILE, PROFILES, ConfigError, TABLE_HEADER, _layered, check_config, expand, harness_home,
     config_path, install_profile, load_harnesses, table_span, tilde, write_text_atomic,
@@ -107,7 +107,8 @@ def _instruction_files(names: list[str], roots: list[Path]) -> list[tuple[str, P
         if name not in names or "instructions" not in h:
             continue
         path = expand(h["instructions"])
-        if path in paths or (path.is_symlink() and _managed_target(link_target(path), roots)):
+        if path in paths or (path.is_symlink() and _managed_target(link_target(path), roots)) \
+                or (not path.is_symlink() and copies.recorded(path) is not None):  # apply's copy (#177)
             continue
         if path.is_symlink() or path.is_file():
             found.append((name, path))
@@ -181,7 +182,8 @@ def project_sources(cwd: Path, skip: set[Path], roots: list[Path] = ()) -> list[
     if cwd == Path.home().resolve() or _is_checkout(cwd):
         return []
     return [(fmt, p) for fmt, p in importers.discover(cwd) if p.resolve() not in skip
-            and not (p.is_symlink() and _managed_target(link_target(p), roots))]
+            and not (p.is_symlink() and _managed_target(link_target(p), roots))
+            and not (not p.is_symlink() and copies.recorded(p) is not None)]  # apply's copy (#177)
 
 
 @dataclass

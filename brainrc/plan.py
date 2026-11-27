@@ -6,7 +6,7 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from . import config
+from . import config, copies
 from .config import (
     HOOKS_DIR_PLACEHOLDER,
     KINDS,
@@ -82,11 +82,23 @@ class Link:
     copy: tuple[Path, Path] | None = None  # (overrides dir, copy root): source is a hooks copy
 
     def state(self, roots: list[Path] | None = None, repair: list[Path] | None = None) -> str:
-        """ok | create | update | conflict, or with `repair` (old source roots, possibly empty)
-        repair: a link into one of those roots, or a broken link to this item's old location."""
+        """ok | create | update | conflict | edited, or with `repair` (old source roots, possibly
+        empty) repair: a link into one of those roots, or a broken link to this item's old location.
+        In copy mode (#177) a recorded copy of the source is ok; edited: a recorded copy changed
+        by hand since apply wrote it, which apply leaves alone."""
+        copying = copies.copying()
+        entry = None if self.dest.is_symlink() else copies.recorded(self.dest)
+        if entry is not None and os.path.lexists(self.dest):
+            if copies.edited(self.dest, entry):
+                return "edited"
+            if not copying or not copies.current(self.dest, self.source, entry):
+                return "update"
+            return "ok" if not self.copy or hooks_copy_current(*self.copy) else "update"
         if self.dest.is_symlink():
             target = link_target(self.dest)
             if os.path.normpath(target) == os.path.normpath(self.source):
+                if copying:
+                    return "update"  # brainrc's link, made before this machine copied
                 return "ok" if not self.copy or hooks_copy_current(*self.copy) else "update"
             if _from_former_home(target, self.source):
                 return "update"
@@ -368,4 +380,10 @@ def plan(srcs: list[Source] | None = None, every_src: list[Source] | None = None
                 candidates.update(expand(pack_hooks_dir(old, s.name)) for s in every_src)
     stale = sorted(p for p in candidates | orphans
                    if p.is_symlink() and p not in wanted and (p in orphans or _managed_target(link_target(p), roots)))
+    stale += copies.stale(wanted, config.in_scope)[0]  # copies apply made and no longer makes (#177)
     return links, stale, merges
+
+
+def edited_stale_copies(links: list[Link]) -> list[Path]:
+    """Copies apply made, no longer makes, and that were edited since: left alone and reported."""
+    return copies.stale({link.dest for link in links}, config.in_scope)[1]

@@ -92,6 +92,20 @@ or that path after the pack's name (`gatework:skills/brainrc-aws`), and `*` and 
 `brainrc init --profile <name>` or `--starter <name>` writes this file. `apply` removes what a
 profile or pattern drops; `validate` still checks everything.
 
+`link_mode` sets how `apply` installs skills, agents, commands, hooks and instructions files:
+
+| `link_mode` | Installs |
+|---|---|
+| `auto` (the default) | symlinks, or copies on a Windows machine that can't make a symlink |
+| `symlink` | symlinks, always |
+| `copy` | copies, always |
+
+A copy is recorded in the settings home's `copies.json`. `status` shows it as `UPDATE` once its
+source changes, so edits to a pack's skill reach the tools on the next `apply`, not at once. A copy
+edited where it sits shows as `EDITED`: `apply` leaves it alone, and `uninstall` keeps it as a
+`*.bak-brainrc-*` backup. Changing the mode, then running `apply`, swaps every link for a copy or
+back.
+
 `[extensions.<namespace>]` holds this machine's settings for the pack that owns the namespace,
 in the same form as a pack's [extensions](packs.md#extensions) table. That pack checks it on
 `apply` and `doctor`, and `extensions.md` lists it after every pack's, under "This machine". A
@@ -116,6 +130,7 @@ after each change.
 | `XDG_CONFIG_HOME` | when set to an absolute path, the settings home is `$XDG_CONFIG_HOME/brainrc`, and OpenCode's files are under `$XDG_CONFIG_HOME/opencode` |
 | `CLAUDE_CONFIG_DIR` | moves Claude Code's files, `.claude.json` included |
 | `CODEX_HOME` | moves Codex's files |
+| `BRAINRC_LINK_MODE` | `auto`, `symlink` or `copy`, over `link_mode` for one run |
 
 brainrc reads a tool's variable the way the tool does: an absolute path moves the files, and an
 unset, empty or relative one means the default. So run brainrc with the same environment as the
@@ -135,3 +150,4 @@ You don't edit these, but it helps to know what they are:
 | `hooks/` | a copy of the guard hooks, which tools run from here |
 | `harnesses.json` | which tools and sources `apply` used, so `uninstall` works after a move |
 | `mcp-owned.json`, `mcp-pins.json` | the MCP servers brainrc wrote, and their pinned tools |
+| `copies.json` | the copies `apply` made in copy mode, and a hash of each |

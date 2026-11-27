@@ -1933,7 +1933,7 @@ tool:</p>
 CLI and VS Code's Copilot agent), <code>devin</code> (Devin Local, which Windsurf became), <code>kiro</code>, <code>amp</code>,
 <code>junie</code>, and <code>gemini</code> (Gemini CLI, off by default: Google ended it for individual accounts in June
 2026, and it shares <code>~/.gemini</code> with Antigravity CLI). A table can also change any path from
-<a href="https://github.com/brainrc/brainrc/blob/v0.8.35/harnesses.toml"><code>harnesses.toml</code></a>, such as <code>skills</code> or <code>instructions</code>, though the variables below
+<a href="https://github.com/brainrc/brainrc/blob/v0.8.36/harnesses.toml"><code>harnesses.toml</code></a>, such as <code>skills</code> or <code>instructions</code>, though the variables below
 are usually the better way.</p>
 <h2 id="packslocaltoml">packs.local.toml<a class="headerlink" href="#packslocaltoml" title="Permanent link">&para;</a></h2>
 <p>One table per pack, by a <code>path</code> on disk or a <code>git</code> URL:</p>
@@ -2017,6 +2017,34 @@ are usually the better way.</p>
 or that path after the pack's name (<code>gatework:skills/brainrc-aws</code>), and <code>*</code> and <code>?</code> work.
 <code>brainrc init --profile &lt;name&gt;</code> or <code>--starter &lt;name&gt;</code> writes this file. <code>apply</code> removes what a
 profile or pattern drops; <code>validate</code> still checks everything.</p>
+<p><code>link_mode</code> sets how <code>apply</code> installs skills, agents, commands, hooks and instructions files:</p>
+<table>
+<thead>
+<tr>
+<th><code>link_mode</code></th>
+<th>Installs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>auto</code> (the default)</td>
+<td>symlinks, or copies on a Windows machine that can't make a symlink</td>
+</tr>
+<tr>
+<td><code>symlink</code></td>
+<td>symlinks, always</td>
+</tr>
+<tr>
+<td><code>copy</code></td>
+<td>copies, always</td>
+</tr>
+</tbody>
+</table>
+<p>A copy is recorded in the settings home's <code>copies.json</code>. <code>status</code> shows it as <code>UPDATE</code> once its
+source changes, so edits to a pack's skill reach the tools on the next <code>apply</code>, not at once. A copy
+edited where it sits shows as <code>EDITED</code>: <code>apply</code> leaves it alone, and <code>uninstall</code> keeps it as a
+<code>*.bak-brainrc-*</code> backup. Changing the mode, then running <code>apply</code>, swaps every link for a copy or
+back.</p>
 <p><code>[extensions.&lt;namespace&gt;]</code> holds this machine's settings for the pack that owns the namespace,
 in the same form as a pack's <a href="../packs/#extensions">extensions</a> table. That pack checks it on
 <code>apply</code> and <code>doctor</code>, and <code>extensions.md</code> lists it after every pack's, under "This machine". A
@@ -2052,6 +2080,10 @@ after each change.</p>
 <tr>
 <td><code>CODEX_HOME</code></td>
 <td>moves Codex's files</td>
+</tr>
+<tr>
+<td><code>BRAINRC_LINK_MODE</code></td>
+<td><code>auto</code>, <code>symlink</code> or <code>copy</code>, over <code>link_mode</code> for one run</td>
 </tr>
 </tbody>
 </table>
@@ -2096,6 +2128,10 @@ tool. If a variable changes between two <code>apply</code> runs, brainrc's links
 <tr>
 <td><code>mcp-owned.json</code>, <code>mcp-pins.json</code></td>
 <td>the MCP servers brainrc wrote, and their pinned tools</td>
+</tr>
+<tr>
+<td><code>copies.json</code></td>
+<td>the copies <code>apply</code> made in copy mode, and a hash of each</td>
 </tr>
 </tbody>
 </table>

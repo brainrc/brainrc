@@ -1942,7 +1942,8 @@ item. It changes nothing.</p>
 says <code>brainrc</code>.</p>
 <h2 id="a-harness-doesnt-see-a-skill-agent-command-or-rule">A harness doesn't see a skill, agent, command, or rule<a class="headerlink" href="#a-harness-doesnt-see-a-skill-agent-command-or-rule" title="Permanent link">&para;</a></h2>
 <p>Run <code>brainrc apply</code>. Skills, agents, and commands are symlinks, so edits to
-existing ones show up at once, but new or removed ones need <code>apply</code>. Rules are different:
+existing ones show up at once, but new or removed ones need <code>apply</code>. In
+<a href="../configuration/#brainrclocaltoml">copy mode</a> they are copies, so edits need <code>apply</code> too. Rules are different:
 they're rendered into <code>~/.config/brainrc/instructions.md</code>, so <strong>every</strong> change to a rule needs
 <code>apply</code>, edits included; <code>status</code> lists <code>instructions.md</code> as <code>UPDATE</code> until you do. Start a new session
 in the tool afterwards.</p>
@@ -1966,7 +1967,8 @@ a link. <code>brainrc</code> never overwrites it. Look at it, then either:</p>
 <li>move it into a pack (as a skill, agent, or command) and delete the original, or</li>
 <li>delete it if you don't need it,</li>
 </ul>
-<p>and run <code>apply</code> again. <code>CONFLICT</code> on a settings file means it isn't valid JSON: fix it by
+<p>and run <code>apply</code> again. <code>EDITED</code> is a copy <code>apply</code> made in copy mode that has changed since: move
+the change into its source (or delete the copy), then run <code>apply</code>. <code>CONFLICT</code> on a settings file means it isn't valid JSON: fix it by
 hand. <code>CONFLICT</code> naming an MCP server means your harness config already defines a server of that
 name: rename or remove yours (or the registry's), then run <code>apply</code>.</p>
 <h2 id="config-errors">Config errors<a class="headerlink" href="#config-errors" title="Permanent link">&para;</a></h2>

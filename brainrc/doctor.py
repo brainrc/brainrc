@@ -352,8 +352,9 @@ def _moved_findings() -> list[Finding]:
     return found
 
 
-# The script in a `python3 "<dir>/<guard>.py"` command, or in the Windows form's f='<path>' (#178).
-HOOK_SCRIPT = re.compile(r'"([^"]+\.py)"|f=\'([^\']+\.py)\'')
+# The script in a `python3 "<dir>/<guard>.py"` command, or in the Windows form's f='<path>' or
+# f=os.path.expanduser('~/<path>') (#178).
+HOOK_SCRIPT = re.compile(r'"([^"]+\.py)"|f=(?:os\.path\.expanduser\()?\'([^\']+\.py)\'')
 
 
 def _stray_link_findings(known: set[Path]) -> list[Finding]:

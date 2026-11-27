@@ -114,9 +114,26 @@ def expand(path: str) -> str:
     return os.path.expanduser(path).replace("\\", "/")
 
 
+def runs(hook: dict) -> str:
+    """The text of what a hook entry runs on this machine: the Windows field when apply wrote one
+    (Codex's `commandWindows`, Copilot's `powershell`, Claude Code's exec-form code), else `command`."""
+    if windows_hooks():
+        for key in ("commandWindows", "powershell"):
+            if isinstance(hook.get(key), str):
+                return hook[key]
+        if isinstance(hook.get("args"), list) and hook["args"]:
+            return str(hook["args"][-1])
+    return str(hook.get("command") or "")
+
+
 def native_path(path: str) -> str:
-    """The guard's absolute path as the hook gives it (expand), refused if a shell would read it."""
+    """The guard's path as the hook gives it: `~/...` under the home directory, as the POSIX line's
+    `$HOME` keeps it (one lock, the same file on every machine), else absolute (expand). Refused
+    if a shell would read it."""
     path = expand(path)
+    home = os.path.expanduser("~").replace("\\", "/").rstrip("/")
+    if os.path.normcase(path).startswith(os.path.normcase(home + "/")):
+        path = "~" + path[len(home):]
     bad = sorted(UNSAFE & set(path))
     if bad:
         raise ConfigError(f"hook path {path!r} holds {' '.join(bad)}, which a Windows hook command can't "
@@ -128,16 +145,18 @@ def code(path: str, fallback: dict | None, only_if_present: bool) -> str:
     """The Python that runs the guard at path as its own script (so it finds the guards beside
     it): when it is gone, nothing (or the fallback JSON) and exit 0, as the POSIX line does."""
     # As `python3 <file>` would: the file's folder first on sys.path, then the file as __main__.
+    # A `~/` path is expanded when the hook runs (Python reads USERPROFILE on Windows).
+    path = f"os.path.expanduser('{path}')" if path.startswith("~") else f"'{path}'"
     run = "sys.path.insert(0,os.path.dirname(f)),runpy.run_path(f,run_name='__main__')"
     if not only_if_present:
-        return f"import os,runpy,sys;f='{path}';({run})"
+        return f"import os,runpy,sys;f={path};({run})"
     if fallback is None:
-        return f"import os,runpy,sys;f='{path}';os.path.isfile(f) and ({run})"
+        return f"import os,runpy,sys;f={path};os.path.isfile(f) and ({run})"
     if not all(isinstance(k, str) and k.isidentifier() and isinstance(v, str) and not UNSAFE & set(v)
                for k, v in fallback.items()):
         raise ConfigError(f"a hook's fallback output {fallback!r} can't be written as a Windows hook command")
     out = ",".join(f"{k}={v!r}" for k, v in fallback.items())
-    return f"import json,os,runpy,sys;f='{path}';({run}) if os.path.isfile(f) else print(json.dumps(dict({out})))"
+    return f"import json,os,runpy,sys;f={path};({run}) if os.path.isfile(f) else print(json.dumps(dict({out})))"
 
 
 def line(exe: str, args: list[str], source: str, shell: str | None) -> str:

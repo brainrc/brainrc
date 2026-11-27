@@ -12,7 +12,7 @@ import json
 import re
 from pathlib import Path
 
-from . import config, lock, mcp_pins
+from . import adapters, config, hookcmd, lock, mcp_pins
 from .config import ConfigError, load_harnesses, tilde
 from .mcp import _owned, _registry, check_servers, mcp_plan
 from .packs import head
@@ -118,6 +118,8 @@ def _hooks(harness: str, merges, srcs: list[Source]) -> list[dict]:
                 continue
             try:
                 rendered = render_fragment(fragment, hooks_dir)
+                if hookcmd.windows_hooks() and isinstance(rendered.get("hooks"), dict):  # as apply writes them
+                    rendered["hooks"] = hookcmd.windows(rendered["hooks"], adapters.get(harness))
                 raw = json.loads(fragment.read_text(encoding="utf-8"))
             except (OSError, ValueError, ConfigError):
                 continue
@@ -133,7 +135,7 @@ def _hooks(harness: str, merges, srcs: list[Source]) -> list[dict]:
                         script = SCRIPT.search(command)
                         path = fragment.parent / "hooks" / script[1] if script else None
                         done_group = rendered["hooks"][event][g]
-                        done = str((done_group["hooks"][h] if nested else done_group).get("command") or command)
+                        done = hookcmd.runs((done_group["hooks"][h] if nested else done_group)) or command
                         found.append({"kind": "hook", "name": f"{event} [{group.get('matcher', '*')}] "
                                       f"{script[1] if script else _redact_cmd(command)}",
                                       "source": src.key or src.name, "file": src.rel(path if path and path.is_file() else fragment),

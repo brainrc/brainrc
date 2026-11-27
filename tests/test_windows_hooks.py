@@ -16,7 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from support import home_env, restore_home, rmtree, saved_home  # noqa: E402
 from test_brainrc import REPO, TempRepoCase, brainrc, install_harnesses, quiet  # noqa: E402
 
-from brainrc import adapters, hookcmd  # noqa: E402
+from brainrc import adapters, audit, hookcmd  # noqa: E402
 from brainrc.config import ConfigError  # noqa: E402
 from brainrc.plan import SettingsMerge  # noqa: E402
 from brainrc.settings import merge_settings  # noqa: E402
@@ -26,12 +26,14 @@ RISKY = {"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"c
 CURSOR_RISKY = {"hook_event_name": "beforeShellExecution", "command": "git push origin main", "cwd": "/tmp/project"}
 
 
-def shells() -> list[list[str]]:
-    """How each shell here runs a command line (the argv before the line)."""
+def shells() -> list:
+    """How a tool hands a command line to each shell here, as a function of the line: sh on
+    macOS and Linux; on Windows cmd as Node runs a `shell: true` command (`cmd /d /s /c "<line>"`,
+    passed verbatim), and PowerShell with the line as one argument."""
     if os.name != "nt":
-        return [["sh", "-c"]]
-    found = [["cmd", "/d", "/c"]]
-    found += [[p, "-NoProfile", "-Command"] for p in ("powershell", "pwsh") if shutil.which(p)]
+        return [lambda line: ["sh", "-c", line]]
+    found = [lambda line: f'cmd /d /s /c "{line}"']
+    found += [lambda line, p=p: [p, "-NoProfile", "-Command", line] for p in ("powershell", "pwsh") if shutil.which(p)]
     return found
 
 
@@ -94,7 +96,7 @@ class WindowsHookFormTest(unittest.TestCase):
 
     def run_line(self, source: str, payload: dict, cwd=None) -> list[subprocess.CompletedProcess]:
         line = hookcmd.line(sys.executable, hookcmd.FLAGS, source, None)
-        return [subprocess.run([*shell, line], input=json.dumps(payload), capture_output=True, text=True,
+        return [subprocess.run(shell(line), input=json.dumps(payload), capture_output=True, text=True,
                                timeout=60, cwd=cwd) for shell in shells()]
 
     def test_codex_guard_denies_when_present_and_passes_when_gone(self):
@@ -174,6 +176,12 @@ class WindowsHookFormTest(unittest.TestCase):
                                 capture_output=True, timeout=60, env=env)
         self.assertEqual(json.loads(result.stdout)["hookSpecificOutput"]["permissionDecision"], "ask", result.stderr)
 
+    def test_a_hook_under_home_is_written_home_relative(self):
+        """As the POSIX line's $HOME: one lock gives every machine the same settings file."""
+        (entry,) = entries(windows("codex", "~/.codex/hooks/brainrc"))
+        self.assertIn("f=os.path.expanduser('~/.codex/hooks/brainrc/guard.py')", entry["commandWindows"])
+        self.assertNotIn(os.path.expanduser("~").replace("\\", "/"), entry["commandWindows"])
+
     def test_a_path_a_shell_would_read_is_refused(self):
         with self.assertRaisesRegex(ConfigError, "hooks_dir in harnesses.local.toml"):
             hookcmd.native_path("C:/Users/50%off/.codex/hooks/brainrc/guard.py")
@@ -221,6 +229,12 @@ class WindowsApplyTest(TempRepoCase):
         self.assertIn("/.codex/hooks/brainrc/guard.py", entry["commandWindows"])
         findings = [f for f in brainrc.doctor_findings() if "hook" in f[1] and f[0] == "FAIL"]
         self.assertEqual(findings, [])
+        hooks = [(tool, e["name"]) for tool, found in audit.collect()["tools"].items() for e in found
+                 if e["kind"] == "hook"]
+        self.assertTrue(hooks)
+        installed = {(tool, e["name"]) for tool, found in audit.collect()["tools"].items() for e in found
+                     if e["kind"] == "hook" and e["installed"]}
+        self.assertEqual([h for h in hooks if h not in installed], [])
         # cmd and PowerShell set no HOME: doctor reads the Windows line, not Codex's POSIX `command`.
         with mock.patch.dict(os.environ, {"HOME": "/nowhere"}):
             with mock.patch.object(os.path, "expanduser", lambda p: str(self.home) + p[1:] if p.startswith("~") else p):

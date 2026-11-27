@@ -21,7 +21,7 @@ import shutil
 import tempfile
 from pathlib import Path
 
-from . import config
+from . import config, gitlinks
 from .config import ConfigError, tilde
 
 MODES = ("auto", "symlink", "copy")
@@ -133,9 +133,10 @@ def recorded(dest: Path) -> dict | None:
     return read().get(key(dest))
 
 
-def digest(path: Path) -> str | None:
-    """sha256 of a file, or of a directory's files (each path under it and its bytes), links
-    followed; None when nothing is there. __pycache__ and .pyc files don't count."""
+def digest(path: Path, _seen: frozenset = frozenset()) -> str | None:
+    """sha256 of a file, or of a directory's files (each path under it and its bytes), links and
+    git's stand-ins for links followed; None when nothing is there. __pycache__ and .pyc files don't
+    count."""
     if path.is_file():
         return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
     if not path.is_dir():
@@ -143,6 +144,9 @@ def digest(path: Path) -> str | None:
     h = hashlib.sha256()
     for rel, p in _tree(path):
         h.update(rel.encode("utf-8") + b"\0" + hashlib.sha256(p.read_bytes()).digest())
+    for stand_in, target in sorted(gitlinks.stand_ins(path).items()):  # what a copy puts in its place
+        inner = "loop" if target in _seen else digest(target, _seen | {target}) or ""
+        h.update(b"stand-in\0" + stand_in.relative_to(path).as_posix().encode("utf-8") + b"\0" + inner.encode())
     return "sha256:" + h.hexdigest()
 
 
@@ -195,7 +199,8 @@ def place(harness: str, dest: Path, source: Path, render=None) -> None:
     try:
         if real.is_dir():
             shutil.copytree(real, tmp, ignore=_skipped)
-            files = [(tmp / rel, Path(source) / rel) for rel, _ in _tree(tmp)]
+            follow = gitlinks.resolve if _copy_stand_ins(real, tmp) else Path
+            files = [(tmp / rel, follow(Path(source) / rel)) for rel, _ in _tree(tmp)]
         else:
             shutil.copyfile(real, tmp)
             files = [(tmp, Path(source))]
@@ -217,6 +222,24 @@ def place(harness: str, dest: Path, source: Path, render=None) -> None:
     record[key(dest)] = {"harness": harness, "source": str(source), "source_digest": digest(source),
                          "digest": digest(dest)}
     _write(record)
+
+
+def _copy_stand_ins(real: Path, tmp: Path, _seen: frozenset = frozenset()) -> bool:
+    """Replace each of git's stand-ins for a link (a checkout without symlinks) in the copy with a
+    copy of what it points to, as a link mode would show it (brainrc/gitlinks.py). True if any."""
+    found = gitlinks.stand_ins(real)
+    for stand_in, target in sorted(found.items()):
+        if target in _seen:
+            raise ConfigError(f"{tilde(stand_in)}: git's stand-ins for links point at each other; "
+                              "a copy can't hold that loop (link_mode = \"symlink\" can)")
+        at = tmp / stand_in.relative_to(real)
+        at.unlink()
+        if target.is_dir():
+            shutil.copytree(target, at, ignore=_skipped)
+            _copy_stand_ins(target, at, _seen | {target})
+        else:
+            shutil.copyfile(target, at)
+    return bool(found)
 
 
 def _skipped(directory: str, names: list[str]) -> set[str]:

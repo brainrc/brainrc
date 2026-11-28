@@ -17,11 +17,10 @@ jobs:
   validate:
     name: validate (${{ matrix.os }}, ${{ matrix.python-version }})
     runs-on: ${{ matrix.os }}
-    # Windows runs the same suite several times slower (8 to 14 minutes of tests on hosted runners), so it gets 20.
-    timeout-minutes: ${{ matrix.os == 'windows-latest' && 20 || 10 }}
-    # Windows is reported but never fails the workflow: docs/install.md (Platforms) documents
-    # macOS and Linux only (symlinks, `python3` in hook commands). Promote it once it passes.
-    continue-on-error: ${{ matrix.os == 'windows-latest' }}
+    # Windows runs the same suite several times slower (8 to 14 minutes of tests on hosted runners) and
+    # then clones Gatework for the copy-mode check, so it gets 30.
+    # Every cell blocks, Windows included (#179): docs/install.md (Platforms) documents all three.
+    timeout-minutes: ${{ matrix.os == 'windows-latest' && 30 || 10 }}
     strategy:
       fail-fast: false
       matrix:
@@ -61,6 +60,10 @@ jobs:
         with:
           path: examples/pack-template
       - run: python3 -m unittest discover -s tests -v
+      # A Windows machine without Developer Mode can't make symlinks, so apply copies (#177) and
+      # writes native hook commands (#178). Every cell checks copy mode end to end in a temp HOME.
+      - name: Apply, check and uninstall in copy mode in a temp HOME
+        run: python3 scripts/check_apply.py --copy
       - name: Install brainrc as a package and smoke-test the installed wheel
         run: |
           python3 -m pip install .
@@ -136,7 +139,7 @@ jobs:
           NO_SECRETS: ${{ github.event_name == 'pull_request' && (github.event.pull_request.head.repo.full_name != github.repository || github.actor == 'dependabot[bot]') }}
         run: python3 scripts/ci_tripwires.py
 
-  # Keeps the required check name `validate`. Windows cells carry continue-on-error, so they never gate it.
+  # Keeps the required check name `validate`: it passes only when every cell, Windows included, passed.
   validate-gate:
     name: validate
     needs: [validate, tripwires]

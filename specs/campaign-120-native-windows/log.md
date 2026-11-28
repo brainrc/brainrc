@@ -91,3 +91,21 @@ A high-effort code review found four Windows bugs and two nits, all fixed:
   fail open. Hooks and doctor now pass `-X utf8`.
 - Nits: doctor spread a string `args` into letters; the changelog fragment for this PR is written
   when the branch restarts after #392.
+
+## engine · gh:178 · Merged
+Merged as #393 on Jacob's yes after CI passed on every cell, Windows included; released as v0.8.37.
+The Windows cells had needed 20 minutes, not 15: a cancelled cell fails the gate.
+
+## engine · gh:179 · Spec and Plan
+- Spec: the Windows cells block (no `continue-on-error`), and every cell runs
+  `scripts/check_apply.py --copy`: apply into a temp HOME in copy mode with git's `core.symlinks`
+  off, then check no symlink was made, Gatework's `roles/` was copied as a folder, Codex's hooks
+  were written (the Windows field on Windows), status is in sync, doctor is clean and
+  `uninstall --purge` leaves only backups.
+- Blocker found while building: with symlinks off, git checks Gatework's `roles` link out as a
+  plain file holding `../../agents`, and validate refused the pack. Jacob chose to fix it in both
+  repos. Gatework #16 (v0.9.1) accepts that stand-in where brainrc copies it; here
+  `brainrc/gitlinks.py` reads git's index to find stand-ins, copy mode copies their targets (the
+  source digest follows them), and validate reads a Markdown link through one in copy mode.
+  Gatework is pinned to v0.9.1.
+- #342 folds in: the copy-mode check is the end-to-end apply it asked for.

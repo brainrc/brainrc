@@ -12,7 +12,7 @@ from .mcp import check_servers
 from .naming import check_pack_names, unprefixed_ok
 from .packs import pinned_defaults
 from .plugins import extension_errors, extension_warnings, plugin_errors, validators
-from . import config, connectors, guard, packtests, schema
+from . import config, connectors, copies, gitlinks, guard, packtests, schema
 from . import scope as pack_scope
 from .config import (
     ConfigError,
@@ -84,8 +84,17 @@ def _check_references(src: Source, path: Path, agent_names: set[str], skill_name
             continue
         local = _unquote(target.split("#", 1)[0])
         # "/docs/x.md" is relative to the pack's (or core's) root, as GitHub reads it.
-        if not ((src.root / local.lstrip("/")) if local.startswith("/") else (path.parent / local)).exists():
-            errors.append(f"{rel}: broken link `{target}`")
+        at = (src.root / local.lstrip("/")) if local.startswith("/") else (path.parent / local)
+        if at.exists():
+            continue
+        if (via := gitlinks.resolve(at)) != at and via.exists():  # through git's stand-in for a link
+            if copies.copying():  # apply copies what the stand-in points to
+                continue
+            errors.append(f"{rel}: link `{target}` goes through a link git checked out as a plain file "
+                          "(symlinks off); set link_mode = \"copy\", or clone the pack again with "
+                          "core.symlinks on")
+            continue
+        errors.append(f"{rel}: broken link `{target}`")
     if tags:
         errors += [f"{rel}: unknown agent `{a}`" for a in AGENT_TAG.findall(text) if a not in agent_names]
         errors += [f"{rel}: unknown skill `{s}`" for s in SKILL_MENTION.findall(text) if s not in skill_names]

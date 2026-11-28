@@ -90,11 +90,15 @@ If you move the checkout, run `python3 scripts/brainrc.py apply --repair` from t
 
 ## Platforms
 
-macOS and Linux. brainrc installs by symlink. On a Windows machine that can't make one (no
-Developer Mode, not an administrator), `apply` copies instead and records each copy
+macOS, Linux and Windows. brainrc installs by symlink. On a Windows machine that can't make one (no
+Developer Mode, not an administrator), or whose git doesn't (`core.symlinks` off, Git for Windows'
+default), `apply` copies instead and records each copy
 ([`link_mode`](configuration.md#brainrclocaltoml)), so skills, agents, commands and rules install
-without WSL. On Windows `apply` also writes each of brainrc's hooks as one Python call
+without WSL. A pack cloned there gets each of its own links (Gatework's `roles/`) as a plain file
+holding the link's target, git's stand-in when symlinks are off; copy mode copies what that file points
+to. On Windows `apply` also writes each of brainrc's hooks as one Python call
 (`py -3 -I -c "..."`, falling back to `python`) instead of a POSIX shell line, in the field each
 tool's docs give for it: Claude Code's exec form, Codex's `commandWindows`, Copilot's `powershell`,
-and `command` for the rest. macOS and Linux get exactly the lines they got before. A Windows CI
-cell that runs without symlinks is on the [roadmap](roadmap.md).
+and `command` for the rest. macOS and Linux get exactly the lines they got before. CI runs every
+check on all three, and each cell also applies, checks and uninstalls in copy mode with git's
+symlinks off (`scripts/check_apply.py --copy`).

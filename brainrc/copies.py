@@ -9,7 +9,8 @@ nothing installs it any more, removed by uninstall. A copy whose digest no longe
 record was edited by hand, and is reported, never overwritten.
 
 The mode is brainrc.local.toml's `link_mode`: "auto" (the default) links on macOS and Linux and on
-a Windows machine that allows symlinks, and copies on one that doesn't; "symlink" or "copy" sets it.
+a Windows machine that allows symlinks and where git makes them (core.symlinks), and copies on any
+other; "symlink" or "copy" sets it.
 BRAINRC_LINK_MODE overrides the file for one run (CI, tests).
 """
 from __future__ import annotations
@@ -18,10 +19,11 @@ import hashlib
 import json
 import os
 import shutil
+import subprocess
 import tempfile
 from pathlib import Path
 
-from . import config
+from . import config, gitlinks
 from .config import ConfigError, tilde
 
 MODES = ("auto", "symlink", "copy")
@@ -78,11 +80,27 @@ def can_symlink() -> bool:
     return _probed["ok"]
 
 
+def git_makes_links() -> bool:
+    """True when git checks a link out as a link (always on POSIX). Git for Windows ships with
+    core.symlinks off, and then a pack's own links arrive as stand-ins (brainrc/gitlinks.py) that a
+    link to the checkout can't follow. Asked once per run."""
+    if os.name != "nt":
+        return True
+    if "git" not in _probed:
+        try:
+            r = subprocess.run(["git", "config", "--type=bool", "--get", "core.symlinks"], capture_output=True,
+                               text=True, timeout=30)
+            _probed["git"] = r.stdout.strip() == "true"
+        except (OSError, subprocess.SubprocessError):
+            _probed["git"] = False
+    return _probed["git"]
+
+
 def mode() -> str:
     """"symlink" or "copy": how apply installs items on this machine now."""
     asked = configured()
     if asked == "auto":
-        return "symlink" if can_symlink() else "copy"
+        return "symlink" if can_symlink() and git_makes_links() else "copy"
     return asked
 
 
@@ -133,9 +151,11 @@ def recorded(dest: Path) -> dict | None:
     return read().get(key(dest))
 
 
-def digest(path: Path) -> str | None:
-    """sha256 of a file, or of a directory's files (each path under it and its bytes), links
-    followed; None when nothing is there. __pycache__ and .pyc files don't count."""
+def digest(path: Path, _seen: frozenset = frozenset()) -> str | None:
+    """sha256 of a file, or of a directory's files (each path under it and its bytes), links and
+    git's stand-ins for links followed; None when nothing is there. __pycache__ and .pyc files don't
+    count."""
+    path = gitlinks.resolve(path)  # an item that is itself a stand-in is what it points to
     if path.is_file():
         return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
     if not path.is_dir():
@@ -143,6 +163,11 @@ def digest(path: Path) -> str | None:
     h = hashlib.sha256()
     for rel, p in _tree(path):
         h.update(rel.encode("utf-8") + b"\0" + hashlib.sha256(p.read_bytes()).digest())
+    base = Path(os.path.realpath(path))  # stand_ins keys real paths
+    for stand_in, target in sorted(gitlinks.stand_ins(path).items()):  # what a copy puts in its place
+        target = gitlinks.resolve(target)
+        inner = "loop" if target in _seen else digest(target, _seen | {target}) or ""
+        h.update(b"stand-in\0" + stand_in.relative_to(base).as_posix().encode("utf-8") + b"\0" + inner.encode())
     return "sha256:" + h.hexdigest()
 
 
@@ -188,14 +213,15 @@ def place(harness: str, dest: Path, source: Path, render=None) -> None:
         forget(dest)
         config.symlink(dest, source)
         return
-    real = Path(os.path.realpath(source))
+    real = gitlinks.resolve(Path(os.path.realpath(source)))  # an item that is a stand-in: its target
     tmp = dest.with_name(f".{dest.name}.brainrc-tmp-{os.getpid()}")
     if os.path.lexists(tmp):
         _remove_path(tmp)
     try:
         if real.is_dir():
             shutil.copytree(real, tmp, ignore=_skipped)
-            files = [(tmp / rel, Path(source) / rel) for rel, _ in _tree(tmp)]
+            follow = gitlinks.resolve if _copy_stand_ins(real, tmp) else Path
+            files = [(tmp / rel, follow(Path(source) / rel)) for rel, _ in _tree(tmp)]
         else:
             shutil.copyfile(real, tmp)
             files = [(tmp, Path(source))]
@@ -217,6 +243,25 @@ def place(harness: str, dest: Path, source: Path, render=None) -> None:
     record[key(dest)] = {"harness": harness, "source": str(source), "source_digest": digest(source),
                          "digest": digest(dest)}
     _write(record)
+
+
+def _copy_stand_ins(real: Path, tmp: Path, _seen: frozenset = frozenset()) -> bool:
+    """Replace each of git's stand-ins for a link (a checkout without symlinks) in the copy with a
+    copy of what it points to, as a link mode would show it (brainrc/gitlinks.py). True if any."""
+    found = gitlinks.stand_ins(real)
+    for stand_in, target in sorted(found.items()):
+        target = gitlinks.resolve(target)  # a stand-in for a stand-in: the end of the chain
+        if target in _seen:
+            raise ConfigError(f"{tilde(stand_in)}: git's stand-ins for links point at each other; "
+                              "a copy can't hold that loop (link_mode = \"symlink\" can)")
+        at = tmp / stand_in.relative_to(real)
+        at.unlink()
+        if target.is_dir():
+            shutil.copytree(target, at, ignore=_skipped)
+            _copy_stand_ins(target, at, _seen | {target})
+        else:
+            shutil.copyfile(target, at)
+    return bool(found)
 
 
 def _skipped(directory: str, names: list[str]) -> set[str]:

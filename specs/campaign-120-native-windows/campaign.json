@@ -17,9 +17,10 @@
       "order": 1,
       "depends_on": [],
       "slug": "177-copy-mode",
-      "status": "merged",
+      "status": "delivered",
       "branch": "claude/project-thread-aj1of9",
-      "pr": "https://github.com/brainrc/brainrc/pull/392"
+      "pr": "https://github.com/brainrc/brainrc/pull/392",
+      "merged": true
     },
     {
       "ref": "gh:178",
@@ -30,7 +31,8 @@
       "slug": "178-native-hook-commands",
       "status": "delivered",
       "branch": "claude/project-thread-aj1of9",
-      "pr": null
+      "pr": "https://github.com/brainrc/brainrc/pull/393",
+      "merged": true
     },
     {
       "ref": "gh:179",
@@ -40,7 +42,7 @@
         "gh:178"
       ],
       "slug": "179-windows-ci",
-      "status": "todo",
+      "status": "in_progress",
       "branch": "claude/project-thread-aj1of9",
       "pr": null,
       "folds_in": [

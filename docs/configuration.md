@@ -96,7 +96,7 @@ profile or pattern drops; `validate` still checks everything.
 
 | `link_mode` | Installs |
 |---|---|
-| `auto` (the default) | symlinks, or copies on a Windows machine that can't make a symlink |
+| `auto` (the default) | symlinks, or copies on a Windows machine that can't make a symlink or whose git checks links out as files (`core.symlinks` off, Git for Windows' default) |
 | `symlink` | symlinks, always |
 | `copy` | copies, always |
 

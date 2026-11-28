@@ -48,12 +48,12 @@ While the secret isn't set, the check skips with a notice instead of failing.
    ```
 
    If you changed `docs/tutorial.md` or how `brainrc` installs packs, also run
-   `specs/013-tutorial/run-tutorial.sh`.
+   `dev/specs/013-tutorial/run-tutorial.sh`.
 5. Open a pull request that says why, what changed, and how to verify it, with `Closes #N`
    for the issue. CI runs the same checks.
 
 PRs are **squash-merged**: one commit per change on `main`, titled by the PR. A Gatework
-branch's checkpoint commits stay on the branch; its `specs/<slug>/` folder carries the record.
+branch's checkpoint commits stay on the branch; its `dev/specs/<slug>/` folder carries the record.
 
 ## Releases
 
@@ -95,8 +95,9 @@ show that the syncer works, and only evals show that the agent still behaves.
 
 You can let Gatework do the work: in an AI tool with this repo installed, run
 `/brainrc-work gh:<issue>`. It stops for your approval at the spec, the plan, and delivery. It writes
-its record (spec, plan, verification, retro) to `specs/<slug>/`, and that folder ships with
-the PR so reviewers can see why each change was made. See [docs/gatework.md](docs/gatework.md).
+its record (spec, plan, verification, retro) to `specs/<slug>/`. In this repo the records live in
+`dev/specs/`, out of the way of people reading the repo: `git mv` the folder there before the PR,
+which carries it so reviewers can see why each change was made. See [docs/gatework.md](docs/gatework.md).
 
 ## Where things are
 

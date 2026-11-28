@@ -22,7 +22,7 @@ path = "VERSION"
 pattern = "(?P<version>\\S+)"
 
 # The sdist carries only what the wheel is built from (PyPI, and the Homebrew formula, build
-# from it): not specs/, tests/ or evals/.
+# from it): not dev/specs/, tests/ or evals/.
 [tool.hatch.build.targets.sdist]
 only-include = [
   "brainrc",

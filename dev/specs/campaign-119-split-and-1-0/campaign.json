@@ -28,7 +28,7 @@
       "order": 2,
       "depends_on": [],
       "slug": "175-move-specs",
-      "status": "waiting",
+      "status": "in_progress",
       "branch": "claude/project-thread-r70d5p",
       "pr": null
     }

@@ -3,7 +3,7 @@
 
 Usage: python3 scripts/check_dist.py DIST_DIR
 DIST_DIR must hold exactly brainrc-<VERSION>.tar.gz and brainrc-<VERSION>-py3-none-any.whl. The
-sdist carries only what the wheel is built from (no specs/, tests/ or evals/), the wheel bundles
+sdist carries only what the wheel is built from (no dev/specs/, tests/ or evals/), the wheel bundles
 core under brainrc/_core/ and declares no dependencies (brainrc is stdlib-only). Prints one
 PASS/FAIL line per check and each file's sha256; exits 1 on any FAIL.
 """
@@ -36,7 +36,7 @@ def has(names: list[str], path: str) -> bool:
     return any(n == path or n.startswith(path + "/") for n in names)
 
 
-NOT_IN_SDIST = ("specs", "tests", "evals", "examples", "scripts", ".github", "changelog.d")
+NOT_IN_SDIST = ("dev", "specs", "tests", "evals", "examples", "scripts", ".github", "changelog.d")
 
 
 def sha256(path: Path) -> str:

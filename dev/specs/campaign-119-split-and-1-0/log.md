@@ -50,3 +50,10 @@ that basis. Merging (each merge publishes a release) and closing issues stay wit
 
 ## engine · gh:174 · Delivered
 Draft PR #396. #175 is built and verified on top of it, and waits for #396 to merge.
+
+## engine · gh:174 · Merged
+#396 merged on Jacob's yes and shipped as v0.8.40; #174 closed.
+
+## engine · gh:175 · Started
+Scope per Jacob: the move to dev/specs/ only; the plugin's install size stays open on #175.
+Rebuilt on main after v0.8.40.

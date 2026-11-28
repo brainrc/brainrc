@@ -1,4 +1,4 @@
-"""Namespaced skills (specs/149-1-namespaced-skills). Gatework's own skills, and the tests of their
+"""Namespaced skills (dev/specs/149-1-namespaced-skills). Gatework's own skills, and the tests of their
 names, live in brainrc/gatework; what stays here is core's side."""
 import sys
 import unittest

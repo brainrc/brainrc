@@ -17,9 +17,10 @@ jobs:
   validate:
     name: validate (${{ matrix.os }}, ${{ matrix.python-version }})
     runs-on: ${{ matrix.os }}
-    # Windows runs the same suite several times slower (8 to 14 minutes of tests on hosted runners), so it gets 20.
+    # Windows runs the same suite several times slower (8 to 14 minutes of tests on hosted runners) and
+    # then clones Gatework for the copy-mode check, so it gets 30.
     # Every cell blocks, Windows included (#179): docs/install.md (Platforms) documents all three.
-    timeout-minutes: ${{ matrix.os == 'windows-latest' && 20 || 10 }}
+    timeout-minutes: ${{ matrix.os == 'windows-latest' && 30 || 10 }}
     strategy:
       fail-fast: false
       matrix:

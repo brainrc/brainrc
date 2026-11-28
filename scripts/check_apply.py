@@ -26,7 +26,7 @@ HOMES = (".claude", ".codex", ".config/opencode", ".gemini/config", ".cursor", "
          ".kiro", ".config/amp", ".junie")
 # Variables that would point apply at a real config instead of the temporary HOME's.
 CLEARED = ("XDG_CONFIG_HOME", "CLAUDE_CONFIG_DIR", "CODEX_HOME", "COPILOT_HOME", "KIRO_HOME", "BRAINRC_HOME",
-           "BRAINRC_LINK_MODE")
+           "BRAINRC_LINK_MODE", "GIT_CONFIG_GLOBAL", "GIT_DIR", "GIT_WORK_TREE")
 failed = False
 
 
@@ -63,6 +63,9 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--copy", action="store_true", help="copy instead of linking (BRAINRC_LINK_MODE=copy)")
     copy = parser.parse_args().copy
+    local = sorted(p.name for p in REPO.glob("*.local.toml"))
+    if local:  # a checkout's machine-local files apply to a run from it, as they do to apply
+        print(f"note: this checkout's {', '.join(local)} apply to this run")
     tmp = Path(tempfile.mkdtemp(prefix="brainrc-apply-")).resolve()
     try:
         home = tmp / "home"

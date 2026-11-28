@@ -9,6 +9,7 @@ import sys
 import tempfile
 import unittest
 import unittest.mock
+from unittest import mock
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -18,6 +19,9 @@ from test_brainrc import TempRepoCase, brainrc, install_harnesses, quiet  # noqa
 from brainrc import copies  # noqa: E402
 from brainrc.sources import tree_files  # noqa: E402
 from brainrc.config import ConfigError  # noqa: E402
+
+
+GIT_MAKES_LINKS = copies.git_makes_links
 
 
 def links_under(root: Path) -> list[Path]:
@@ -219,6 +223,26 @@ class LinkModeConfigTest(TempRepoCase):
     def test_default_is_auto_and_auto_links_where_links_work(self):
         self.assertEqual(copies.configured(), "auto")
         self.assertEqual(copies.mode(), "symlink" if copies.can_symlink() else "copy")
+
+    def test_auto_copies_where_git_checks_links_out_as_files(self):
+        with mock.patch.object(copies, "can_symlink", return_value=True), \
+                mock.patch.object(copies, "git_makes_links", return_value=False):
+            self.assertEqual(copies.mode(), "copy")
+        with mock.patch.object(copies, "can_symlink", return_value=True), \
+                mock.patch.object(copies, "git_makes_links", return_value=True):
+            self.assertEqual(copies.mode(), "symlink")
+
+    def test_git_makes_links_reads_core_symlinks_on_windows_only(self):
+        git_makes_links = GIT_MAKES_LINKS  # the real one: TempRepoCase pins copies.git_makes_links
+        with mock.patch.object(copies.os, "name", "posix"):
+            self.assertTrue(git_makes_links())
+        for out, want in (("true\n", True), ("false\n", False), ("", False)):
+            with self.subTest(out=out), mock.patch.object(copies.os, "name", "nt"), \
+                    mock.patch.dict(copies._probed, clear=True), \
+                    mock.patch.object(copies.subprocess, "run",
+                                      return_value=subprocess.CompletedProcess([], 0, out, "")) as run:
+                self.assertIs(git_makes_links(), want)
+                self.assertIn("core.symlinks", run.call_args.args[0])
 
     def test_the_file_sets_the_mode_and_the_variable_overrides_it(self):
         (brainrc.config.local_dir() / "brainrc.local.toml").write_text('link_mode = "copy"\n')

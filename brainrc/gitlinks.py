@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import os
 import re
+import stat
 import subprocess
 from pathlib import Path
 
@@ -76,14 +77,31 @@ def _cached_links(top: str, stamp) -> tuple[Path, ...]:
     return _cache[key]
 
 
+_found: dict[tuple, dict[Path, Path]] = {}
+
+
 def _stand_ins(top: str) -> dict[Path, Path]:
     """{stand-in: what it points to} in one checkout: each path git records as a link that is a plain
-    file here, whose target is relative, stays inside the checkout and exists."""
-    found = {}
+    file here, whose target is relative, stays inside the checkout and exists. Kept while none of
+    those files changes."""
+    files = []
     for path in _links(top) or ():
         try:
-            if path.is_symlink() or not path.is_file() or path.stat().st_size > MAX_TARGET:
-                continue
+            st = path.lstat()
+        except OSError:
+            continue
+        if stat.S_ISREG(st.st_mode) and st.st_size <= MAX_TARGET:
+            files.append((path, st.st_mtime_ns, st.st_size))
+    key = (top, tuple(files))
+    if key not in _found:
+        _found[key] = _read_stand_ins(top, [f[0] for f in files])
+    return _found[key]
+
+
+def _read_stand_ins(top: str, files: list[Path]) -> dict[Path, Path]:
+    found = {}
+    for path in files:
+        try:
             target = path.read_bytes().decode("utf-8").strip().replace("\\", "/")
         except (OSError, UnicodeDecodeError):
             continue

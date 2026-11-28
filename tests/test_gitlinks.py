@@ -117,6 +117,37 @@ class GitLinksTest(unittest.TestCase):
         self.assertTrue((tree / ".git").is_file())
         self.assertEqual(gitlinks.stand_ins(tree / "skills"), {roles: tree / "agents"})
 
+    def place(self, source: Path, name: str) -> Path:
+        home = Path(tempfile.mkdtemp()).resolve()
+        self.addCleanup(rmtree, home)
+        with mock.patch.dict(os.environ, {"BRAINRC_HOME": str(home / "settings"), copies.ENV: "copy"}):
+            copies.place("claude", home / name, source)
+        return home / name
+
+    def test_a_stand_in_for_a_stand_in_is_copied_as_the_end_of_the_chain(self):
+        (self.root / "other").mkdir()
+        git(self.root, "add", "agents")
+        record_link(self.root, "other/team", "../agents")
+        record_link(self.root, "skills/acme-work/team", "../../other/team")
+        dest = self.place(self.skill, "acme-work")
+        self.assertEqual((dest / "team/acme-analyst.md").read_text(), "Analyst.\n")
+
+    def test_an_item_that_is_itself_a_stand_in_is_copied_as_its_target(self):
+        (self.root / "shared").mkdir()
+        (self.root / "shared/acme-agent.md").write_text("---\nname: acme-agent\n---\nAgent.\n")
+        git(self.root, "add", "shared")
+        agent = record_link(self.root, "agents/acme-agent.md", "../shared/acme-agent.md")
+        dest = self.place(agent, "acme-agent.md")
+        self.assertEqual(dest.read_text(), "---\nname: acme-agent\n---\nAgent.\n")
+        self.assertEqual(copies.digest(agent), copies.digest(self.root / "shared/acme-agent.md"))
+
+    @unittest.skipUnless(copies.can_symlink(), "needs a link to reach the checkout by another path")
+    def test_the_digest_works_through_a_path_that_is_not_the_real_one(self):
+        alias = Path(tempfile.mkdtemp()).resolve() / "alias"
+        self.addCleanup(rmtree, alias.parent)
+        os.symlink(self.root, alias, target_is_directory=True)
+        self.assertEqual(copies.digest(alias / "skills/acme-work"), copies.digest(self.skill))
+
     def references(self, mode: str) -> list[str]:
         src = types.SimpleNamespace(root=self.root, prefix="", rel=lambda p: p.relative_to(self.root).as_posix())
         with mock.patch.dict(os.environ, {copies.ENV: mode}):

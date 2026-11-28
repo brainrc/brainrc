@@ -101,6 +101,11 @@ class TempRepoCase(unittest.TestCase):
         posix = mock.patch.object(brainrc.hookcmd, "windows_hooks", return_value=False)
         posix.start()
         self.addCleanup(posix.stop)
+        # "auto" links where the machine and git can make links; the suite asks the machine alone,
+        # whatever core.symlinks the runner's git has (tests/test_copy_mode.py checks git's part).
+        links = mock.patch.object(brainrc.copies, "git_makes_links", return_value=True)
+        links.start()
+        self.addCleanup(links.stop)
 
     def tearDown(self):
         brainrc.config.REPO = self.old_repo

@@ -91,7 +91,8 @@ def _check_references(src: Source, path: Path, agent_names: set[str], skill_name
             if copies.copying():  # apply copies what the stand-in points to
                 continue
             errors.append(f"{rel}: link `{target}` goes through a link git checked out as a plain file "
-                          "(symlinks off); enable symlinks, or set link_mode = \"copy\"")
+                          "(symlinks off); set link_mode = \"copy\", or clone the pack again with "
+                          "core.symlinks on")
             continue
         errors.append(f"{rel}: broken link `{target}`")
     if tags:

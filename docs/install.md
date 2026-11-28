@@ -91,7 +91,8 @@ If you move the checkout, run `python3 scripts/brainrc.py apply --repair` from t
 ## Platforms
 
 macOS, Linux and Windows. brainrc installs by symlink. On a Windows machine that can't make one (no
-Developer Mode, not an administrator), `apply` copies instead and records each copy
+Developer Mode, not an administrator), or whose git doesn't (`core.symlinks` off, Git for Windows'
+default), `apply` copies instead and records each copy
 ([`link_mode`](configuration.md#brainrclocaltoml)), so skills, agents, commands and rules install
 without WSL. A pack cloned there gets each of its own links (Gatework's `roles/`) as a plain file
 holding the link's target, git's stand-in when symlinks are off; copy mode copies what that file points

@@ -12,6 +12,18 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.8.38 (2026-11-28)
+
+- Windows without symlinks works end to end (#179, #120). Where git checks a pack out with
+  `core.symlinks` off, each of the pack's links arrives as a plain file holding its target; copy mode
+  now copies what that file points to (a chain of them too, or an item that is one), and validate
+  reads a Markdown link through it. Gatework is pinned to v0.9.1, which accepts its `roles/`
+  stand-in where brainrc copies it.
+- `link_mode = "auto"` on Windows now also copies where git doesn't make links (`core.symlinks` off,
+  Git for Windows' default), even with Developer Mode on. macOS and Linux are unchanged.
+- The Windows CI cells now block, and every cell applies, checks and uninstalls in copy mode with
+  symlinks off (`scripts/check_apply.py --copy`). `docs/install.md` lists Windows as supported.
+
 ## 0.8.37 (2026-11-28)
 
 - Native Windows hooks (#178): on Windows, `apply` writes each of brainrc's hooks as one Python call

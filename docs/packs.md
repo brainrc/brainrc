@@ -507,9 +507,10 @@ parts are zero, a bare version means `>=`, and `^1` means `>=1.0, <2`).
 **What pack API 1 freezes.** The keys, types and limits in the
 [pack.toml](schemas/pack.toml.schema.json) and [mcp/servers.toml](schemas/mcp-servers.toml.schema.json)
 schemas; the [layout](#layout) and the frontmatter each file needs; item kinds and agent models; the
-[naming](#naming) patterns; and the module-level names a [validator plugin](#validator-plugins)
-may define. [docs/schemas/pack-api/1.0.json](schemas/pack-api/1.0.json) is the frozen list.
-Core's tests read the live contract from those schemas and that code and fail when it differs from
+[naming](#naming) patterns; and the names a [validator plugin](#validator-plugins) may define,
+with the arguments core passes each function. [docs/schemas/pack-api/1.0.json](schemas/pack-api/1.0.json) is the frozen list.
+Core's tests build the live contract (the schemas, the kinds, models, naming patterns and
+validator calls from the code, and a written list of the layout) and fail when it differs from
 the frozen list for `PACK_API`; `python3 scripts/pack_api.py --write` freezes a new version.
 
 **`requires_core` is deprecated.** It pins core's own version (`VERSION`), which content releases

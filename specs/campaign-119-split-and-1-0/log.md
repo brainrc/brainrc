@@ -36,3 +36,14 @@ that basis. Merging (each merge publishes a release) and closing issues stay wit
 - Not changed: `CHANGELOG.md`'s header still says packs pin `VERSION` (the release owns that
   file). Gatework and brainrc/packs still pin `requires_core`; each moves to `requires_api` in its
   own repo once this ships.
+
+## brainrc-code-reviewer · gh:174 · changes requested, fixed
+- `--write` rewrote a frozen version and printed its new digest, so following its output hid a
+  change. It now refuses a version that's already frozen and says to bump first.
+- Validator functions were frozen by name only. Each call core makes now freezes its argument
+  count too (`validator check_extensions(4 arguments)`), and `REMOVED_IN` is caught.
+- The schema walk skipped `oneOf`, `not`, `additionalProperties: false` and other keywords. Every
+  keyword it doesn't walk or treat as prose is now an entry as written.
+- Stale `requires_core` wording in stack-pack.md, why-packs.md and the pack template's CI comment;
+  docs/packs.md now says the layout is a written list, not read from code; one test could pass
+  without the pack loading. All fixed; 1.0 was refrozen (not yet released).

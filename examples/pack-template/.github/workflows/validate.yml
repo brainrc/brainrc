@@ -1,5 +1,6 @@
 # Checks this pack against the brainrc core it pins, and the default packs (Gatework) that core
-# pins. Move the pin when you test against a newer core, and update requires_core in pack.toml.
+# pins. Move the pin when you test against a newer core; requires_api in pack.toml moves only with
+# the pack API's major.
 name: validate
 on:
   push:

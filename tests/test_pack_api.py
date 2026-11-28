@@ -34,6 +34,24 @@ class FrozenContractTest(unittest.TestCase):
         self.assertFalse([e for e in entries if "description" in e and "frontmatter" not in e
                           and e != 'pack.toml description: type "string"'], "descriptions are prose, not contract")
 
+    def test_validator_calls_and_schema_combinators_are_in_it(self):
+        entries = packapi.contract()
+        self.assertIn("validator check_extensions(4 arguments)", entries)
+        self.assertIn("validator REMOVED_IN", entries)
+        self.assertTrue(any(e.startswith("mcp/servers.toml servers.*: oneOf ") for e in entries))
+        self.assertIn("pack.toml .: additionalProperties false", entries)
+
+    def test_one_more_argument_for_a_validator_changes_the_contract(self):
+        text = 'x = _call(me, mod, "doctor", me, extra(a, b))\nhasattr(mod, "NAMESPACE")\n'
+        self.assertEqual(packapi._validator_entries(text), {"validator doctor(2 arguments)", "validator NAMESPACE"})
+
+    def test_write_refuses_a_released_version(self):
+        before = packapi.frozen_path(packapi.PACK_API).read_text(encoding="utf-8")
+        code, out = quiet(packapi.main, ["--write"])
+        self.assertEqual(code, 1)
+        self.assertIn("already frozen; bump PACK_API first", out)
+        self.assertEqual(packapi.frozen_path(packapi.PACK_API).read_text(encoding="utf-8"), before)
+
     def test_a_contract_change_without_a_version_bump_fails(self):
         with mock.patch.object(packapi, "LAYOUT", (*packapi.LAYOUT, "hooks.toml")):
             problems = packapi.check()
@@ -144,6 +162,7 @@ class RequiresApiTest(TempRepoCase):
         self.assertIn("WARN acme:pack.toml: `requires_core` is deprecated", out)
         (self.repo / "packs.local.toml").write_text(f"[acme]\npath = '{self.pack}'\n")
         code, out = quiet(brainrc.cmd_validate)  # core's own validate: the pack's users can't fix it
+        self.assertIn("(packs: gatework, acme)", out)
         self.assertNotIn("deprecated", out)
 
 

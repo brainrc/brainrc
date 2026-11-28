@@ -24,7 +24,7 @@ PACK_API = "1.0"
 # Digest of each frozen docs/schemas/pack-api/<version>.json. A released version never changes:
 # change the contract, then add a version here (and its file) instead of editing one.
 FROZEN = {
-    "1.0": "05ab8372f7a923e11e662d279722c9fdd0487322f3e6bd01274e01b1a5eb3ce8",
+    "1.0": "c83b5273bac4ed44e484c7a102716ee11dab866e9ea404729fcd8b3e2a52a6b9",
 }
 
 SCHEMAS = {"pack.toml": "pack.toml.schema.json", "mcp/servers.toml": "mcp-servers.toml.schema.json"}
@@ -48,28 +48,61 @@ LAYOUT = (
     "naming: skills, agents, commands and MCP servers start with the pack's prefix",
 )
 
-PLUGIN_HOOK = re.compile(r'(?:hasattr|getattr)\(mod, "([A-Za-z_]+)"|_call\(me, mod, "([A-Za-z_]+)"')
+PLUGIN_NAME = re.compile(r'(?:hasattr|getattr)\([\w\[\]]+, "([A-Za-z_]+)"')
+PLUGIN_CALL = '_call(me, mod, "'
+# Schema keywords read as structure (walked) or prose (left out); every other keyword's value is
+# an entry as written, so a change to oneOf, not, maxLength or additionalProperties shows too.
+WALKED = {"$ref", "properties", "additionalProperties", "propertyNames", "items", "required", "$defs"}
+PROSE = {"description", "title", "$schema", "$id", "$comment", "examples", "default"}
+
+
+def _plain(value):
+    """value without descriptions or titles, for an entry that holds a whole subtree."""
+    if isinstance(value, dict):
+        return {k: _plain(v) for k, v in value.items() if k not in PROSE}
+    if isinstance(value, list):
+        return [_plain(v) for v in value]
+    return value
 
 
 def _schema_entries(label: str, node: dict, root: dict, where: str = "") -> set[str]:
-    """One entry per key path and the type and limits the schema gives it (descriptions left out)."""
+    """One entry per key path and each keyword the schema gives it there (descriptions left out)."""
     if "$ref" in node:
         node = {**root["$defs"][node["$ref"].split("/")[-1]], **{k: v for k, v in node.items() if k != "$ref"}}
     head = f"{label} {where or '.'}"
-    out = set()
-    for key in ("type", "const", "enum", "pattern", "minLength", "minimum", "minItems"):
-        if key in node:
-            out.add(f"{head}: {key} {json.dumps(node[key])}")
+    out = {f"{head}: {key} {json.dumps(_plain(value), sort_keys=True)}"
+           for key, value in node.items() if key not in WALKED | PROSE}
     for name in node.get("required", ()):
         out.add(f"{head}: requires {name}")
     for name, sub in node.get("properties", {}).items():
         out |= _schema_entries(label, sub, root, f"{where}.{name}" if where else name)
-    if isinstance(node.get("additionalProperties"), dict):
-        out |= _schema_entries(label, node["additionalProperties"], root, f"{where}.*")
+    extra = node.get("additionalProperties")
+    if isinstance(extra, dict):
+        out |= _schema_entries(label, extra, root, f"{where}.*")
+    elif extra is not None:
+        out.add(f"{head}: additionalProperties {json.dumps(extra)}")
     if "propertyNames" in node:
         out |= _schema_entries(label, node["propertyNames"], root, f"{where}.<key>")
     if "items" in node:
         out |= _schema_entries(label, node["items"], root, f"{where}[]")
+    return out
+
+
+def _validator_entries(text: str) -> set[str]:
+    """Each module-level name core reads from a pack's validator, and each function core calls
+    with the number of arguments it passes (a new argument breaks every validator that has it)."""
+    out = {f"validator {name}" for name in PLUGIN_NAME.findall(text)}
+    at = text.find(PLUGIN_CALL)
+    while at != -1:
+        name_end = text.index('"', at + len(PLUGIN_CALL))
+        name, depth, args, i = text[at + len(PLUGIN_CALL):name_end], 1, 0, name_end + 1
+        while depth:  # count the top-level commas after the name, up to the call's closing paren
+            c = text[i]
+            depth += (c in "([{") - (c in ")]}")
+            args += c == "," and depth == 1
+            i += 1
+        out.add(f"validator {name}({args} arguments)")
+        at = text.find(PLUGIN_CALL, i)
     return out
 
 
@@ -86,7 +119,7 @@ def contract() -> list[str]:
     out |= {f"naming name {naming.NAME.pattern}", f"naming id {naming.PACK_ID.pattern}",
             f"naming item {config.SKILL_NAME.pattern}"}
     plugins = (Path(__file__).parent / "plugins.py").read_text(encoding="utf-8")
-    out |= {f"validator {a or b}" for a, b in PLUGIN_HOOK.findall(plugins)}
+    out |= _validator_entries(plugins)
     return sorted(out)
 
 
@@ -147,6 +180,10 @@ def main(argv: list[str]) -> int:
     text = render(PACK_API, contract())
     if argv == ["--write"]:
         path = frozen_path(PACK_API)
+        if PACK_API in FROZEN or path.exists():  # rewriting a released version would hide the change
+            print(f"pack API {PACK_API} is already frozen; bump PACK_API first (MINOR if nothing was "
+                  "removed, MAJOR otherwise), then run --write again")
+            return 1
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text, encoding="utf-8", newline="\n")
         print(f"wrote {path.relative_to(config.REPO).as_posix()}; set FROZEN[{PACK_API!r}] = {digest(text)!r}")

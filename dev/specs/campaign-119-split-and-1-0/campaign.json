@@ -28,9 +28,9 @@
       "order": 2,
       "depends_on": [],
       "slug": "175-move-specs",
-      "status": "in_progress",
+      "status": "delivered",
       "branch": "claude/project-thread-r70d5p",
-      "pr": null
+      "pr": "https://github.com/brainrc/brainrc/pull/397"
     }
   ]
 }

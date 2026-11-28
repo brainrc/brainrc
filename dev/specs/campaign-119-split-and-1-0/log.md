@@ -60,3 +60,6 @@ Rebuilt on main after v0.8.40.
 Review: moving specs/ broke Gatework's later stages here (living specs, resume, campaign lookup all
 read a root specs/). Fixed by naming dev/specs/ as this repo's specs directory in AGENTS.md, which
 Gatework's state contract honours, in place of CONTRIBUTING's hand `git mv` before the PR.
+
+## engine · gh:175 · Delivered
+Draft PR #397 (Part of #175: the plugin's install size stays open on the issue).

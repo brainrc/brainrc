@@ -1810,7 +1810,7 @@ span two gates sits under the gate where most of its open work is, and its line 
 that sits elsewhere.</p>
 <p>A sub-issue's <code>Roadmap ID</code> says where it belongs: <code>GA-</code>, <code>GB-</code> or <code>GC-</code> for Gate A, B or C, and
 <code>P0-</code> to <code>P4-</code> for the earlier waves 0 to 4, which the gates replaced.</p>
-<p>Shipped work is in the <a href="https://github.com/brainrc/brainrc/blob/v0.8.38/CHANGELOG.md">CHANGELOG</a>. A closed epic drops off the lists; each
+<p>Shipped work is in the <a href="https://github.com/brainrc/brainrc/blob/v0.8.39/CHANGELOG.md">CHANGELOG</a>. A closed epic drops off the lists; each
 gate's first line names the epics it has shipped.</p>
 <h2 id="gate-a-public-launch">Gate A: public launch<a class="headerlink" href="#gate-a-public-launch" title="Permanent link">&para;</a></h2>
 <p>Shipped in this gate: E4, E5, E6, E27 (lockfile), E28 (trust baseline) and E29 (pack naming).
@@ -1818,20 +1818,18 @@ Gate A's standalone issues, with no epic, are in its
 <a href="https://github.com/brainrc/brainrc/milestone/1">milestone</a>.
 - <strong>D1</strong> <a href="https://github.com/brainrc/brainrc/issues/95">Owner decisions and accounts</a>: the name, the namespace, PyPI and release accounts. A person does these, not an agent.</p>
 <h2 id="gate-b-v10">Gate B: v1.0<a class="headerlink" href="#gate-b-v10" title="Permanent link">&para;</a></h2>
-<ul>
-<li><strong>E30</strong> <a href="https://github.com/brainrc/brainrc/issues/301">Evals as a product</a>: <code>brainrc eval</code> with and without a pack, project token budgets, and a 30% cut in core's always-loaded tokens. Its MCP tool budgets child (#332) is Gate C.</li>
-<li><strong>E7</strong> <a href="https://github.com/brainrc/brainrc/issues/114">Pack scaffolding</a>: <code>new pack</code>, a pack template repo, and pack author docs.</li>
-<li><strong>E8</strong> <a href="https://github.com/brainrc/brainrc/issues/117">Item scaffolders</a>: <code>new skill</code>, <code>new agent</code>, <code>new rule</code> and <code>new command</code>.</li>
-<li><strong>E12</strong> <a href="https://github.com/brainrc/brainrc/issues/118">Importers</a>: Windsurf rules and Claude plugins as packs, after the Gate A importers for CLAUDE.md, AGENTS.md, Cursor and Copilot.</li>
-<li><strong>E10</strong> <a href="https://github.com/brainrc/brainrc/issues/112">Pack extension points</a>: a <code>[scope]</code> predicate, declarative guard rules, pack-owned settings keys and reviewers, mode overrides, and unavailable gates.</li>
-<li><strong>E11</strong> <a href="https://github.com/brainrc/brainrc/issues/116">Guard parity across harnesses</a>: the declarative guard rules evaluated in every tool, compiled to OS sandbox settings, and a security-baseline pack.</li>
-<li><strong>E31</strong> <a href="https://github.com/brainrc/brainrc/issues/305">Adapter SDK and more tools</a>: an adapter plugin interface, then Copilot, Gemini CLI, Windsurf, Kiro, Amp and Junie.</li>
-<li><strong>E20</strong> <a href="https://github.com/brainrc/brainrc/issues/121">Stack packs</a>: official packs (starter, review, Go, Terraform, Kubernetes, Python, Node/TypeScript, Rust) as folders of <a href="https://github.com/brainrc/packs">brainrc/packs</a>, and domain skills moved out of core.</li>
-<li><strong>E16</strong> <a href="https://github.com/brainrc/brainrc/issues/120">Native Windows</a>: copy mode instead of symlinks, native hook commands, and a Windows CI cell.</li>
-<li><strong>E15</strong> <a href="https://github.com/brainrc/brainrc/issues/119">Split and 1.0</a>: freeze the pack API, move <code>specs/</code> out of the way, and tag v1.0. Its README and concepts child (#296) is Gate A.</li>
-<li><strong>E21</strong> <a href="https://github.com/brainrc/brainrc/issues/124">Pack index and pack evals</a>: evals for packs, a searchable index, signing tiers, a publish scanner and badges. Its verified vendor packs child (#333) is Gate C.</li>
-<li><strong>E14</strong> <a href="https://github.com/brainrc/brainrc/issues/122">pack-builder skill</a>: an interview that plans and generates your own pack, with an eval case.</li>
-</ul>
+<p>Shipped in this gate: E16 (native Windows).
+- <strong>E30</strong> <a href="https://github.com/brainrc/brainrc/issues/301">Evals as a product</a>: <code>brainrc eval</code> with and without a pack, project token budgets, and a 30% cut in core's always-loaded tokens. Its MCP tool budgets child (#332) is Gate C.
+- <strong>E7</strong> <a href="https://github.com/brainrc/brainrc/issues/114">Pack scaffolding</a>: <code>new pack</code>, a pack template repo, and pack author docs.
+- <strong>E8</strong> <a href="https://github.com/brainrc/brainrc/issues/117">Item scaffolders</a>: <code>new skill</code>, <code>new agent</code>, <code>new rule</code> and <code>new command</code>.
+- <strong>E12</strong> <a href="https://github.com/brainrc/brainrc/issues/118">Importers</a>: Windsurf rules and Claude plugins as packs, after the Gate A importers for CLAUDE.md, AGENTS.md, Cursor and Copilot.
+- <strong>E10</strong> <a href="https://github.com/brainrc/brainrc/issues/112">Pack extension points</a>: a <code>[scope]</code> predicate, declarative guard rules, pack-owned settings keys and reviewers, mode overrides, and unavailable gates.
+- <strong>E11</strong> <a href="https://github.com/brainrc/brainrc/issues/116">Guard parity across harnesses</a>: the declarative guard rules evaluated in every tool, compiled to OS sandbox settings, and a security-baseline pack.
+- <strong>E31</strong> <a href="https://github.com/brainrc/brainrc/issues/305">Adapter SDK and more tools</a>: an adapter plugin interface, then Copilot, Gemini CLI, Windsurf, Kiro, Amp and Junie.
+- <strong>E20</strong> <a href="https://github.com/brainrc/brainrc/issues/121">Stack packs</a>: official packs (starter, review, Go, Terraform, Kubernetes, Python, Node/TypeScript, Rust) as folders of <a href="https://github.com/brainrc/packs">brainrc/packs</a>, and domain skills moved out of core.
+- <strong>E15</strong> <a href="https://github.com/brainrc/brainrc/issues/119">Split and 1.0</a>: freeze the pack API, move <code>specs/</code> out of the way, and tag v1.0. Its README and concepts child (#296) is Gate A.
+- <strong>E21</strong> <a href="https://github.com/brainrc/brainrc/issues/124">Pack index and pack evals</a>: evals for packs, a searchable index, signing tiers, a publish scanner and badges. Its verified vendor packs child (#333) is Gate C.
+- <strong>E14</strong> <a href="https://github.com/brainrc/brainrc/issues/122">pack-builder skill</a>: an interview that plans and generates your own pack, with an eval case.</p>
 <h2 id="gate-c-team-adoption">Gate C: team adoption<a class="headerlink" href="#gate-c-team-adoption" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>E32</strong> <a href="https://github.com/brainrc/brainrc/issues/324">Teams and org policy</a>: an org manifest, a <code>brainrc check</code> GitHub Action, and an agent bill of materials.</li>

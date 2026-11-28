@@ -1924,7 +1924,7 @@ the installed package, and those two run brainrc from a cache that can be cleare
 <h2 id="pin-a-version">Pin a version<a class="headerlink" href="#pin-a-version" title="Permanent link">&para;</a></h2>
 <p>Install a given release with <code>uv tool install brainrc==&lt;X.Y.Z&gt;</code> (or <code>pipx install brainrc==&lt;X.Y.Z&gt;</code>,
 <code>uvx brainrc@&lt;X.Y.Z&gt;</code>, <code>npx github:brainrc/brainrc#v&lt;X.Y.Z&gt;</code>). Releases are listed on
-<a href="https://pypi.org/project/brainrc/">PyPI</a> and in the <a href="https://github.com/brainrc/brainrc/blob/v0.8.36/CHANGELOG.md">CHANGELOG</a>.</p>
+<a href="https://pypi.org/project/brainrc/">PyPI</a> and in the <a href="https://github.com/brainrc/brainrc/blob/v0.8.37/CHANGELOG.md">CHANGELOG</a>.</p>
 <h2 id="update">Update<a class="headerlink" href="#update" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>uv<span class="w"> </span>tool<span class="w"> </span>upgrade<span class="w"> </span>brainrc<span class="w">     </span><span class="c1"># or: pipx upgrade brainrc, brew upgrade brainrc</span>
 brainrc<span class="w"> </span>apply<span class="w"> </span>--repair
@@ -1959,13 +1959,16 @@ python3<span class="w"> </span>scripts/brainrc.py<span class="w"> </span>apply
   out its tag (<code>git checkout v&lt;X.Y.Z&gt;</code>) and re-run <code>apply</code>.</li>
 </ul>
 <p>If you move the checkout, run <code>python3 scripts/brainrc.py apply --repair</code> from the new place.
-<a href="https://github.com/brainrc/brainrc/blob/v0.8.36/CONTRIBUTING.md">CONTRIBUTING.md</a> covers the checks to run before a pull request.</p>
+<a href="https://github.com/brainrc/brainrc/blob/v0.8.37/CONTRIBUTING.md">CONTRIBUTING.md</a> covers the checks to run before a pull request.</p>
 <h2 id="platforms">Platforms<a class="headerlink" href="#platforms" title="Permanent link">&para;</a></h2>
 <p>macOS and Linux. brainrc installs by symlink. On a Windows machine that can't make one (no
 Developer Mode, not an administrator), <code>apply</code> copies instead and records each copy
 (<a href="../configuration/#brainrclocaltoml"><code>link_mode</code></a>), so skills, agents, commands and rules install
-without WSL. The hook commands <code>apply</code> writes are still POSIX shell, so the guards need WSL
-until native Windows hooks land. Those, and a Windows CI cell, are on the <a href="../roadmap/">roadmap</a>.</p>
+without WSL. On Windows <code>apply</code> also writes each of brainrc's hooks as one Python call
+(<code>py -3 -I -c "..."</code>, falling back to <code>python</code>) instead of a POSIX shell line, in the field each
+tool's docs give for it: Claude Code's exec form, Codex's <code>commandWindows</code>, Copilot's <code>powershell</code>,
+and <code>command</code> for the rest. macOS and Linux get exactly the lines they got before. A Windows CI
+cell that runs without symlinks is on the <a href="../roadmap/">roadmap</a>.</p>
 
 
 

@@ -1894,7 +1894,7 @@
 - AWS CLI writes (create/delete/put/update/terminate/invoke/…, <code>s3 cp|mv|rm|sync</code>) and secret reads
   (<code>secretsmanager get-secret-value</code>, <code>ssm get-parameter --with-decryption</code>)
 - migration tools and <code>psql</code> writes against <strong>non-local</strong> databases
-- host reboot/poweroff. Proxmox <code>qm</code>/<code>pct</code> and <code>talosctl</code> are in the <a href="https://github.com/brainrc/brainrc/blob/v0.8.36/examples/pack-homelab/README.md">homelab example pack</a>.
+- host reboot/poweroff. Proxmox <code>qm</code>/<code>pct</code> and <code>talosctl</code> are in the <a href="https://github.com/brainrc/brainrc/blob/v0.8.37/examples/pack-homelab/README.md">homelab example pack</a>.
 - <code>rm -rf</code> in any flag spelling</p>
 <p>A pack adds its own deny and ask rules in <code>pack.toml</code>, under its <code>[scope]</code>, and this hook enforces
 them with the same unwrapping; a pack's deny wins over any ask (<a href="../packs/#guard-rules">guard rules</a>).</p>

@@ -12,6 +12,14 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.8.37 (2026-11-28)
+
+- Native Windows hooks (#178): on Windows, `apply` writes each of brainrc's hooks as one Python call
+  (`py -3 -X utf8 -I -c "..."`, falling back to `python`) instead of a POSIX shell line, in the field
+  each tool's docs give for it: Claude Code's exec form, Codex's `commandWindows`, Copilot's
+  `powershell`, and `command` for the rest. `doctor` checks the Windows line, and OpenCode's plugin
+  runs its guards with `py -3` or `python` on Windows. macOS and Linux output is unchanged.
+
 ## 0.8.36 (2026-11-27)
 
 - Copy mode (#177, epic #120): where a symlink can't be made (Windows without Developer Mode or

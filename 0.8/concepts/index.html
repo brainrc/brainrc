@@ -1934,8 +1934,8 @@ that has a <code>brainrc.toml</code> (<code>.agents/skills/</code>, <code>AGENTS
 same agent setup. <code>apply</code> does both: the user scope first, then the project you are in.</p>
 <h2 id="core">Core<a class="headerlink" href="#core" title="Permanent link">&para;</a></h2>
 <p>brainrc's own repo: the command, its rules (<code>rules/</code>), the guard hooks (<code>overrides/</code>) and the list
-of where each tool reads its config (<code>harnesses.toml</code>). Packs declare which core versions they
-work with (<code>requires_core</code>).</p>
+of where each tool reads its config (<code>harnesses.toml</code>). Packs declare which pack API versions they
+work with (<code>requires_api</code>), so core content releases don't break them.</p>
 <h2 id="status-and-apply">status and apply<a class="headerlink" href="#status-and-apply" title="Permanent link">&para;</a></h2>
 <p><code>brainrc status</code> shows what would change and writes nothing. <code>brainrc apply</code> makes the change: it
 links items into each tool, renders rules into one file per tool, and merges hooks and MCP servers

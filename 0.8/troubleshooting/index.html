@@ -2047,8 +2047,12 @@ name: rename or remove yours (or the registry's), then run <code>apply</code>.</
 <td>Rename the pack or its prefix to follow the <a href="../packs/#naming">naming rules</a>.</td>
 </tr>
 <tr>
-<td><code>acme:pack.toml: requires_core `&gt;=2.0` is not satisfied by core 1.2.3</code></td>
+<td><code>acme:pack.toml: requires_api `^2` is not satisfied by pack API 1.0</code></td>
 <td>Upgrade brainrc (<a href="../upgrade/">upgrading</a>) or the pack, or set <code>enabled = false</code> for it in <code>packs.local.toml</code>.</td>
+</tr>
+<tr>
+<td><code>acme:pack.toml: requires_core `&gt;=2.0` is not satisfied by core 1.2.3</code></td>
+<td>The same, for a pack that still pins core's version; its author can pin <code>requires_api</code> instead (<a href="../packs/#compatibility">compatibility</a>).</td>
 </tr>
 <tr>
 <td><code>pack acme: no pack.toml at ...</code></td>

@@ -1708,6 +1708,8 @@ Even Better TOML) completes and checks them as you type (<a href="../packs/#edit
 </tr>
 </tbody>
 </table>
+<p><code>schemas/pack-api/</code> holds the frozen contract of each pack API version, which packs pin with
+<code>requires_api</code> (<a href="../packs/#compatibility">compatibility</a>).</p>
 <p>To point an editor at the copy for <code>main</code>, put this line at the top of the file:</p>
 <div class="highlight"><pre><span></span><code><span class="c1">#:schema https://raw.githubusercontent.com/brainrc/brainrc/main/docs/schemas/pack.toml.schema.json</span>
 </code></pre></div>

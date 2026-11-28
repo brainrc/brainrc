@@ -1841,8 +1841,8 @@ pack can do, that it can't change unseen, and that its code runs only where you 
   default pack, for <code>validate --pack</code>, or when you set <code>run_validator = true</code> for it. Its tests
   run only from <code>validate --pack</code> on the command line, never from <code>apply</code> or <code>doctor</code>
   (<a href="../#validator-plugins">validator plugins</a>, <a href="../#pack-tests">pack tests</a>).</li>
-<li><strong>It says which brainrc it fits.</strong> <code>requires_core</code> stops <code>apply</code> writing anything when brainrc
-  is outside the range the pack was tested with (<a href="../#compatibility">compatibility</a>).</li>
+<li><strong>It says which brainrc it fits.</strong> <code>requires_api</code> stops <code>apply</code> writing anything when brainrc's
+  pack API is outside the range the pack was built for (<a href="../#compatibility">compatibility</a>).</li>
 <li><strong>Old mistakes stay fixed.</strong> A pack's tripwires fail <code>validate</code> when a retired tool, host or
   path comes back in any file (<a href="../#tripwirestoml">tripwires</a>).</li>
 </ul>

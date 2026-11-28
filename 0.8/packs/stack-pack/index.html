@@ -1842,9 +1842,10 @@ what never to do without approval. Its <code>description</code> says when to loa
 <span class="n">reviewer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"brainrc-code-reviewer"</span><span class="w">   </span><span class="c1"># optional: the agent that reviews these files</span>
 </code></pre></div>
 <h2 id="4-say-which-brainrc-versions-it-works-with">4. Say which brainrc versions it works with<a class="headerlink" href="#4-say-which-brainrc-versions-it-works-with" title="Permanent link">&para;</a></h2>
-<p><code>new pack</code> pins <code>requires_core</code> to the minor series you ran it with, and its CI workflow and
-pre-commit hook to that release's tag. When you test against a newer brainrc, move all three
-together (<a href="../#compatibility">compatibility</a>).</p>
+<p><code>new pack</code> sets <code>requires_api</code> to the pack API's major (<code>"^1"</code>), which core content releases
+never break, and pins its CI workflow and pre-commit hook to the release you ran it with. When
+you test against a newer brainrc, move those two pins; <code>requires_api</code> moves only when the pack
+API's major does (<a href="../#compatibility">compatibility</a>).</p>
 <h2 id="5-release-it">5. Release it<a class="headerlink" href="#5-release-it" title="Permanent link">&para;</a></h2>
 <p>Tag a release, and tell people to pin the tag:</p>
 <div class="highlight"><pre><span></span><code><span class="k">[jdoe-elixir]</span>

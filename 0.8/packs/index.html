@@ -2211,8 +2211,8 @@ and installs the lot into every tool. This page is the reference: every file, ke
   <a href="employer-pack/">an employer</a>, <a href="team-pack/">a team</a>, <a href="personal-pack/">yourself</a>
   or <a href="stack-pack/">a stack</a>, or <a href="from-a-plugin/">from a Claude Code plugin</a>.</li>
 <li><strong>Understand</strong>: <a href="why-packs/">why packs, and what you trust when you enable one</a>.</li>
-<li><strong>Copy</strong>: <a href="https://github.com/brainrc/brainrc/blob/v0.8.39/examples/pack-acme/README.md">examples/pack-acme</a> (every feature but hooks) and
-  <a href="https://github.com/brainrc/brainrc/blob/v0.8.39/examples/pack-homelab/README.md">examples/pack-homelab</a> (a guard hook).</li>
+<li><strong>Copy</strong>: <a href="https://github.com/brainrc/brainrc/blob/v0.8.40/examples/pack-acme/README.md">examples/pack-acme</a> (every feature but hooks) and
+  <a href="https://github.com/brainrc/brainrc/blob/v0.8.40/examples/pack-homelab/README.md">examples/pack-homelab</a> (a guard hook).</li>
 </ul>
 <h2 id="layout">Layout<a class="headerlink" href="#layout" title="Permanent link">&para;</a></h2>
 <p>Every folder is optional.</p>
@@ -2252,7 +2252,7 @@ repo can sit at different refs. <code>subdir</code> works the same in a repo's <
 <div class="highlight"><pre><span></span><code><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"acme"</span>
 <span class="n">prefix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"acme-"</span><span class="w">          </span><span class="c1"># default: "&lt;name&gt;-"</span>
 <span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"acme/acme-ai-pack"</span><span class="w">  </span><span class="c1"># optional: the &lt;owner&gt;/&lt;pack&gt; ID it's published under (see Naming)</span>
-<span class="n">requires_core</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"&gt;=0.7, &lt;0.9"</span><span class="w">   </span><span class="c1"># core versions this pack works with (see Compatibility)</span>
+<span class="n">requires_api</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"^1"</span><span class="w">       </span><span class="c1"># pack API versions this pack works with (see Compatibility)</span>
 <span class="n">max_always_tokens</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">800</span><span class="w">   </span><span class="c1"># optional budget for rules + descriptions (see Context cost)</span>
 <span class="n">test</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"tests"</span><span class="w">            </span><span class="c1"># optional: tests validate --pack runs (see Pack tests)</span>
 
@@ -2323,9 +2323,14 @@ wrong type fails, and a key it doesn't know warns, naming the closest known key
 <td>One line on what the pack is for.</td>
 </tr>
 <tr>
+<td><code>requires_api</code></td>
+<td>string</td>
+<td>Pack API versions the pack works with, e.g. "^1"; core content releases never break it (<a href="#compatibility">compatibility</a>).</td>
+</tr>
+<tr>
 <td><code>requires_core</code></td>
 <td>string</td>
-<td>Core versions the pack works with, e.g. "&gt;=0.8, &lt;0.9" (<a href="#compatibility">compatibility</a>).</td>
+<td>Deprecated: pin requires_api instead. Core versions the pack works with, e.g. "&gt;=0.8, &lt;0.9"; ignored when requires_api is set (<a href="#compatibility">compatibility</a>).</td>
 </tr>
 <tr>
 <td><code>max_always_tokens</code></td>
@@ -2369,7 +2374,7 @@ wrong ones from a first line naming the schema, which <code>brainrc import</code
 <div class="highlight"><pre><span></span><code><span class="c1">#:schema https://raw.githubusercontent.com/brainrc/brainrc/main/docs/schemas/pack.toml.schema.json</span>
 <span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"acme"</span>
 </code></pre></div>
-<p>In a checkout of this repo, <a href="https://github.com/brainrc/brainrc/blob/v0.8.39/.taplo.toml"><code>.taplo.toml</code></a> maps each file to its schema. Files
+<p>In a checkout of this repo, <a href="https://github.com/brainrc/brainrc/blob/v0.8.40/.taplo.toml"><code>.taplo.toml</code></a> maps each file to its schema. Files
 outside it (a pack's own repo, <code>~/.config/brainrc/harnesses.local.toml</code>) take the <code>#:schema</code> line.</p>
 <h2 id="mcpserverstoml">mcp/servers.toml<a class="headerlink" href="#mcpserverstoml" title="Permanent link">&para;</a></h2>
 <p>Each <code>[servers.&lt;name&gt;]</code> table is one MCP server, named with the pack's prefix
@@ -2431,7 +2436,7 @@ brainrc<span class="w"> </span>validate<span class="w"> </span>--pack<span class
 <tbody>
 <tr>
 <td><code>pack.toml</code></td>
-<td>name, prefix, <code>requires_core</code> for this core's minor series, a <a href="#context-cost">token budget</a> and <code>test</code></td>
+<td>name, prefix, <code>requires_api</code> for this pack API's major, a <a href="#context-cost">token budget</a> and <code>test</code></td>
 </tr>
 <tr>
 <td><code>rules/10-&lt;name&gt;.md</code></td>
@@ -2467,7 +2472,7 @@ brainrc<span class="w"> </span>validate<span class="w"> </span>--pack<span class
 system (<code>github</code>, <code>jira</code> or <code>local</code>), which becomes an <code>[extensions.gatework.ticket]</code> table. It
 checks the <a href="#naming">naming rules</a> before it writes anything, never writes into a folder with files
 in it but <code>.git</code> (<code>--force</code> replaces an earlier pack and keeps its <code>.git</code>), and <code>--enable</code> adds the pack to <code>packs.local.toml</code>.</p>
-<p><a href="https://github.com/brainrc/brainrc/blob/v0.8.39/examples/pack-template/README.md">examples/pack-template</a> holds the same files for a pack
+<p><a href="https://github.com/brainrc/brainrc/blob/v0.8.40/examples/pack-template/README.md">examples/pack-template</a> holds the same files for a pack
 called <code>mypack</code>, with steps for renaming it: the contents of a GitHub template repository, for
 anyone who would rather start from <strong>Use this template</strong> than install brainrc first.
 <code>scripts/pack_template.py</code> keeps it in step with <code>new pack</code>, and CI validates it.</p>
@@ -2799,7 +2804,7 @@ test needs no scaffolding of its own. A string is a Bash command; a dict is the 
 <p><code>assert_allows</code> passes when the hook allows or has no opinion, and <code>assert_no_opinion</code> only when it
 stays out, so Claude Code's own permission check still decides; <code>assert_denies</code> counts exit code 2
 as a deny. Each lists every case that came out wrong, and a missing, failing or hung hook fails.
-<code>run_hook(hook, payload)</code> returns the decision itself. <a href="https://github.com/brainrc/brainrc/blob/v0.8.39/examples/pack-homelab/tests/test_guard.py">pack-homelab</a>
+<code>run_hook(hook, payload)</code> returns the decision itself. <a href="https://github.com/brainrc/brainrc/blob/v0.8.40/examples/pack-homelab/tests/test_guard.py">pack-homelab</a>
 has a full example.</p>
 <h2 id="tripwirestoml">tripwires.toml<a class="headerlink" href="#tripwirestoml" title="Permanent link">&para;</a></h2>
 <p>Stale facts that must not come back, checked by <code>validate</code>:</p>
@@ -2811,17 +2816,34 @@ has a full example.</p>
 <span class="n">paths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"*.md"</span><span class="p">]</span><span class="w">                              </span><span class="c1"># default; fnmatch against the path in the pack</span>
 </code></pre></div>
 <h2 id="compatibility">Compatibility<a class="headerlink" href="#compatibility" title="Permanent link">&para;</a></h2>
-<p>brainrc's version is in <code>VERSION</code>. <a href="https://github.com/brainrc/brainrc/blob/v0.8.39/CHANGELOG.md">CHANGELOG.md</a> tags changes that affect packs
-with <strong>[pack contract]</strong>. Declare the versions your pack supports with <code>requires_core</code>:
-comma-separated clauses of <code>&gt;=</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&lt;</code>, <code>==</code>, <code>!=</code> and a version (missing parts
-are zero, and a bare version means <code>&gt;=</code>).</p>
+<p>Packs pin the <strong>pack API</strong>, the version of what packs can rely on, not brainrc's own version:</p>
+<div class="highlight"><pre><span></span><code><span class="n">requires_api</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"^1"</span>
+</code></pre></div>
+<p>The pack API version is <code>PACK_API</code> in <code>brainrc/packapi.py</code> (now <code>1.0</code>). Core releases that change
+only content (skills, rules, docs, fixes) leave it alone, so a pin survives them. <code>requires_api</code>
+takes comma-separated clauses of <code>&gt;=</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&lt;</code>, <code>==</code>, <code>!=</code> or <code>^</code> and a version (missing
+parts are zero, a bare version means <code>&gt;=</code>, and <code>^1</code> means <code>&gt;=1.0, &lt;2</code>).</p>
 <ul>
 <li>Not satisfied → <code>validate</code> fails and <code>apply</code>/<code>status</code> write nothing, naming the pack.</li>
 <li>Missing → allowed, with a warning.</li>
-<li>Policy: semver. While core is <code>0.x</code>, a breaking pack-contract change bumps MINOR, so pin
-  <code>"&gt;=0.N, &lt;0.N+1"</code>. After <code>1.0</code>, breaking changes bump MAJOR: pin <code>"&gt;=1.N, &lt;2"</code>.
-  Other changes (new skills, fixes, docs) bump PATCH and never break a pin.</li>
+<li>Policy: a change that only adds to the contract bumps the pack API's MINOR; one that removes or
+  changes anything in it bumps MAJOR, so <code>^N</code> never breaks. Something deprecated keeps working,
+  and <code>validate --pack</code> warns about it, for at least one core minor release before a MAJOR bump
+  may remove it. <a href="https://github.com/brainrc/brainrc/blob/v0.8.40/CHANGELOG.md">CHANGELOG.md</a> tags such changes <strong>[pack contract]</strong>.</li>
 </ul>
+<p><strong>What pack API 1 freezes.</strong> The keys, types and limits in the
+<a href="../schemas/pack.toml.schema.json">pack.toml</a> and <a href="../schemas/mcp-servers.toml.schema.json">mcp/servers.toml</a>
+schemas; the <a href="#layout">layout</a> and the frontmatter each file needs; item kinds and agent models; the
+<a href="#naming">naming</a> patterns; and the names a <a href="#validator-plugins">validator plugin</a> may define,
+with the arguments core passes each function. <a href="../schemas/pack-api/1.0.json">docs/schemas/pack-api/1.0.json</a> is the frozen list.
+Core's tests build the live contract (the schemas, the kinds, models, naming patterns and
+validator calls from the code, and a written list of the layout) and fail when it differs from
+the frozen list for <code>PACK_API</code>; <code>python3 scripts/pack_api.py --write</code> freezes a new version.</p>
+<p><strong><code>requires_core</code> is deprecated.</strong> It pins core's own version (<code>VERSION</code>), which content releases
+bump. It still works: without <code>requires_api</code> it is checked against core's version as before, and
+<code>validate --pack</code> warns. With <code>requires_api</code> set, it is ignored, so keep it only for cores older
+than the one that added <code>requires_api</code> (0.8.39 and older), which ignore it. It goes no sooner
+than pack API 2.</p>
 <h2 id="context-cost">Context cost<a class="headerlink" href="#context-cost" title="Permanent link">&para;</a></h2>
 <p><code>brainrc tokens</code> estimates tokens per skill, agent, and command across all
 enabled sources. It also shows what loads in every session (rules and descriptions) versus on
@@ -2839,7 +2861,7 @@ frontmatter; <code>pack.toml</code> against <a href="#packtoml">its schema</a>; 
 commands, rules, <code>README.md</code> and <code>docs/**</code> (relative links, <code>[agent: x]</code> tags, and skills named
 as "<code>x</code> skill" or in prose as "the x skill"; pack files may reference core's and Gatework's skills
 and agents); the <a href="#naming">naming</a> rules; collisions; extension references and
-<a href="#connector-config">connector config</a>; <code>requires_core</code>; tripwires; and the pack's own
+<a href="#connector-config">connector config</a>; <code>requires_api</code> (or the deprecated <code>requires_core</code>); tripwires; and the pack's own
 <a href="#pack-tests">tests</a>. A skill named in prose counts only when its name has a hyphen and starts with
 the pack's prefix or a first part two known skills share, so "the follow-up skill" stays prose. A
 relative link in a rule warns, since rules are rendered into each harness's own file; link a URL.

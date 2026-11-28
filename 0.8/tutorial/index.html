@@ -1894,7 +1894,7 @@ in a terminal, it asks for the prefix, the tools you'll edit the pack with, and 
 </code></pre></div>
 <p>You should see <code>OK:</code> with <code>(packs: gatework, myteam)</code> at the end: brainrc, the default pack it
 fetched in step 1, and yours. The pack's <code>pack.toml</code> sets its <code>prefix</code>, <code>myteam-</code>, which keeps
-your item names apart from everyone else's, and <code>requires_core</code>, the brainrc versions it works
+your item names apart from everyone else's, and <code>requires_api</code>, the brainrc pack API versions it works
 with. The pack also has a facts skill, <code>myteam-facts</code>, a rule that points at it, tripwires, tests
 and a CI workflow (<a href="../packs/#what-new-pack-writes">what each file is for</a>).</p>
 <h2 id="3-add-a-domain-skill">3. Add a domain skill<a class="headerlink" href="#3-add-a-domain-skill" title="Permanent link">&para;</a></h2>
@@ -1963,11 +1963,11 @@ git<span class="w"> </span>-c<span class="w"> </span>user.name<span class="o">=<
 </code></pre></div>
 <p>Push it, and the CI workflow <code>new pack</code> wrote (<code>.github/workflows/validate.yml</code>) checks the pack
 on every push with the <code>validate-pack</code> action, against the brainrc version it pins
-(<a href="../packs/validate-in-ci/">Validate a pack in its own CI</a>). Move that pin, and
-<code>requires_core</code>, when you test against a newer brainrc.</p>
+(<a href="../packs/validate-in-ci/">Validate a pack in its own CI</a>). Move that pin when you test against a newer
+brainrc; <code>requires_api</code> moves only when the pack API's major does.</p>
 <h2 id="next-steps">Next steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="https://github.com/brainrc/brainrc/blob/v0.8.39/examples/pack-acme/README.md">examples/pack-acme</a> shows every other pack feature: an
+<li><a href="https://github.com/brainrc/brainrc/blob/v0.8.40/examples/pack-acme/README.md">examples/pack-acme</a> shows every other pack feature: an
   intake context skill, a ticket connector, Deliver checks, rules, commands, and tripwires.</li>
 <li><a href="../packs/">Packs</a> is the full pack reference.</li>
 <li>To share the pack with a repo's agents instead of one machine, list it in the repo's

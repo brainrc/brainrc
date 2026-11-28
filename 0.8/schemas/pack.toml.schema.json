@@ -24,8 +24,13 @@
       "description": "One line on what the pack is for.",
       "type": "string"
     },
+    "requires_api": {
+      "description": "Pack API versions the pack works with, e.g. \"^1\"; core content releases never break it (docs/packs.md#compatibility).",
+      "type": "string",
+      "minLength": 1
+    },
     "requires_core": {
-      "description": "Core versions the pack works with, e.g. \">=0.8, <0.9\" (docs/packs.md#compatibility).",
+      "description": "Deprecated: pin requires_api instead. Core versions the pack works with, e.g. \">=0.8, <0.9\"; ignored when requires_api is set (docs/packs.md#compatibility).",
       "type": "string"
     },
     "max_always_tokens": {

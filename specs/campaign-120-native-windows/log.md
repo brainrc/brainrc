@@ -109,3 +109,8 @@ The Windows cells had needed 20 minutes, not 15: a cancelled cell fails the gate
   source digest follows them), and validate reads a Markdown link through one in copy mode.
   Gatework is pinned to v0.9.1.
 - #342 folds in: the copy-mode check is the end-to-end apply it asked for.
+
+## gh:179 · Merged
+- #394 merged on Jacob's yes and shipped as v0.8.38, closing #179 and #342. Every Windows cell
+  blocks and passed. On Jacob's yes epic #120 is closed, and its roadmap line moves to Gate B's
+  shipped line.

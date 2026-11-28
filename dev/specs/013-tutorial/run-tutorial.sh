@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Runs every ```bash block in docs/tutorial.md, in order, on a fresh clone with a temp HOME.
-# Usage: specs/013-tutorial/run-tutorial.sh [path-to-core-checkout]   (default: this repo)
+# Usage: dev/specs/013-tutorial/run-tutorial.sh [path-to-core-checkout]   (default: this repo)
 set -euo pipefail
-core="$(cd "${1:-$(dirname "$0")/../..}" && pwd)"
+core="$(cd "${1:-$(dirname "$0")/../../..}" && pwd)"
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 script="$tmp/tutorial.sh"

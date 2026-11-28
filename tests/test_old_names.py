@@ -1,7 +1,8 @@
 """The old names `aicfg` and `ai-config` appear only where ALLOW says they may.
 
-Every tracked or untracked-not-ignored file is scanned, except CHANGELOG.md, changelog.d/ and
-specs/. For each line, the allowed matches are deleted; what still contains an old name fails.
+Every tracked or untracked-not-ignored file is scanned, except CHANGELOG.md, changelog.d/ and the
+run records in dev/specs/ (or a run's specs/ before it moves there). For each line, the allowed
+matches are deleted; what still contains an old name fails.
 An ALLOW row that matches no line fails too, so the table cannot go stale.
 """
 import fnmatch
@@ -11,7 +12,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SKIP = ("CHANGELOG.md", "changelog.d/", "specs/")
+SKIP = ("CHANGELOG.md", "changelog.d/", "dev/specs/", "specs/")  # specs/: a Gatework run before its git mv
 OLD = re.compile(r"(?i)aicfg|ai-config")
 MAX_SHOWN = 50
 

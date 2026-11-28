@@ -80,7 +80,7 @@ tests/          unittest suites for the package and the hooks
 evals/          eval cases that grade Gatework runs (docs/evals.md)
 docs/           this site (MkDocs), plus the JSON Schemas in docs/schemas/
 examples/       example packs (pack-acme, pack-homelab) and a sandbox repo for trying Gatework
-specs/          the records of Gatework runs that built brainrc
+dev/specs/      the records of Gatework runs that built brainrc
 changelog.d/    one fragment per unreleased change, folded into CHANGELOG.md on release
 VERSION         the core version (packs pin the pack API in brainrc/packapi.py instead)
 ```

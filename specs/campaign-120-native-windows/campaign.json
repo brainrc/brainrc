@@ -42,12 +42,13 @@
         "gh:178"
       ],
       "slug": "179-windows-ci",
-      "status": "in_progress",
+      "status": "delivered",
       "branch": "claude/project-thread-aj1of9",
-      "pr": null,
+      "pr": "https://github.com/brainrc/brainrc/pull/394",
       "folds_in": [
         "gh:342"
-      ]
+      ],
+      "merged": true
     }
   ]
 }

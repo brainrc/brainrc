@@ -12,6 +12,11 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.8.39 (2026-11-28)
+
+- The roadmap lists E16 (native Windows) as shipped in Gate B now that epic #120 is closed, and its
+  campaign record marks #179 delivered.
+
 ## 0.8.38 (2026-11-28)
 
 - Windows without symlinks works end to end (#179, #120). Where git checks a pack out with

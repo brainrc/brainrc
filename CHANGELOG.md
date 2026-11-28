@@ -12,6 +12,20 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.8.40 (2026-11-28)
+
+- **[pack contract]** Packs pin the pack API now, a version of its own (`PACK_API`, 1.0, in
+  `brainrc/packapi.py`), with `requires_api = "^1"`. Core releases that change only content leave
+  it alone, so the pin survives them. Constraints take `^` too. `new pack`, the pack template and
+  the example packs write `requires_api` (#174).
+- **[pack contract]** `requires_core` is deprecated. It still works: alone, it is checked against
+  core's version as before, and `validate --pack` warns; beside `requires_api` it is ignored, left
+  for older cores. It goes no sooner than pack API 2.
+- docs/packs.md#compatibility writes down what pack API 1 freezes and the policy: MINOR adds,
+  MAJOR removes or changes, and a deprecation warns for at least one core minor release first.
+  docs/schemas/pack-api/1.0.json is the frozen list, and a test fails when the contract changes
+  without `PACK_API` moving (`scripts/pack_api.py --write` freezes a new version).
+
 ## 0.8.39 (2026-11-28)
 
 - The roadmap lists E16 (native Windows) as shipped in Gate B now that epic #120 is closed, and its

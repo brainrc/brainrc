@@ -47,3 +47,6 @@ that basis. Merging (each merge publishes a release) and closing issues stay wit
 - Stale `requires_core` wording in stack-pack.md, why-packs.md and the pack template's CI comment;
   docs/packs.md now says the layout is a written list, not read from code; one test could pass
   without the pack loading. All fixed; 1.0 was refrozen (not yet released).
+
+## engine · gh:174 · Delivered
+Draft PR #396. #175 is built and verified on top of it, and waits for #396 to merge.

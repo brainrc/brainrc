@@ -19,16 +19,16 @@
       "order": 1,
       "depends_on": [],
       "slug": "174-pack-api-version",
-      "status": "in_progress",
+      "status": "delivered",
       "branch": "claude/project-thread-r70d5p",
-      "pr": null
+      "pr": "https://github.com/brainrc/brainrc/pull/396"
     },
     {
       "ref": "gh:175",
       "order": 2,
       "depends_on": [],
       "slug": "175-move-specs",
-      "status": "todo",
+      "status": "waiting",
       "branch": "claude/project-thread-r70d5p",
       "pr": null
     }

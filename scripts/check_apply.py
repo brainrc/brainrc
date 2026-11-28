@@ -4,9 +4,10 @@ of what it wrote: status says it's in sync, doctor finds no problem, and uninsta
 but the empty tool homes and its backups. The real HOME is never read or written.
 
 Usage: python3 scripts/check_apply.py [--copy]
---copy sets BRAINRC_LINK_MODE=copy, as a Windows machine without Developer Mode gets it, and
-checks that apply made no symlink. On Windows it also checks each hook command is in the native
-form (brainrc/hookcmd.py), not a POSIX shell line. CI runs it in the windows-latest cells (#179).
+--copy sets BRAINRC_LINK_MODE=copy and git's core.symlinks=false, as a Windows machine without
+Developer Mode gets them, and checks that apply made no symlink and copied Gatework's roles/. On
+Windows it also checks each hook command is in the native form (brainrc/hookcmd.py), not a POSIX
+shell line. CI runs it with --copy in every validate cell (#179).
 Prints one PASS/FAIL line per check; exits 1 on any FAIL.
 """
 import argparse
@@ -71,6 +72,11 @@ def main() -> int:
         env |= {"HOME": str(home), "USERPROFILE": str(home)}  # Path.home() reads USERPROFILE on Windows
         if copy:
             env["BRAINRC_LINK_MODE"] = "copy"
+            # Clone the packs as a Windows machine without Developer Mode does: each link in a pack
+            # (Gatework's roles/) arrives as git's plain-file stand-in, which copy mode follows.
+            gitconfig = tmp / "gitconfig"
+            gitconfig.write_text("[core]\n\tsymlinks = false\n", encoding="utf-8")
+            env["GIT_CONFIG_GLOBAL"] = str(gitconfig)
         result = brainrc(env, "apply")
         report("apply", result.returncode == 0, result.stdout + result.stderr)
         if copy:
@@ -78,6 +84,10 @@ def main() -> int:
             links = [str(p.relative_to(home)) for p in files(home)
                      if p.is_symlink() and home / ".config" / "brainrc" not in p.parents]
             report("apply made no symlink", not links, "\n".join(links))
+            roles = home / ".claude" / "skills" / "brainrc-gatework" / "roles"
+            report("Gatework's roles/ is copied as a folder of role files",
+                   roles.is_dir() and not roles.is_symlink() and any(roles.glob("*.md")),
+                   f"{roles}: {'a file' if roles.is_file() else 'missing'}")
         hooks = hook_lines(home)
         report("apply wrote Codex's hooks", bool(hooks))
         if os.name == "nt":

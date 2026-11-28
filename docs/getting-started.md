@@ -43,7 +43,7 @@ brainrc status
 ```
 
 ```text
-FETCH     gatework  https://github.com/brainrc/gatework.git (v0.9.0)
+FETCH     gatework  https://github.com/brainrc/gatework.git (v0.9.1)
 CREATE    claude    ~/.claude/CLAUDE.md
 CREATE    claude    ~/.claude/hooks/brainrc
 CREATE    claude    ~/.claude/skills/brainrc-work

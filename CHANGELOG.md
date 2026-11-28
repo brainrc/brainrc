@@ -12,6 +12,12 @@ Every PR adds a fragment in [`changelog.d/`](changelog.d/README.md). On merge, t
 workflow folds the fragments in under the next version, bumps `VERSION`, and tags `vX.Y.Z`.
 There is no Unreleased section: `main` is what users pull, so `VERSION` always describes it.
 
+## 0.8.41 (2026-11-28)
+
+- This repo's own Gatework records (run folders, living specs, campaigns) moved from `specs/` at
+  the root to `dev/specs/`, and AGENTS.md names it as the repo's specs directory, so new runs write
+  there too (#175). Gatework still writes `specs/<slug>/` in your project.
+
 ## 0.8.40 (2026-11-28)
 
 - **[pack contract]** Packs pin the pack API now, a version of its own (`PACK_API`, 1.0, in

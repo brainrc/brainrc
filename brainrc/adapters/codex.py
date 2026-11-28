@@ -71,6 +71,12 @@ class Codex(Adapter):
     writes_mcp = True
     records_mcp = False  # the marked block is the record
 
+    def windows_hook(self, hook: dict, exe: str, args: list[str], source: str) -> dict:
+        # `commandWindows`: "Windows-only command override for command hooks"
+        # (https://learn.chatgpt.com/docs/config-file/config-reference). `command` stays for POSIX.
+        from .. import hookcmd
+        return hook | {"commandWindows": hookcmd.line(exe, args, source, None)}
+
     def mcp_text_change(self, text: str, servers: dict[str, dict]) -> tuple[str, list[str], list[str]]:
         spans = blocks(text)
         rest = text

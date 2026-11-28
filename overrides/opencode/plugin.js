@@ -12,6 +12,8 @@ import { fileURLToPath } from "node:url";
 // brainrc links this file; resolve the link so the guards are found in a checkout or a package.
 const HOOKS = join(dirname(realpathSync(fileURLToPath(import.meta.url))), "..", "claude", "hooks");
 const GUARDS = ["guard_outward.py", "guard_secrets.py"];
+// Python as each OS names it: python3 on macOS and Linux; on Windows the py launcher, else python (#178).
+const PYTHONS = process.platform === "win32" ? [["py", ["-3"]], ["python", []]] : [["python3", []]];
 
 // OpenCode tool -> the Claude tool name and arguments the guards read.
 const TOOLS = {
@@ -47,12 +49,22 @@ async function mcpServers(client) {
   }
 }
 
+// The first Python that starts (a missing one is ENOENT) runs the guard.
+function python(args, input) {
+  let run;
+  for (const [cmd, pre] of PYTHONS) {
+    run = spawnSync(cmd, [...pre, ...args], { input, encoding: "utf8", timeout: 5000 });
+    if (!(run.error && run.error.code === "ENOENT")) break;
+  }
+  return run;
+}
+
 // The strongest objection across the guards: the first deny, else the first ask, else null.
 function objection(toolName, toolInput, cwd) {
   const payload = JSON.stringify({ tool_name: toolName, tool_input: toolInput, ...(cwd ? { cwd } : {}) });
   let ask = null;
   for (const guard of GUARDS) {
-    const run = spawnSync("python3", [join(HOOKS, guard)], { input: payload, encoding: "utf8", timeout: 5000 });
+    const run = python([join(HOOKS, guard)], payload);
     if (run.error || run.status !== 0 || !run.stdout.trim()) continue; // fail open, like a broken hook
     let decision;
     try {

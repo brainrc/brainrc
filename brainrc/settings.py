@@ -31,7 +31,10 @@ SANDBOX_KINDS = tuple(f"sandbox.{section}.{key}" for section, key in SANDBOX_LIS
 def _owned(group: dict, markers: set[str] = frozenset()) -> bool:
     # Claude groups hold their commands under "hooks"; Cursor's entries are flat {command}s.
     for h in [group, *group.get("hooks", [])]:
-        command = str(h.get("command", ""))
+        # Claude Code's Windows form (#178) names the guard in `args`, Codex's in `commandWindows`.
+        parts = [h.get("command", ""), h.get("commandWindows", ""), h.get("powershell", ""),
+                 *(h.get("args") if isinstance(h.get("args"), list) else [])] if isinstance(h, dict) else []
+        command = " ".join(str(p) for p in parts)
         if OWNED_HOOK.search(command) or any(m in command for m in markers):
             return True
     return False

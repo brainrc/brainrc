@@ -68,6 +68,17 @@ class Adapter:
         """Why this format can't merge into current (a JSON object), or None when it can."""
         return None
 
+    # --- Windows hooks (#178) --------------------------------------------------------------------
+    # The shell the tool runs a hook command in on Windows, as its docs say: "powershell", "cmd",
+    # or None where they don't say (the line then holds nothing any of them reads differently).
+    windows_shell: str | None = None
+
+    def windows_hook(self, hook: dict, exe: str, args: list[str], source: str) -> dict:
+        """One of brainrc's hooks on Windows: the Python call (brainrc/hookcmd.py) in place of the
+        POSIX line. An adapter whose tool takes a Windows-only field writes it there instead."""
+        from .. import hookcmd
+        return hook | {"command": hookcmd.line(exe, args, source, self.windows_shell)}
+
     # --- copy mode (#177) ------------------------------------------------------------------------
     def copied_file(self, text: str, source: Path) -> str:
         """A file apply copies into this tool where it can't link (Windows without Developer Mode),

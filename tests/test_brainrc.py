@@ -95,6 +95,12 @@ class TempRepoCase(unittest.TestCase):
         os.environ["BRAINRC_HOME"] = str(self.settings_home)
         # CI runners set XDG_CONFIG_HOME; each of these moves a harness's paths (#110).
         self.old_harness_env = {v: os.environ.pop(v) for v in HARNESS_VARS if v in os.environ}
+        # The suite's hook assertions are in the POSIX form apply writes on macOS and Linux. On
+        # Windows apply writes the native form (#178), which tests/test_windows_hooks.py (it patches
+        # this back on) and scripts/check_apply.py check; here every OS gets the POSIX one.
+        posix = mock.patch.object(brainrc.hookcmd, "windows_hooks", return_value=False)
+        posix.start()
+        self.addCleanup(posix.stop)
 
     def tearDown(self):
         brainrc.config.REPO = self.old_repo

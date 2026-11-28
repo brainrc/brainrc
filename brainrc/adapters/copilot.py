@@ -52,6 +52,13 @@ class Copilot(Adapter):
     writes_mcp = True
     mcp_key = "mcpServers"
 
+    def windows_hook(self, hook: dict, exe: str, args: list[str], source: str) -> dict:
+        # `bash` "Shell command for Unix", `powershell` "Shell command for Windows"; "Copilot uses
+        # the appropriate key based on the user's operating system"
+        # (https://docs.github.com/en/copilot/reference/hooks-reference). `command` becomes `bash`.
+        from .. import hookcmd
+        return hook | {"powershell": hookcmd.line(exe, args, source, "powershell")}
+
     def hooks_view(self, current: dict) -> dict:
         hooks = current.get("hooks")
         return current | {"hooks": _events(hooks, _view)} if isinstance(hooks, dict) else current

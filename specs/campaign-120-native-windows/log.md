@@ -57,3 +57,37 @@ A high-effort code review of the diff found six bugs and three nits, all fixed b
 - init's project import didn't skip apply's copies.
 - Nits: doctor's reason after a switch back to links, the record's temporary file name in
   `--purge`'s list, and reading the mode and record once per run.
+
+## engine · gh:178 · Spec and Plan
+On Windows, apply writes each core hook command as one Python call that does what the POSIX line
+did (pass, or print the tool's allow JSON, when the guard is gone), with no shell syntax in it:
+`py -3 -I -c "import os,runpy,sys;f='C:/.../guard.py';..."`. `-I` keeps a module in the project
+folder from being imported. Where the line goes comes from each tool's docs (`windows_hook` in
+`brainrc/adapters/`): Claude Code's exec form (no shell), Codex's `commandWindows`, Copilot's
+`powershell`, `command` for Cursor (PowerShell), Junie (cmd), Gemini, Devin, Kiro and
+Antigravity. Python is `py -3`, then `python`, then the interpreter brainrc runs under. A hooks
+path a shell would read is a config error naming `hooks_dir`. POSIX output is unchanged (goldens).
+- Plan: `brainrc/hookcmd.py` (new), `plan.py`, `settings.py`, `doctor.py`, the adapters,
+  `overrides/opencode/plugin.js` (`py -3`/`python` on win32); docs in `install.md`; tests in
+  `tests/test_windows_hooks.py`.
+- Unverified: Codex's `commandWindows` and Copilot's `powershell` come from parts of their
+  reference pages; Gemini, Devin, Kiro and Antigravity don't say which shell runs a hook on
+  Windows, so their line is built to mean the same in cmd, PowerShell and Git Bash.
+
+## engine · gh:178 · Built
+Verified with the goldens unchanged, `validate` passing and the full suite passing.
+
+## engine · gh:178 · Review
+A high-effort code review found four Windows bugs and two nits, all fixed:
+- doctor read Codex's and Copilot's POSIX `command` first, with a `$HOME` that cmd and PowerShell
+  don't set, and reported their guards missing. It now reads the Windows field first and expands
+  `$HOME` itself.
+- With no `py` or `python` on PATH, a Python path with a space was quoted in a way PowerShell and
+  cmd read differently, for tools whose shell is unknown. That is now a config error that says to
+  install the py launcher, and a Python path a shell would read is refused too.
+- The Python chosen could be the Microsoft Store stub or older than 3.11. Each one found is now run
+  once to check it, and `python` is written as a full path (only the launcher by name).
+- `-I` ignores `PYTHONUTF8`, so a guard read a non-ASCII payload in the ANSI code page and could
+  fail open. Hooks and doctor now pass `-X utf8`.
+- Nits: doctor spread a string `args` into letters; the changelog fragment for this PR is written
+  when the branch restarts after #392.

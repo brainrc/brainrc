@@ -37,6 +37,7 @@ from .sources import (
     default_sources,
     check_changelog,
     check_packs,
+    compat_deprecations,
     collisions,
     core_version,
     duplicate_packs,
@@ -472,7 +473,7 @@ def cmd_validate(pack: str | None = None, key: str = "", fetch_defaults: bool = 
     try:
         errors += check_changelog(core_version())
         compat_errors, compat_warnings = check_packs(srcs)
-        warnings += compat_warnings
+        warnings += compat_warnings + (compat_deprecations(checked) if pack and not key else [])
         errors += compat_errors
         if not pack:
             errors += check_plugin()

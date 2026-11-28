@@ -90,7 +90,7 @@ class ScaffoldTest(unittest.TestCase):
         self.assertEqual(meta["name"], "team")
         self.assertEqual(meta["prefix"], "team-")
         self.assertEqual(meta["description"], 'Has "quotes"')
-        self.assertTrue(meta["requires_core"].startswith(">="))
+        self.assertEqual(meta["requires_api"], "^1")
         self.assertEqual(meta["extensions"]["gatework"]["domains"],
                          [{"files": "`src/**/*.ts`", "skills": ["team-ts"]}])
 

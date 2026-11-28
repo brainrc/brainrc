@@ -655,12 +655,12 @@ class PackSyncTest(TempRepoCase):
         self.assertEqual(code, 0, out)
         self.assertNotIn("requires_core", out)
 
-    def test_pack_without_requires_core_applies_with_warning(self):
+    def test_pack_without_a_pin_applies_with_warning(self):
         self.set_requires_core("")
         code, out = quiet(brainrc.cmd_sync, True)
         self.assertEqual(code, 0, out)
-        self.assertIn("WARN acme:pack.toml: no `requires_core`", out)
-        self.assertIn('requires_core = ">=1.2, <2"', out)  # suggests the documented pin
+        self.assertIn("WARN acme:pack.toml: no `requires_api`", out)
+        self.assertIn('requires_api = "^1"', out)  # suggests the documented pin
         self.assertTrue((self.home / ".claude/skills/acme-deploy").is_symlink())
 
     def test_tokens_lists_pack_items(self):
@@ -1075,13 +1075,20 @@ class VersionConstraintTest(unittest.TestCase):
             ((1, 2, 0), ">1.2", False),
             ((1, 2, 0), "<=1.2.0", True),
             ((0, 9, 0), " >= 0.1 ,< 1 ", True),
+            ((1, 0, 0), "^1", True),           # ^ keeps the first nonzero part
+            ((1, 9, 9), "^1", True),
+            ((2, 0, 0), "^1", False),
+            ((1, 1, 0), "^1.2", False),
+            ((0, 3, 9), "^0.3", True),
+            ((0, 4, 0), "^0.3", False),
+            ((0, 0, 5), "^0.0.4", False),
         ]
         for version, text, expected in cases:
             with self.subTest(text=text, version=version):
                 self.assertEqual(brainrc.satisfies(version, brainrc.parse_constraint(text)), expected)
 
     def test_rejects_malformed(self):
-        for text in ("latest", ">>1", "", ">=0.1,", "=>0.1", "1.2.3.4", ">=1.x", "^1.2", "~=1.2"):
+        for text in ("latest", ">>1", "", ">=0.1,", "=>0.1", "1.2.3.4", ">=1.x", "^1.x", "^", "~=1.2"):
             with self.subTest(text=text), self.assertRaises(ValueError):
                 brainrc.parse_constraint(text)
 
@@ -2062,10 +2069,12 @@ class PackValidateTest(TempRepoCase):
                          "acme:rules/50-acme.md:3: tripwire T1: stale rule"):
             self.assertIn(expected, out)
 
-    def test_compatible_pack_has_no_version_message(self):
+    def test_compatible_pack_only_hears_requires_core_is_deprecated(self):
         code, out = quiet(brainrc.cmd_validate, str(self.pack))
         self.assertEqual(code, 0, out)
-        self.assertNotIn("requires_core", out)
+        self.assertEqual([line for line in out.splitlines() if "requires_" in line],
+                         ['WARN acme:pack.toml: `requires_core` is deprecated; add requires_api = "^1", which '
+                          "core content releases never break (docs/packs.md#compatibility)"])
 
     def test_incompatible_pack_fails(self):
         set_requires_core(self.pack, 'requires_core = ">=1.3"')
@@ -2080,14 +2089,11 @@ class PackValidateTest(TempRepoCase):
         self.assertEqual(code, 1)
         self.assertIn("requires_core `<1` is not satisfied by core 1.2.3", out)
 
-    def test_missing_requires_core_warns(self):
+    def test_missing_pin_warns(self):
         set_requires_core(self.pack, "")
         code, out = quiet(brainrc.cmd_validate, str(self.pack))
         self.assertEqual(code, 0, out)
-        self.assertIn("WARN acme:pack.toml: no `requires_core`", out)
-        set_core_version(self.repo, "0.3.1")
-        code, out = quiet(brainrc.cmd_validate, str(self.pack))
-        self.assertIn('requires_core = ">=0.3, <0.4"', out)  # 0.x: breaking changes bump MINOR
+        self.assertIn('WARN acme:pack.toml: no `requires_api`; add requires_api = "^1"', out)
 
     def test_malformed_requires_core_fails(self):
         set_requires_core(self.pack, 'requires_core = "latest"')

@@ -1,6 +1,6 @@
 # Example pack: acme
 
-A working pack to copy. It uses every pack feature except hooks: `requires_core`, a `[scope]`
+A working pack to copy. It uses every pack feature except hooks: `requires_api`, a `[scope]`
 (acme repos and ACME tickets), guard rules, a domain skill, an intake context skill, a ticket
 connector config, a Deliver check, a reviewer agent, a rule, a command, and a tripwire. Format reference: [docs/packs.md](https://github.com/brainrc/brainrc/blob/main/docs/packs.md).
 
@@ -11,7 +11,7 @@ connector config, a Deliver check, a reviewer agent, a rule, a command, and a tr
    names (directories, files, and frontmatter `name`), and the text. Pick names that follow the
    [naming rules](https://github.com/brainrc/brainrc/blob/main/docs/packs.md#naming); set `id` to your GitHub handle and the repo name,
    or drop it.
-3. Set `requires_core` to the core version you tested against (see `VERSION` in core).
+3. Keep `requires_api = "^1"`, the pack API major you built against ([compatibility](https://github.com/brainrc/brainrc/blob/main/docs/packs.md#compatibility)).
 4. Enable it on your machine in core's `packs.local.toml`, then check and apply:
 
    ```toml

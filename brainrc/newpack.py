@@ -27,7 +27,7 @@ MAX_ALWAYS_TOKENS = 800
 ROOT_ONLY = (".github/workflows/validate.yml", ".pre-commit-config.yaml")  # work only at a repo's root
 NOTES = {
     "prefix": "every skill, agent, command and MCP server starts with this",
-    "requires_core": "the brainrc versions this pack works with",
+    "requires_api": "the brainrc pack API versions this pack works with",
     "max_always_tokens": "budget for what loads in every session: rules and descriptions",
     "test": "tests that `brainrc validate --pack` runs",
 }

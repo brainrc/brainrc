@@ -29,9 +29,10 @@ reviewer = "brainrc-code-reviewer"   # optional: the agent that reviews these fi
 
 ## 4. Say which brainrc versions it works with
 
-`new pack` pins `requires_core` to the minor series you ran it with, and its CI workflow and
-pre-commit hook to that release's tag. When you test against a newer brainrc, move all three
-together ([compatibility](../packs.md#compatibility)).
+`new pack` sets `requires_api` to the pack API's major (`"^1"`), which core content releases
+never break, and pins its CI workflow and pre-commit hook to the release you ran it with. When
+you test against a newer brainrc, move those two pins; `requires_api` moves only when the pack
+API's major does ([compatibility](../packs.md#compatibility)).
 
 ## 5. Release it
 

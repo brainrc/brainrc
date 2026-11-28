@@ -246,7 +246,7 @@ one. Changes nothing. No options.
 
 ## brainrc validate
 
-Check every source: frontmatter, links and references, pack names, collisions, `requires_core`,
+Check every source: frontmatter, links and references, pack names, collisions, `requires_api`,
 token budgets and tripwires. CI runs it on brainrc itself; pack authors run it with `--pack`
 ([packs](packs/validate-in-ci.md)).
 

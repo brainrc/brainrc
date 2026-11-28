@@ -40,8 +40,8 @@ class RenderTest(unittest.TestCase):
         meta = tomllib.loads(files_for()["pack.toml"])
         self.assertEqual((meta["name"], meta["prefix"], meta["test"]), ("acme", "acme-", "tests"))
         self.assertEqual(meta["max_always_tokens"], newpack.MAX_ALWAYS_TOKENS)
-        major, minor = VERSION.split(".")[:2]
-        self.assertEqual(meta["requires_core"], f">={major}.{minor}, <{major}.{int(minor) + 1}")
+        self.assertEqual(meta["requires_api"], "^1")  # the pack API, which content releases never break
+        self.assertNotIn("requires_core", meta)
         self.assertNotIn("extensions", meta)
         self.assertNotIn("id", meta)
 

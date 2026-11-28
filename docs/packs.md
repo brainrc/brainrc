@@ -64,7 +64,7 @@ repo can sit at different refs. `subdir` works the same in a repo's `brainrc.tom
 name = "acme"
 prefix = "acme-"          # default: "<name>-"
 id = "acme/acme-ai-pack"  # optional: the <owner>/<pack> ID it's published under (see Naming)
-requires_core = ">=0.7, <0.9"   # core versions this pack works with (see Compatibility)
+requires_api = "^1"       # pack API versions this pack works with (see Compatibility)
 max_always_tokens = 800   # optional budget for rules + descriptions (see Context cost)
 test = "tests"            # optional: tests validate --pack runs (see Pack tests)
 
@@ -115,7 +115,8 @@ Generated from [`pack.toml.schema.json`](schemas/pack.toml.schema.json) by
 | `prefix` | string | What every skill, agent, command and MCP server name starts with; default: "&lt;name>-" ([naming](#naming)). |
 | `id` | string | The &lt;owner>/&lt;pack> ID the pack is published under ([naming](#naming)). |
 | `description` | string | One line on what the pack is for. |
-| `requires_core` | string | Core versions the pack works with, e.g. ">=0.8, &lt;0.9" ([compatibility](#compatibility)). |
+| `requires_api` | string | Pack API versions the pack works with, e.g. "^1"; core content releases never break it ([compatibility](#compatibility)). |
+| `requires_core` | string | Deprecated: pin requires_api instead. Core versions the pack works with, e.g. ">=0.8, &lt;0.9"; ignored when requires_api is set ([compatibility](#compatibility)). |
 | `max_always_tokens` | number | Budget for the tokens the pack loads into every session: rules plus descriptions ([context cost](#context-cost)). |
 | `validator` | string | A Python module in the pack that checks what only it understands ([validator plugins](#validator-plugins)). |
 | `test` | string | The pack's own unittest tests, a directory or a .py file in the pack; validate --pack runs them ([pack tests](#pack-tests)). |
@@ -168,7 +169,7 @@ brainrc validate --pack acme
 
 | File | What it's for |
 |---|---|
-| `pack.toml` | name, prefix, `requires_core` for this core's minor series, a [token budget](#context-cost) and `test` |
+| `pack.toml` | name, prefix, `requires_api` for this pack API's major, a [token budget](#context-cost) and `test` |
 | `rules/10-<name>.md` | one short rule: load the facts skill instead of guessing |
 | `skills/<prefix>facts/SKILL.md` | the facts agents would otherwise guess: repositories, hosts, tools, teams |
 | `tripwires.toml` | a [tripwire](#tripwirestoml) against home folder paths; add one for each stale fact |
@@ -485,16 +486,38 @@ paths = ["*.md"]                              # default; fnmatch against the pat
 
 ## Compatibility
 
-brainrc's version is in `VERSION`. [CHANGELOG.md](../CHANGELOG.md) tags changes that affect packs
-with **[pack contract]**. Declare the versions your pack supports with `requires_core`:
-comma-separated clauses of `>=`, `>`, `<=`, `<`, `==`, `!=` and a version (missing parts
-are zero, and a bare version means `>=`).
+Packs pin the **pack API**, the version of what packs can rely on, not brainrc's own version:
+
+```toml
+requires_api = "^1"
+```
+
+The pack API version is `PACK_API` in `brainrc/packapi.py` (now `1.0`). Core releases that change
+only content (skills, rules, docs, fixes) leave it alone, so a pin survives them. `requires_api`
+takes comma-separated clauses of `>=`, `>`, `<=`, `<`, `==`, `!=` or `^` and a version (missing
+parts are zero, a bare version means `>=`, and `^1` means `>=1.0, <2`).
 
 - Not satisfied → `validate` fails and `apply`/`status` write nothing, naming the pack.
 - Missing → allowed, with a warning.
-- Policy: semver. While core is `0.x`, a breaking pack-contract change bumps MINOR, so pin
-  `">=0.N, <0.N+1"`. After `1.0`, breaking changes bump MAJOR: pin `">=1.N, <2"`.
-  Other changes (new skills, fixes, docs) bump PATCH and never break a pin.
+- Policy: a change that only adds to the contract bumps the pack API's MINOR; one that removes or
+  changes anything in it bumps MAJOR, so `^N` never breaks. Something deprecated keeps working,
+  and `validate --pack` warns about it, for at least one core minor release before a MAJOR bump
+  may remove it. [CHANGELOG.md](../CHANGELOG.md) tags such changes **[pack contract]**.
+
+**What pack API 1 freezes.** The keys, types and limits in the
+[pack.toml](schemas/pack.toml.schema.json) and [mcp/servers.toml](schemas/mcp-servers.toml.schema.json)
+schemas; the [layout](#layout) and the frontmatter each file needs; item kinds and agent models; the
+[naming](#naming) patterns; and the names a [validator plugin](#validator-plugins) may define,
+with the arguments core passes each function. [docs/schemas/pack-api/1.0.json](schemas/pack-api/1.0.json) is the frozen list.
+Core's tests build the live contract (the schemas, the kinds, models, naming patterns and
+validator calls from the code, and a written list of the layout) and fail when it differs from
+the frozen list for `PACK_API`; `python3 scripts/pack_api.py --write` freezes a new version.
+
+**`requires_core` is deprecated.** It pins core's own version (`VERSION`), which content releases
+bump. It still works: without `requires_api` it is checked against core's version as before, and
+`validate --pack` warns. With `requires_api` set, it is ignored, so keep it only for cores older
+than the one that added `requires_api` (0.8.39 and older), which ignore it. It goes no sooner
+than pack API 2.
 
 ## Context cost
 
@@ -520,7 +543,7 @@ frontmatter; `pack.toml` against [its schema](#packtoml); cross-references in sk
 commands, rules, `README.md` and `docs/**` (relative links, `[agent: x]` tags, and skills named
 as "`x` skill" or in prose as "the x skill"; pack files may reference core's and Gatework's skills
 and agents); the [naming](#naming) rules; collisions; extension references and
-[connector config](#connector-config); `requires_core`; tripwires; and the pack's own
+[connector config](#connector-config); `requires_api` (or the deprecated `requires_core`); tripwires; and the pack's own
 [tests](#pack-tests). A skill named in prose counts only when its name has a hyphen and starts with
 the pack's prefix or a first part two known skills share, so "the follow-up skill" stays prose. A
 relative link in a rule warns, since rules are rendered into each harness's own file; link a URL.

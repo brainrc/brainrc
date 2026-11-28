@@ -58,8 +58,8 @@ same agent setup. `apply` does both: the user scope first, then the project you 
 ## Core
 
 brainrc's own repo: the command, its rules (`rules/`), the guard hooks (`overrides/`) and the list
-of where each tool reads its config (`harnesses.toml`). Packs declare which core versions they
-work with (`requires_core`).
+of where each tool reads its config (`harnesses.toml`). Packs declare which pack API versions they
+work with (`requires_api`), so core content releases don't break them.
 
 ## status and apply
 

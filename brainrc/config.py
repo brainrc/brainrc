@@ -80,10 +80,11 @@ KINDS = ("skills", "agents", "commands")
 CORE_VERSION = re.compile(r"^([0-9]+)\.([0-9]+)\.([0-9]+)$")
 
 
-CONSTRAINT_CLAUSE = re.compile(r"^(>=|<=|==|!=|>|<)? *([0-9]+(?:\.[0-9]+){0,2})$")
+CONSTRAINT_CLAUSE = re.compile(r"^(>=|<=|==|!=|>|<|\^)? *([0-9]+(?:\.[0-9]+){0,2})$")
 
 
-CONSTRAINT_SYNTAX = 'comma-separated clauses of >=, >, <=, <, ==, != and a version, e.g. ">=0.1, <0.2"'
+CONSTRAINT_SYNTAX = ('comma-separated clauses of >=, >, <=, <, ==, != or ^ and a version, '
+                     'e.g. ">=0.1, <0.2" or "^1"')
 
 
 CHANGELOG_VERSION = re.compile(r"^## ([0-9]+\.[0-9]+\.[0-9]+)\b", re.M)

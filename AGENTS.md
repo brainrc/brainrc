@@ -29,6 +29,8 @@ These rules apply to human contributors too. Setup and PR workflow: [CONTRIBUTIN
   for both the risky command and a safe near-miss in `tests/test_hooks.py` (a pack's guard: in the
   pack's own tests, which `validate --pack` runs; see `docs/packs.md#pack-tests`).
 - Keep files short: they are loaded into model context. Rules load every session.
+- Gatework's specs directory in this repo is `dev/specs/`: run folders, `living/` and campaigns
+  go there, not in a root `specs/`.
 - After changes, run `python3 scripts/brainrc.py validate` and `python3 -m unittest discover -s tests`.
 - Every PR adds one fragment, `changelog.d/<branch>.md` (`bump:` + bullets, see its README).
   Don't edit `VERSION` or `CHANGELOG.md`: the release workflow folds fragments in and tags on merge.

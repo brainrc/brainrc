@@ -95,9 +95,11 @@ show that the syncer works, and only evals show that the agent still behaves.
 
 You can let Gatework do the work: in an AI tool with this repo installed, run
 `/brainrc-work gh:<issue>`. It stops for your approval at the spec, the plan, and delivery. It writes
-its record (spec, plan, verification, retro) to `specs/<slug>/`. In this repo the records live in
-`dev/specs/`, out of the way of people reading the repo: `git mv` the folder there before the PR,
-which carries it so reviewers can see why each change was made. See [docs/gatework.md](docs/gatework.md).
+its record (spec, plan, verification, retro) to `specs/<slug>/` in a project, but AGENTS.md names
+`dev/specs/` as this repo's specs directory, so here the records and living specs go straight to
+`dev/specs/`, out of the way of people reading the repo. The PR carries the folder so reviewers can
+see why each change was made; `python3 scripts/retro_report.py --root dev/specs` rolls them up.
+See [docs/gatework.md](docs/gatework.md).
 
 ## Where things are
 

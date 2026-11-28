@@ -57,3 +57,6 @@ Draft PR #396. #175 is built and verified on top of it, and waits for #396 to me
 ## engine · gh:175 · Started
 Scope per Jacob: the move to dev/specs/ only; the plugin's install size stays open on #175.
 Rebuilt on main after v0.8.40.
+Review: moving specs/ broke Gatework's later stages here (living specs, resume, campaign lookup all
+read a root specs/). Fixed by naming dev/specs/ as this repo's specs directory in AGENTS.md, which
+Gatework's state contract honours, in place of CONTRIBUTING's hand `git mv` before the PR.

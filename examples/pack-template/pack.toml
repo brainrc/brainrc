@@ -2,6 +2,6 @@
 name = "mypack"
 prefix = "mypack-"  # every skill, agent, command and MCP server starts with this
 description = "Rules and facts for mypack's AI coding agents."
-requires_core = ">=0.8, <0.9"  # the brainrc versions this pack works with
+requires_api = "^1"  # the brainrc pack API versions this pack works with
 max_always_tokens = 800  # budget for what loads in every session: rules and descriptions
 test = "tests"  # tests that `brainrc validate --pack` runs

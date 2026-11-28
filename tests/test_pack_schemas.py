@@ -138,20 +138,20 @@ class PackTomlValidateTest(TempRepoCase):
         self.toml.write_text(text.replace(old, new))
 
     def test_a_typo_warns_and_names_the_key_it_is_closest_to(self):
-        self.edit('requires_core = ', 'max_always_token = 400\nrequires_core = ')
+        self.edit('requires_api = ', 'max_always_token = 400\nrequires_api = ')
         code, out = self.validate()
         self.assertEqual(code, 0, out)
         self.assertIn("WARN homelab:pack.toml:5: unknown key `max_always_token` (did you mean "
                       "`max_always_tokens`?); brainrc ignores it", out)
 
     def test_an_unrelated_unknown_key_warns_without_a_guess(self):
-        self.edit('requires_core = ', 'colour = "blue"\nrequires_core = ')
+        self.edit('requires_api = ', 'colour = "blue"\nrequires_api = ')
         code, out = self.validate()
         self.assertEqual(code, 0, out)
         self.assertIn("unknown key `colour`; brainrc ignores it", out)
 
     def test_a_known_key_of_the_wrong_type_fails(self):
-        self.edit('requires_core = ', 'max_always_tokens = "800"\nid = ["homelab/x"]\nrequires_core = ')
+        self.edit('requires_api = ', 'max_always_tokens = "800"\nid = ["homelab/x"]\nrequires_api = ')
         code, out = self.validate()
         self.assertEqual(code, 1, out)
         self.assertIn("ERROR homelab:pack.toml: max_always_tokens: must be a number", out)
@@ -159,7 +159,7 @@ class PackTomlValidateTest(TempRepoCase):
         self.assertNotIn("id: must be a string", out)  # one error per mistake
 
     def test_a_decimal_budget_is_still_a_budget(self):
-        self.edit('requires_core = ', 'max_always_tokens = 1500.0\nrequires_core = ')
+        self.edit('requires_api = ', 'max_always_tokens = 1500.0\nrequires_api = ')
         code, out = self.validate()
         self.assertEqual(code, 0, out)
         from brainrc.sources import load_pack
@@ -169,7 +169,7 @@ class PackTomlValidateTest(TempRepoCase):
     def test_apply_still_installs_a_pack_with_a_wrong_type(self):
         from brainrc.sources import load_pack, sources
         from brainrc.validate import pack_errors
-        self.edit('requires_core = ', 'description = 1\nrequires_core = ')
+        self.edit('requires_api = ', 'description = 1\nrequires_api = ')
         self.assertEqual(dict(pack_errors([*sources(), load_pack(self.pack)])).get("homelab", []), [])
         code, out = self.validate()
         self.assertEqual(code, 1, out)
@@ -184,7 +184,7 @@ class PackTomlValidateTest(TempRepoCase):
         self.assertIn(f"WARN homelab:pack.toml:{line}: unknown key `extension` (did you mean `extensions`?)", out)
 
     def test_a_negative_budget_fails(self):
-        self.edit('requires_core = ', 'max_always_tokens = -1\nrequires_core = ')
+        self.edit('requires_api = ', 'max_always_tokens = -1\nrequires_api = ')
         code, out = self.validate()
         self.assertEqual(code, 1, out)
         self.assertIn("ERROR homelab:pack.toml: max_always_tokens: must be at least 0", out)

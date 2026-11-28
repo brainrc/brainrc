@@ -12,6 +12,9 @@ Even Better TOML) completes and checks them as you type ([packs](packs.md#editor
 | `brainrc.toml` | [brainrc.toml.schema.json](schemas/brainrc.toml.schema.json) | a repo's project manifest ([project](project.md)) |
 | `brainrc.lock` | [brainrc.lock.schema.json](schemas/brainrc.lock.schema.json) | the user or project lock ([project](project.md)) |
 
+`schemas/pack-api/` holds the frozen contract of each pack API version, which packs pin with
+`requires_api` ([compatibility](packs.md#compatibility)).
+
 To point an editor at the copy for `main`, put this line at the top of the file:
 
 ```toml

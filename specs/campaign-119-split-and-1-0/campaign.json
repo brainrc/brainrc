@@ -1,0 +1,36 @@
+{
+  "ref": "gh:119",
+  "shape": "ordered",
+  "dependency_source": "none",
+  "started_at": "2026-11-28T05:01:06Z",
+  "delivery": "sequential",
+  "gates": {
+    "campaign": {
+      "presented_at": "2026-11-28T05:01:06Z",
+      "approved_at": "2026-11-28T05:01:06Z"
+    }
+  },
+  "skipped": [
+    "gh:176"
+  ],
+  "members": [
+    {
+      "ref": "gh:174",
+      "order": 1,
+      "depends_on": [],
+      "slug": "174-pack-api-version",
+      "status": "in_progress",
+      "branch": "claude/project-thread-r70d5p",
+      "pr": null
+    },
+    {
+      "ref": "gh:175",
+      "order": 2,
+      "depends_on": [],
+      "slug": "175-move-specs",
+      "status": "todo",
+      "branch": "claude/project-thread-r70d5p",
+      "pr": null
+    }
+  ]
+}

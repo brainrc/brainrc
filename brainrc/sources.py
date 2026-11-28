@@ -8,7 +8,7 @@ import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from . import config
+from . import config, packapi
 from .config import (
     CHANGELOG_UNRELEASED,
     CHANGELOG_VERSION,
@@ -98,14 +98,20 @@ def check_changelog(core: tuple[int, ...]) -> list[str]:
 
 
 def parse_constraint(text: str) -> list[tuple[str, tuple[int, ...]]]:
-    """'>=0.1, <0.2' -> [('>=', (0, 1, 0)), ('<', (0, 2, 0))]. A bare version means >=."""
+    """'>=0.1, <0.2' -> [('>=', (0, 1, 0)), ('<', (0, 2, 0))]. A bare version means >=, and
+    ^ allows changes that keep the first nonzero part: '^1' -> >=1.0.0, <2.0.0."""
     clauses = []
     for part in text.split(","):
         m = CONSTRAINT_CLAUSE.match(part.strip())
         if not m:
             raise ValueError(f"expected {CONSTRAINT_SYNTAX}")
         parts = [int(n) for n in m.group(2).split(".")]
-        clauses.append((m.group(1) or ">=", tuple(parts + [0] * (3 - len(parts)))))
+        version = tuple(parts + [0] * (3 - len(parts)))
+        if m.group(1) == "^":  # ^1.2 = >=1.2, <2; ^0.3 = >=0.3, <0.4: up to the first nonzero part
+            i = next((i for i, n in enumerate(parts) if n), len(parts) - 1)
+            clauses += [(">=", version), ("<", tuple([*version[:i], version[i] + 1] + [0] * (2 - i)))]
+        else:
+            clauses.append((m.group(1) or ">=", version))
     return clauses
 
 
@@ -113,24 +119,41 @@ def satisfies(version: tuple[int, ...], clauses: list[tuple[str, tuple[int, ...]
     return all(COMPARE[op](version, bound) for op, bound in clauses)
 
 
+def _api_pin() -> str:
+    return f'requires_api = "^{packapi.PACK_API.split(".")[0]}"'
+
+
 def pack_compat(src: Source, core: tuple[int, ...]) -> tuple[list[str], list[str]]:
-    """(errors, warnings) for one pack's `requires_core` against the core version."""
+    """(errors, warnings) for one pack's `requires_api` against the pack API version, or, while
+    it is deprecated, its `requires_core` against the core version (docs/packs.md#compatibility)."""
     where = f"{src.name}:pack.toml"
-    text = src.meta.get("requires_core")
-    if text is None:
-        # Suggest the pin docs/packs.md recommends: breaking changes bump MINOR in 0.x, MAJOR after.
-        major, minor = core[0], core[1]
-        pin = f">=0.{minor}, <0.{minor + 1}" if major == 0 else f">={major}.{minor}, <{major + 1}"
-        return [], [f'{where}: no `requires_core`; add e.g. requires_core = "{pin}" '
-                    "so incompatible core changes are caught (docs/packs.md)"]
+    api_text, core_text = src.meta.get("requires_api"), src.meta.get("requires_core")
+    pin = _api_pin()
+    if api_text is not None:  # requires_core is left for older cores, which don't read requires_api
+        return _pin_errors(where, "requires_api", api_text, packapi.version_tuple(packapi.PACK_API),
+                           f"pack API {packapi.PACK_API}"), []
+    if core_text is None:
+        return [], [f"{where}: no `requires_api`; add {pin} so incompatible core changes are caught "
+                    "(docs/packs.md#compatibility)"]
+    return _pin_errors(where, "requires_core", core_text, core, f"core {'.'.join(map(str, core))}"), []
+
+
+def compat_deprecations(src: Source) -> list[str]:
+    """`validate --pack` warnings for what the pack's own author should move off: its users can't."""
+    if "requires_core" in src.meta and "requires_api" not in src.meta:
+        return [f"{src.name}:pack.toml: `requires_core` is deprecated; add {_api_pin()}, which core "
+                "content releases never break (docs/packs.md#compatibility)"]
+    return []
+
+
+def _pin_errors(where: str, key: str, text: object, version: tuple[int, ...], label: str) -> list[str]:
     try:
         clauses = parse_constraint(str(text))
     except ValueError as e:
-        return [f"{where}: invalid requires_core `{text}`: {e}"], []
-    if not satisfies(core, clauses):
-        return [f"{where}: requires_core `{text}` is not satisfied by core "
-                f"{'.'.join(map(str, core))}"], []
-    return [], []
+        return [f"{where}: invalid {key} `{text}`: {e}"]
+    if not satisfies(version, clauses):
+        return [f"{where}: {key} `{text}` is not satisfied by {label}"]
+    return []
 
 
 def check_packs(srcs: list[Source]) -> tuple[list[str], list[str]]:

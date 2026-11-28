@@ -69,7 +69,7 @@ class PackSpec:
     name: str
     prefix: str = ""          # default: "<name>-"
     description: str = ""
-    requires_core: str = ""   # default: this core's minor series
+    requires_api: str = ""    # default: this pack API's major, e.g. "^1"
     rules: list[Rule] = field(default_factory=list)
     skills: list[Skill] = field(default_factory=list)
     agents: list[Agent] = field(default_factory=list)
@@ -114,10 +114,9 @@ def _toml_string(value: str) -> str:
     return '"' + value.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n") + '"'
 
 
-def _core_pin() -> str:
-    from .sources import core_version  # late: sources reads config at call time
-    major, minor = core_version()[:2]
-    return f">={major}.{minor}, <{major}.{minor + 1}" if major == 0 else f">={major}.{minor}, <{major + 1}"
+def _api_pin() -> str:
+    from .packapi import PACK_API
+    return f"^{PACK_API.split('.')[0]}"
 
 
 def _comment(provenance: str) -> str:
@@ -208,7 +207,7 @@ def render_pack(spec: PackSpec) -> dict[str, str | Copied]:
         lines.append(key("id", _toml_string(spec.id)))
     if spec.description:
         lines.append(key("description", _toml_string(spec.description)))
-    lines.append(key("requires_core", _toml_string(spec.requires_core or _core_pin())))
+    lines.append(key("requires_api", _toml_string(spec.requires_api or _api_pin())))
     if spec.max_always_tokens:
         lines.append(key("max_always_tokens", str(spec.max_always_tokens)))
     if spec.test:

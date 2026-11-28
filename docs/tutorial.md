@@ -37,7 +37,7 @@ python3 scripts/brainrc.py new pack myteam --to ~/src/myteam-ai-pack --yes
 
 You should see `OK:` with `(packs: gatework, myteam)` at the end: brainrc, the default pack it
 fetched in step 1, and yours. The pack's `pack.toml` sets its `prefix`, `myteam-`, which keeps
-your item names apart from everyone else's, and `requires_core`, the brainrc versions it works
+your item names apart from everyone else's, and `requires_api`, the brainrc pack API versions it works
 with. The pack also has a facts skill, `myteam-facts`, a rule that points at it, tripwires, tests
 and a CI workflow ([what each file is for](packs.md#what-new-pack-writes)).
 
@@ -124,8 +124,8 @@ git -c user.name=you -c user.email=you@example.com commit -qm "Add myteam pack"
 
 Push it, and the CI workflow `new pack` wrote (`.github/workflows/validate.yml`) checks the pack
 on every push with the `validate-pack` action, against the brainrc version it pins
-([Validate a pack in its own CI](packs/validate-in-ci.md)). Move that pin, and
-`requires_core`, when you test against a newer brainrc.
+([Validate a pack in its own CI](packs/validate-in-ci.md)). Move that pin when you test against a newer
+brainrc; `requires_api` moves only when the pack API's major does.
 
 ## Next steps
 

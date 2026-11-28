@@ -41,8 +41,7 @@ class SyncTest(unittest.TestCase):
         self.assertIsNotNone(version)
         tag = "v" + ".".join(map(str, version))
         self.assertIn(f"validate-pack@{tag}\n", (TEMPLATE / ".github/workflows/validate.yml").read_text())
-        major, minor = version[:2]
-        self.assertIn(f'requires_core = ">={major}.{minor}, <{major}.{minor + 1}"', (TEMPLATE / "pack.toml").read_text())
+        self.assertIn('requires_api = "^1"', (TEMPLATE / "pack.toml").read_text())
 
     def test_readme_says_how_to_make_it_yours(self):
         readme = (TEMPLATE / "README.md").read_text()

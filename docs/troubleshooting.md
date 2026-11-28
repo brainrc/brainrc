@@ -76,7 +76,8 @@ Errors stop the command before it writes anything; warnings don't.
 | ``acme:skills/x: pack skills must start with `acme-` `` | Rename the item to start with the pack's `prefix`. |
 | ``acme:pack.toml: `prefix` must be ASCII lowercase letters, digits and hyphens, ending with '-'`` | Fix `prefix` in `pack.toml`, e.g. `acme-`. |
 | ``acme:pack.toml: `prefix` `aws-` uses the vendor name `aws` ``, ``... reserved for official packs``, ``... one or two edits from the official name `brainrc` `` | Rename the pack or its prefix to follow the [naming rules](packs.md#naming). |
-| ``acme:pack.toml: requires_core `>=2.0` is not satisfied by core 1.2.3`` | Upgrade brainrc ([upgrading](upgrade.md)) or the pack, or set `enabled = false` for it in `packs.local.toml`. |
+| ``acme:pack.toml: requires_api `^2` is not satisfied by pack API 1.0`` | Upgrade brainrc ([upgrading](upgrade.md)) or the pack, or set `enabled = false` for it in `packs.local.toml`. |
+| ``acme:pack.toml: requires_core `>=2.0` is not satisfied by core 1.2.3`` | The same, for a pack that still pins core's version; its author can pin `requires_api` instead ([compatibility](packs.md#compatibility)). |
 | `pack acme: no pack.toml at ...` | Fix the pack's `path` in `packs.local.toml`. |
 
 `validate` reports all of these. `apply` and `status` check each pack the same way first and
